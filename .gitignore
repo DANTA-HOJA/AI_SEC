@@ -1,0 +1,12 @@
+__pycache__
+
+*.ps1
+
+*.txt
+*.xlsx
+
+*.tif
+*.tiff
+
+*.ckpt
+*.zip
