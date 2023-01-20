@@ -65,9 +65,11 @@ if __name__ == "__main__":
     
         print("\n\nprocessing...\n")
         
+        ap_comb_list = ap_data_in_list + ap_data_update_list
         
-        ## old path --> new path
-        for i, path in enumerate(ap_data_in_list):
+        
+        ## old path + update path --> new path
+        for i, path in enumerate(ap_comb_list):
             
             
             # *** Print CMD section divider ***
@@ -79,27 +81,10 @@ if __name__ == "__main__":
             new_path = os.path.join(ap_data_out, file_name)
             print(file_name, "\n")
             
-            
-            os.system(f"copy \"{path}\" \"{new_path}\"")
-            cmp = filecmp.cmp(path, new_path) # Check correctness after copy
-            
-            
-            # break # test 1 loop
-        
-        
-        
-        ## update path --> new path
-        for i, path in enumerate(ap_data_update_list):
-            
-            
-            # *** Print CMD section divider ***
-            print("="*100, "\n")
-            print(f"Process Count : {(i+1+len(ap_data_in_list)):{len(str(len(ap_data_in_list)))}d}", "\n")
-            
-            
-            file_name = path.split(os.sep)[-1]
-            new_path = os.path.join(ap_data_out, file_name)
-            print(file_name, "\n")
+            # Check file_name correctness
+            file_name_list = re.split(" |_|-", file_name)
+            # print(len(file_name_list), file_name_list)
+            assert len(file_name_list) == 11, "file_name format error, expect like : '20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB.tif'"
             
             
             os.system(f"copy \"{path}\" \"{new_path}\"")
