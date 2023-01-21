@@ -41,10 +41,10 @@ if __name__ == "__main__":
     # new path {output}
 
         dir_out = r"{20221209_UPDATE_82}_Academia_Sinica_i324"
-        ap_data_out =  os.path.join(ap_data_root, dir_out, r"BF_Analysis")
-        print(ap_data_out)
+        bf_raw_out =  os.path.join(ap_data_root, dir_out, r"BF_Analysis")
+        print(bf_raw_out)
         
-        create_new_dir(ap_data_out)
+        create_new_dir(bf_raw_out)
         
     
     
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             if gen_new_name != file_name: print(f"\ncurrent name not in expected format, generating new name ...\n\n--> {gen_new_name}\n\n")
             
             
-            new_path = os.path.join(ap_data_out, gen_new_name)
+            new_path = os.path.join(bf_raw_out, gen_new_name)
             os.system(f"copy \"{path}\" \"{new_path}\"")
             cmp = filecmp.cmp(path, new_path) # Check correctness after copy
             
