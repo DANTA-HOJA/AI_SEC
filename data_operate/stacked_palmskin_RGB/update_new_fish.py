@@ -43,7 +43,7 @@ if __name__ == "__main__":
         
     # update path (update)
     
-        ap_data_update = r"C:\Users\confocal_microscope\Desktop\stacked_palmskin_tiff\Upload_20221209"
+        ap_data_update = r"C:\Users\confocal_microscope\Desktop\{NAS_DL}_Academia_Sinica_Data\{20221209_Update}_Zebrafish_A_P_strategies\stacked_palmskin_tiff\Upload_20221209"
         print(ap_data_update)
         
         ap_data_update_list = glob(f"{ap_data_update}/*.tif*")
