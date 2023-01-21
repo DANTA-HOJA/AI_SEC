@@ -74,11 +74,10 @@ if __name__ == "__main__":
             
             # *** Print CMD section divider ***
             print("="*100, "\n")
-            print(f"Process Count : {(i+1):{len(str(len(ap_data_in_list)))}d}", "\n")
+            print(f"Process Count : {(i+1):{len(str(len(ap_comb_list)))}d}", "\n")
             
             
             file_name = path.split(os.sep)[-1]
-            new_path = os.path.join(ap_data_out, file_name)
             print(file_name, "\n")
             
             # Check file_name correctness
@@ -87,6 +86,7 @@ if __name__ == "__main__":
             assert len(file_name_list) == 11, "file_name format error, expect like : '20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB.tif'"
             
             
+            new_path = os.path.join(ap_data_out, file_name)
             os.system(f"copy \"{path}\" \"{new_path}\"")
             cmp = filecmp.cmp(path, new_path) # Check correctness after copy
             
