@@ -20,11 +20,11 @@ macro 'Measure SL and SA' {
 	//Create folders for the tifs
 	dirName_bf_lif = File.getName(dir_bf_lif); //get folder name
 	dir_tiff = dir_bf_lif + File.separator + dirName_bf_lif + "--TIFF";
+	dir_metaimg = dir_bf_lif + File.separator + dirName_bf_lif + "--MetaImage";
 	dir_result = dir_bf_lif + File.separator + dirName_bf_lif + "--Result";
-	dir_cropped = dir_bf_lif + File.separator + dirName_bf_lif + "--Cropped";
 	if (File.exists(dir_tiff) == false) { File.makeDirectory(dir_tiff); }
+	if (File.exists(dir_metaimg) == false) { File.makeDirectory(dir_metaimg); }
 	if (File.exists(dir_result) == false) { File.makeDirectory(dir_result); }
-	if (File.exists(dir_cropped) == false) { File.makeDirectory(dir_cropped); }
 		
 		
 		
@@ -54,6 +54,15 @@ macro 'Measure SL and SA' {
 			getDimensions(width, height, channels, slices, frames);
 
 
+			//Get fish_id and create subfolder in "--MetaImage" by fish_id
+			seN_split = split(seN, "fish _-");
+			// Array.print(seN_split); //can prints the array on a single line.
+			fish_id = seN_split[9]; // print(fish_id);
+			metaimg_subfolder = dir_metaimg + File.separator + "Fish_" + fish_id;
+			File.makeDirectory(metaimg_subfolder);
+
+
+
 			//Process and save
 			if (slices>0) {
 				saveAs("TIFF", dir_tiff + File.separator + seN + ".tif");
@@ -66,26 +75,32 @@ macro 'Measure SL and SA' {
 					makeRectangle(50, 700, 1950, 700); //crop_window ( can change )
 
 					run("Duplicate...", "title=cropped_Image"); selectWindow("cropped_Image");
-					saveAs("Tiff", dir_cropped + File.separator + seN + "--cropped.tif");
+					cropped_name = seN + "_Cropped.tif";
+					saveAs("Tiff", metaimg_subfolder + File.separator + cropped_name);
 
 
 				//Process to threshold and measurement
-					run("Duplicate...", "title=cropped_Image_analysis"); selectWindow("cropped_Image_analysis");
+					run("Duplicate...", "title=cropped_Image_threshold"); selectWindow("cropped_Image_threshold");
 					run("Auto Threshold", "method=Triangle white");
 					setOption("BlackBackground", true);
 					run("Convert to Mask");
-					saveAs("Tiff", dir_result + File.separator + seN + "_mask");
+					threshold_name = seN + "_Threshold.tif";
+					saveAs("Tiff", metaimg_subfolder + File.separator + threshold_name);
 
 
 				//SL and SA measurement
 					run("Set Measurements...", "area feret's display redirect=None decimal=2");
-					run("Analyze Particles...", "size=1000000-8000000 show=Outlines display add"); //region_size ( can change )
-					saveAs("Tiff", dir_result + File.separator + seN + "_outline");
+					run("Analyze Particles...", "size=1000000-8000000 show=Masks display include add"); //region_size ( can change )
+					run("Convert to Mask");
+					mask_name = seN + "--Mask.tif";
+					saveAs("Tiff", metaimg_subfolder + File.separator + mask_name);
 
 					roiManager("show all with labels");
 					if ( RoiManager.size == 1){ //success to get fish
-						saveAs    (  "Results", dir_result + File.separator + seN + "_Analysis.csv");
-						roiManager(  "Save",    dir_result + File.separator + seN + "_RoiSet.zip");
+						imageCalculator("AND create", cropped_name, mask_name);
+						saveAs    (  "Tiff",    metaimg_subfolder + File.separator + seN + "--MIX.tif");
+						roiManager(  "Save",    metaimg_subfolder + File.separator + seN + "_RoiSet.zip");
+						saveAs    (  "Results", dir_result  + File.separator + seN + "_AutoAnalysis.csv");
 						roiManager("Deselect");
 						roiManager("Delete"); //delete ROI, otherwise, it increases infinitely
 					}
@@ -98,11 +113,7 @@ macro 'Measure SL and SA' {
 							roiManager("Delete");
 						}
 					}
-				
 
-				//Update Log
-					selectWindow("Log");
-					saveAs("Text", dir_bf_lif + File.separator + "Log.txt");
 
 				//Clear and close all windows
 					// waitForUser("Pause", j+" fish done.");
@@ -114,6 +125,12 @@ macro 'Measure SL and SA' {
 
 		}
 	}
+
+
+	//Update Log
+	selectWindow("Log");
+	saveAs("Text", dir_bf_lif + File.separator + "Log.txt");
+
 
 	showMessage(" -- finished --");
 	setBatchMode(false);
