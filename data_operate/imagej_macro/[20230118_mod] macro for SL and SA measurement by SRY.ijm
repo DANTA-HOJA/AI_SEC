@@ -52,6 +52,7 @@ macro 'Measure SL and SA' {
 			seN = file_name + " - " + image_name;
 			print("processing ... " + " series " + j + "/" + seriesCount + " in " + (i+1) + "/" + list.length + "\n         " + seN);
 			getDimensions(width, height, channels, slices, frames);
+			print("         Dimensions : ", width, height, channels, slices, frames, "( width, height, channels, slices, frames )");
 
 
 			//Get fish_id and create subfolder in "--MetaImage" by fish_id
@@ -62,14 +63,28 @@ macro 'Measure SL and SA' {
 			File.makeDirectory(metaimg_subfolder);
 
 
-
 			//Process and save
 			if (slices>0) {
-				saveAs("TIFF", dir_tiff + File.separator + seN + ".tif");
+
+					//Pick up focused slice if slices > 1
+					//	Plugin ref : https://sites.google.com/site/qingzongtseng/find-focus
+					//	Algorithm  : autofocus algorithm "Normalized variance"  (Groen et al., 1985; Yeo et al., 1993).
+					if (slices>1) {
+						print(" #### WARNING : Number of Slices > 1, run ' Find focused slices '\n");
+						run("Find focused slices", "select=100 variance=0.000 select_only"); 
+					}
+					saveAs("TIFF", dir_tiff + File.separator + seN + ".tif");
+
 
 				//Process to cropped image
-					setOption("ScaleConversions", true);
+					setOption("ScaleConversions", true); //scaling the pixel value when converting the image type (depth)
 					run("8-bit");
+
+					//Consociate the unit ( relationship between micron and pixel )
+					//	To prevent some series of images are in different scales, for example, "20220708_CE009_palmskin_8dpf.lif"
+					//	Microscope Metadata : 1 pixel = 0.0000065 m = 6.5 micron
+					run("Set Scale...", "distance=0.3076923076923077 known=1 unit=micron"); 
+					
 
 					run("Duplicate...", "title=Image_copy"); selectWindow("Image_copy");
 					makeRectangle(50, 700, 1950, 700); //crop_window ( can change )
@@ -90,7 +105,7 @@ macro 'Measure SL and SA' {
 
 				//SL and SA measurement
 					run("Set Measurements...", "area feret's display redirect=None decimal=2");
-					run("Analyze Particles...", "size=1000000-8000000 show=Masks display include add"); //region_size ( can change )
+					run("Analyze Particles...", "size=800000-8000000 show=Masks display include add"); //region_size ( can change )
 					run("Convert to Mask");
 					mask_name = seN + "--Mask.tif";
 					saveAs("Tiff", metaimg_subfolder + File.separator + mask_name);
