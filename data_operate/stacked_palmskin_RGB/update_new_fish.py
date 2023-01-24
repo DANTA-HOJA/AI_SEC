@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # old path (input)
 
         dir_in = r"{20221109_NEW_NAME}_Academia_Sinica_i242"
-        ap_data_in = os.path.join(ap_data_root, dir_in, r"stacked_palmskin_tiff")
+        ap_data_in = os.path.join(ap_data_root, dir_in, r"stacked_palmskin_RGB")
         print(ap_data_in)
         
         ## check total of images match dir_name
@@ -43,10 +43,11 @@ if __name__ == "__main__":
         
     # update path (update)
     
-        ap_data_update = r"C:\Users\confocal_microscope\Desktop\{NAS_DL}_Academia_Sinica_Data\{20221209_Update}_Zebrafish_A_P_strategies\stacked_palmskin_tiff\Upload_20221209"
+        ap_data_update = r"C:\Users\confocal_microscope\Desktop\{NAS_DL}_Academia_Sinica_Data\{20221209_Update}_Zebrafish_A_P_strategies\stacked_palmskin_RGB\Upload_20221209"
         print(ap_data_update)
         
         ap_data_update_list = glob(f"{ap_data_update}/*.tif*")
+        assert len(ap_data_update_list) > 0, "Can't find update folder, or it is empty."
             
     
     # new path {output}
@@ -54,7 +55,7 @@ if __name__ == "__main__":
         folder_tag = f"20221209_UPDATE_{len(ap_data_update_list)}"
         folder_postfix = len(ap_data_in_list) + len(ap_data_update_list) # total images after update
         dir_out = f"{{{folder_tag}}}_Academia_Sinica_i{folder_postfix}"
-        ap_data_out =  os.path.join(ap_data_root, dir_out, r"stacked_palmskin_tiff")
+        ap_data_out =  os.path.join(ap_data_root, dir_out, r"stacked_palmskin_RGB")
         print(ap_data_out)
         
         create_new_dir(ap_data_out)
