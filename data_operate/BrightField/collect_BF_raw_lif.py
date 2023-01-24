@@ -35,6 +35,7 @@ if __name__ == "__main__":
         print(bf_raw_in, end="")
         
         bf_raw_in_list = glob(f"{bf_raw_in}/*/*.lif")
+        assert len(bf_raw_in_list) > 0, "Can't find 'BrightField_raw_lif' folder, or it is empty."
         print(f", [ found {len(bf_raw_in_list)} files ]")
     
     
