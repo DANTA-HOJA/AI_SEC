@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # rename path {output}
 
         dir_out = r"{20221109_NEW_NAME}_Academia_Sinica_i242"
-        ap_data_out =  os.path.join(ap_data_root, dir_out, r"stacked_palmskin_tiff")
+        ap_data_out =  os.path.join(ap_data_root, dir_out, r"stacked_palmskin_RGB")
         print(ap_data_out)
         
         create_new_dir(ap_data_out)
