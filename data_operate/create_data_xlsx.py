@@ -124,15 +124,17 @@ if __name__ == "__main__":
                 
                 # *** Print CMD section divider ***
                 print("="*100, "\n")
-                log.info(f'loop {type(i)}: {i+1}\n')
+                
+                one_base_iter_num = i+1 # Make iteration starting number start from 1
+                log.info(f'one_base_iter_num {type(one_base_iter_num)}: {one_base_iter_num}\n')
                 
                 
-                bf_result_name = bf_result_in_list[bf_result_iter_i].split(os.sep)[-1].split(".")[0] # # Get name_noExtension
-                if get_fish_ID(bf_result_name) == (i+1):
+                bf_result_name = bf_result_in_list[0].split(os.sep)[-1].split(".")[0] # # Get name_noExtension
+                if  one_base_iter_num == get_fish_ID(bf_result_name) :
                     
                     log.info(f'bf_result_name {type(bf_result_name)}: {bf_result_name}')
                     # Read CSV
-                    analysis_csv = pd.read_csv(bf_result_in_list[bf_result_iter_i], index_col=" ")
+                    analysis_csv = pd.read_csv(bf_result_in_list.pop(0), index_col=" ")
                     # Get surface area from analysis file
                     surface_area = analysis_csv.loc[1, "Area"]
                     log.info(f'surface_area {type(surface_area)}: {surface_area}')
@@ -140,26 +142,23 @@ if __name__ == "__main__":
                     standard_length = analysis_csv.loc[1, "Feret"]
                     log.info(f'standard_length {type(standard_length)}: {standard_length}')
                     
-                    data.loc[(i+1), "BrightField name with Analysis statement (CSV)"] = bf_result_name
-                    data.loc[(i+1), "Trunk surface area, SA (um2)"] = surface_area
-                    data.loc[(i+1), "Standard Length, SL (um)"] = standard_length
+                    data.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = bf_result_name
+                    data.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
+                    data.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
 
-                    bf_result_iter_i += 1
-                else: data.loc[(i+1)] = ""
+                else: data.loc[one_base_iter_num] = "" # Can't find corresponding analysis result, make an empty row.
                 
                 
-                if f"{i+1}_A" in palmskin_RGB_in_list[palmskin_RGB_iter_i] :
-                    palmskin_RGB_A_name = palmskin_RGB_in_list[palmskin_RGB_iter_i].split(os.sep)[-1].split(".")[0] # Get name_noExtension
+                if f"{one_base_iter_num}_A" in palmskin_RGB_in_list[0] :
+                    palmskin_RGB_A_name = palmskin_RGB_in_list.pop(0).split(os.sep)[-1].split(".")[0] # Get name_noExtension
                     log.info(f'palmskin_RGB_A_name {type(palmskin_RGB_A_name)}: {palmskin_RGB_A_name}')
-                    data.loc[(i+1), "Anterior (SP8, .tif)" ] =  palmskin_RGB_A_name
-                    palmskin_RGB_iter_i += 1
+                    data.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_RGB_A_name
                 
                 
-                if f"{i+1}_P" in palmskin_RGB_in_list[palmskin_RGB_iter_i] :
-                    palmskin_RGB_P_name = palmskin_RGB_in_list[palmskin_RGB_iter_i].split(os.sep)[-1].split(".")[0] # Get name_noExtension
+                if f"{one_base_iter_num}_P" in palmskin_RGB_in_list[0] :
+                    palmskin_RGB_P_name = palmskin_RGB_in_list.pop(0).split(os.sep)[-1].split(".")[0] # Get name_noExtension
                     log.info(f'palmskin_RGB_P_name {type(palmskin_RGB_P_name)}: {palmskin_RGB_P_name}')
-                    data.loc[(i+1), "Posterior (SP8, .tif)" ] =  palmskin_RGB_P_name
-                    palmskin_RGB_iter_i += 1
+                    data.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_RGB_P_name
                 
                 
                 print("\n\n\n")
