@@ -26,12 +26,17 @@ macro 'Measure SL and SA' {
 	if (File.exists(dir_metaimg) == false) { File.makeDirectory(dir_metaimg); }
 	if (File.exists(dir_result) == false) { File.makeDirectory(dir_result); }
 		
-		
-		
+
+
+	fish_id = 0;
 	for (i=0; i<list.length; i++){
 
 		showProgress( i+1, list.length);
-		print("\n\nprocessing ... " + (i+1) + "/" + list.length + "\n         LIF_FILE : " + list[i]);
+		print("\n\n");
+		print("|-----------------------------------------  Processing ..." + (i+1) + "/" + list.length, "  -----------------------------------------");
+		print("|");
+		print("|         LIF_FILE : " + list[i]);
+		print("|");
 		path = dir_bf_lif + list[i];
 
 		
@@ -50,27 +55,37 @@ macro 'Measure SL and SA' {
 			image_name = getInfo("Image name");
 			//seriesname=getTitle(); //get window_name, not image_name
 			seN = file_name + " - " + image_name;
-			print("processing ... " + " series " + j + "/" + seriesCount + " in " + (i+1) + "/" + list.length + "\n         " + seN);
+			print("|-- processing ... " + " series " + j + "/" + seriesCount + " in " + (i+1) + "/" + list.length);
+			print("|         " + seN);
 			getDimensions(width, height, channels, slices, frames);
-			print("         Dimensions : ", width, height, channels, slices, frames, "( width, height, channels, slices, frames )");
+			print("|         Dimensions : ", width, height, channels, slices, frames, "( width, height, channels, slices, frames )");
 
 
 			//Get fish_id and create subfolder in "--MetaImage" by fish_id
 			seN_split = split(seN, "fish _-");
-			// Array.print(seN_split); //can prints the array on a single line.
-			fish_id = seN_split[9]; // print(fish_id);
+			// Array.print(seN_split); //can print the array on a single line.
+			//If 'fish_id' repeated, skip it.
+			if (fish_id == seN_split[9]) {
+				print("| #### WARNING : Detect ' fish_id ' is same as previous processed fish --> skip this image "); //WARNING:
+				print("|");
+				continue;
+			}
+			else { 
+				fish_id = seN_split[9]; 
+				// print(fish_id); 
+			}
 			metaimg_subfolder = dir_metaimg + File.separator + "Fish_" + fish_id;
 			File.makeDirectory(metaimg_subfolder);
 
 
 			//Process and save
-			if (slices>0) {
+			if (slices > 0) {
 
 					//Pick up focused slice if slices > 1
 					//	Plugin ref : https://sites.google.com/site/qingzongtseng/find-focus
 					//	Algorithm  : autofocus algorithm "Normalized variance"  (Groen et al., 1985; Yeo et al., 1993).
-					if (slices>1) {
-						print(" #### WARNING : Number of Slices > 1, run ' Find focused slices '\n");
+					if (slices > 1) {
+						print("| #### WARNING : Number of Slices > 1, run ' Find focused slices ' "); //WARNING:
 						run("Find focused slices", "select=100 variance=0.000 select_only"); 
 					}
 					saveAs("TIFF", dir_tiff + File.separator + seN + ".tif");
@@ -120,15 +135,15 @@ macro 'Measure SL and SA' {
 						roiManager("Delete"); //delete ROI, otherwise, it increases infinitely
 					}
 					else { 
-						print("         number of ROI = ", RoiManager.size);
-						print(" #### ERROR : Number of ROI not = 1\n");
+						print("|         number of ROI = ", RoiManager.size);
+						print("| #### ERROR : Number of ROI not = 1 ");
 						
 						if ( RoiManager.size > 1){ //delete ROI, otherwise, it increases infinitely
 							roiManager("Deselect");
 							roiManager("Delete");
 						}
 					}
-
+					print("|"); // make Log file looks better.
 
 				//Clear and close all windows
 					// waitForUser("Pause", j+" fish done.");
@@ -136,7 +151,7 @@ macro 'Measure SL and SA' {
 					run("Close All");
 
 			}
-			else{ showMessage(" No Lif inside") }
+			else { showMessage(" No Lif inside"); }
 
 		}
 	}
