@@ -21,7 +21,7 @@
     6. 新增 Analysis 後，若找到的 ROI 不等於 1 ( ROI = 1 代表順利只抓到魚 ) 會在 Log file 標記 Error, 以便後續使用手動測量
 
     7. 檔名優化
-        | functional | file name |
+        | Function | File name |
         | :---- | :---- |
         | 從 lif 中分離的每條魚                                | 20220610_CE001_palmskin_8dpf - Series001 fish 1.tif |
         | Cropped 主要區域, postfix "_Cropped"                | 20220610_CE001_palmskin_8dpf - Series001 fish 1_Cropped.tif |
