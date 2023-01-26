@@ -22,7 +22,7 @@
 
     7. 檔名優化
         | functional | file name |
-        | :----: | :----: |
+        | :---- | :---- |
         | 從 lif 中分離的每條魚                                | 20220610_CE001_palmskin_8dpf - Series001 fish 1.tif |
         | Cropped 主要區域, postfix "_Cropped"                | 20220610_CE001_palmskin_8dpf - Series001 fish 1_Cropped.tif |
         | Threshold, postfix "_Threshold"                    | 20220610_CE001_palmskin_8dpf - Series001 fish 1_Threshold.tif |
