@@ -20,6 +20,7 @@ import filecmp
 from glob import glob
 import logging
 
+import numpy as np
 import pandas as pd
 
 log: logging.Logger = logging.getLogger(name='dev')
@@ -97,7 +98,8 @@ if __name__ == "__main__":
         
         
     # data.xlsx (output)
-    
+
+            bf_bad_condition = [4, 7, 68, 109, 110, 156]
             output = os.path.join(ap_data_root, r"data.xlsx")
         
         
@@ -146,7 +148,7 @@ if __name__ == "__main__":
                     data.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
                     data.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
 
-                else: data.loc[one_base_iter_num] = "" # Can't find corresponding analysis result, make an empty row.
+                else: data.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
                 
                 
                 if f"{one_base_iter_num}_A" in palmskin_RGB_in_list[0] :
@@ -163,6 +165,9 @@ if __name__ == "__main__":
                 
                 print("\n\n\n")
             
+            
+            data.dropna(inplace=True)
+            data:pd.DataFrame = data[data.index.isin(bf_bad_condition) == False]
             data.to_excel(output, engine="openpyxl")
     
             print("="*100, "\n", "process all complete !", "\n")
