@@ -14,13 +14,13 @@ def create_new_dir(path:str, end="\n"):
 
 
 
-def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:float) -> List:
+def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str) -> List:
     """generate the crop images using 'crop_size' and 'shift_region'
 
     Args:
         img (cv2.Mat): the image you want to generate its crop images
         crop_size (int): output size/shape of an crop image
-        shift_region (float): if 'shift_region' is passed, calculate the shift region while creating each cropped image, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
+        shift_region (str): if 'shift_region' is passed, calculate the shift region while creating each cropped image, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
 
     Returns:
         List
@@ -32,7 +32,9 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:float) -> List:
     # *** calculate relation between img & crop_size ***
     
     # if 'shift_region' is passed, calculate the shift region while creating each cropped image, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
-    DIV_PIECES = int(1/shift_region) # DIV_PIECES, abbr. of 'divide pieces'
+    fraction = shift_region.split("/")
+    if int(fraction[0]) == 1: DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
+    else: raise ValueError("Numerator of 'shift_region' needs to be 1")
     # print(DIV_PIECES, "\n")
     # input()
     
