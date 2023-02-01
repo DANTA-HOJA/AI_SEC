@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List
 
 import numpy as np
@@ -11,6 +12,46 @@ def create_new_dir(path:str, end="\n"):
         # if the demo_folder directory is not exist then create it.
         os.makedirs(path)
         print(f"path: '{path}' is created!{end}")
+
+
+
+def gen_dataset_name(xlsx_file:str, crop_size:int, crop_shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
+    """To generate dataset's name corresponing to the passing parameters.
+    
+    Args:
+        xlsx_file (str):                e.g. "{4CLS_BY_SurfStDev}_data.xlsx" ---> SURF4C
+        crop_size (int):                e.g.       512                       ---> CRPS512
+        crop_shift_region (str):        e.g.      "1/4"                      ---> SF14
+        intensity (int):                e.g.        20                       ---> INT20
+        drop_ratio (float):             e.g.        0.3                      ---> DRP30
+        random_seed (int, optional):    e.g.       2022                      ---> RS2022. Defaults to None.
+
+    Raises:
+        ValueError: "Numerator of 'crop_shift_region' needs to be 1"
+
+    Returns:
+        str:
+        e.g. 'DS_SURF4C_CRPS512_SF14_INT20_DRP30' or 'DS_SURF4C_CRPS512_SF14_INT20_DRP30_RS2022'
+    
+    """
+    
+    # Converting... "xlsx_file" 
+    xlsx_file_split = re.split("{|_|}", xlsx_file)
+    n_class = xlsx_file_split[1].replace("CLS", "C")
+    used_feature = xlsx_file_split[3].replace("StDev", "").upper()
+    
+    # Converting... "crop_shift_region"
+    fraction = crop_shift_region.split("/")
+    if int(fraction[0]) == 1: fraction = f"{fraction[0]}{fraction[1]}"
+    else: raise ValueError("Numerator of 'crop_shift_region' needs to be 1")
+    
+    # Converting... "drop_ratio"
+    ratio = int(drop_ratio*100)
+     
+    gen_name = f"DS_{used_feature}{n_class}_CRPS{str(crop_size)}_SF{fraction}_INT{str(intensity)}_DRP{str(ratio)}"
+    
+    if random_seed is None: return gen_name
+    else: return f"{gen_name}_RS{str(random_seed)}"
 
 
 
