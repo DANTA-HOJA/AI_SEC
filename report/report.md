@@ -1,4 +1,6 @@
-# 2023/01/26
+# Log
+
+## 2023/01/26
 
 - 修改測量 Surface area ( SA ), Standard length ( SL ) 的 ImageJ Macro
 
@@ -30,3 +32,10 @@
         | Cropped 和 Mask 做 AND 運算後的結果, postfix "--MIX" | 20220610_CE001_palmskin_8dpf - Series001 fish 1--MIX.tif |
         | Analysis 產生的 CSV (自動)                          | 20220610_CE001_palmskin_8dpf - Series001 fish 1_AutoAnalysis.csv |
         | Analysis 產生的 CSV (自動失敗 -> 手動)               | 20220610_CE001_palmskin_8dpf - Series001 fish_Manual.csv |
+
+## 2023/02/01
+
+- ```fish_id = [4, 7, 68, 109, 110, 156]``` 因為 Bright Field 狀況不好予以刪除
+- 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py```, ```crop_img_P.py```, ```mk_dataset_horiz_cut.py``` 至其下
+- 分離用來產生 dataset 的 subfunctions 至 ```dataset_generate_functions.py```
+- 因應 新的 xlsx ( data.xlsx ) 欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/```, ```dataset_generate/new_xlsx_col_name/``` 以利區分
