@@ -39,3 +39,7 @@
 - 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py```, ```crop_img_P.py```, ```mk_dataset_horiz_cut.py``` 至其下
 - 分離用來產生 dataset 的 subfunctions 至 ```dataset_generate_functions.py```
 - 因應 新的 xlsx ( data.xlsx ) 欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/```, ```dataset_generate/new_xlsx_col_name/``` 以利區分
+
+## 2023/02/02
+
+- 合併 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```crop_img_A.py```、```crop_img_P.py```為一個檔案 ```mk_dataset_simple_crop.py``` ( 大調整 )
