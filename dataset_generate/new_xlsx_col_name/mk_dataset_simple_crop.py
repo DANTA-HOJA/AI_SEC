@@ -201,7 +201,7 @@ if __name__ == "__main__":
             select_crop_img_list = drop_too_dark(crop_img_list, intensity, drop_ratio)
 
 
-            # *** Save 'select_crop_img' ***
+            # *** Extracting / Looking up the information on current fish ***
             ## path, e.g. ".\stacked_palmskin_RGB\20220727_CE012_palmskin_9dpf - Series002_fish_111_P_RGB"
             fish_name = fish_name.replace(" ", "_")
             fish_name_list = fish_name.split("_")
@@ -217,10 +217,13 @@ if __name__ == "__main__":
             ## looking up the class of current fish
             fish_size = df_class_list[i]
             #
-            # print(fish_size, fish_id, position_tag)
             save_dir_size = f"{save_dir_set}/{fish_size}"
             create_new_dir(save_dir_size)
             #
+            # print(fish_size, fish_id, position_tag)
+            
+            
+            # *** Save 'select_crop_img' ***
             ## adjust settings of 'pbar_n_save'
             pbar_n_save.n     = 0   # current value
             pbar_n_save.total = len(select_crop_img_list)
