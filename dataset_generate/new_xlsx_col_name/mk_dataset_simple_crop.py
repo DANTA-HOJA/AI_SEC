@@ -218,7 +218,7 @@ if __name__ == "__main__":
             fish_size = df_class_list[i]
             #
             save_dir_size = f"{save_dir_set}/{fish_size}"
-            create_new_dir(save_dir_size)
+            create_new_dir(save_dir_size, use_tqdm=True)
             #
             # print(fish_size, fish_id, position_tag)
             

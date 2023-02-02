@@ -1,18 +1,19 @@
 import os
 import re
 from typing import List
+from tqdm.auto import tqdm
 
 import numpy as np
 import cv2
 
 
 
-def create_new_dir(path:str, end="\n"):
+def create_new_dir(path:str, end="\n", use_tqdm=False):
     if not os.path.exists(path):
         # if the demo_folder directory is not exist then create it.
         os.makedirs(path)
-        print(f"path: '{path}' is created!{end}")
-
+        if use_tqdm: tqdm.write(f"path: '{path}' is created!{end}")
+        else: print(f"path: '{path}' is created!{end}")
 
 
 def gen_dataset_name(xlsx_file:str, crop_size:int, crop_shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
