@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List
+from typing import List, Tuple
 from tqdm.auto import tqdm
 
 import numpy as np
@@ -113,7 +113,7 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str) -> List:
 
 
 
-def drop_too_dark(crop_img_list:List, intensity:int, drop_ratio:float) -> List : 
+def drop_too_dark(crop_img_list:List, intensity:int, drop_ratio:float) -> Tuple[List[cv2.Mat], List[cv2.Mat]] : 
     """drop the image which too many dark pixels
 
     Args:
@@ -122,7 +122,7 @@ def drop_too_dark(crop_img_list:List, intensity:int, drop_ratio:float) -> List :
         drop_ratio (float): a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop, if drop_ratio < 0.5, keeps the crop image.
 
     Returns:
-        List
+        Tuple[List[cv2.Mat], List[cv2.Mat]]: first List is 'select_crop_img_list' , second List is 'drop_crop_img_list'
     """
 
     
@@ -130,6 +130,7 @@ def drop_too_dark(crop_img_list:List, intensity:int, drop_ratio:float) -> List :
     img_size = crop_img_list[0].shape
     
     select_crop_img_list = []
+    drop_crop_img_list = []
 
     
     for i in range(len(crop_img_list)):
@@ -140,6 +141,8 @@ def drop_too_dark(crop_img_list:List, intensity:int, drop_ratio:float) -> List :
         dark_ratio = pixel_too_dark/(img_size[0]*img_size[1])
         if dark_ratio < drop_ratio: # 有表皮資訊的
             select_crop_img_list.append(crop_img_list[i])
+        else: 
+            drop_crop_img_list.append(crop_img_list[i])
 
 
-    return select_crop_img_list
+    return select_crop_img_list, drop_crop_img_list

@@ -198,7 +198,7 @@ if __name__ == "__main__":
 
 
             # *** Drop image which too many dark pixels ***
-            select_crop_img_list = drop_too_dark(crop_img_list, intensity, drop_ratio)
+            select_crop_img_list, _ = drop_too_dark(crop_img_list, intensity, drop_ratio)
 
 
             # *** Extracting / Looking up the information on current fish ***
