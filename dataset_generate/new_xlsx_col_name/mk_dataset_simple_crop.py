@@ -132,9 +132,6 @@ if __name__ == "__main__":
     save_dir = os.path.join(args.dataset_root_path, data_name, f"fish_dataset_simple_crop_{train_and_test_no_slash}", gen_name)
     print("")
     create_new_dir(save_dir)
-    #
-    # variable
-    logs = []
 
 
 
@@ -144,7 +141,11 @@ if __name__ == "__main__":
     
     
     for key, value in train_and_test.items():
-        
+
+        # variable
+        logs = []
+
+
         # *** Print CMD section divider ***
         print("="*100, "\n")
         print(f"{key} : {value}\n")
@@ -163,7 +164,8 @@ if __name__ == "__main__":
 
         # *** Create progress bar ***
         pbar_n_fish = tqdm(total=len(df_palmskin_list), desc=f"Cropping {key}({value})")
-        pbar_n_save = tqdm(desc="Saving... ")
+        pbar_n_select = tqdm(desc="Saving selected... ")
+        pbar_n_drop = tqdm(desc="Saving drop... ")
         
         
         # *** Start process ***
@@ -198,7 +200,7 @@ if __name__ == "__main__":
 
 
             # *** Drop image which too many dark pixels ***
-            select_crop_img_list, _ = drop_too_dark(crop_img_list, intensity, drop_ratio)
+            select_crop_img_list, drop_crop_img_list = drop_too_dark(crop_img_list, intensity, drop_ratio)
 
 
             # *** Extracting / Looking up the information on current fish ***
@@ -217,22 +219,23 @@ if __name__ == "__main__":
             ## looking up the class of current fish
             fish_size = df_class_list[i]
             #
-            save_dir_size = f"{save_dir_set}/{fish_size}"
-            create_new_dir(save_dir_size, use_tqdm=True)
-            #
             # print(fish_size, fish_id, position_tag)
+            fish_name_comb = f'{fish_size}_{fish_id}_{position_tag}'
+            pbar_n_fish.desc  = f"Cropping {key}({value})... '{fish_name_comb}' "
+            pbar_n_fish.refresh()
             
             
             # *** Save 'select_crop_img' ***
-            ## adjust settings of 'pbar_n_save'
-            pbar_n_save.n     = 0   # current value
-            pbar_n_save.total = len(select_crop_img_list)
-            pbar_n_save.desc  = f"Saving... '{fish_size}_{fish_id}_{position_tag}' "
-            pbar_n_save.refresh()
+            ## adjust settings of 'pbar_n_select'
+            pbar_n_select.n     = 0   # current value
+            pbar_n_select.total = len(select_crop_img_list)
+            pbar_n_select.refresh()
             #
-            ## write cropped images
+            ## write selected images
             for j in range(len(select_crop_img_list)):
-                write_name = f"{fish_size}_{fish_id}_{position_tag}_crop_{j}.tiff"
+                save_dir_size = os.path.join(save_dir_set, "selected", fish_size)
+                create_new_dir(save_dir_size, use_tqdm=True)
+                write_name = f"{fish_name_comb}_crop_{j}.tiff"
                 write_path = os.path.join(save_dir_size, write_name)
 
                 select_crop_img = select_crop_img_list[j] # convenience to debug preview
@@ -240,13 +243,35 @@ if __name__ == "__main__":
                 # cv2.imshow(write_name, select_crop_img)
                 # cv2.waitKey(0)
                 
-                pbar_n_save.update(1)
-                pbar_n_save.refresh()
+                pbar_n_select.update(1)
+                pbar_n_select.refresh()
+
+
+            # *** Save 'drop_crop_img' ***
+            ## adjust settings of 'pbar_n_drop'
+            pbar_n_drop.n     = 0   # current value
+            pbar_n_drop.total = len(drop_crop_img_list)
+            pbar_n_drop.refresh()
+            #
+            ## write drop images
+            for j in range(len(drop_crop_img_list)):
+                save_dir_size = os.path.join(save_dir_set, "drop", fish_size)
+                create_new_dir(save_dir_size, use_tqdm=True)
+                write_name = f"{fish_name_comb}_crop_{j}.tiff"
+                write_path = os.path.join(save_dir_size, write_name)
+
+                drop_crop_img = drop_crop_img_list[j] # convenience to debug preview
+                cv2.imwrite(write_path, drop_crop_img)
+                # cv2.imshow(write_name, drop_crop_img)
+                # cv2.waitKey(0)
+                
+                pbar_n_drop.update(1)
+                pbar_n_drop.refresh()
 
 
             # *** Update log of current fish ***
             current_log = {
-                "fish_id": fish_id,
+                "fish_name_comb": fish_name_comb,
                 #
                 "number_of_crop": len(crop_img_list),
                 "number_of_drop": len(crop_img_list) - len(select_crop_img_list),
@@ -274,7 +299,8 @@ if __name__ == "__main__":
             pbar_n_fish.refresh()
         
         pbar_n_fish.close()
-        pbar_n_save.close()
+        pbar_n_select.close()
+        pbar_n_drop.close()
         
         
         # *** Change logs into Dataframe and show in command ***
@@ -287,8 +313,8 @@ if __name__ == "__main__":
         # *** Save logs ***
         ## get time to as file name
         time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S') # get time to as file name
-        log_path_abs = f"{save_dir}/{{log_{value}_{key}}}_{time_stamp}_using_(mk_dataset_simple_crop).json"
-        df.to_json(log_path_abs, orient ='index', indent=2)
+        log_path_abs = f"{save_dir}/{{log_{value}_{key}}}_{time_stamp}_using_(mk_dataset_simple_crop).xlsx"
+        df.to_excel(log_path_abs, engine="openpyxl")
         print("\n", f"log save @ \n-> {log_path_abs}\n")
 
 
