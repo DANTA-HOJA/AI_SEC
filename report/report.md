@@ -4,9 +4,10 @@
 
 - 目前最大編號 : ```207```
 - 最新 Data 資料夾 : ```{20221209_UPDATE_82}_Academia_Sinica_i324```
-- 缺號統計 ( 共 45 筆 ): 
-  - BrightField 總計 5 筆 : ```[79, 87, 89, 93, 185]```
-  - stacked_palmskin_RGB 總計 40 筆 :
+
+- 缺號統計 ( 共 45 筆 ) :
+  - BrightField ( 共 5 筆 ) : ```[79, 87, 89, 93, 185]```
+  - stacked_palmskin_RGB ( 共 40 筆 ) :
     - 20220613_CE001_palmskin_11dpf : ```[ 9, 10 ]``` (2)
     - 20220617_CE002_palmskin_8dpf : ```[ 12 ]``` (1)
     - 20220621_CE003_palmskin_8dpf : ```[ 24, 27, 28 ]``` (3)
@@ -23,6 +24,7 @@
     - 20220901_AI003_palmskin_10dpf : ```[ 148, 149, 153 ]``` (3)
     - 20221014_AI004_palmskin_11dpf : ```[ 162 ]``` (1)
     - 20221125_AI005_palmskin_10dpf : ```[ 179, (BF_185) ]``` (2)
+
 - ```[4, 7, 68, 109, 110, 156]``` 因為 Bright Field + palmskin RGB ( Auto Fluorescence ) 狀況不好予以刪除
 - palmskin_raw_lif : ```[ Ch1, Ch2, Ch3, Ch4 ] -> [ B, G, R, (BF) ]```
 
