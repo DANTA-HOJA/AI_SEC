@@ -235,8 +235,9 @@ if __name__ == "__main__":
                 write_name = f"{fish_size}_{fish_id}_{position_tag}_crop_{j}.tiff"
                 write_path = os.path.join(save_dir_size, write_name)
 
-                cv2.imwrite(write_path, select_crop_img_list[j])
-                # cv2.imshow(write_name, select_crop_img_list[j])
+                select_crop_img = select_crop_img_list[j] # convenience to debug preview
+                cv2.imwrite(write_path, select_crop_img)
+                # cv2.imshow(write_name, select_crop_img)
                 # cv2.waitKey(0)
                 
                 pbar_n_save.update(1)
