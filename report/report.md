@@ -6,8 +6,9 @@
 - 最新 Data 資料夾 : ```{20221209_UPDATE_82}_Academia_Sinica_i324```
 
 - 缺號統計 ( 共 45 筆 ) :
-  - BrightField ( 共 5 筆 ) : ```[79, 87, 89, 93, 185]```
+  - BrightField ( 共 5 筆 ) : ```[ 79, 87, 89, 93, 185 ]```
   - stacked_palmskin_RGB ( 共 40 筆 ) :
+
     - 20220613_CE001_palmskin_11dpf : ```[ 9, 10 ]``` (2)
     - 20220617_CE002_palmskin_8dpf : ```[ 12 ]``` (1)
     - 20220621_CE003_palmskin_8dpf : ```[ 24, 27, 28 ]``` (3)
