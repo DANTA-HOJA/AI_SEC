@@ -76,3 +76,14 @@
 ## 2023/02/03
 
 - 嘗試以 "影像處理" 解決 Auto Fluorescence 未果，應該會採用 train 一個 Auto Fluorescence 的分類器
+
+## 2023/02/04
+
+- 將 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```mk_dataset_simple_crop.py``` 修改為會儲存 drop_images ( image 含有的資訊太少 )
+  - 在 Dataset_Name/[test, train] 下開始區分 ```selected```, ```drop``` 之後才是 FISH_SIZE，Log 位置不變
+
+## 2023/02/10
+
+- 2023/02/05 - 2023/02/10 為了重新處理 palmskin_RGB 雜訊問題，研究如何使用 PyImageJ，希望只劉 image processing 留給 ImageJ 其他 (例如: 找檔案、修改檔名... ) 使用 Python 解決
+  - 2023/02/05 - 2023/02/09 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作
+  - 2023/02/10 成功在 Python 中呼叫 ```Bio-Formats Plugin``` 且可偵測 ```LIF_FILE``` 內有幾張照片
