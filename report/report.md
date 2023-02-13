@@ -85,5 +85,9 @@
 ## 2023/02/10
 
 - 2023/02/05 - 2023/02/10 為了重新處理 palmskin_RGB 雜訊問題，研究如何使用 PyImageJ，希望只劉 image processing 留給 ImageJ 其他 (例如: 找檔案、修改檔名... ) 使用 Python 解決
-  - 2023/02/05 - 2023/02/09 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作
+  - 2023/02/05 - 2023/02/09 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作 ( [ipynb file](/data_operate/Try_PyImageJ.ipynb) )
   - 2023/02/10 成功在 Python 中呼叫 ```Bio-Formats Plugin``` 且可偵測 ```LIF_FILE``` 內有幾張照片
+
+## 2023/02/12
+
+- 成功使用 ```pyimagej``` ( require ```jpype```, ```scyjava``` ) 改寫 [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 為 [imagej_BF_preprocess](/data_operate/BrightField/imagej_BF_preprocess.ipynb)
