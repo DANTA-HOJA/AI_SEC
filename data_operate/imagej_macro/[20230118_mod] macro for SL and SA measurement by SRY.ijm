@@ -18,7 +18,7 @@ macro 'Measure SL and SA' {
 	setBatchMode(true); //hide processing windows in ImageJ
 	
 	//Create folders for the tifs
-	desc = "KY3";
+	desc = "KY";
 	dir_analysis_root = dir_bf_lif + File.separator + "{" + desc + "}_BF_Analysis";
 	if (File.exists(dir_analysis_root) == false) { File.makeDirectory(dir_analysis_root); }
 	dir_tiff = dir_analysis_root + File.separator + "TIFF";
