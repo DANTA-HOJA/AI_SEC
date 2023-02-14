@@ -18,10 +18,12 @@ macro 'Measure SL and SA' {
 	setBatchMode(true); //hide processing windows in ImageJ
 	
 	//Create folders for the tifs
-	dirName_bf_lif = File.getName(dir_bf_lif); //get folder name
-	dir_tiff = dir_bf_lif + File.separator + dirName_bf_lif + "--TIFF";
-	dir_metaimg = dir_bf_lif + File.separator + dirName_bf_lif + "--MetaImage";
-	dir_result = dir_bf_lif + File.separator + dirName_bf_lif + "--Result";
+	desc = "KY3";
+	dir_analysis_root = dir_bf_lif + File.separator + "{" + desc + "}_BF_Analysis";
+	if (File.exists(dir_analysis_root) == false) { File.makeDirectory(dir_analysis_root); }
+	dir_tiff = dir_analysis_root + File.separator + "TIFF";
+	dir_metaimg = dir_analysis_root + File.separator + "MetaImage";
+	dir_result = dir_analysis_root + File.separator + "Result";
 	if (File.exists(dir_tiff) == false) { File.makeDirectory(dir_tiff); }
 	if (File.exists(dir_metaimg) == false) { File.makeDirectory(dir_metaimg); }
 	if (File.exists(dir_result) == false) { File.makeDirectory(dir_result); }
@@ -159,7 +161,7 @@ macro 'Measure SL and SA' {
 
 	//Update Log
 	selectWindow("Log");
-	saveAs("Text", dir_bf_lif + File.separator + "Log.txt");
+	saveAs("Text", dir_analysis_root + File.separator + "Log.txt");
 
 
 	showMessage(" -- finished --");
