@@ -129,7 +129,7 @@ macro 'Measure SL and SA' {
 
 					roiManager("show all with labels");
 					if ( RoiManager.size == 1){ //success to get fish
-						imageCalculator("AND create", cropped_name, mask_name);
+						imageCalculator("Average create", cropped_name, mask_name);
 						saveAs    (  "Tiff",    metaimg_subfolder + File.separator + seN + "--MIX.tif");
 						roiManager(  "Save",    metaimg_subfolder + File.separator + seN + "_RoiSet.zip");
 						saveAs    (  "Results", dir_result  + File.separator + seN + "_AutoAnalysis.csv");
