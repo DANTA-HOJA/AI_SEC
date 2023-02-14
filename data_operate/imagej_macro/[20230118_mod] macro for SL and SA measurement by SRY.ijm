@@ -122,7 +122,7 @@ macro 'Measure SL and SA' {
 
 				//SL and SA measurement
 					run("Set Measurements...", "area feret's display redirect=None decimal=2");
-					run("Analyze Particles...", "size=800000-8000000 show=Masks display include add"); //region_size ( can change )
+					run("Analyze Particles...", "size=800000-4000000 show=Masks display include add"); //region_size ( can change )
 					run("Convert to Mask");
 					mask_name = seN + "--Mask.tif";
 					saveAs("Tiff", metaimg_subfolder + File.separator + mask_name);
