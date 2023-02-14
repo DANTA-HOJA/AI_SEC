@@ -50,7 +50,7 @@ macro 'Measure SL and SA' {
 
 		for (j=1; j<=seriesCount; j++){
 		
-			run("Bio-Formats", "open=path autoscale color_mode=Default view=Hyperstack stack_order=XYCZT series_"+j);
+			run("Bio-Formats", "open=path autoscale color_mode=Default view=Hyperstack stack_order=XYCZT series_"+j); // autoscale = reset B&C ( but no apply, i.e. pixel values no change )
 	
 			file_name  = File.nameWithoutExtension;
 			file_name  = replace(file_name, ".lif", "");
