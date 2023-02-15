@@ -97,7 +97,7 @@
 - 調整 NAS 上的 "BrightField_raw_lif" 、 "palmskin_raw_lif" 檔名，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
 - 調整 NAS 上的 資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](OldNewDirNameCompare.png) )
 
-# 2023/02/14
+## 2023/02/14
 
 - 調整 ```BF_Analysis``` 下的資料夾命名，不再複製上級資料夾名稱，直接以 ```TIFF```, ```MetaImage```, ```Result``` 作為子資料夾名稱
 - ```BF_Analysis``` 不再額外複製 NAS_DL 的 "BrightField_raw_lif" ，改採直接掃描並產生 SA, SL 計算結果
