@@ -8,7 +8,7 @@ def check_len_of_name_list(name_list:List[str], target_len:int, failed_cnt:int, 
     dict_key = "len(image_name_list)"
     if len(name_list) != target_len:
         failed_cnt = -1 # CRITICAL_ERROR
-        check_dict[f"{dict_key:^24}"] = f"      #### CRITICAL_ERROR --> len(image_name_list) = '{len(name_list)}', expect '{target_len}' " # WARNING:
+        check_dict[f"{dict_key:^24}"] = f"      #### CRITICAL ERROR --> len(image_name_list) = '{len(name_list)}', expect '{target_len}' " # WARNING:
     else: 
         check_dict[f"{dict_key:^24}"] = "PASS"
     
@@ -24,7 +24,7 @@ def check_Series_format(name_list:List[str], check_pos:int, failed_cnt:int, chec
     if temp_list[0] != "Series":
         failed_cnt += 1
         check_dict[f"{dict_key:^24}"] = f"FAILED --> '{temp_list[0]}', misspelling of 'Series' " # WARNING:
-        check_dict[f"{'Series[num]':^24}"] = "NOT_CHECK"
+        check_dict[f"{'Series[num]':^24}"] = "NOT CHECK"
         return failed_cnt, check_dict
     else:
         check_dict[f"{dict_key:^24}"] = "PASS"
@@ -92,7 +92,7 @@ def check_dpf_format(name_list:List[str], check_pos:int, failed_cnt:int, check_d
     if temp_list[-1] != "dpf":
         failed_cnt += 1
         check_dict[f"{dict_key:^24}"] = f"FAILED --> '{temp_list[-1]}', misspelling of 'dpf' " # WARNING:
-        check_dict[f"{'[num]_dpf':^24}"] = "NOT_CHECK"
+        check_dict[f"{'[num]_dpf':^24}"] = "NOT CHECK"
         return failed_cnt, check_dict
     else:
         check_dict[f"{dict_key:^24}"] = "PASS"
