@@ -55,11 +55,10 @@ def group_hide(*args):
 
 
 def crop_threshold_rect(image, roi, ij):
-    image.show()
     image.setRoi(roi)
     ij.IJ.run(image, "Fit Rectangle", "")
     cropped_img = image.crop()
-    group_hide(image, cropped_img)
+    
     return cropped_img
 
 
