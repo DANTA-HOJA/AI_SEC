@@ -101,7 +101,7 @@ summary["len(missing)"] = len(summary["missing"])
 print(json.dumps(summary, indent=4))
 # Create log writer
 time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-log_path = os.path.join(output_dir, f"{{Logs}}_{{collect_BF_result}}_{time_stamp}.log")
+log_path = os.path.join(output_dir, f"{{Logs}}_{{collect_BF_results}}_{time_stamp}.log")
 log_writer = open(log_path, mode="w")
 log_writer.write(json.dumps(summary, indent=4))
 log_writer.close()
