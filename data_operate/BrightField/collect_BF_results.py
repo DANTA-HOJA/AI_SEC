@@ -44,7 +44,7 @@ result_map = {
 	"threshold" :          "MetaImage/03_threshold.tif",
 	"measured_mask" :      "MetaImage/04_measured_mask.tif",
 	"cropped_BF_mix" :     "05_cropped_BF_mix.tif",
-    "RoiSet" :             "RoiSet.zip",
+    "RoiSet" :             "MetaImage/RoiSet.zip",
 	"AutoAnalysis" :       "AutoAnalysis.csv",
     "ManualAnalysis" :     "ManualAnalysis.csv",
     "BothAnalysis" :       "*Analysis.csv" # both Manual and Auto will select
