@@ -51,7 +51,7 @@ modality_map = {
 	"cropped_RGB_Kuwahara_HE" : "21_cropped_composite_RGB_Kuwahara_HE",
 	"cropped_RGB_Mix" :         "22_cropped_composite_HE_mix"
 }
-modality = "cropped_RGB_Kuwahara_HE"
+modality = "RGB_Mix"
 
 
 # output
@@ -67,7 +67,7 @@ path_list.sort(key=get_fish_ID)
 
 summary = {}
 summary["modality"] = modality
-summary["modality_mapping"] = modality_map[modality]
+summary["preprocessed_name"] = "{}.tif".format(modality_map[modality])
 summary["max_probable_fish"] = get_fish_ID(path_list[-1])
 summary["lenght of modalityRGBs"] = len(path_list)
 summary["missing"] = []
@@ -110,7 +110,7 @@ for i in range(summary["max_probable_fish"]):
 print(json.dumps(summary, indent=4))
 # Create log writer
 time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-log_path = os.path.join(output_dir, f"{{Logs}}_{preprocess_method_desc}_{time_stamp}.log")
+log_path = os.path.join(output_dir, f"{{Logs}}_{{collect_RGBs_modality}}_{time_stamp}.log")
 log_writer = open(log_path, mode="w")
 log_writer.write(json.dumps(summary, indent=4))
 log_writer.close()
