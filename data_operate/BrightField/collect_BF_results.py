@@ -37,7 +37,7 @@ preprocess_method_desc = "KY_with_NameChecker"
 preprocess_root = os.path.join(ap_data, f"{{{preprocess_method_desc}}}_BF_Analysis")
 
 
-# modality
+# result
 result_map = {
 	"original_16bit":      "MetaImage/01_original_16bit.tif",
 	"cropped_BF" :         "02_cropped_BF.tif",
@@ -74,10 +74,10 @@ summary["missing"] = []
 previous_fish = ""
 for i in range(summary["max_probable_fish"]):
     
-        one_base_iter_num = i+1
-        
         # iter
+        one_base_iter_num = i+1
         expect_name = f"{one_base_iter_num}"
+        
         # fish
         try:
             fish_ID = get_fish_ID(path_list[0])
