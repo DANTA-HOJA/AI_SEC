@@ -42,7 +42,7 @@ result_map = {
 	"original_16bit":      "MetaImage/01_original_16bit.tif",
 	"cropped_BF" :         "02_cropped_BF.tif",
 	"threshold" :          "MetaImage/03_threshold.tif",
-	"measured_mask" :     "MetaImage/04_measured_mask.tif",
+	"measured_mask" :      "MetaImage/04_measured_mask.tif",
 	"cropped_BF_mix" :     "05_cropped_BF_mix.tif",
     "RoiSet" :             "RoiSet.zip",
 	"AutoAnalysis" :       "AutoAnalysis.csv",
