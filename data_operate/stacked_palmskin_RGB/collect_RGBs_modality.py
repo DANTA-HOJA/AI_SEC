@@ -44,12 +44,12 @@ preprocess_root = os.path.join(ap_data, f"{{{preprocess_method_desc}}}_RGB_prepr
 
 # modality
 modality_map = {
-	"RGB_HE":                   "08_composite_RGB_HE",
-	"RGB_Kuwahara_HE" :         "10_composite_RGB_Kuwahara_HE",
-	"RGB_Mix" :                 "11_composite_HE_mix",
-	"cropped_RGB_HE" :          "20_cropped_composite_RGB_HE",
-	"cropped_RGB_Kuwahara_HE" : "21_cropped_composite_RGB_Kuwahara_HE",
-	"cropped_RGB_Mix" :         "22_cropped_composite_HE_mix"
+	"RGB_HE":                   "08_composite_RGB_HE.tif",
+	"RGB_Kuwahara_HE" :         "10_composite_RGB_Kuwahara_HE.tif",
+	"RGB_Mix" :                 "11_composite_HE_mix.tif",
+	"cropped_RGB_HE" :          "20_cropped_composite_RGB_HE.tif",
+	"cropped_RGB_Kuwahara_HE" : "21_cropped_composite_RGB_Kuwahara_HE.tif",
+	"cropped_RGB_Mix" :         "22_cropped_composite_HE_mix.tif"
 }
 modality = "RGB_Mix"
 
@@ -60,14 +60,14 @@ output_dir = os.path.join(output_dir, f"{{{preprocess_method_desc}}}_{modality}"
 create_new_dir(output_dir)
 
 
-path_list = glob(os.path.normpath("{}/*/{}.tif".format(preprocess_root, modality_map[modality])))
+path_list = glob(os.path.normpath("{}/*/{}".format(preprocess_root, modality_map[modality])))
 path_list.sort(key=get_fish_ID)
 # for i in path_list: print(i)
 
 
 summary = {}
 summary["modality"] = modality
-summary["preprocessed_name"] = "{}.tif".format(modality_map[modality])
+summary["preprocessed_name"] = modality_map[modality]
 summary["max_probable_fish"] = get_fish_ID(path_list[-1])
 summary["lenght of modalityRGBs"] = len(path_list)
 summary["missing"] = []
