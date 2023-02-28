@@ -33,8 +33,8 @@ def resave_BF_result(original_path:str, output_dir:str, result_key:str):
 
 # input
 ap_data = r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_BF_Analysis" # r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
-preprocess_method_desc = "KY_with_NameChecker"
-preprocess_root = os.path.join(ap_data, f"{{{preprocess_method_desc}}}_BF_Analysis")
+analysis_method_desc = "KY_with_NameChecker"
+analysis_root = os.path.join(ap_data, f"{{{analysis_method_desc}}}_BF_Analysis")
 
 
 # result
@@ -49,16 +49,16 @@ result_map = {
     "ManualAnalysis" :     "ManualAnalysis.csv",
     "BothAnalysis" :       "*Analysis.csv" # both Manual and Auto will select
 }
-result_key = "cropped_BF_mix"
+result_key = "AutoAnalysis"
 
 
 # output
 output_dir = r"C:\Users\confocal_microscope\Desktop\BF_reCollection"
-output_dir = os.path.join(output_dir, f"{{{preprocess_method_desc}}}_{result_key}")
+output_dir = os.path.join(output_dir, f"{{{analysis_method_desc}}}_{result_key}")
 create_new_dir(output_dir)
 
 
-path_list = glob(os.path.normpath("{}/*/{}".format(preprocess_root, result_map[result_key])))
+path_list = glob(os.path.normpath("{}/*/{}".format(analysis_root, result_map[result_key])))
 path_list.sort(key=get_fish_ID)
 # for i in path_list: print(i)
 
