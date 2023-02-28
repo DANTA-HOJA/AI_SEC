@@ -67,7 +67,7 @@ summary = {}
 summary["result_key"] = result_key
 summary["actual_name"] = result_map[result_key]
 summary["max_probable_fish"] = get_fish_ID(path_list[-1])
-summary["lenght of modalityRGBs"] = len(path_list)
+summary["total files"] = len(path_list)
 summary["missing"] = []
 
 
