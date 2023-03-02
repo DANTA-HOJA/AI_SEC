@@ -89,7 +89,7 @@ path_list.sort(key=get_fish_ID)
 summary = {}
 summary["result_key"] = result_key
 summary["actual_name"] = result_map[result_key]
-summary["max_probable_fish"] = get_fish_ID(path_list[-1])
+summary["max_probable_file"] = get_fish_ID(path_list[-1])
 summary["total files"] = len(path_list)
 summary["missing"] = []
 
