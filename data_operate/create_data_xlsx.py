@@ -16,10 +16,10 @@ To generate data information in XLSX ( XLSX file will used to compute the classe
 import os
 import sys
 import re
-import filecmp
-import json
 from typing import *
 from glob import glob
+import filecmp
+import json
 
 import numpy as np
 import pandas as pd
@@ -37,16 +37,13 @@ log = init_logger(r"{Test}_Create_XLSX")
 
 
 def get_fish_ID(path:str) -> int:
-    
     fish_dir = path.split(os.sep)[-1]
     fish_dir_list = re.split(" |_|-", fish_dir)
-    
     return int(fish_dir_list[8])
 
 
 def create_dict_by_fishID(path_list:list) -> Dict[int, str]:
-    path_dict = {get_fish_ID(path):path for path in path_list}
-    return path_dict
+    return {get_fish_ID(path):path for path in path_list}
 
 
 def merge_BF_analysis(auto_analysis_dict:Dict[int, str], manual_analysis_dict:Dict[int, str]):
@@ -56,15 +53,26 @@ def merge_BF_analysis(auto_analysis_dict:Dict[int, str], manual_analysis_dict:Di
     return auto_analysis_dict
 
 
+
 if __name__ == "__main__":
-    
+
+
+            # user variable
             ap_data_root = r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
             print(ap_data_root)
-    
+            # --- BF
+            analysis_method_desc = "KY_with_NameChecker" 
+            # --- RGB
+            preprocess_method_desc = "ch4_min_proj, outer_rect" 
+            RGB_recollect_key = "RGB_HE_mix"
+            # --- use to remove
+            bf_bad_condition = [] # 4, 7, 68, 109, 156
+            delete_uncomplete_row = True
+
+
     # BF_Analysis (input)
     
         # Grabbing files
-            analysis_method_desc = "KY_with_NameChecker"
             bf_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_BF_Analysis", f"{{{analysis_method_desc}}}_BF_reCollection") # CHECK_PT 
             # bf_recollect_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_reCollection")
             bf_recollect_auto = os.path.join(bf_recollect_root, "AutoAnalysis")
@@ -84,23 +92,22 @@ if __name__ == "__main__":
             bf_recollect_merge_list = list(bf_recollect_merge_dict.values())
             bf_recollect_merge_list.sort(key=get_fish_ID)
             log.info(f"After Merging , Total: {len(bf_recollect_merge_list)} files")
-            for i, path in enumerate(bf_recollect_merge_list): log.info(f'{path.split(os.sep)[-2]}, path {type(path)}: SN:{i:{len(str(len(bf_recollect_merge_list)))}}, {path.split(os.sep)[-1]}')
+            # for i, path in enumerate(bf_recollect_merge_list): log.info(f'{path.split(os.sep)[-2]}, path {type(path)}: SN:{i:{len(str(len(bf_recollect_merge_list)))}}, {path.split(os.sep)[-1]}')
 
         
     # stacked_palmskin_RGB (input)
     
         # Grabbing files
-            preprocess_method_desc = "ch4_min_proj, outer_rect"
             RGB_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_RGB_preprocess", f"{{{preprocess_method_desc}}}_RGB_reCollection")
             # RGB_recollect_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection")
-            RGB_recollect_key = "RGB_HE_mix"
             RGB_recollect_type = os.path.join(RGB_recollect_root, RGB_recollect_key)
-            RGB_recollect_type_list = glob(f"{RGB_recollect_type}/*.tif")
+            RGB_recollect_type_list = glob(os.path.normpath(f"{RGB_recollect_type}/*.tif"))
         # Check grabbing error: List Empty
             assert len(RGB_recollect_type_list) > 0, f"Can't find 'RGB_reCollection/{RGB_recollect_key}' folder, or it is empty."
         # Do sort because the os grabbing strategy ( for example, 10 will list before 8 )
             RGB_recollect_type_list.sort(key=get_fish_ID)
-            # for i, path in enumerate(RGB_recollect_type_list): log.info(f'{RGB_recollect_key}, path {type(path)}: SN:{i}, {path.split(os.sep)[-1]}')
+            log.info(f"Found {len(RGB_recollect_type_list)} RGB tif files")
+            # for i, path in enumerate(RGB_recollect_type_list): log.info(f'{RGB_recollect_key}, path {type(path)}: SN:{i:{len(str(len(RGB_recollect_type_list)))}}, {path.split(os.sep)[-1]}')
         
         
     # data.xlsx (output)
@@ -108,14 +115,8 @@ if __name__ == "__main__":
             output = os.path.join(ap_data_root, r"data.xlsx")
         
         
-    # # Processing
-
-
-            # user variable
-            bf_bad_condition = [] # 4, 7, 68, 109, 156
-            delete_uncomplete_row = True
-            
-            
+    # Processing
+    
             print("\n\nprocessing...\n")
 
             # Creating "data.xlsx"
@@ -126,14 +127,14 @@ if __name__ == "__main__":
                                          "Standard Length, SL (um)"])
             
             # Variable
-            max_probable_fish = get_fish_ID(bf_recollect_auto_list[-1])
-            log.info(f'max_probable_fish {type(max_probable_fish)}: {max_probable_fish}\n')
+            max_probable_num = get_fish_ID(bf_recollect_merge_list[-1])
+            log.info(f'max_probable_num {type(max_probable_num)}: {max_probable_num}\n')
             bf_result_iter_i = 0
             palmskin_RGB_iter_i = 0
             
             
             # Starting...
-            for i in range(max_probable_fish):
+            for i in range(max_probable_num):
                 
                 # *** Print CMD section divider ***
                 print("="*100, "\n")
@@ -147,9 +148,10 @@ if __name__ == "__main__":
                     # Get info strings
                     bf_result_path = bf_recollect_merge_list.pop(0)
                     bf_result_path_list = bf_result_path.split(os.sep)
-                    bf_result_name = bf_result_path_list[-1].split(".")[0]
-                    bf_result_analysis_type = bf_result_path_list[-2]
+                    bf_result_name = bf_result_path_list[-1].split(".")[0] # Get name_noExtension
+                    bf_result_analysis_type = bf_result_path_list[-2] # `AutoAnalysis` or `ManualAnalysis`
                     log.info(f'bf_result_name {type(bf_result_name)}: {bf_result_name}')
+                    log.info(f'analysis_type {type(bf_result_analysis_type)}: {bf_result_analysis_type}')
                     # Read CSV
                     analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
                     assert len(analysis_csv) == 1, f"More than 1 measure data in csv file, file:{bf_result_path}"
