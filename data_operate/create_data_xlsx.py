@@ -17,19 +17,17 @@ import os
 import sys
 import re
 import filecmp
+import json
+from typing import *
 from glob import glob
-import logging
 
+import numpy as np
 import pandas as pd
 
-log: logging.Logger = logging.getLogger(name='dev')
-log.setLevel(logging.DEBUG)
+sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules")
+from logger import init_logger
 
-handler: logging.StreamHandler = logging.StreamHandler()
-formatter: logging.Formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-log.addHandler(handler)
-
+log = init_logger(r"{Test}_Create_XLSX")
 # log.debug('debug message')
 # log.info('info message')
 # log.warning('warning message')
@@ -40,31 +38,22 @@ log.addHandler(handler)
 
 def get_fish_ID(path:str) -> int:
     
-    """To get fish ID
+    fish_dir = path.split(os.sep)[-1]
+    fish_dir_list = re.split(" |_|-", fish_dir)
+    
+    return int(fish_dir_list[8])
 
-    Args:
-        path (str): file path
 
-    Returns:
-        int: fish id
-    """
-    
-    fileName_NoExtension = path.split(os.sep)[-1].split(".")[0]
-    split_into_2_part = fileName_NoExtension.split("fish")
-    assert len(split_into_2_part) == 2, "ERROR: fileName_NoExtension.split()"
-    
-    post_part = split_into_2_part[1].replace(" ", "_") # generally looks like: _1_AutoAnalysis, _11_palmskin_8dpf_AutoAnalysis, _172_BF_AutoAnalysis, 
-                                                       # but fish_179 not in format (confocal naming error): 179_BF-delete_AutoAnalysis, 
-                                                       # so we need to deal with it.
-    
-    post_part_split_list = post_part.split("_")
-    if "" in post_part_split_list: post_part_split_list.remove('')
-    
-    fish_id = int(post_part_split_list[0])
-    # log.info(f'fish_id {type(fish_id)}: {fish_id}')
-    
-    return fish_id
+def create_dict_by_fishID(path_list:list) -> Dict[int, str]:
+    path_dict = {get_fish_ID(path):path for path in path_list}
+    return path_dict
 
+
+def merge_BF_analysis(auto_analysis_dict:Dict[int, str], manual_analysis_dict:Dict[int, str]):
+    for key, value in manual_analysis_dict.items():
+        auto_analysis_dict.pop(key, None)
+        auto_analysis_dict[key] = manual_analysis_dict[key]
+    return auto_analysis_dict
 
 
 if __name__ == "__main__":
@@ -75,25 +64,43 @@ if __name__ == "__main__":
     # BF_Analysis (input)
     
         # Grabbing files
-            bf_result_in = os.path.join(ap_data_root, r"BF_Analysis", "BF_Analysis--Result")
-            bf_result_in_list = glob(f"{bf_result_in}/*.csv")
+            analysis_method_desc = "KY_with_NameChecker"
+            bf_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_BF_Analysis", f"{{{analysis_method_desc}}}_BF_reCollection") # CHECK_PT 
+            # bf_recollect_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_reCollection")
+            bf_recollect_auto = os.path.join(bf_recollect_root, "AutoAnalysis")
+            bf_recollect_manual = os.path.join(bf_recollect_root, "ManualAnalysis")
+            bf_recollect_auto_list = glob(os.path.normpath(f"{bf_recollect_auto}/*.csv"))
+            bf_recollect_manual_list = glob(os.path.normpath(f"{bf_recollect_manual}/*.csv"))
         # Check grabbing error: List Empty
-            assert len(bf_result_in_list) > 0, "Can't find 'BF_Analysis' folder, or it is empty."
+            assert len(bf_recollect_auto_list) > 0, "Can't find `BF_reCollection/AutoAnalysis` folder, or it is empty."
         # Do sort because the os grabbing strategy ( for example, 10 will list before 8 )
-            bf_result_in_list.sort(key=get_fish_ID)
-            for i, path in enumerate(bf_result_in_list): log.info(f'path {type(path)}: SN:{i}, {path.split(os.sep)[-1]}')
+            bf_recollect_auto_list.sort(key=get_fish_ID)
+            bf_recollect_manual_list.sort(key=get_fish_ID)
+            log.info(f"Found {len(bf_recollect_auto_list)} AutoAnalysis.csv, {len(bf_recollect_manual_list)} ManualAnalysis.csv, Total: {len(bf_recollect_auto_list) + len(bf_recollect_manual_list)} files")
+        # Merging `AutoAnalysis` and `ManualAnalysis` list
+            bf_recollect_auto_dict = create_dict_by_fishID(bf_recollect_auto_list)
+            bf_recollect_manual_dict = create_dict_by_fishID(bf_recollect_manual_list)
+            bf_recollect_merge_dict = merge_BF_analysis(bf_recollect_auto_dict, bf_recollect_manual_dict)
+            bf_recollect_merge_list = list(bf_recollect_merge_dict.values())
+            bf_recollect_merge_list.sort(key=get_fish_ID)
+            log.info(f"After Merging , Total: {len(bf_recollect_merge_list)} files")
+            for i, path in enumerate(bf_recollect_merge_list): log.info(f'{path.split(os.sep)[-2]}, path {type(path)}: SN:{i:{len(str(len(bf_recollect_merge_list)))}}, {path.split(os.sep)[-1]}')
 
         
     # stacked_palmskin_RGB (input)
     
         # Grabbing files
-            palmskin_RGB_in = os.path.join(ap_data_root, r"stacked_palmskin_RGB")
-            palmskin_RGB_in_list = glob(f"{palmskin_RGB_in}/*.tif*")
+            preprocess_method_desc = "ch4_min_proj, outer_rect"
+            RGB_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_RGB_preprocess", f"{{{preprocess_method_desc}}}_RGB_reCollection")
+            # RGB_recollect_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection")
+            RGB_recollect_key = "RGB_HE_mix"
+            RGB_recollect_type = os.path.join(RGB_recollect_root, RGB_recollect_key)
+            RGB_recollect_type_list = glob(f"{RGB_recollect_type}/*.tif")
         # Check grabbing error: List Empty
-            assert len(palmskin_RGB_in_list) > 0, "Can't find 'stacked_palmskin_RGB' folder, or it is empty."
+            assert len(RGB_recollect_type_list) > 0, f"Can't find 'RGB_reCollection/{RGB_recollect_key}' folder, or it is empty."
         # Do sort because the os grabbing strategy ( for example, 10 will list before 8 )
-            palmskin_RGB_in_list.sort(key=get_fish_ID)
-            for i, path in enumerate(palmskin_RGB_in_list): log.info(f'path {type(path)}: SN:{i}, {path.split(os.sep)[-1]}')
+            RGB_recollect_type_list.sort(key=get_fish_ID)
+            # for i, path in enumerate(RGB_recollect_type_list): log.info(f'{RGB_recollect_key}, path {type(path)}: SN:{i}, {path.split(os.sep)[-1]}')
         
         
     # data.xlsx (output)
@@ -102,7 +109,13 @@ if __name__ == "__main__":
         
         
     # # Processing
-    
+
+
+            # user variable
+            bf_bad_condition = [] # 4, 7, 68, 109, 156
+            delete_uncomplete_row = True
+            
+            
             print("\n\nprocessing...\n")
 
             # Creating "data.xlsx"
@@ -113,7 +126,7 @@ if __name__ == "__main__":
                                          "Standard Length, SL (um)"])
             
             # Variable
-            max_probable_fish = get_fish_ID(bf_result_in_list[-1])
+            max_probable_fish = get_fish_ID(bf_recollect_auto_list[-1])
             log.info(f'max_probable_fish {type(max_probable_fish)}: {max_probable_fish}\n')
             bf_result_iter_i = 0
             palmskin_RGB_iter_i = 0
@@ -129,12 +142,17 @@ if __name__ == "__main__":
                 log.info(f'one_base_iter_num {type(one_base_iter_num)}: {one_base_iter_num}\n')
                 
                 
-                bf_result_name = bf_result_in_list[0].split(os.sep)[-1].split(".")[0] # # Get name_noExtension
-                if  one_base_iter_num == get_fish_ID(bf_result_name) :
+                if  one_base_iter_num == get_fish_ID(bf_recollect_merge_list[0]) :
                     
+                    # Get info strings
+                    bf_result_path = bf_recollect_merge_list.pop(0)
+                    bf_result_path_list = bf_result_path.split(os.sep)
+                    bf_result_name = bf_result_path_list[-1].split(".")[0]
+                    bf_result_analysis_type = bf_result_path_list[-2]
                     log.info(f'bf_result_name {type(bf_result_name)}: {bf_result_name}')
                     # Read CSV
-                    analysis_csv = pd.read_csv(bf_result_in_list.pop(0), index_col=" ")
+                    analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
+                    assert len(analysis_csv) == 1, f"More than 1 measure data in csv file, file:{bf_result_path}"
                     # Get surface area from analysis file
                     surface_area = analysis_csv.loc[1, "Area"]
                     log.info(f'surface_area {type(surface_area)}: {surface_area}')
@@ -142,27 +160,30 @@ if __name__ == "__main__":
                     standard_length = analysis_csv.loc[1, "Feret"]
                     log.info(f'standard_length {type(standard_length)}: {standard_length}')
                     
-                    data.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = bf_result_name
+                    data.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = f"{bf_result_name}_{bf_result_analysis_type}"
                     data.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
                     data.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
 
-                else: data.loc[one_base_iter_num] = "" # Can't find corresponding analysis result, make an empty row.
+                else: data.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
                 
                 
-                if f"{one_base_iter_num}_A" in palmskin_RGB_in_list[0] :
-                    palmskin_RGB_A_name = palmskin_RGB_in_list.pop(0).split(os.sep)[-1].split(".")[0] # Get name_noExtension
+                if f"{one_base_iter_num}_A" in RGB_recollect_type_list[0] :
+                    palmskin_RGB_A_name = RGB_recollect_type_list.pop(0).split(os.sep)[-1].split(".")[0] # Get name_noExtension
                     log.info(f'palmskin_RGB_A_name {type(palmskin_RGB_A_name)}: {palmskin_RGB_A_name}')
                     data.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_RGB_A_name
                 
                 
-                if f"{one_base_iter_num}_P" in palmskin_RGB_in_list[0] :
-                    palmskin_RGB_P_name = palmskin_RGB_in_list.pop(0).split(os.sep)[-1].split(".")[0] # Get name_noExtension
+                if f"{one_base_iter_num}_P" in RGB_recollect_type_list[0] :
+                    palmskin_RGB_P_name = RGB_recollect_type_list.pop(0).split(os.sep)[-1].split(".")[0] # Get name_noExtension
                     log.info(f'palmskin_RGB_P_name {type(palmskin_RGB_P_name)}: {palmskin_RGB_P_name}')
                     data.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_RGB_P_name
                 
                 
                 print("\n\n\n")
             
+            
+            if delete_uncomplete_row: data.dropna(inplace=True)
+            if bf_bad_condition: data:pd.DataFrame = data[data.index.isin(bf_bad_condition) == False]
             data.to_excel(output, engine="openpyxl")
     
             print("="*100, "\n", "process all complete !", "\n")
