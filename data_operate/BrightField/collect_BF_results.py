@@ -40,21 +40,20 @@ analysis_root = os.path.join(ap_data, f"{{{analysis_method_desc}}}_BF_Analysis")
 # result
 result_map = {
 	"original_16bit":      "MetaImage/01_original_16bit.tif",
-	"cropped_BF" :         "02_cropped_BF.tif",
+	"cropped_BF" :         "02_cropped_BF.tif", # CHECK_PT 
 	"threshold" :          "MetaImage/03_threshold.tif",
 	"measured_mask" :      "MetaImage/04_measured_mask.tif",
-	"cropped_BF_mix" :     "05_cropped_BF_mix.tif",
+	"cropped_BF_mix" :     "05_cropped_BF_mix.tif", # CHECK_PT 
     "RoiSet" :             "MetaImage/RoiSet.zip",
 	"AutoAnalysis" :       "AutoAnalysis.csv",
     "ManualAnalysis" :     "ManualAnalysis.csv",
-    "BothAnalysis" :       "*Analysis.csv" # both Manual and Auto will select
 }
 result_key = "AutoAnalysis"
 
 
 # output
 output_dir = r"C:\Users\confocal_microscope\Desktop\BF_reCollection"
-output_dir = os.path.join(output_dir, f"{{{analysis_method_desc}}}_{result_key}")
+output_dir = os.path.join(output_dir, f"{{{analysis_method_desc}}}", result_key)
 create_new_dir(output_dir)
 
 
