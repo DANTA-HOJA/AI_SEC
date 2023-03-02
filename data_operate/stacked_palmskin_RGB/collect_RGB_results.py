@@ -95,7 +95,7 @@ summary["missing"] = []
 
 
 previous_fish = ""
-for i in range(summary["max_probable_fish"]):
+for i in range(summary["max_probable_file"]):
     
     one_base_iter_num = i+1
     
