@@ -77,7 +77,7 @@ result_key = "RGB_HE_mix"
 
 # output
 output_dir = r"C:\Users\confocal_microscope\Desktop\RGB_reCollection"
-output_dir = os.path.join(output_dir, f"{{{preprocess_method_desc}}}_{result_key}")
+output_dir = os.path.join(output_dir, f"{{{preprocess_method_desc}}}", result_key)
 create_new_dir(output_dir)
 
 
