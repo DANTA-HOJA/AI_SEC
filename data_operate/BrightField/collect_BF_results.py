@@ -32,18 +32,18 @@ def resave_BF_result(original_path:str, output_dir:str, result_key:str):
 
 
 # input
-ap_data = r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_BF_Analysis" # r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
+ap_data_root = r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_BF_Analysis" # r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
 analysis_method_desc = "KY_with_NameChecker"
-analysis_root = os.path.join(ap_data, f"{{{analysis_method_desc}}}_BF_Analysis")
+analysis_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_Analysis")
 
 
 # result
 result_map = {
 	"original_16bit":      "MetaImage/01_original_16bit.tif",
 	"cropped_BF" :         "02_cropped_BF.tif", # CHECK_PT 
-	"threshold" :          "MetaImage/03_threshold.tif",
+	"AutoThreshold" :      "MetaImage/03_AutoThreshold_*.tif",
 	"measured_mask" :      "MetaImage/04_measured_mask.tif",
-	"cropped_BF_mix" :     "05_cropped_BF_mix.tif", # CHECK_PT 
+	"cropped_BF--MIX" :     "05_cropped_BF--MIX.tif", # CHECK_PT 
     "RoiSet" :             "MetaImage/RoiSet.zip",
 	"AutoAnalysis" :       "AutoAnalysis.csv",
     "ManualAnalysis" :     "ManualAnalysis.csv",
@@ -52,8 +52,7 @@ result_key = "AutoAnalysis"
 
 
 # output
-output_dir = r"C:\Users\confocal_microscope\Desktop\BF_reCollection"
-output_dir = os.path.join(output_dir, f"{{{analysis_method_desc}}}", result_key)
+output_dir = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_reCollection", result_key)
 create_new_dir(output_dir)
 
 
@@ -65,13 +64,13 @@ path_list.sort(key=get_fish_ID)
 summary = {}
 summary["result_key"] = result_key
 summary["actual_name"] = result_map[result_key]
-summary["max_probable_file"] = get_fish_ID(path_list[-1])
+summary["max_probable_num"] = get_fish_ID(path_list[-1])
 summary["total files"] = len(path_list)
 summary["missing"] = []
 
 
 previous_fish = ""
-for i in range(summary["max_probable_file"]):
+for i in range(summary["max_probable_num"]):
     
         # iter
         one_base_iter_num = i+1
