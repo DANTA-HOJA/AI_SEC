@@ -8,14 +8,6 @@ import cv2
 
 
 
-def create_new_dir(path:str, end="\n", use_tqdm=False):
-    if not os.path.exists(path):
-        # if the demo_folder directory is not exist then create it.
-        os.makedirs(path)
-        if use_tqdm: tqdm.write(f"path: '{path}' is created!{end}")
-        else: print(f"path: '{path}' is created!{end}")
-
-
 def gen_dataset_name(xlsx_file:str, crop_size:int, crop_shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
     """To generate dataset's name corresponing to the passing parameters.
     
@@ -113,11 +105,11 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str) -> List:
 
 
 
-def drop_too_dark(crop_img_list:List, intensity:int, drop_ratio:float) -> Tuple[List[cv2.Mat], List[cv2.Mat]] : 
+def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) -> Tuple[List[cv2.Mat], List[cv2.Mat]] : 
     """drop the image which too many dark pixels
 
     Args:
-        crop_img_list (List): a list contain 'gray images'
+        crop_img_list (List[cv2.Mat]): a list contain 'gray images'
         intensity (int): a threshold (image is grayscale) to define too dark or not 
         drop_ratio (float): a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop, if drop_ratio < 0.5, keeps the crop image.
 
