@@ -21,10 +21,10 @@ def get_fish_ID(path:str) -> int:
     return int(fish_dir_list[8])
     
 
-def resave_BF_result(original_path:str, output_dir:str, result_key:str):
-    if "MetaImage" in path: fish_dir = path.split(os.sep)[-3]
-    else: fish_dir = path.split(os.sep)[-2]
-    file_ext = result_map[result_key].split(".")[-1]
+def resave_BF_result(original_path:str, output_dir:str, result:str):
+    if "MetaImage" in original_path: fish_dir = original_path.split(os.sep)[-3]
+    else: fish_dir = original_path.split(os.sep)[-2]
+    file_ext = result.split(".")[-1]
     out_path = os.path.join(output_dir, f"{fish_dir}.{file_ext}")
     os.system(f"copy \"{original_path}\" \"{out_path}\" ")
     filecmp.cmp(original_path, out_path)
@@ -66,7 +66,8 @@ summary["result_key"] = result_key
 summary["actual_name"] = result_map[result_key]
 summary["max_probable_num"] = get_fish_ID(path_list[-1])
 summary["total files"] = len(path_list)
-summary["missing"] = []
+if result_key == "ManualAnalysis": summary["finding"] = []
+else:  summary["missing"] = []
 
 
 previous_fish = ""
@@ -84,18 +85,20 @@ for i in range(summary["max_probable_num"]):
         except: pass
         
         
-        if one_base_iter_num == fish_ID:
+        if current_name == expect_name:
             
             path = path_list.pop(0)
-            resave_BF_result(path, output_dir, result_key)
+            resave_BF_result(path, output_dir, result_map[result_key])
             previous_fish = current_name
+            if result_key == "ManualAnalysis": summary["finding"].append(f"{expect_name}")
             
         else: # 缺號
-            summary["missing"].append(f"{expect_name}")
+            if result_key != "ManualAnalysis": summary["missing"].append(f"{expect_name}")
             # print("missing : {}".format(summary["missing"][-1]))
 
 
-summary["len(missing)"] = len(summary["missing"])
+if result_key == "ManualAnalysis": summary["len(finding)"] = len(summary["finding"])
+else: summary["len(missing)"] = len(summary["missing"])
 print(json.dumps(summary, indent=4))
 # Create log writer
 time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
