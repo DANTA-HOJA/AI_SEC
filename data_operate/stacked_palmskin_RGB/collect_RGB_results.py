@@ -30,10 +30,10 @@ def get_fish_pos(path:str) -> int:
     return fish_dir_list[9]
     
 
-def resave_RGB_result(original_path:str, output_dir:str, result_key:str):
-    if "MetaImage" in path: fish_dir = path.split(os.sep)[-3]
-    else: fish_dir = path.split(os.sep)[-2]
-    file_ext = result_map[result_key].split(".")[-1]
+def resave_RGB_result(original_path:str, output_dir:str, result:str):
+    if "MetaImage" in original_path: fish_dir = original_path.split(os.sep)[-3]
+    else: fish_dir = original_path.split(os.sep)[-2]
+    file_ext = result.split(".")[-1]
     out_path = os.path.join(output_dir, f"{fish_dir}.{file_ext}")
     os.system(f"copy \"{original_path}\" \"{out_path}\" ")
     filecmp.cmp(original_path, out_path)
@@ -115,7 +115,7 @@ for i in range(summary["max_probable_num"]):
             
             if fish_pos == pos :
                 path = path_list.pop(0)
-                resave_RGB_result(path, output_dir, result_key)
+                resave_RGB_result(path, output_dir, result_map[result_key])
                 previous_fish = current_name
             else: # 部分缺失
                 summary["missing"].append(f"{expect_name}")
