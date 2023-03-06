@@ -24,7 +24,8 @@ import pandas as pd
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules")
 from logger import init_logger
-from norm_name import get_fish_ID_pos
+from norm_name import get_fish_ID_pos, create_dict_by_fishID, merge_BF_analysis
+
 
 
 log = init_logger(r"Create_XLSX")
@@ -33,18 +34,6 @@ log = init_logger(r"Create_XLSX")
 # log.warning('warning message')
 # log.error('error message')
 # log.critical('critical message')
-
-
-
-def create_dict_by_fishID(path_list:list) -> Dict[int, str]:
-    return {get_fish_ID_pos(path)[0] : path for path in path_list}
-
-
-def merge_BF_analysis(auto_analysis_dict:Dict[int, str], manual_analysis_dict:Dict[int, str]):
-    for key, value in manual_analysis_dict.items():
-        auto_analysis_dict.pop(key, None)
-        auto_analysis_dict[key] = manual_analysis_dict[key]
-    return auto_analysis_dict
 
 
 
