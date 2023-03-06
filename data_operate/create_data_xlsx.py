@@ -41,12 +41,12 @@ if __name__ == "__main__":
 
 
             # user variable
-            ap_data_root = r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
+            ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230305_NEW_STRUCT}_Academia_Sinica_i409"
             print(ap_data_root)
             # --- BF
-            analysis_method_desc = "KY_with_NameChecker" 
+            analysis_method_desc = "KY_with_NameChecker"
             # --- RGB
-            preprocess_method_desc = "ch4_min_proj, outer_rect" 
+            preprocess_method_desc = "ch4_min_proj, outer_rect"
             RGB_recollect_key = "RGB_HE_mix"
             # --- use to remove
             bf_bad_condition = [] # 4, 7, 68, 109, 156
@@ -56,8 +56,7 @@ if __name__ == "__main__":
     # BF_Analysis (input)
     
         # Grabbing files
-            bf_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_BF_Analysis", f"{{{analysis_method_desc}}}_BF_reCollection") # CHECK_PT 
-            # bf_recollect_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_reCollection")
+            bf_recollect_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_reCollection")
             bf_recollect_auto = os.path.join(bf_recollect_root, "AutoAnalysis")
             bf_recollect_manual = os.path.join(bf_recollect_root, "ManualAnalysis")
             bf_recollect_auto_list = glob(os.path.normpath(f"{bf_recollect_auto}/*.csv"))
@@ -81,8 +80,7 @@ if __name__ == "__main__":
     # stacked_palmskin_RGB (input)
     
         # Grabbing files
-            RGB_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_RGB_preprocess", f"{{{preprocess_method_desc}}}_RGB_reCollection") # CHECK_PT 
-            # RGB_recollect_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection")
+            RGB_recollect_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection")
             RGB_recollect_type = os.path.join(RGB_recollect_root, RGB_recollect_key)
             RGB_recollect_type_list = glob(os.path.normpath(f"{RGB_recollect_type}/*.tif"))
         # Check grabbing error: List Empty
