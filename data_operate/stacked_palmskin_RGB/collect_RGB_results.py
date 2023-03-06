@@ -7,8 +7,8 @@ import json
 from glob import glob
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
-from fileop import create_new_dir
-from norm_name import get_fish_ID_pos, resave_result
+from fileop import create_new_dir, resave_result
+from norm_name import get_fish_ID_pos
 
 
 
