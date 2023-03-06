@@ -18,16 +18,16 @@ import sys
 import re
 from typing import *
 from glob import glob
-import filecmp
-import json
 
 import numpy as np
 import pandas as pd
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules")
 from logger import init_logger
+from norm_name import get_fish_ID_pos
 
-log = init_logger(r"{Test}_Create_XLSX")
+
+log = init_logger(r"Create_XLSX")
 # log.debug('debug message')
 # log.info('info message')
 # log.warning('warning message')
@@ -36,14 +36,8 @@ log = init_logger(r"{Test}_Create_XLSX")
 
 
 
-def get_fish_ID(path:str) -> int:
-    fish_dir = path.split(os.sep)[-1]
-    fish_dir_list = re.split(" |_|-", fish_dir)
-    return int(fish_dir_list[8])
-
-
 def create_dict_by_fishID(path_list:list) -> Dict[int, str]:
-    return {get_fish_ID(path):path for path in path_list}
+    return {get_fish_ID_pos(path)[0] : path for path in path_list}
 
 
 def merge_BF_analysis(auto_analysis_dict:Dict[int, str], manual_analysis_dict:Dict[int, str]):
@@ -82,15 +76,15 @@ if __name__ == "__main__":
         # Check grabbing error: List Empty
             assert len(bf_recollect_auto_list) > 0, "Can't find `BF_reCollection/AutoAnalysis` folder, or it is empty."
         # Do sort because the os grabbing strategy ( for example, 10 will list before 8 )
-            bf_recollect_auto_list.sort(key=get_fish_ID)
-            bf_recollect_manual_list.sort(key=get_fish_ID)
+            bf_recollect_auto_list.sort(key=get_fish_ID_pos)
+            bf_recollect_manual_list.sort(key=get_fish_ID_pos)
             log.info(f"Found {len(bf_recollect_auto_list)} AutoAnalysis.csv, {len(bf_recollect_manual_list)} ManualAnalysis.csv, Total: {len(bf_recollect_auto_list) + len(bf_recollect_manual_list)} files")
         # Merging `AutoAnalysis` and `ManualAnalysis` list
             bf_recollect_auto_dict = create_dict_by_fishID(bf_recollect_auto_list)
             bf_recollect_manual_dict = create_dict_by_fishID(bf_recollect_manual_list)
             bf_recollect_merge_dict = merge_BF_analysis(bf_recollect_auto_dict, bf_recollect_manual_dict)
             bf_recollect_merge_list = list(bf_recollect_merge_dict.values())
-            bf_recollect_merge_list.sort(key=get_fish_ID)
+            bf_recollect_merge_list.sort(key=get_fish_ID_pos)
             log.info(f"After Merging , Total: {len(bf_recollect_merge_list)} files")
             # for i, path in enumerate(bf_recollect_merge_list): log.info(f'{path.split(os.sep)[-2]}, path {type(path)}: SN:{i:{len(str(len(bf_recollect_merge_list)))}}, {path.split(os.sep)[-1]}')
 
@@ -98,14 +92,14 @@ if __name__ == "__main__":
     # stacked_palmskin_RGB (input)
     
         # Grabbing files
-            RGB_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_RGB_preprocess", f"{{{preprocess_method_desc}}}_RGB_reCollection")
+            RGB_recollect_root = os.path.join(r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_RGB_preprocess", f"{{{preprocess_method_desc}}}_RGB_reCollection") # CHECK_PT 
             # RGB_recollect_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection")
             RGB_recollect_type = os.path.join(RGB_recollect_root, RGB_recollect_key)
             RGB_recollect_type_list = glob(os.path.normpath(f"{RGB_recollect_type}/*.tif"))
         # Check grabbing error: List Empty
             assert len(RGB_recollect_type_list) > 0, f"Can't find 'RGB_reCollection/{RGB_recollect_key}' folder, or it is empty."
         # Do sort because the os grabbing strategy ( for example, 10 will list before 8 )
-            RGB_recollect_type_list.sort(key=get_fish_ID)
+            RGB_recollect_type_list.sort(key=get_fish_ID_pos)
             log.info(f"Found {len(RGB_recollect_type_list)} RGB tif files")
             # for i, path in enumerate(RGB_recollect_type_list): log.info(f'{RGB_recollect_key}, path {type(path)}: SN:{i:{len(str(len(RGB_recollect_type_list)))}}, {path.split(os.sep)[-1]}')
         
@@ -127,7 +121,7 @@ if __name__ == "__main__":
                                          "Standard Length, SL (um)"])
             
             # Variable
-            max_probable_num = get_fish_ID(bf_recollect_merge_list[-1])
+            max_probable_num = get_fish_ID_pos(bf_recollect_merge_list[-1])[0]
             log.info(f'max_probable_num {type(max_probable_num)}: {max_probable_num}\n')
             bf_result_iter_i = 0
             palmskin_RGB_iter_i = 0
@@ -143,7 +137,7 @@ if __name__ == "__main__":
                 log.info(f'one_base_iter_num {type(one_base_iter_num)}: {one_base_iter_num}\n')
                 
                 
-                if  one_base_iter_num == get_fish_ID(bf_recollect_merge_list[0]) :
+                if  one_base_iter_num == get_fish_ID_pos(bf_recollect_merge_list[0])[0] :
                     
                     # Get info strings
                     bf_result_path = bf_recollect_merge_list.pop(0)
