@@ -1,21 +1,18 @@
 import os
 import sys
-from glob import glob
-from typing import List
-from pathlib import Path
-from datetime import datetime
 import argparse
-from tqdm.auto import tqdm
-
-import json
-import pandas as pd
-
-import numpy as np
+from datetime import datetime
 from collections import Counter
 
+from tqdm.auto import tqdm
+import numpy as np
+import pandas as pd
 import cv2
 
-from dataset_generate_functions import create_new_dir, gen_dataset_name, gen_crop_img, drop_too_dark
+sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
+from fileop import create_new_dir
+from norm_name import get_fish_ID_pos
+from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark
 
 
 # *** show images methods ***
@@ -31,7 +28,7 @@ def get_args():
     
     parser = argparse.ArgumentParser(description="zebrafish project: crop images into small pieces")
     parser.add_argument(
-        "--data_root_path",
+        "--ap_data_root",
         type=str,
         required=True,
         help="The root path of the data.",
@@ -40,7 +37,7 @@ def get_args():
         "--xlsx_file",
         type=str,
         required=True,
-        help=r"The name of the Excel book, under 'data_root_path/{Modify}_xlsx'",
+        help=r"The name of the Excel book, under 'ap_data_root/{Modify}_xlsx' ",
     )
     parser.add_argument(
         "--sheet_name",
@@ -52,7 +49,7 @@ def get_args():
         "--stacked_palmskin_dir",
         type=str,
         required=True,
-        help="The folder name of the 'stacked palmskin' images, , under 'data_root_path'",
+        help="The folder storing the 'stacked palmskin' images, relative to 'ap_data_root' ",
     )
     parser.add_argument(
         "--crop_size",
@@ -85,7 +82,7 @@ def get_args():
         help="when assigned 'P/A', it indicates Posterior is TrainSet, Anterior is TestSet, and vice versa.",
     )
     parser.add_argument(
-        "--dataset_root_path",
+        "--dataset_root",
         type=str,
         required=True,
         help="the root path of datasets to save the 'cropped images'.",
@@ -108,14 +105,15 @@ if __name__ == "__main__":
     
     # *** Variable ***
     # args variable
-    data_root_path = args.data_root_path
-    data_name = data_root_path.split(os.sep)[-1]
+    ap_data_root = args.ap_data_root
+    data_name = ap_data_root.split(os.sep)[-1]
     #
     xlsx_file = args.xlsx_file
-    xlsx_file_fullpath = os.path.join(data_root_path, r"{Modify}_xlsx", xlsx_file)
+    xlsx_file_fullpath = os.path.join(ap_data_root, r"{Modify}_xlsx", xlsx_file)
     sheet_name = args.sheet_name
     #
-    stacked_palmskin_dir = os.path.join(data_root_path, args.stacked_palmskin_dir)
+    preprocess_method_desc = "ch4_min_proj, outer_rect"
+    stacked_palmskin_dir = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection", args.stacked_palmskin_dir)
     #
     crop_size = args.crop_size # size of the crop image.
     crop_shift_region = args.crop_shift_region # if 'shift_region' is passed, calculate the shift region while creating each cropped image,
@@ -128,8 +126,9 @@ if __name__ == "__main__":
     train_and_test = args.train_and_test.split("/")
     train_and_test = {"train": train_and_test[0], "test":train_and_test[1]}
     #
+    dataset_root = args.dataset_root
     gen_name = gen_dataset_name(xlsx_file, crop_size, crop_shift_region, intensity, drop_ratio)
-    save_dir = os.path.join(args.dataset_root_path, data_name, f"fish_dataset_simple_crop_{train_and_test_no_slash}", gen_name)
+    save_dir = os.path.join(args.dataset_root, data_name, f"fish_dataset_simple_crop_{train_and_test_no_slash}", gen_name)
     print("")
     create_new_dir(save_dir)
 
@@ -173,10 +172,8 @@ if __name__ == "__main__":
             
             
             # *** Load image ***
-            fish_path = f"{stacked_palmskin_dir}/{fish_name}.tif"
+            fish_path = os.path.normpath(f"{stacked_palmskin_dir}/{fish_name}.tif")
             fish = cv2.imread(fish_path)
-            ## image processing
-            fish = cv2.medianBlur(fish, 3)
             
             
             # *** If the image is horizontal, rotate the image ***
@@ -204,23 +201,14 @@ if __name__ == "__main__":
 
 
             # *** Extracting / Looking up the information on current fish ***
-            ## path, e.g. ".\stacked_palmskin_RGB\20220727_CE012_palmskin_9dpf - Series002_fish_111_P_RGB"
-            fish_name = fish_name.replace(" ", "_")
-            fish_name_list = fish_name.split("_")
-            # print(fish_name_list)
-            assert len(fish_name_list) == 10, "IMAGE_NAME Format Error!"
-            #
-            ## extracting fish_id, e.g. "fish_1"
-            fish_id = f"{fish_name_list[6]}_{fish_name_list[7]}"
-            #
-            ## extracting position_tag, Anterior --> A, Posterior --> P
-            position_tag = fish_name_list[-2]
+            ## path, e.g. "...\{*}_RGB_reCollection\[*result]\20220727_CE012_palmskin_9dpf - Series002_fish_111_P_RGB.tif"
+            fish_ID, fish_pos = get_fish_ID_pos(fish_path)
             #
             ## looking up the class of current fish
             fish_size = df_class_list[i]
             #
-            # print(fish_size, fish_id, position_tag)
-            fish_name_comb = f'{fish_size}_{fish_id}_{position_tag}'
+            # print(fish_size, fish_ID, fish_pos)
+            fish_name_comb = f'{fish_size}_{fish_ID}_{fish_pos}'
             pbar_n_fish.desc  = f"Cropping {key}({value})... '{fish_name_comb}' "
             pbar_n_fish.refresh()
             
@@ -274,7 +262,7 @@ if __name__ == "__main__":
                 "fish_name_comb": fish_name_comb,
                 #
                 "number_of_crop": len(crop_img_list),
-                "number_of_drop": len(crop_img_list) - len(select_crop_img_list),
+                "number_of_drop": len(drop_crop_img_list),
                 "number_of_saved": len(select_crop_img_list),
             }
             #
