@@ -1,10 +1,14 @@
 import os
+import sys
 import re
 from typing import List, Tuple
-from tqdm.auto import tqdm
 
+from tqdm.auto import tqdm
 import numpy as np
 import cv2
+
+sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
+from fileop import create_new_dir
 
 
 
@@ -138,3 +142,32 @@ def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) 
 
 
     return select_crop_img_list, drop_crop_img_list
+
+
+
+def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str, 
+                   fish_size:str, fish_id:str, fish_pos:str, 
+                   tqdm_process:tqdm, tqdm_overwrite_desc:str=None):
+    
+    
+    # adjust settings of 'tqdm_process'
+    if tqdm_overwrite_desc is not None: 
+        tqdm_process.desc  = tqdm_overwrite_desc
+    tqdm_process.n     = 0   # current value
+    tqdm_process.total = len(crop_img_list)
+    tqdm_process.refresh()
+    
+    # write crop images
+    for j in range(len(crop_img_list)):
+        save_dir_size = os.path.join(save_dir, crop_img_desc, fish_size)
+        create_new_dir(save_dir_size, use_tqdm=True)
+        write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{j}.tiff"
+        write_path = os.path.join(save_dir_size, write_name)
+
+        select_crop_img = crop_img_list[j] # convenience to debug preview
+        cv2.imwrite(write_path, select_crop_img)
+        # cv2.imshow(write_name, select_crop_img)
+        # cv2.waitKey(0)
+        
+        tqdm_process.update(1)
+        tqdm_process.refresh()

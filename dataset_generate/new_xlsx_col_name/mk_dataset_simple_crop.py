@@ -12,7 +12,7 @@ import cv2
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from norm_name import get_fish_ID_pos
-from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark
+from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver
 
 
 # *** show images methods ***
@@ -208,53 +208,35 @@ if __name__ == "__main__":
             fish_size = df_class_list[i]
             #
             # print(fish_size, fish_ID, fish_pos)
-            fish_name_comb = f'{fish_size}_{fish_ID}_{fish_pos}'
-            pbar_n_fish.desc  = f"Cropping {key}({value})... '{fish_name_comb}' "
+            fish_name_comb = f'{fish_size}_fish_{fish_ID}_{fish_pos}'
+            pbar_n_fish.desc = f"Cropping {key}({value})... '{fish_name_comb}' "
             pbar_n_fish.refresh()
             
             
             # *** Save 'select_crop_img' ***
-            ## adjust settings of 'pbar_n_select'
-            pbar_n_select.n     = 0   # current value
-            pbar_n_select.total = len(select_crop_img_list)
-            pbar_n_select.refresh()
-            #
-            ## write selected images
-            for j in range(len(select_crop_img_list)):
-                save_dir_size = os.path.join(save_dir_set, "selected", fish_size)
-                create_new_dir(save_dir_size, use_tqdm=True)
-                write_name = f"{fish_name_comb}_crop_{j}.tiff"
-                write_path = os.path.join(save_dir_size, write_name)
-
-                select_crop_img = select_crop_img_list[j] # convenience to debug preview
-                cv2.imwrite(write_path, select_crop_img)
-                # cv2.imshow(write_name, select_crop_img)
-                # cv2.waitKey(0)
-                
-                pbar_n_select.update(1)
-                pbar_n_select.refresh()
+            save_select_kwargs = {
+                "save_dir"      : os.path.join(save_dir, key),
+                "crop_img_list" : select_crop_img_list,
+                "crop_img_desc" : "selected",
+                "fish_size"     : fish_size,
+                "fish_id"       : fish_ID,
+                "fish_pos"      : fish_pos,
+                "tqdm_process"  : pbar_n_select,
+            }
+            crop_img_saver(**save_select_kwargs)
 
 
             # *** Save 'drop_crop_img' ***
-            ## adjust settings of 'pbar_n_drop'
-            pbar_n_drop.n     = 0   # current value
-            pbar_n_drop.total = len(drop_crop_img_list)
-            pbar_n_drop.refresh()
-            #
-            ## write drop images
-            for j in range(len(drop_crop_img_list)):
-                save_dir_size = os.path.join(save_dir_set, "drop", fish_size)
-                create_new_dir(save_dir_size, use_tqdm=True)
-                write_name = f"{fish_name_comb}_crop_{j}.tiff"
-                write_path = os.path.join(save_dir_size, write_name)
-
-                drop_crop_img = drop_crop_img_list[j] # convenience to debug preview
-                cv2.imwrite(write_path, drop_crop_img)
-                # cv2.imshow(write_name, drop_crop_img)
-                # cv2.waitKey(0)
-                
-                pbar_n_drop.update(1)
-                pbar_n_drop.refresh()
+            save_drop_kwargs = {
+                "save_dir"      : os.path.join(save_dir, key),
+                "crop_img_list" : drop_crop_img_list,
+                "crop_img_desc" : "drop",
+                "fish_size"     : fish_size,
+                "fish_id"       : fish_ID,
+                "fish_pos"      : fish_pos,
+                "tqdm_process"  : pbar_n_drop,
+            }
+            crop_img_saver(**save_drop_kwargs)
 
 
             # *** Update log of current fish ***
