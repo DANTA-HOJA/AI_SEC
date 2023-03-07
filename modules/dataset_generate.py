@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-from typing import List, Tuple
+from typing import List, Dict, Tuple
 
 from tqdm.auto import tqdm
 import numpy as np
@@ -171,3 +171,28 @@ def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str,
         
         tqdm_process.update(1)
         tqdm_process.refresh()
+
+
+
+def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, all_class:List[str],
+               crop_img_list:List[cv2.Mat], select_crop_img_list:List[cv2.Mat], drop_crop_img_list:List[cv2.Mat]):
+    
+    
+    current_log = {
+        "fish_name_comb": f"{fish_size}_fish_{fish_id}_{fish_pos}",
+        #
+        "number_of_crop": len(crop_img_list),
+        "number_of_drop": len(drop_crop_img_list),
+        "number_of_saved": len(select_crop_img_list),
+    }
+    #
+    ## creat fish_size columns in current_log
+    current_log["Class Count"] = ""
+    for size in all_class: current_log[size] = 0
+    #
+    ## update # of saved images to current_log
+    current_log[fish_size] = len(select_crop_img_list)
+    #
+    logs.append(current_log)
+    # print current log in command
+    # print(json.dumps(current_log, indent=2), "\n")

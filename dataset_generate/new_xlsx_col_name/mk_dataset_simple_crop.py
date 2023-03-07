@@ -12,7 +12,7 @@ import cv2
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from norm_name import get_fish_ID_pos
-from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver
+from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log
 
 
 # *** show images methods ***
@@ -137,6 +137,11 @@ if __name__ == "__main__":
     # *** Load Excel sheet as DataFrame(pandas) ***
     df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_fullpath, engine = 'openpyxl', sheet_name=sheet_name)
     # print(df_input_xlsx)
+    df_class_list = df_input_xlsx["class"].tolist()
+    ## get how many classes in xlsx
+    all_class = Counter(df_class_list)
+    all_class = sorted(list(all_class.keys()))
+    # print(all_class)
     
     
     for key, value in train_and_test.items():
@@ -152,13 +157,9 @@ if __name__ == "__main__":
 
         if value == "A" : df_palmskin_list = df_input_xlsx["Anterior (SP8, .tif)" ].tolist()
         if value == "P" : df_palmskin_list = df_input_xlsx["Posterior (SP8, .tif)"].tolist()
-        df_class_list = df_input_xlsx["class"].tolist()
 
         assert len(df_palmskin_list) == len(df_class_list), "length of 'palmskin_list' and 'class_list' misMatch"
         print(f"len(df_palmskin_list) = len(df_class_list) = {len(df_class_list)}\n")
-
-        save_dir_set = os.path.join(save_dir, key)
-        create_new_dir(save_dir_set)
 
 
         # *** Create progress bar ***
@@ -179,7 +180,7 @@ if __name__ == "__main__":
             # *** If the image is horizontal, rotate the image ***
             if fish.shape[0] < fish.shape[1]: # 照片不是直的，要轉向
                 fish = cv2.rotate(fish, cv2.ROTATE_90_CLOCKWISE)
-            ## Check orient by user
+            ## check orient by user
             fish_resize_to_display = cv2.resize(fish, (int(fish.shape[1]/5), int(fish.shape[0]/5)))
             # cv2.imshow("fish_resize_to_display", fish_resize_to_display)
             # cv2.waitKey(0)
@@ -211,8 +212,8 @@ if __name__ == "__main__":
             fish_name_comb = f'{fish_size}_fish_{fish_ID}_{fish_pos}'
             pbar_n_fish.desc = f"Cropping {key}({value})... '{fish_name_comb}' "
             pbar_n_fish.refresh()
-            
-            
+
+
             # *** Save 'select_crop_img' ***
             save_select_kwargs = {
                 "save_dir"      : os.path.join(save_dir, key),
@@ -240,31 +241,19 @@ if __name__ == "__main__":
 
 
             # *** Update log of current fish ***
-            current_log = {
-                "fish_name_comb": fish_name_comb,
-                #
-                "number_of_crop": len(crop_img_list),
-                "number_of_drop": len(drop_crop_img_list),
-                "number_of_saved": len(select_crop_img_list),
+            append_log_kwargs = {
+                "logs"                 : logs,
+                "fish_size"            : fish_size,
+                "fish_id"              : fish_ID,
+                "fish_pos"             : fish_pos,
+                "all_class"            : all_class,
+                "crop_img_list"        : crop_img_list, 
+                "select_crop_img_list" : select_crop_img_list, 
+                "drop_crop_img_list"   : drop_crop_img_list
             }
-            #
-            ## create class_map for log count
-            all_class = Counter(df_class_list)
-            all_class = sorted(list(all_class.keys()))
-            # print(all_class)
-            #
-            ## creat fish_size column in current_log
-            current_log["Class Count"] = ""
-            for size in all_class: current_log[size] = 0
-            #
-            ## update # of saved images to current_log
-            current_log[fish_size] = len(select_crop_img_list)
-            #
-            logs.append(current_log)
-            # print current log in command
-            # print(json.dumps(current_log, indent=2), "\n")
-            
-            
+            append_log(**append_log_kwargs)
+
+
             pbar_n_fish.update(1)
             pbar_n_fish.refresh()
         
