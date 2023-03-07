@@ -164,8 +164,8 @@ def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str,
         write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{j}.tiff"
         write_path = os.path.join(save_dir_size, write_name)
 
-        select_crop_img = crop_img_list[j] # convenience to debug preview
-        cv2.imwrite(write_path, select_crop_img)
+        crop_img = crop_img_list[j] # convenience to debug preview
+        cv2.imwrite(write_path, crop_img)
         # cv2.imshow(write_name, select_crop_img)
         # cv2.waitKey(0)
         
