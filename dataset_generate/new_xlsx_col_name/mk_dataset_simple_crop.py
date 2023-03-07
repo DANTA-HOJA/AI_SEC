@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+from datetime import datetime
 from collections import Counter
 
 from tqdm.auto import tqdm
@@ -262,12 +263,14 @@ if __name__ == "__main__":
         
         
         # *** Save logs into XLSX and show in CLI ***
+        ## get time to as file name
+        time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
         logs_saver_kwargs = {
             "logs"        : logs,
             "save_dir"    : save_dir,
             "log_desc"    : f"Logs_{value}_{key}",
             "script_name" : "mk_dataset_simple_crop",
-            "CLI_desc"    : ""
+            "time_stamp"  : time_stamp
         }
         logs_saver(**logs_saver_kwargs)
 

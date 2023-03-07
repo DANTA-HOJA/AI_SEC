@@ -1,7 +1,6 @@
 import os
 import sys
 import re
-from datetime import datetime
 from typing import List, Dict, Tuple
 
 from tqdm.auto import tqdm
@@ -162,7 +161,7 @@ def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str,
     # write crop images
     for j in range(len(crop_img_list)):
         save_dir_size = os.path.join(save_dir, crop_img_desc, fish_size)
-        create_new_dir(save_dir_size, use_tqdm=True)
+        create_new_dir(save_dir_size, display_in_CLI=False)
         write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{j}.tiff"
         write_path = os.path.join(save_dir_size, write_name)
 
@@ -201,15 +200,12 @@ def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, all_cl
 
 
 
-def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, script_name:str, CLI_desc:str):
-    
-    ## get time to as file name
-    time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, script_name:str, time_stamp:str, CLI_desc:str="", show_df:bool=True):
     
     df = pd.DataFrame(logs)
     df.loc['TOTAL'] = df.select_dtypes(np.number).sum()
     # print("="*100, "\n")
-    print(f"{CLI_desc}\n\n", df, "\n")
+    if show_df: print(f"\n{CLI_desc}\n", df, "\n")
     
     # *** Save logs ***
     log_path_abs = f"{save_dir}/{{{log_desc}}}_{{{script_name}}}_{time_stamp}.xlsx"
