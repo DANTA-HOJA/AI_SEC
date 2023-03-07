@@ -214,7 +214,7 @@ if __name__ == "__main__":
 
 
             # *** Save 'select_crop_img' ***
-            save_select_kwargs = {
+            crop_img_saver_kwargs = {
                 "save_dir"      : os.path.join(save_dir, key),
                 "crop_img_list" : select_crop_img_list,
                 "crop_img_desc" : "selected",
@@ -223,11 +223,11 @@ if __name__ == "__main__":
                 "fish_pos"      : fish_pos,
                 "tqdm_process"  : pbar_n_select,
             }
-            crop_img_saver(**save_select_kwargs)
+            crop_img_saver(**crop_img_saver_kwargs)
 
 
             # *** Save 'drop_crop_img' ***
-            save_drop_kwargs = {
+            crop_img_saver_kwargs = {
                 "save_dir"      : os.path.join(save_dir, key),
                 "crop_img_list" : drop_crop_img_list,
                 "crop_img_desc" : "drop",
@@ -236,7 +236,7 @@ if __name__ == "__main__":
                 "fish_pos"      : fish_pos,
                 "tqdm_process"  : pbar_n_drop,
             }
-            crop_img_saver(**save_drop_kwargs)
+            crop_img_saver(**crop_img_saver_kwargs)
 
 
             # *** Update log of current fish ***
@@ -263,10 +263,11 @@ if __name__ == "__main__":
         
         # *** Save logs into XLSX and show in CLI ***
         logs_saver_kwargs = {
-            "logs"     : logs,
-            "save_dir" : save_dir,
-            "log_desc" : f"Logs_{value}_{key}",
-            "CLI_desc" : ""
+            "logs"        : logs,
+            "save_dir"    : save_dir,
+            "log_desc"    : f"Logs_{value}_{key}",
+            "script_name" : "mk_dataset_simple_crop",
+            "CLI_desc"    : ""
         }
         logs_saver(**logs_saver_kwargs)
 

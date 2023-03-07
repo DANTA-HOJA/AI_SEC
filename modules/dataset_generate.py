@@ -201,7 +201,7 @@ def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, all_cl
 
 
 
-def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, CLI_desc:str):
+def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, script_name:str, CLI_desc:str):
     
     ## get time to as file name
     time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
@@ -212,6 +212,6 @@ def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, CLI_desc:str):
     print(f"{CLI_desc}\n\n", df, "\n")
     
     # *** Save logs ***
-    log_path_abs = f"{save_dir}/{{{log_desc}}}_{{mk_dataset_simple_crop}}_{time_stamp}.xlsx"
+    log_path_abs = f"{save_dir}/{{{log_desc}}}_{{{script_name}}}_{time_stamp}.xlsx"
     df.to_excel(log_path_abs, engine="openpyxl")
     print("\n", f"log save @ \n-> {log_path_abs}\n")
