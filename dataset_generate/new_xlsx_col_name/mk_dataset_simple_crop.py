@@ -1,18 +1,16 @@
 import os
 import sys
 import argparse
-from datetime import datetime
 from collections import Counter
 
 from tqdm.auto import tqdm
-import numpy as np
 import pandas as pd
 import cv2
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from norm_name import get_fish_ID_pos
-from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log
+from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log, logs_saver
 
 
 # *** show images methods ***
@@ -168,6 +166,7 @@ if __name__ == "__main__":
         pbar_n_drop = tqdm(desc="Saving drop... ")
         
         
+        
         # *** Start process ***
         for i, fish_name in enumerate(df_palmskin_list):
             
@@ -263,18 +262,13 @@ if __name__ == "__main__":
         
         
         # *** Change logs into Dataframe and show in command ***
-        df = pd.DataFrame(logs)
-        df.loc['TOTAL'] = df.select_dtypes(np.number).sum()
-        # print("="*100, "\n")
-        print("\n\n", df, "\n")
-        
-        
-        # *** Save logs ***
-        ## get time to as file name
-        time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S') # get time to as file name
-        log_path_abs = f"{save_dir}/{{log_{value}_{key}}}_{time_stamp}_using_(mk_dataset_simple_crop).xlsx"
-        df.to_excel(log_path_abs, engine="openpyxl")
-        print("\n", f"log save @ \n-> {log_path_abs}\n")
+        logs_saver_kwargs = {
+            "logs"     : logs,
+            "save_dir" : save_dir,
+            "log_desc" : f"Logs_{value}_{key}",
+            "CLI_desc" : ""
+        }
+        logs_saver(**logs_saver_kwargs)
 
 
     print("="*100, "\n", "process all complete !", "\n")

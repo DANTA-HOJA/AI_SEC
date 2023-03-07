@@ -1,9 +1,11 @@
 import os
 import sys
 import re
+from datetime import datetime
 from typing import List, Dict, Tuple
 
 from tqdm.auto import tqdm
+import pandas as pd
 import numpy as np
 import cv2
 
@@ -196,3 +198,20 @@ def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, all_cl
     logs.append(current_log)
     # print current log in command
     # print(json.dumps(current_log, indent=2), "\n")
+
+
+
+def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, CLI_desc:str):
+    
+    ## get time to as file name
+    time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+    
+    df = pd.DataFrame(logs)
+    df.loc['TOTAL'] = df.select_dtypes(np.number).sum()
+    # print("="*100, "\n")
+    print(f"{CLI_desc}\n\n", df, "\n")
+    
+    # *** Save logs ***
+    log_path_abs = f"{save_dir}/{{{log_desc}}}_{{mk_dataset_simple_crop}}_{time_stamp}.xlsx"
+    df.to_excel(log_path_abs, engine="openpyxl")
+    print("\n", f"log save @ \n-> {log_path_abs}\n")
