@@ -140,8 +140,9 @@ if __name__ == "__main__":
     all_class = Counter(df_class_list)
     all_class = sorted(list(all_class.keys()))
     # print(all_class)
-    
-    
+
+
+
     for key, value in train_and_test.items():
 
         # variable
@@ -155,7 +156,6 @@ if __name__ == "__main__":
 
         if value == "A" : df_palmskin_list = df_input_xlsx["Anterior (SP8, .tif)" ].tolist()
         if value == "P" : df_palmskin_list = df_input_xlsx["Posterior (SP8, .tif)"].tolist()
-
         assert len(df_palmskin_list) == len(df_class_list), "length of 'palmskin_list' and 'class_list' misMatch"
         print(f"len(df_palmskin_list) = len(df_class_list) = {len(df_class_list)}\n")
 
@@ -261,7 +261,7 @@ if __name__ == "__main__":
         pbar_n_drop.close()
         
         
-        # *** Change logs into Dataframe and show in command ***
+        # *** Save logs into XLSX and show in CLI ***
         logs_saver_kwargs = {
             "logs"     : logs,
             "save_dir" : save_dir,
