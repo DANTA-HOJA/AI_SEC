@@ -1,5 +1,6 @@
 import os
 from typing import List, Dict
+from collections import Counter 
 
 import numpy as np
 import pandas as pd
@@ -61,26 +62,26 @@ class ImgDataset(Dataset):
 
 
 
-def caulculate_metrics(log:Dict, accum_batch_loss:float, n_batch:int,
+def caulculate_metrics(log:Dict, average_loss:float,
                        groundtruth_list:List[int], predict_list:List[int],
                        class_map:Dict[str, int]):
     
-    # Calculate average_loss, f1-score for this train_epoch
-    avg_loss = accum_batch_loss/n_batch
+    # Calculate different f1-score
     class_f1 = f1_score(groundtruth_list, predict_list, average=None) # by class
     macro_f1 = f1_score(groundtruth_list, predict_list, average='macro')
     weighted_f1 = f1_score(groundtruth_list, predict_list, average='weighted')
     micro_f1 = f1_score(groundtruth_list, predict_list, average='micro')
     
-    # Create 'log'
-    log["avg_loss"] = avg_loss
-    for key, value in class_map.items(): log[key] = class_f1[value]
-    log["macro_f1"] = macro_f1
-    log["weighted_f1"] = weighted_f1
-    log["micro_f1"] = micro_f1
-    log["average_f1"] = (macro_f1 + micro_f1)/2
-    
-    return log
+    # Update 'log'
+    ## average_loss
+    if average_loss is not None: log["average_loss"] = round(average_loss, 5)
+    else: log["average_loss"] = None
+    ## f1-score
+    for key, value in class_map.items(): log[f"{key}_f1"] = round(class_f1[value], 5)
+    log["macro_f1"] = round(macro_f1, 5)
+    log["weighted_f1"] = round(weighted_f1, 5)
+    log["micro_f1"] = round(micro_f1, 5)
+    log["average_f1"] = round(((macro_f1 + micro_f1)/2), 5)
 
 
 
@@ -146,3 +147,34 @@ def plot_training_trend(plt, save_dir:str,
     fig_path = os.path.normpath(f"{save_dir}/training_trend.png")
     fig.savefig(fig_path)
     # print("\n", f"figure save @ \n-> {fig_path}\n")
+
+
+
+def confusion_matrix_with_class(ground_truth:List[str], prediction:List[str]):
+    
+    # Count all possible class in ground_truth, prediction
+    result_counter = Counter(ground_truth) + Counter(prediction)
+    max_count = result_counter.most_common(1)[0][1] # result_counter.most_common(1) -> [('HD', 282)] <class 'list'> (回傳最大的前 x 項)
+    all_class = sorted(list(result_counter.keys()))
+    
+    # Create "confusion matrix"
+    confusion_matrix_list = [" "] # 補 (0, 0) 空格
+    confusion_matrix_list.extend(all_class) # 加上 column name
+    for r_cls in all_class:
+        confusion_matrix_list.append(r_cls) # 加上 row name
+        for c_cls in all_class:
+            match_cnt = 0
+            for i in range(len(ground_truth)):
+                if (ground_truth[i] == r_cls) and (prediction[i] == c_cls): match_cnt += 1
+            confusion_matrix_list.append(match_cnt)
+    
+    assert len(confusion_matrix_list) == ((len(all_class)+1)**2), 'Create "confusion matrix" failed'
+    
+    # Show in CLI
+    print("Confusion Matrix:\n")
+    for enum, item in enumerate(confusion_matrix_list):
+        print(f"{item:>{len(str(max_count))+3}}", end="")
+        if (enum+1)%(len(all_class)+1) == 0: print("\n")
+    print("\n", end="")
+
+    return confusion_matrix_list
