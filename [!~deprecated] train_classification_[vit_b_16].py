@@ -18,7 +18,7 @@ import numpy as np
 
 import cv2
 import matplotlib.pyplot as plt
-import plt_show
+import modules.plt_show as plt_show
 
 from sklearn.model_selection import train_test_split
 import torch

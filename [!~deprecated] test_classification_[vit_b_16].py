@@ -18,7 +18,7 @@ from collections import Counter
 
 import cv2
 import matplotlib.pyplot as plt
-import plt_show
+import modules.plt_show as plt_show
 
 import torch
 from torch import nn, utils
