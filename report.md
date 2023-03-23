@@ -1,9 +1,11 @@
-# Log
+# ZebraFish_AP_POS
 
-## IMPORTANT
+MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Posterior``` )
+
+## Data Information ( temporarily halt updates )
 
 - 目前最大編號 : ```207```
-- 最新 Data 資料夾 : ```{20221209_UPDATE_82}_Academia_Sinica_i324```
+- 作為統計依據的 Data 資料夾 : ```{20221209_UPDATE_82}_Academia_Sinica_i324```
 
 - 缺號統計 ( 共 45 筆 ) :
   - BrightField ( 共 5 筆 ) : ```[ 79, 87, 89, 93, 185 ]```
@@ -29,7 +31,9 @@
 - ```[4, 7, 68, 109, 110, 156]``` 因為 Bright Field + palmskin RGB ( Auto Fluorescence ) 狀況不好予以刪除
 - palmskin_raw_lif : ```[ Ch1, Ch2, Ch3, Ch4 ] -> [ B, G, R, (BF) ]```
 
-## 2023/01/26
+## Log ( by date )
+
+### 2023/01/26
 
 - 修改測量 Surface area ( SA ), Standard length ( SL ) 的 ImageJ Macro
 
@@ -62,42 +66,42 @@
         | Analysis 產生的 CSV (自動)                          | 20220610_CE001_palmskin_8dpf - Series001 fish 1_AutoAnalysis.csv |
         | Analysis 產生的 CSV (自動失敗 -> 手動)               | 20220610_CE001_palmskin_8dpf - Series001 fish_Manual.csv |
 
-## 2023/02/01
+### 2023/02/01
 
 - ```fish_id = [4, 7, 68, 109, 110, 156]``` 因為 Bright Field + palmskin RGB 狀況不好予以刪除
 - 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py```, ```crop_img_P.py```, ```mk_dataset_horiz_cut.py``` 至其下
 - 分離用來產生 dataset 的 subfunctions 至 ```dataset_generate_functions.py```
 - 因應 新的 xlsx ( data.xlsx ) 欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/```, ```dataset_generate/new_xlsx_col_name/``` 以利區分
 
-## 2023/02/02
+### 2023/02/02
 
 - 合併 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```crop_img_A.py```、```crop_img_P.py```為一個檔案 ```mk_dataset_simple_crop.py``` ( 大調整 )
 
-## 2023/02/03
+### 2023/02/03
 
 - 嘗試以 "影像處理" 解決 Auto Fluorescence 未果，應該會採用 train 一個 Auto Fluorescence 的分類器
 
-## 2023/02/04
+### 2023/02/04
 
 - 將 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```mk_dataset_simple_crop.py``` 修改為會儲存 drop_images ( image 含有的資訊太少 )
   - 在 Dataset_Name/[test, train] 下開始區分 ```selected```, ```drop``` 之後才是 FISH_SIZE，Log 位置不變
 
-## 2023/02/10
+### 2023/02/10
 
 - 2023/02/05 - 2023/02/10 為了重新處理 palmskin_RGB 雜訊問題，研究如何使用 PyImageJ，希望只留 image processing 給 ImageJ，其他 (例如: 找檔案、修改檔名... ) 使用 Python 解決
-  - 2023/02/05 - 2023/02/09 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作 ( [ipynb file](/data_operate/Try_PyImageJ.ipynb) )
+  - 2023/02/05 - 2023/02/09 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作 ( [ipynb file](/FuncTest_with_ipynb/Try_PyImageJ.ipynb) )
   - 2023/02/10 成功在 Python 中呼叫 ```Bio-Formats Plugin``` 且可偵測 ```LIF_FILE``` 內有幾張照片
 
-## 2023/02/12
+### 2023/02/12
 
 - 成功使用 ```pyimagej``` ( require ```jpype```, ```scyjava``` ) 改寫 [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 為 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
 
-## 2023/02/13
+### 2023/02/13
 
 - 調整 NAS 上的 "BrightField_raw_lif" 、 "palmskin_raw_lif" 檔名，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
-- 調整 NAS 上的 資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](OldNewDirNameCompare.png) )
+- 調整 NAS 上的 資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/(doc)_pngs/OldNewDirNameCompare.png) )
 
-## 2023/02/14
+### 2023/02/14
 
 - 調整 ```BF_Analysis``` 下的資料夾命名，不再複製上級資料夾名稱，直接以 ```TIFF```, ```MetaImage```, ```Result``` 作為子資料夾名稱
 - ```BF_Analysis``` 不再額外複製 NAS_DL 的 "BrightField_raw_lif" ，改採直接掃描並產生 SA, SL 計算結果
