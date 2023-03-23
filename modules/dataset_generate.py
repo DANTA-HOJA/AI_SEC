@@ -121,26 +121,24 @@ def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) 
     Returns:
         Tuple[List[cv2.Mat], List[cv2.Mat]]: first List is 'select_crop_img_list' , second List is 'drop_crop_img_list'
     """
-
-    
-    # check if the height and width of passed two lists with the same size
-    img_size = crop_img_list[0].shape
     
     select_crop_img_list = []
     drop_crop_img_list = []
 
-    
     for i in range(len(crop_img_list)):
-        # change to grayscale
-        in_grayscale = cv2.cvtColor(crop_img_list[i], cv2.COLOR_BGR2GRAY)
+        
+        # change to HSV/HSB and get V_channel (Brightness)
+        brightness = cv2.cvtColor(crop_img_list[i], cv2.COLOR_BGR2HSV_FULL)[:,:,2]
         # count pixels too dark
-        pixel_too_dark = np.sum( in_grayscale < intensity )
+        pixel_too_dark = np.sum( brightness <= intensity )
+        # get image size
+        img_size = crop_img_list[i].shape
+        # calculate ratio
         dark_ratio = pixel_too_dark/(img_size[0]*img_size[1])
-        if dark_ratio < drop_ratio: # 有表皮資訊的
-            select_crop_img_list.append(crop_img_list[i])
-        else: 
+        if dark_ratio >= drop_ratio: # 有表皮資訊的
             drop_crop_img_list.append(crop_img_list[i])
-
+        else: 
+            select_crop_img_list.append(crop_img_list[i])
 
     return select_crop_img_list, drop_crop_img_list
 
