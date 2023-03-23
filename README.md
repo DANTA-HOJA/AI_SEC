@@ -96,10 +96,10 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/10
 
-- *2023/02/05* - *2023/02/10* 為了重新處理 palmskin_RGB 雜訊問題，研究如何使用 PyImageJ，希望只留下 image processing 給 ImageJ，其他 (例如: 找檔案、修改檔名... ) 使用 Python 解決
+- *" 2023/02/05 - 2023/02/10 "* 為了重新處理 palmskin_RGB 雜訊問題，研究如何使用 PyImageJ，希望只留下 image processing 給 ImageJ，其他 (例如: 找檔案、修改檔名... ) 使用 Python 解決
 
-  - *2023/02/05* - *2023/02/09* 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作 ( [Try_PyImageJ](/FuncTest_with_ipynb/Try_PyImageJ.ipynb) )
-  - *2023/02/10* 成功在 Python 中呼叫 ```Bio-Formats Plugin``` 且可偵測 ```LIF_FILE``` 內有幾張照片
+  - *" 2023/02/05 - 2023/02/09 "* 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作 ( [Try_PyImageJ](/FuncTest_with_ipynb/Try_PyImageJ.ipynb) )
+  - *" 2023/02/10 "* 成功在 Python 中呼叫 ```Bio-Formats Plugin``` 且可偵測 ```LIF_FILE``` 內有幾張照片
 
 ### 2023/02/12
 
@@ -107,7 +107,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/13
 
-- 調整 NAS 上 *BrightField_raw_lif* 、 *palmskin_raw_lif* 內的檔案名稱，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
+- 調整 NAS 上 *" BrightField_raw_lif "* 、 *" palmskin_raw_lif "* 內的檔案名稱，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
 - 調整 NAS 上的資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/(doc)_pngs/OldNewDirNameCompare.png) )
 
 ### 2023/02/14
