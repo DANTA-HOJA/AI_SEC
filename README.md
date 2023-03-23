@@ -33,9 +33,15 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ## Log ( by date )
 
+### 2023/01/18
+
+- 中研院 *ImageJ Macro* 原始檔名 ： *20220614 macro for SL and SA measurement_by KY.ijm* ，用於計算 Surface area ( *SA* ), Standard length ( *SL* ) ( under ```{NAS_DL}_Academia_Sinica_Data/``` )
+- 修改+優化 *ImageJ Macro*，可開始自行運算 *SA*, *SL* ，不需依賴中研院提供的 ```Machine learning.xlsx```，且改由 ```data_operate/``` 底下一系列的 *new scripts* 產生 ```XLSX_FILE``` 並更名為 ```data.xlsx```
+- 修正後 ImageJ Macro 更名為 : ```[20230118_mod] macro for SL and SA measurement by SRY.ijm```
+
 ### 2023/01/26
 
-- 修改測量 Surface area ( *SA* ), Standard length ( *SL* ) 的 ImageJ Macro
+- [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 的修改細項 :
 
     1. 修正掃描 ```LIF_FILE``` 時若資料夾內含有其他子資料夾會造成 *Macro Error* ( 無法開檔 )
 
@@ -45,10 +51,10 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
     3. 修正同一條魚出現兩種檔名的情況
         - fish 16 出現兩次 : *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf*, *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf_000*
 
-    4. 加入 *plugin* : ```Find focused slices``` 解決出現未對焦照片的問題
+    4. 加入 *plugin* : ```Find focused slices``` 解決出現未對焦照片的問題 ( unpack 之後魚的 ```Z axis > 1```（仍為 Stack）)
         - *20220617_CE002_palmskin_8dpf.lif* 裡出現 ```slices > 1``` 的狀況，且 ```slices``` 中只有一張有對焦，若沒有特別選擇都會直接拿第一張，但通常是第 4 或 5 張才有對焦
         - Plugin ref : <https://sites.google.com/site/qingzongtseng/find-focus>
-        - Algorithm  : autofocus algorithm *Normalized variance*  (Groen et al., 1985; Yeo et al., 1993)
+        - Algorithm  : autofocus algorithm *"Normalized variance"*  (Groen et al., 1985; Yeo et al., 1993)
 
     5. 加入 *ij_cmd* : ```Set Scale``` ，統一照片尺度不統一的問題
         - confocal 內部 meta_data 記載 *1 pixel = 6.5 micron*, 換算後 *0.3077 pixels/micron*
@@ -83,8 +89,9 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/04
 
-- 將 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```mk_dataset_simple_crop.py``` 修改為會儲存 drop_images ( image 含有的資訊太少 )
-  - 在 Dataset_Name/[test, train] 下開始區分 ```selected```, ```drop``` 之後才是 *FISH_SIZE*，*Log* 位置不變
+- 將 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```mk_dataset_simple_crop.py``` 修改成會儲存 drop_images ( 有效資訊量太少的 images )
+
+  - 在 ```Dataset_Name/[test, train]``` 下開始區分 ```selected```, ```drop``` 之後才是 ```FISH_SIZE``` ， *Log* 位置不變
 
 ### 2023/02/10
 
