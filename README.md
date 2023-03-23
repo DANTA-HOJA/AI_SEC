@@ -35,9 +35,10 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/01/18
 
-- 中研院 *ImageJ Macro* 原始檔名 ： *20220614 macro for SL and SA measurement_by KY.ijm* ，用於計算 Surface area ( *SA* ), Standard length ( *SL* ) ( under ```{NAS_DL}_Academia_Sinica_Data/``` )
-- 修改+優化 *ImageJ Macro*，可開始自行運算 *SA*, *SL* ，不需依賴中研院提供的 ```Machine learning.xlsx```，且改由 ```data_operate/``` 底下一系列的 *new scripts* 產生 ```XLSX_FILE``` 並更名為 ```data.xlsx```
-- 修正後 ImageJ Macro 更名為 : ```[20230118_mod] macro for SL and SA measurement by SRY.ijm```
+- *ImageJ Macro* : 用於計算 Surface area ( *SA* ) , Standard length ( *SL* )
+- 中研院 *ImageJ Macro* 原始檔名 ： *"20220614 macro for SL and SA measurement_by KY.ijm"* ( under ```{NAS_DL}_Academia_Sinica_Data/``` )
+- 修改+優化 *ImageJ Macro*，可開始自行運算 *SA* , *SL* ，不需依賴中研院提供的 ```Machine learning.xlsx```，且改由 ```data_operate/``` 底下一系列的 *new scripts* 產生 ```XLSX_FILE``` 並更名為 ```data.xlsx```
+- 修正後 *ImageJ Macro* 更名為 : ```[20230118_mod] macro for SL and SA measurement by SRY.ijm```
 
 ### 2023/01/26
 
@@ -49,7 +50,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
         - e.g. *20220610_CE001_palmskin_8dpf* --> *20220610_CE001_palmskin_8dpf - Series001 fish 1*
 
     3. 修正同一條魚出現兩種檔名的情況
-        - fish 16 出現兩次 : *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf*, *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf_000*
+        - ```fish 16``` 出現兩次 : *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf* , *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf_000*
 
     4. 加入 *plugin* : ```Find focused slices``` 解決出現未對焦照片的問題 ( unpack 之後魚的 ```Z axis > 1```（仍為 Stack）)
         - *20220617_CE002_palmskin_8dpf.lif* 裡出現 ```slices > 1``` 的狀況，且 ```slices``` 中只有一張有對焦，若沒有特別選擇都會直接拿第一張，但通常是第 4 或 5 張才有對焦
@@ -57,9 +58,9 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
         - Algorithm  : autofocus algorithm *"Normalized variance"*  (Groen et al., 1985; Yeo et al., 1993)
 
     5. 加入 *ij_cmd* : ```Set Scale``` ，統一照片尺度不統一的問題
-        - confocal 內部 meta_data 記載 *1 pixel = 6.5 micron*, 換算後 *0.3077 pixels/micron*
+        - confocal 內部 meta_data 記載 *1 pixel = 6.5 micron* , 換算後 *0.3077 pixels/micron*
 
-    6. 新增 *function* : Analysis 後，若找到的 ```ROI != 1``` ( ```ROI == 1``` 代表順利只抓到魚 ) 會在 *Log* 標記 *Error*, 以便後續手動測量
+    6. 新增 *function* : Analysis 後，若找到的 ```ROI != 1``` ( ```ROI == 1``` 代表順利只抓到魚 ) 會在 *Log* 標記 *Error* , 以便後續手動測量
 
     7. 檔名優化
         | Function | File name |
@@ -75,9 +76,9 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 ### 2023/02/01
 
 - ```fish_id = [4, 7, 68, 109, 110, 156]``` 因為 Bright Field + palmskin RGB 狀況不好予以刪除
-- 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py```, ```crop_img_P.py```, ```mk_dataset_horiz_cut.py``` 至該資料夾底下
+- 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py``` , ```crop_img_P.py``` , ```mk_dataset_horiz_cut.py``` 至該資料夾底下
 - 分離用來產生 dataset 的 subfunctions 至 ```dataset_generate_functions.py```
-- 因應 *new_column_name* in ```data.xlsx```  欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/```, ```dataset_generate/new_xlsx_col_name/``` 以利區分
+- 因應 *new_column_name* in ```data.xlsx```  欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/``` , ```dataset_generate/new_xlsx_col_name/``` 以利區分
 
 ### 2023/02/02
 
@@ -91,7 +92,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 - 將 ```dataset_generate/new_xlsx_col_name/``` 底下的 ```mk_dataset_simple_crop.py``` 修改成會儲存 drop_images ( 有效資訊量太少的 images )
 
-  - 在 ```Dataset_Name/[test, train]``` 下開始區分 ```selected```, ```drop``` 之後才是 ```FISH_SIZE``` ， *Log* 位置不變
+  - 在 ```Dataset_Name/[test, train]``` 下開始區分 ```selected``` , ```drop``` 之後才是 ```FISH_SIZE``` , *Log* 位置不變
 
 ### 2023/02/10
 
@@ -102,7 +103,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/12
 
-- 成功使用 ```PyImageJ``` ( require ```jpype```, ```scyjava``` ) 改寫 [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 為 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
+- 成功使用 ```PyImageJ``` ( require ```jpype``` , ```scyjava``` ) 改寫 [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 為 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
 
 ### 2023/02/13
 
@@ -111,7 +112,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/14
 
-- 調整 ```BF_Analysis``` 下的資料夾命名，不再複製上級資料夾名稱，直接以 ```TIFF```, ```MetaImage```, ```Result``` 作為子資料夾名稱
-- ```BF_Analysis``` 不再額外複製 ```{NAS_DL}_*/.../BrightField_RAW/``` ，改採 *直接讀取* 檔案產生 *SA*, *SL* 計算結果
+- 調整 ```BF_Analysis``` 下的資料夾命名，不再複製上級資料夾名稱，直接以 ```TIFF``` , ```MetaImage``` , ```Result``` 作為子資料夾名稱
+- ```BF_Analysis``` 不再額外複製 ```{NAS_DL}_*/.../BrightField_RAW/``` ，改採 *直接讀取* 檔案產生 *SA* , *SL* 計算結果
 - ```BF_Analysis``` 開始加上 prefix， {} 內用於紀錄該次針對計算所調整的項目
 - 合併 ```/data_operate/BrightField/collect_BF_raw_lif.py``` 的操作合併至 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
