@@ -37,18 +37,18 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 - 修改測量 Surface area ( *SA* ), Standard length ( *SL* ) 的 ImageJ Macro
 
-    1. 修正掃描 lif 檔時若資料夾內含有其他子資料夾會造成 *Macro Error* ( 無法開檔 )
+    1. 修正掃描 ```LIF_FILE``` 時若資料夾內含有其他子資料夾會造成 *Macro Error* ( 無法開檔 )
 
-    2. 修正 lif 檔 ( Leica microscope 格式；一個 lif 內可以有多條魚 ) 內只有 1 image 時，存檔後的 tiff 只有 ```lif_name``` 而不是 ```lif_name + image_name```
-        - e.g. *"20220610_CE001_palmskin_8dpf"* --> *"20220610_CE001_palmskin_8dpf - Series001 fish 1"*
+    2. 修正 ```LIF_FILE``` ( Leica microscope 格式；一個 lif 內可以有多條魚 ) 內只有 1 image 時，存檔後的 tiff 只有 *lif_name* 而不是 *lif_name + image_name*
+        - e.g. *20220610_CE001_palmskin_8dpf* --> *20220610_CE001_palmskin_8dpf - Series001 fish 1*
 
     3. 修正同一條魚出現兩種檔名的情況
-        - fish 16 出現兩次 : *"20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf"*, *"20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf_000"*
+        - fish 16 出現兩次 : *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf*, *20220617_CE002_palmskin_8dpf - Series006 fish 16 palmskin_8dpf_000*
 
     4. 加入 *plugin* : ```Find focused slices``` 解決出現未對焦照片的問題
-        - *"20220617_CE002_palmskin_8dpf.lif"* 裡出現 ```slices > 1``` 的狀況，且 ```slices``` 中只有一張有對焦，若沒有特別選擇都會直接拿第一張，但通常是第 4 或 5 張才有對焦
+        - *20220617_CE002_palmskin_8dpf.lif* 裡出現 ```slices > 1``` 的狀況，且 ```slices``` 中只有一張有對焦，若沒有特別選擇都會直接拿第一張，但通常是第 4 或 5 張才有對焦
         - Plugin ref : <https://sites.google.com/site/qingzongtseng/find-focus>
-        - Algorithm  : autofocus algorithm *"Normalized variance"*  (Groen et al., 1985; Yeo et al., 1993)
+        - Algorithm  : autofocus algorithm *Normalized variance*  (Groen et al., 1985; Yeo et al., 1993)
 
     5. 加入 *ij_cmd* : ```Set Scale``` ，統一照片尺度不統一的問題
         - confocal 內部 meta_data 記載 *1 pixel = 6.5 micron*, 換算後 *0.3077 pixels/micron*
@@ -94,11 +94,11 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/12
 
-- 成功使用 ```pyimagej``` ( require ```jpype```, ```scyjava``` ) 改寫 [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 為 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
+- 成功使用 ```PyImageJ``` ( require ```jpype```, ```scyjava``` ) 改寫 [ImageJ Macro](/data_operate/imagej_macro/%5B20230118_mod%5D%20macro%20for%20SL%20and%20SA%20measurement%20by%20SRY.ijm) 為 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
 
 ### 2023/02/13
 
-- 調整 NAS 上的 *"BrightField_raw_lif"* 、 *"palmskin_raw_lif"* 檔名，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
+- 調整 NAS 上的 *BrightField_raw_lif* 、 *palmskin_raw_lif* 檔名，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
 - 調整 NAS 上的 資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/(doc)_pngs/OldNewDirNameCompare.png) )
 
 ### 2023/02/14
