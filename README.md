@@ -2,7 +2,7 @@
 
 MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Posterior``` )
 
-## Data Information ( temporarily halt updates )
+## Data Information ( *temporarily halt updates* )
 
 - 目前最大編號 : ```207```
 - 作為統計依據的 Data 資料夾 : ```{20221209_UPDATE_82}_Academia_Sinica_i324```
@@ -69,9 +69,9 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 ### 2023/02/01
 
 - ```fish_id = [4, 7, 68, 109, 110, 156]``` 因為 Bright Field + palmskin RGB 狀況不好予以刪除
-- 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py```, ```crop_img_P.py```, ```mk_dataset_horiz_cut.py``` 至其下
+- 新建 ```dataset_generate/``` 並移動 ```crop_img_A.py```, ```crop_img_P.py```, ```mk_dataset_horiz_cut.py``` 至該資料夾底下
 - 分離用來產生 dataset 的 subfunctions 至 ```dataset_generate_functions.py```
-- 因應 新的 xlsx ( data.xlsx ) 欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/```, ```dataset_generate/new_xlsx_col_name/``` 以利區分
+- 因應 *new_column_name* in ```data.xlsx```  欄位名稱，分別建立 ```dataset_generate/old_xlsx_col_name/```, ```dataset_generate/new_xlsx_col_name/``` 以利區分
 
 ### 2023/02/02
 
@@ -89,6 +89,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 ### 2023/02/10
 
 - *2023/02/05* - *2023/02/10* 為了重新處理 palmskin_RGB 雜訊問題，研究如何使用 PyImageJ，希望只留下 image processing 給 ImageJ，其他 (例如: 找檔案、修改檔名... ) 使用 Python 解決
+
   - *2023/02/05* - *2023/02/09* 跟著 [Tutorial](https://pyimagej.readthedocs.io/en/latest/index.html) 操作 ( [Try_PyImageJ](/FuncTest_with_ipynb/Try_PyImageJ.ipynb) )
   - *2023/02/10* 成功在 Python 中呼叫 ```Bio-Formats Plugin``` 且可偵測 ```LIF_FILE``` 內有幾張照片
 
