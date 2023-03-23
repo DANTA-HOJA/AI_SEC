@@ -99,8 +99,8 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/02/13
 
-- 調整 NAS 上的 *BrightField_raw_lif* 、 *palmskin_raw_lif* 檔名，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
-- 調整 NAS 上的 資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/(doc)_pngs/OldNewDirNameCompare.png) )
+- 調整 NAS 上 *BrightField_raw_lif* 、 *palmskin_raw_lif* 內的檔案名稱，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
+- 調整 NAS 上的資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/(doc)_pngs/OldNewDirNameCompare.png) )
 
 ### 2023/02/14
 
