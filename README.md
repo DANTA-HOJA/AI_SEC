@@ -33,12 +33,22 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ## Log ( by date )
 
+### 2022/11/09
+
+- 檔名統一為：```{DATE}_{PERSON}_palmskin_{}dpf - Series{}_fish_{ID}_{POS, optional}_{TYPE}```
+
+  - BF   : *" 20220602_AI001_palmskin_8dpf - Series001_fish_1_BF "*
+  - RGB  : *" 20220602_AI001_palmskin_8dpf - Series001_fish_1_A_RGB "*
+  - MONO : *" 20220602_AI001_palmskin_8dpf - Series001_fish_1_A_MONO "*
+
 ### 2023/01/18
 
-- *ImageJ Macro* : 用於計算 Surface area ( *SA* ) , Standard length ( *SL* )
-- 中研院 *ImageJ Macro* 原始檔名 ： *" 20220614 macro for SL and SA measurement_by KY.ijm "* ( under ```{NAS_DL}_Academia_Sinica_Data/.../``` )
-- 修改+優化 *ImageJ Macro*，可開始自行運算 *SA* , *SL* ，不需依賴中研院提供的 ```Machine learning.xlsx```，且改由 ```data_operate/``` 底下一系列的 *new scripts* 產生 ```XLSX_FILE``` 並更名為 ```data.xlsx```
-- 修正後 *ImageJ Macro* 更名為 : ```[20230118_mod] macro for SL and SA measurement by SRY.ijm```
+- *" ImageJ Macro "* : 用於計算 Surface area ( *SA* ) , Standard length ( *SL* )
+- 中研院 *" ImageJ Macro "* 原始檔名 ： *" 20220614 macro for SL and SA measurement_by KY.ijm "* ( under ```{NAS_DL}_Academia_Sinica_Data/.../``` )
+- 修改+優化 *" ImageJ Macro "*，可開始自行計算 *SA* , *SL* ，不需依賴中研院提供的 ```Machine learning.xlsx```，且改由 ```data_operate/``` 底下一系列的 *" new scripts "* 產生 ```XLSX_FILE``` 並更名為 ```data.xlsx```
+- *" 2022/12/09 "* 以後開始含有 ```BF_Analysis/```，複製 ```{NAS_DL}_Academia_Sinica_Data/.../BrightField_raw_lif/``` 資料夾，並使用修改後的 *" ImageJ Macro "* 計算 *SA* , *SL*
+- 修改後的 *" ImageJ Macro "* 更名為 : ```[20230118_mod] macro for SL and SA measurement by SRY.ijm```
+- 因應 *" 2022/12/09 "* 的 *統一命名規則* ， ```{NAS_DL}_Academia_Sinica_Data/.../``` ， 底下的 *" BrightField_raw_lif "*, *" Fish_BrightField "*, *" palmskin_raw_lif "*, *" stacked_palmskin_tiff "* , 以日期區分子資料夾， *" Before_20221109 "* 存放命名統一前的檔案；更新以 *" Upload_{ 上傳日期 } "* 作為資料夾名稱，例如：*" Upload_20221209 "*
 
 ### 2023/01/26
 
