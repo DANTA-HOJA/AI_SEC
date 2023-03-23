@@ -2,6 +2,8 @@ import os
 import sys
 import re
 from typing import List, Dict, Tuple
+from glob import glob
+import json
 
 from tqdm.auto import tqdm
 import pandas as pd
@@ -209,3 +211,16 @@ def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, script_name:str, tim
     log_path_abs = f"{save_dir}/{{{log_desc}}}_{{{script_name}}}_{time_stamp}.xlsx"
     df.to_excel(log_path_abs, engine="openpyxl")
     print("\n", f"log save @ \n-> {log_path_abs}\n")
+
+
+
+def gen_train_selected_summary(dir_path:str, all_class:List[str]):
+    
+    class_count = {}
+    
+    for cls in all_class:
+        selected_images_list = glob(os.path.normpath(f"{dir_path}/train/selected/{cls}/*.tiff"))
+        class_count[cls] = len(selected_images_list)
+    
+    with open(os.path.normpath(f"{dir_path}/{{Logs}}_train_selected_summary.log"), mode="w") as f_writer:
+        f_writer.write(json.dumps(class_count, indent=4))

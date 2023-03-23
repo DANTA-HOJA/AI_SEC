@@ -13,7 +13,7 @@ import cv2
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from norm_name import get_fish_ID_pos
-from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log, logs_saver
+from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log, logs_saver, gen_train_selected_summary
 
 
 # *** Show images methods ***
@@ -383,4 +383,9 @@ if __name__ == "__main__":
             logs_saver(**logs_saver_kwargs)
 
 
+    # Generate '{Logs}_train_selected_summary.log'
+    for dir_path in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
+        gen_train_selected_summary(dir_path, all_class)
+    
+    
     print("="*100, "\n", "process all complete !", "\n")
