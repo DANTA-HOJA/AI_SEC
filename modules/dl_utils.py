@@ -1,4 +1,5 @@
 import os
+from glob import glob
 from typing import List, Dict
 from collections import Counter 
 import logging
@@ -251,3 +252,14 @@ def calculate_class_weight(class_count_dict:Dict[str, int]) -> torch.Tensor:
         class_weights_list.append((1 - (value/total_samples)))
 
     return torch.tensor(class_weights_list, dtype=torch.float)
+
+
+
+def get_sorted_classMap_from_dir(dir_path) -> Dict[str, int]:
+    
+    all_class_list = glob(os.path.normpath(f"{dir_path}/*"))
+    all_class_list = [path.split(os.sep)[-1] for path in all_class_list]
+    all_class_list.sort()
+    class_map = {cls:i for i, cls in enumerate(all_class_list)}
+    
+    return class_map
