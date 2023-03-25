@@ -12,6 +12,8 @@ from torch.utils.data import Dataset
 from sklearn.metrics import f1_score
 
 import albumentations as A
+from albumentations.augmentations.transforms import RandomBrightnessContrast, Sharpen
+from albumentations.augmentations.blur.transforms import GaussianBlur
 
 
 
@@ -204,3 +206,24 @@ def confusion_matrix_with_class(ground_truth:List[str], prediction:List[str]):
     print("\n", end="")
 
     return confusion_matrix_list
+
+
+
+def compose_transform() -> A.Compose:
+    
+    transform = A.Compose(
+        [
+            # A.RandomCrop(width=240, height=320, p=0.5),
+            A.Rotate(limit=40, p=0.5),
+            A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.5),
+            RandomBrightnessContrast(p=0.5),
+            A.OneOf(
+                [
+                    GaussianBlur(p=0.5),
+                    Sharpen(p=0.5),
+                ], p=0.7)
+        ]
+    )
+    
+    return transform
