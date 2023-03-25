@@ -227,3 +227,27 @@ def compose_transform() -> A.Compose:
     )
     
     return transform
+
+
+
+def calculate_class_weight(class_count_dict:Dict[str, int]) -> torch.Tensor:
+    
+    """To calculate `class_weight` for Loss function in `List` format
+
+        - how to calculate `class_weight`: https://naadispeaks.wordpress.com/2021/07/31/handling-imbalanced-classes-with-weighted-loss-in-pytorch/
+        - applying `class_weight`, ref: https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731 
+    
+    Args:
+        class_count_dict (Dict[str, int]): A `Dict` contains the statistic information for each class, 
+        e.g. `{ "L": 450, "M": 740, "S": 800 }`
+
+    Returns:
+        torch.tensor: `class_weight` in `torch.Tensor` format
+    """
+    class_weights_list = []
+    total_samples = sum(class_count_dict.values())
+    
+    for key, value in class_count_dict.items(): # value = number of samples of the class
+        class_weights_list.append((1 - (value/total_samples)))
+
+    return torch.tensor(class_weights_list, dtype=torch.float)
