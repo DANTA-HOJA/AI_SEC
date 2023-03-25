@@ -1,7 +1,7 @@
 import os
 from glob import glob
-from typing import List, Dict
-from collections import Counter 
+from typing import List, Dict, Tuple
+from collections import Counter
 import logging
 
 import numpy as np
@@ -33,12 +33,12 @@ def set_gpu(cuda_idx:int):
 
 class ImgDataset(Dataset):
     
-    def __init__(self, paths:List[str], class_map:Dict[str, int], label_in_filename:int, 
+    def __init__(self, paths:List[str], class_mapper:Dict[str, int], label_in_filename:int, 
                  use_hsv:bool, transform:A.Compose=None, logger:logging.Logger=None):
         
         self.paths = paths
-        self.class_map = class_map
-        self.num_classes = len(self.class_map)
+        self.class_mapper = class_mapper
+        self.num_classes = len(self.class_mapper)
         self.label_in_filename = label_in_filename
         self.transform = transform
         self.use_hsv = use_hsv
@@ -81,7 +81,7 @@ class ImgDataset(Dataset):
         ## example_name : L_fish_9_A_aug_0NTz2m7j.tiff
         id = path.split(os.sep)[-1].split(".")[0] # filename_without_extension
         cls = id.split("_")[self.label_in_filename]
-        cls_idx = self.class_map[cls]
+        cls_idx = self.class_mapper[cls]
         # print(f"image[{index:^4d}] = {path}, class = {all_class[cls_idx]}")
 
         img = torch.from_numpy(img).float()  # 32-bit float ,  TODO:  choose proper type for fast training, like fp16 or others.
@@ -93,7 +93,7 @@ class ImgDataset(Dataset):
 
 def caulculate_metrics(log:Dict, average_loss:float,
                        groundtruth_list:List[int], predict_list:List[int],
-                       class_map:Dict[str, int]):
+                       class_mapper:Dict[str, int]):
     
     # Calculate different f1-score
     class_f1 = f1_score(groundtruth_list, predict_list, average=None) # by class
@@ -106,7 +106,7 @@ def caulculate_metrics(log:Dict, average_loss:float,
     if average_loss is not None: log["average_loss"] = round(average_loss, 5)
     else: log["average_loss"] = None
     ## f1-score
-    for key, value in class_map.items(): log[f"{key}_f1"] = round(class_f1[value], 5)
+    for key, value in class_mapper.items(): log[f"{key}_f1"] = round(class_f1[value], 5)
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
     log["micro_f1"] = round(micro_f1, 5)
@@ -255,11 +255,11 @@ def calculate_class_weight(class_count_dict:Dict[str, int]) -> torch.Tensor:
 
 
 
-def get_sorted_classMap_from_dir(dir_path) -> Dict[str, int]:
+def get_sortedClassMapper_from_dir(dir_path) -> Tuple[List[str], Dict[str, int]]:
     
-    all_class_list = glob(os.path.normpath(f"{dir_path}/*"))
-    all_class_list = [path.split(os.sep)[-1] for path in all_class_list]
-    all_class_list.sort()
-    class_map = {cls:i for i, cls in enumerate(all_class_list)}
+    num2class_list = glob(os.path.normpath(f"{dir_path}/*"))
+    num2class_list = [path.split(os.sep)[-1] for path in num2class_list]
+    num2class_list.sort()
+    class2num_dict = {cls:i for i, cls in enumerate(num2class_list)}
     
-    return class_map
+    return num2class_list, class2num_dict
