@@ -1,6 +1,7 @@
 import os
 from typing import List, Dict
 from collections import Counter 
+import logging
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,8 @@ import cv2
 import torch
 from torch.utils.data import Dataset
 from sklearn.metrics import f1_score
+
+import albumentations as A
 
 
 
@@ -27,11 +30,20 @@ def set_gpu(cuda_idx:int):
 
 class ImgDataset(Dataset):
     
-    def __init__(self, paths:List[str], class_map:Dict[str, int], label_in_filename:int):
+    def __init__(self, paths:List[str], class_map:Dict[str, int], label_in_filename:int, 
+                 use_hsv:bool, transform:A.Compose=None, logger:logging.Logger=None):
+        
         self.paths = paths
         self.class_map = class_map
         self.num_classes = len(self.class_map)
         self.label_in_filename = label_in_filename
+        self.transform = transform
+        self.use_hsv = use_hsv
+        if logger is not None:
+            if self.use_hsv:
+                logger.info("※ : using 'HSV' when getting images from the dataset")
+            if self.transform is not None:
+                logger.info("※ : applying augmentation on the fly")
 
 
     def __len__(self):
@@ -39,18 +51,32 @@ class ImgDataset(Dataset):
 
 
     def __getitem__(self, index):
+        
         path = self.paths[index]
 
-        # image preprocess
-        img = cv2.imread(path)[:,:,::-1] # BGR -> RGB
-        img = cv2.resize(img, (224, 224), interpolation=cv2.INTER_CUBIC) #  CHECK_PT : resize to model input size
+        # read image
+        img = cv2.imread(path)
+        
+        # augmentation on the fly
+        if self.transform is not None:
+            transformed = self.transform(image=img)
+            img = transformed["image"]
+        
+        # choosing the color space, 'RGB' or 'HSV'
+        if self.use_hsv: 
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV_FULL)
+        else: 
+            img = img[:,:,::-1] # BGR -> RGB
+        
+        # resize to model input size
+        img = cv2.resize(img, (224, 224), interpolation=cv2.INTER_CUBIC)
         img = img / 255.0 # normalize to 0~1
-        img = np.moveaxis(img, -1, 0) # img_info == 3: (H, W, C) -> (C, H, W)
-        # TODO:  transfer to HSV domain
-        # TODO:  augmentation on fly (optional)
+        img = np.moveaxis(img, -1, 0) # img_dims == 3: (H, W, C) -> (C, H, W)
+        
         
         # read class label
-        id = path.split(os.sep)[-1].split(".")[0]
+        ## example_name : L_fish_9_A_aug_0NTz2m7j.tiff
+        id = path.split(os.sep)[-1].split(".")[0] # filename_without_extension
         cls = id.split("_")[self.label_in_filename]
         cls_idx = self.class_map[cls]
         # print(f"image[{index:^4d}] = {path}, class = {all_class[cls_idx]}")
