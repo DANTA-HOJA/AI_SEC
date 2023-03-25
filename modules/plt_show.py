@@ -1,12 +1,13 @@
-from typing import List
+from typing import List, Tuple
 import argparse
+from math import floor
 
 import cv2
 import matplotlib.pyplot as plt
 
 
 
-def img_rgb(window_name:str, img_path:str, plt=plt):
+def plot_in_rgb(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     """
     show image in RGB color space.
@@ -16,39 +17,54 @@ def img_rgb(window_name:str, img_path:str, plt=plt):
         img ( cv2.Mat ): an image you want to display, channel orient = BGR (default orient of 'cv2.imread()')
         plt (module): matplotlib.pyplot.
     """
-    
-    # window_name
-    fig = plt.figure(window_name)
     img = cv2.imread(img_path)
-    image_RGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    plt.title(f"channel = RGB, shape = {image_RGB.shape}")
-    plt.imshow(image_RGB, vmin=0, vmax=255)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    # calculate 'figsize'
+    fig_dpi = 100
+    fig_size_div_dpi = []
+    fig_size_div_dpi.append(fig_size[0]/fig_dpi)
+    fig_size_div_dpi.append(fig_size[1]/fig_dpi)
+    
+    # Create figure
+    fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig.suptitle(f"Channel: 'RGB', shape = {img_rgb.shape}")
+    plt.imshow(img_rgb, vmin=0, vmax=255)
     plt.show()
-    
-   
-    
-def img_gray(window_name:str, img_path:str, plt=plt):
+    plt.close()
+
+
+
+def plot_in_gray(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     """
-    show image in RGB gray scale.
+    show image in weighted-RGB gray scale.
     
     Args:
         window_name (str): GUI_window/figure name.
         img ( cv2.Mat ): an image you want to display, channel orient = BGR (default orient of 'cv2.imread()')
         plt (module): matplotlib.pyplot.
     """
-    
-    # window_name
-    fig = plt.figure(window_name)
     img = cv2.imread(img_path)
-    image_GRAY = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    plt.title(f"Gray, shape = {image_GRAY.shape}")
-    plt.imshow(image_GRAY, cmap='gray', vmin=0, vmax=255)
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # calculate 'figsize'
+    fig_dpi = 100
+    fig_size_div_dpi = []
+    fig_size_div_dpi.append(fig_size[0]/fig_dpi)
+    fig_size_div_dpi.append(fig_size[1]/fig_dpi)
+    
+    # Create figure
+    fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig.suptitle(f"Channel: 'Gray (weighted-RGB)', shape = {img_gray.shape}")
+    plt.imshow(img_gray, cmap='gray', vmin=0, vmax=255)
+    
     plt.show()
+    plt.close()
 
 
 
-def img_by_channel(window_name:str, img_path:str, plt=plt):
+def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     """
     show an BGR image by splitting its channels.
@@ -58,43 +74,44 @@ def img_by_channel(window_name:str, img_path:str, plt=plt):
         img ( cv2.Mat ): an image you want to display, channel orient = BGR (default orient of 'cv2.imread()')
         plt (module): matplotlib.pyplot.
     """
-    
-    # BGR -> RGB
     img = cv2.imread(img_path)
-    image_RGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    dpi = 100
-    fig_W = (image_RGB.shape[0]/dpi)*4-5
-    fig_H = (image_RGB.shape[1]/dpi)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    ch_R, ch_G, ch_B = cv2.split(img_rgb) # split channel
     
-    # window_name
-    fig = plt.figure(window_name, figsize=(fig_W, fig_H))
+    # calculate 'figsize'
+    fig_dpi = 100
+    fig_size_div_dpi = []
+    fig_size_div_dpi.append(fig_size[0]/fig_dpi)
+    fig_size_div_dpi.append(fig_size[1]/fig_dpi)
     
-    # split channel
-    B_ch, G_ch, R_ch = cv2.split(img)
-    ax_141 = fig.add_subplot(1, 4, 1)
-    ax_141.set_title(f"merge, shape = {image_RGB.shape}")
-    plt.imshow(image_RGB, vmin=0, vmax=255)
+    # Create figure
+    fig, axs = plt.subplots(1, 4, figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig.suptitle(f"Plot by Channel, shape = {img_rgb.shape}")
     
-    # plot R Chnnel
-    ax_142 = fig.add_subplot(1, 4, 2)
-    ax_142.set_title("R")
-    plt.imshow(R_ch, cmap='gray', vmin=0, vmax=255)
+    # merge RGB (original)
+    axs[0].set_title(f"Merge RGB")
+    axs[0].imshow(img_rgb, vmin=0, vmax=255)
     
-    # plot G Chnnel
-    ax_143 = fig.add_subplot(1, 4, 3)
-    ax_143.set_title("G")
-    plt.imshow(G_ch, cmap='gray', vmin=0, vmax=255)
+    # plot R Channel
+    axs[1].set_title("R")
+    axs[1].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
     
-    # plot B Chnnel
-    ax_144 = fig.add_subplot(1, 4, 4)
-    ax_144.set_title("B")
-    plt.imshow(B_ch, cmap='gray', vmin=0, vmax=255)
+    # plot G Channel
+    axs[2].set_title("G")
+    axs[2].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
+    
+    # plot B Channel
+    axs[3].set_title("B")
+    axs[3].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
     
     plt.show()
+    plt.close()
 
 
 
-def img_list(window_name:str, img_list:List[cv2.Mat], row:int, column:int, title:List[str]=None, plt=plt):
+def plot_with_imglist(img_list:List[cv2.Mat],
+                      fig_title:str, fig_size:Tuple[float, float], 
+                      row:int, column:int, subtitle:List[str]=None, plt=plt):
     
     """
     show an RGB image by splitting its channels.
@@ -110,36 +127,42 @@ def img_list(window_name:str, img_list:List[cv2.Mat], row:int, column:int, title
     
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     
-    # window_name
-    fig = plt.figure(window_name)
+    # calculate 'figsize'
+    fig_dpi = 100
+    fig_size_div_dpi = []
+    fig_size_div_dpi.append(fig_size[0]/fig_dpi)
+    fig_size_div_dpi.append(fig_size[1]/fig_dpi)
     
-    
-    for i in range(row*column):
-
-        # BGR -> RGB
-        img_rgb = cv2.cvtColor(img_list[i], cv2.COLOR_BGR2RGB)
-        fig.add_subplot(row, column, i+1)
-        if title is not None:
-            plt.title(title[i])
-        plt.imshow(img_rgb, vmin=0, vmax=255)
+    # Create figure
+    fig, axs = plt.subplots(row, column, figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig.suptitle(fig_title)
+    # plot each image
+    for iter in range(row*column):
+        i = floor(iter/column)
+        j = floor(iter%column)
+        # print(i, j)
+        img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+        axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
+        if subtitle is not None: axs[i, j].set_title(subtitle[iter])
     
     plt.show()
-    
+    plt.close()
 
-   
+
+
 def parse_args():
     
     parser = argparse.ArgumentParser(prog="plt_show", description="show images")
     gp_single = parser.add_argument_group("single images")
     gp_single.add_argument(
-        "--window_name",
+        "--fig_title",
         type=str,
-        help="window name."
+        help="the BIG title of figure."
     )
     gp_single.add_argument(
         "--img_path",
         type=str,
-        help="Images to shown."
+        help="Images to show."
     )
     gp_single_mode = gp_single.add_mutually_exclusive_group()
     gp_single_mode.add_argument(
@@ -158,7 +181,6 @@ def parse_args():
         help="Show images by RGB channel.",
     )
     
-    
     args = parser.parse_args()
     return args
 
@@ -168,10 +190,9 @@ if __name__ == "__main__":
     
     args = parse_args()
     
-    
     if args.rgb:
-        img_rgb(args.window_name, args.img_path, plt)
+        plot_in_rgb(args.window_name, args.img_path, plt)
     elif args.gray:
-        img_gray(args.window_name, args.img_path, plt)
+        plot_in_gray(args.window_name, args.img_path, plt)
     elif args.by_channel:
-        img_by_channel(args.window_name, args.img_path, plt)
+        plot_by_channel(args.window_name, args.img_path, plt)
