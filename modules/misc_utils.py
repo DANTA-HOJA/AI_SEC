@@ -15,7 +15,7 @@ class Timer():
         self.__stop_time = time.time()
         
     def calculate_consume_time(self):
-        self.__consume_time = self.__start_time - self.__start_time
+        self.__consume_time = self.__start_time - self.__stop_time
         
     def save_consume_time(self, dir_path, desc):
         consume_time_str = f"{{ {desc} }}_{{ {self.__consume_time:.4f} sec }}"
