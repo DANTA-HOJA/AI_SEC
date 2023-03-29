@@ -75,7 +75,7 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
         plt (module): matplotlib.pyplot.
     """
     img = cv2.imread(img_path)
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) # BGR -> RGB
     ch_R, ch_G, ch_B = cv2.split(img_rgb) # split channel
     
     # calculate 'figsize'
@@ -98,11 +98,11 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     # plot G Channel
     axs[2].set_title("G")
-    axs[2].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
+    axs[2].imshow(ch_G, cmap='gray', vmin=0, vmax=255)
     
     # plot B Channel
     axs[3].set_title("B")
-    axs[3].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
+    axs[3].imshow(ch_B, cmap='gray', vmin=0, vmax=255)
     
     plt.show()
     plt.close()
