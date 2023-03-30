@@ -273,13 +273,13 @@ def get_sortedClassMapper_from_dir(dir_path) -> Tuple[List[str], Dict[str, int]]
 
 
 
-def rename_training_dir(status:str, epochs:int, aug_on_fly:bool, use_hsv:bool, time_stamp:str, 
-                        orig_dir_path:str):
+def rename_training_dir(state:str, orig_dir_path:str,  
+                        epochs:int, aug_on_fly:bool, use_hsv:bool, time_stamp:str):
     
     new_name_desc3 = f"{epochs}_epochs"
     if aug_on_fly: new_name_desc3 += "_AugOnFly"
     if use_hsv: new_name_desc3 += "_HSV"
-    new_name = f"{time_stamp}_{{{status}}}_{{{new_name_desc3}}}"
+    new_name = f"{time_stamp}_{{{state}}}_{{{new_name_desc3}}}"
     
     orig_dir_path_list = orig_dir_path.split(os.sep)
     orig_dir_path_list[-1] = new_name
