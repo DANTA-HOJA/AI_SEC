@@ -3,6 +3,7 @@ from glob import glob
 from typing import List, Dict, Tuple
 from collections import Counter
 import logging
+import json
 
 import numpy as np
 import pandas as pd
@@ -285,3 +286,22 @@ def rename_training_dir(status:str, epochs:int, aug_on_fly:bool, use_hsv:bool, t
     new_dir_path = os.sep.join(orig_dir_path_list)
     
     os.rename(orig_dir_path, new_dir_path)
+
+
+
+def save_training_logs(save_dir:str, train_logs:List[Dict[str, any]], 
+                       valid_logs:List[Dict[str, any]], best_val_log:Dict[str, any]):
+    
+    if train_logs:
+        df_train_logs = pd.DataFrame(train_logs)
+        df_train_logs.set_index("epoch", inplace=True)
+        df_train_logs.to_excel(os.path.join(save_dir, "{Logs}_train.xlsx"), engine="openpyxl")
+    
+    if valid_logs:
+        df_valid_logs = pd.DataFrame(valid_logs)
+        df_valid_logs.set_index("epoch", inplace=True)
+        df_valid_logs.to_excel(os.path.join(save_dir, "{Logs}_valid.xlsx"), engine="openpyxl")
+        
+    if best_val_log["epoch"] > 0:
+        with open(os.path.normpath(f"{save_dir}/{{Logs}}_best_valid.log"), mode="w") as f_writer:
+            f_writer.write(json.dumps(best_val_log, indent=4))
