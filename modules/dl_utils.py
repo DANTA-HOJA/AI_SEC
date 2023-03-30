@@ -12,9 +12,7 @@ import torch
 from torch.utils.data import Dataset
 from sklearn.metrics import f1_score
 
-import albumentations as A
-from albumentations.augmentations.transforms import RandomBrightnessContrast, Sharpen
-from albumentations.augmentations.blur.transforms import GaussianBlur
+from imgaug import augmenters as iaa
 
 
 
@@ -34,7 +32,7 @@ def set_gpu(cuda_idx:int):
 class ImgDataset(Dataset):
     
     def __init__(self, paths:List[str], class_mapper:Dict[str, int], label_in_filename:int, 
-                 use_hsv:bool, transform:A.Compose=None, logger:logging.Logger=None):
+                 use_hsv:bool, transform:iaa.Sequential=None, logger:logging.Logger=None):
         
         self.paths = paths
         self.class_mapper = class_mapper
@@ -62,8 +60,7 @@ class ImgDataset(Dataset):
         
         # augmentation on the fly
         if self.transform is not None:
-            transformed = self.transform(image=img)
-            img = transformed["image"]
+            img = self.transform(image=img)
         
         # choosing the color space, 'RGB' or 'HSV'
         if self.use_hsv: 
@@ -160,13 +157,13 @@ def plot_training_trend(plt, save_dir:str,
     # Loss
     axs[0].plot(list(train_logs["epoch"]), list(train_logs[loss_key]), label="train")
     axs[0].plot(list(valid_logs["epoch"]), list(valid_logs[loss_key]), label="validate")
-    axs[0].set_xticks(list(train_logs["epoch"]))
+    # axs[0].set_xticks(list(train_logs["epoch"]))
     axs[0].legend() # turn label on
     axs[0].set_title(loss_key)
     # Score
     axs[1].plot(list(train_logs["epoch"]), list(train_logs[score_key]), label="train")
     axs[1].plot(list(valid_logs["epoch"]), list(valid_logs[score_key]), label="validate")
-    axs[1].set_xticks(list(train_logs["epoch"]))
+    # axs[1].set_xticks(list(train_logs["epoch"]))
     axs[1].set_ylim(0.0, 1.1)
     axs[1].legend() # turn label on
     axs[1].set_title(score_key)
@@ -210,22 +207,31 @@ def confusion_matrix_with_class(ground_truth:List[str], prediction:List[str]):
 
 
 
-def compose_transform() -> A.Compose:
+def compose_transform() -> iaa.Sequential:
     
-    transform = A.Compose(
-        [
-            # A.RandomCrop(width=240, height=320, p=0.5),
-            A.Rotate(limit=40, p=0.5),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            RandomBrightnessContrast(p=0.5),
-            A.OneOf(
-                [
-                    GaussianBlur(p=0.5),
-                    Sharpen(p=0.5),
-                ], p=0.7)
-        ]
-    )
+    transform = iaa.Sequential([
+        iaa.Sometimes(0.5, iaa.Affine(
+            # scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
+            # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
+            rotate=(-25, 25),
+            shear=(-8, 8)
+        )),
+        # iaa.CropToFixedSize(width=512, height=512),
+        iaa.Fliplr(p=0.5),
+        iaa.Flipud(p=0.5),
+        iaa.Sequential([
+            iaa.Sometimes(0.5, [
+                iaa.WithChannels([0, 1], iaa.Clouds()), # ch_B, ch_G
+                # iaa.Sometimes(0.3, iaa.Cartoon()),
+                iaa.GammaContrast((0.5, 2.0)),
+                iaa.OneOf([
+                    iaa.GaussianBlur(sigma=(0, 3.0)), # blur images with a sigma of 0 to 3.0
+                    iaa.Sharpen(alpha=0.5)
+                ])
+            ]), 
+        ], random_order=True),
+        iaa.Dropout2d(p=0.2, nb_keep_channels=2),
+    ])
     
     return transform
 
