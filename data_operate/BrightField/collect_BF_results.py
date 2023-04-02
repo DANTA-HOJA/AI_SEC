@@ -32,8 +32,8 @@ result_map = {
     "RoiSet" :                  "MetaImage/RoiSet.zip",
 	"AutoAnalysis" :            "AutoAnalysis.csv",
     "ManualAnalysis" :          "ManualAnalysis.csv",
-    "Manual_measured_mask" :    "Manual_measured_mask.tif",
-    "Manual_cropped_BF--MIX" :  "Manual_cropped_BF--MIX.tif",
+    "Manual_measured_mask" :    "Manual_measured_mask.tif", # CHECK_PT 
+    "Manual_cropped_BF--MIX" :  "Manual_cropped_BF--MIX.tif", # CHECK_PT 
 }
 result_key = "ManualAnalysis"
 
