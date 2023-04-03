@@ -137,13 +137,22 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     fig, axs = plt.subplots(row, column, figsize=fig_size_div_dpi, dpi=fig_dpi)
     fig.suptitle(fig_title)
     # plot each image
-    for iter in range(row*column):
-        i = floor(iter/column)
-        j = floor(iter%column)
-        # print(i, j)
-        img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
-        axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
-        if subtitle is not None: axs[i, j].set_title(subtitle[iter])
+    if (row == 1) or (column == 1):
+        
+        for iter in range(row*column):
+            img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+            axs[iter].imshow(img_rgb, vmin=0, vmax=255)
+            if subtitle is not None: axs[iter].set_title(subtitle[iter])
+    
+    else:
+        
+        for iter in range(row*column):
+            i = floor(iter/column)
+            j = floor(iter%column)
+            # print(i, j)
+            img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+            axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
+            if subtitle is not None: axs[i, j].set_title(subtitle[iter])
     
     plt.show()
     plt.close()
