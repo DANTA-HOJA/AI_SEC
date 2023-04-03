@@ -77,15 +77,17 @@ class ImgDataset(Dataset):
         
         # read class label
         ## example_name : L_fish_9_A_aug_0NTz2m7j.tiff
-        id = path.split(os.sep)[-1].split(".")[0] # filename_without_extension
-        cls = id.split("_")[self.label_in_filename]
+        imgname_no_ext = path.split(os.sep)[-1].split(".")[0] # imgname_no_ext: image name without extension
+        imgname_no_ext_list = imgname_no_ext.split("_")
+        fish_ID = imgname_no_ext_list[2]
+        cls = imgname_no_ext_list[self.label_in_filename]
         cls_idx = self.class_mapper[cls]
         # print(f"image[{index:^4d}] = {path}, class = {all_class[cls_idx]}")
 
         img = torch.from_numpy(img).float()  # 32-bit float ,  TODO:  choose proper type for fast training, like fp16 or others.
         cls_idx = torch.tensor(cls_idx) # 64-bit int, can be [0] or [1] or [2] only
         
-        return img, cls_idx
+        return img, cls_idx, fish_ID
 
 
 
