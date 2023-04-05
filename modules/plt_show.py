@@ -135,7 +135,7 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     
     # Create figure
     fig, axs = plt.subplots(row, column, figsize=fig_size_div_dpi, dpi=fig_dpi)
-    fig.suptitle(fig_title)
+    fig.suptitle(fig_title, fontsize=26)
     # plot each image
     if (row == 1) or (column == 1):
         
@@ -153,6 +153,9 @@ def plot_with_imglist(img_list:List[cv2.Mat],
             img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
             axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
             if subtitle is not None: axs[i, j].set_title(subtitle[iter])
+    
+    fig.tight_layout()
+    plt.subplots_adjust(top=0.9)
     
     plt.show()
     plt.close()
