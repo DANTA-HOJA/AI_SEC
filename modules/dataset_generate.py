@@ -138,15 +138,15 @@ def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) 
         # calculate ratio
         dark_ratio = pixel_too_dark/(img_size[0]*img_size[1])
         if dark_ratio >= drop_ratio: # 有表皮資訊的
-            drop_crop_img_list.append(crop_img_list[i])
+            drop_crop_img_list.append((i, crop_img_list[i]))
         else: 
-            select_crop_img_list.append(crop_img_list[i])
+            select_crop_img_list.append((i, crop_img_list[i]))
 
     return select_crop_img_list, drop_crop_img_list
 
 
 
-def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str, 
+def crop_img_saver(crop_img_list:List[Tuple[int, cv2.Mat]], crop_img_desc:str, save_dir:str, 
                    fish_size:str, fish_id:str, fish_pos:str, 
                    tqdm_process:tqdm, tqdm_overwrite_desc:str=None):
     
@@ -158,13 +158,13 @@ def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str,
     tqdm_process.refresh()
     
     # write crop images
-    for j in range(len(crop_img_list)):
+    for item in crop_img_list: # item : ( i, crop_img )
         save_dir_size = os.path.join(save_dir, crop_img_desc, fish_size)
         create_new_dir(save_dir_size, display_in_CLI=False)
-        write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{j}.tiff"
+        write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{item[0]}.tiff"
         write_path = os.path.join(save_dir_size, write_name)
 
-        crop_img = crop_img_list[j] # convenience to debug preview
+        crop_img = item[1] # convenience to debug preview
         cv2.imwrite(write_path, crop_img)
         # cv2.imshow(write_name, select_crop_img)
         # cv2.waitKey(0)
