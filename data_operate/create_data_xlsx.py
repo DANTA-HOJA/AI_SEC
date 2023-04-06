@@ -24,7 +24,7 @@ import pandas as pd
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules")
 from logger import init_logger
-from norm_name import get_fish_ID_pos, create_dict_by_fishID, merge_BF_analysis
+from dataop import get_fish_ID_pos, create_dict_by_fishID, merge_BF_analysis
 
 
 

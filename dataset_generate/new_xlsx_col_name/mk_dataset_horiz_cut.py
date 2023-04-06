@@ -12,7 +12,7 @@ import cv2
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
-from norm_name import get_fish_ID_pos
+from dataop import get_fish_ID_pos
 from dataset_generate import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log, logs_saver, gen_train_selected_summary
 
 
