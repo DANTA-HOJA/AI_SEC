@@ -395,7 +395,7 @@ if __name__ == "__main__":
             logs_saver(**logs_saver_kwargs)
 
 
-    # Generate '{Logs}_train_selected_summary.log'
+    # Generate '{Logs}_train_selected_summary.log', '{Logs}_input_args.log'
     for dir_path in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
         gen_train_selected_summary(dir_path, all_class)
         save_input_args(dir_path, args)
