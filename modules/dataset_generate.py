@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import argparse
 from typing import List, Dict, Tuple
 from glob import glob
 import json
@@ -224,3 +225,12 @@ def gen_train_selected_summary(dir_path:str, all_class:List[str]):
     
     with open(os.path.normpath(f"{dir_path}/{{Logs}}_train_selected_summary.log"), mode="w") as f_writer:
         f_writer.write(json.dumps(class_count, indent=4))
+
+
+
+def save_input_args(save_path:str, args:argparse.Namespace):
+    
+    args_dict = vars(args)
+    
+    with open(os.path.normpath(f"{save_path}/{{Logs}}_input_args.log"), mode="w") as f_writer:
+        f_writer.write(json.dumps(args_dict, indent=4))
