@@ -152,8 +152,7 @@ def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str,
     
     
     # adjust settings of 'tqdm_process'
-    if tqdm_overwrite_desc is not None: 
-        tqdm_process.desc  = tqdm_overwrite_desc
+    if tqdm_overwrite_desc is not None: tqdm_process.desc  = tqdm_overwrite_desc
     tqdm_process.n     = 0   # current value
     tqdm_process.total = len(crop_img_list)
     tqdm_process.refresh()
@@ -175,12 +174,13 @@ def crop_img_saver(crop_img_list:List[cv2.Mat], crop_img_desc:str, save_dir:str,
 
 
 
-def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, all_class:List[str],
+def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, selected_part:str, all_class:List[str],
                crop_img_list:List[cv2.Mat], select_crop_img_list:List[cv2.Mat], drop_crop_img_list:List[cv2.Mat]):
     
     
     current_log = {
-        "fish_name_comb": f"{fish_size}_fish_{fish_id}_{fish_pos}",
+        "fish_name (dataset)": f"{fish_size}_fish_{fish_id}_{fish_pos}",
+        "selected part": selected_part,
         #
         "number_of_crop": len(crop_img_list),
         "number_of_drop": len(drop_crop_img_list),

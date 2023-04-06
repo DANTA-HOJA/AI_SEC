@@ -3,6 +3,7 @@ import sys
 import argparse
 from datetime import datetime
 from collections import Counter
+import json
 
 from math import floor
 from tqdm.auto import tqdm
@@ -176,11 +177,11 @@ if __name__ == "__main__":
         
         
         # *** Start process ***
-        for i, fish_name in enumerate(df_palmskin_list):
+        for i, fish_name_for_data in enumerate(df_palmskin_list):
             
             
             # *** Load image ***
-            fish_path = os.path.normpath(f"{stacked_palmskin_dir}/{fish_name}.tif")
+            fish_path = os.path.normpath(f"{stacked_palmskin_dir}/{fish_name_for_data}.tif")
             fish = cv2.imread(fish_path)
             
             
@@ -225,13 +226,19 @@ if __name__ == "__main__":
 
             # *** Crop upper part(train dataset) and lower part(test dataset) ***
             #
+            part_of_train = ""
+            part_of_test = ""
             if np.random.choice([True, False], size=1, replace=False)[0]:
                 used_for_test = fish_upper
                 used_for_train = fish_lower
+                part_of_test = "U"
+                part_of_train = "L"
                 rand_choice_result["test : upper, train: lower"] += 1
             else:
                 used_for_test = fish_lower
                 used_for_train = fish_upper
+                part_of_test = "L"
+                part_of_train = "U"
                 rand_choice_result["test : lower, train: upper"] += 1
             #
             ## crop test
@@ -252,8 +259,8 @@ if __name__ == "__main__":
             fish_size = df_class_list[i]
             #
             # print(fish_size, fish_ID, fish_pos)
-            fish_name_comb = f'{fish_size}_fish_{fish_ID}_{fish_pos}'
-            pbar_n_fish.desc = f"Cropping {pos}... '{fish_name_comb}' "
+            fish_name_for_dataset = f'{fish_size}_fish_{fish_ID}_{fish_pos}'
+            pbar_n_fish.desc = f"Cropping {pos}... '{fish_name_for_dataset}' "
             pbar_n_fish.refresh()
 
 
@@ -320,6 +327,7 @@ if __name__ == "__main__":
                 "fish_size"            : fish_size,
                 "fish_id"              : fish_ID,
                 "fish_pos"             : fish_pos,
+                "selected_part"        : part_of_train,
                 "all_class"            : all_class,
                 "crop_img_list"        : train_crop_img_list, 
                 "select_crop_img_list" : train_select_crop_img_list, 
@@ -333,6 +341,7 @@ if __name__ == "__main__":
                 "fish_size"            : fish_size,
                 "fish_id"              : fish_ID,
                 "fish_pos"             : fish_pos,
+                "selected_part"        : part_of_test,
                 "all_class"            : all_class,
                 "crop_img_list"        : test_crop_img_list, 
                 "select_crop_img_list" : test_select_crop_img_list, 
@@ -348,7 +357,9 @@ if __name__ == "__main__":
         pbar_n_select.close()
         pbar_n_drop.close()
 
-
+        
+        print("\n", json.dumps(rand_choice_result, indent=4))
+        
 
         # *** Save logs into XLSX and show in CLI ***
         ## get time to as file name
