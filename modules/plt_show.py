@@ -110,8 +110,9 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 
 
 def plot_with_imglist(img_list:List[cv2.Mat],
-                      fig_title:str, fig_size:Tuple[float, float], 
-                      row:int, column:int, subtitle:List[str]=None, plt=plt):
+                      fig_size:Tuple[float, float], row:int, column:int, 
+                      fig_title:str, fig_title_font_size:int=26, 
+                      subtitle:List[str]=None, subtitle_font_size:int=13, use_rgb:bool=False, plt=plt):
     
     """
     show an RGB image by splitting its channels.
@@ -135,14 +136,15 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     
     # Create figure
     fig, axs = plt.subplots(row, column, figsize=fig_size_div_dpi, dpi=fig_dpi)
-    fig.suptitle(fig_title, fontsize=26)
+    fig.suptitle(fig_title, fontsize=fig_title_font_size) # TODO:  Auto font size
     # plot each image
     if (row == 1) or (column == 1):
         
         for iter in range(row*column):
-            img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+            if not use_rgb: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+            else: img_rgb = img_list[iter]
             axs[iter].imshow(img_rgb, vmin=0, vmax=255)
-            if subtitle is not None: axs[iter].set_title(subtitle[iter])
+            if subtitle is not None: axs[iter].set_title(subtitle[iter], fontdict={'fontsize': subtitle_font_size}) # TODO:  Auto font size
     
     else:
         
@@ -150,9 +152,10 @@ def plot_with_imglist(img_list:List[cv2.Mat],
             i = floor(iter/column)
             j = floor(iter%column)
             # print(i, j)
-            img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+            if not use_rgb: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
+            else: img_rgb = img_list[iter]
             axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
-            if subtitle is not None: axs[i, j].set_title(subtitle[iter])
+            if subtitle is not None: axs[i, j].set_title(subtitle[iter], fontdict={'fontsize': subtitle_font_size}) # TODO:  Auto font size
     
     fig.tight_layout()
     plt.subplots_adjust(top=0.9)
