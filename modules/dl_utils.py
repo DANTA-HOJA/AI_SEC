@@ -32,13 +32,13 @@ def set_gpu(cuda_idx:int):
 
 class ImgDataset(Dataset):
     
-    def __init__(self, paths:List[str], class_mapper:Dict[str, int], label_in_filename:int, 
+    def __init__(self, paths:List[str], class_mapper:Dict[str, int], resize:Tuple[int, int], 
                  use_hsv:bool, transform:iaa.Sequential=None, logger:logging.Logger=None):
         
         self.paths = paths
         self.class_mapper = class_mapper
         self.num_classes = len(self.class_mapper)
-        self.label_in_filename = label_in_filename
+        self.resize = resize # (W, H)
         self.transform = transform
         self.use_hsv = use_hsv
         if logger is not None:
@@ -70,19 +70,18 @@ class ImgDataset(Dataset):
             img = img[:,:,::-1] # BGR -> RGB
         
         # resize to model input size
-        img = cv2.resize(img, (224, 224), interpolation=cv2.INTER_CUBIC)
+        img = cv2.resize(img, self.resize, interpolation=cv2.INTER_CUBIC)
         img = img / 255.0 # normalize to 0~1
         img = np.moveaxis(img, -1, 0) # img_dims == 3: (H, W, C) -> (C, H, W)
         
         
         # read class label
         ## example_name : L_fish_111_A_selected_0.tiff
-        ## example_name : L_fish_9_A_aug_0NTz2m7j.tiff
+        ## example_list : ['L', 'fish', '111', 'A', 'selected', '0']
         imgname_no_ext = path.split(os.sep)[-1].split(".")[0] # imgname_no_ext: image name without extension
         imgname_no_ext_list = imgname_no_ext.split("_")
-        cls = imgname_no_ext_list[self.label_in_filename]
-        cls_idx = self.class_mapper[cls]
-        # print(f"image[{index:^4d}] = {path}, class = {all_class[cls_idx]}")
+        cls_idx = self.class_mapper[imgname_no_ext_list[0]]
+
 
         img = torch.from_numpy(img).float()  # 32-bit float
         cls_idx = torch.tensor(cls_idx) # 64-bit int, can be [0] or [1] or [2] only
