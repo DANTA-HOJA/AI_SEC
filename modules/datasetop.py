@@ -234,3 +234,14 @@ def save_input_args(save_path:str, args:argparse.Namespace):
     
     with open(os.path.normpath(f"{save_path}/{{Logs}}_input_args.log"), mode="w") as f_writer:
         f_writer.write(json.dumps(args_dict, indent=4))
+
+
+
+def sortFishNameForDataset(fish_name_string:str) -> Tuple[int, str, int]:
+    
+    if os.sep in fish_name_string: fish_name_for_dataset = fish_name_string.split(os.sep)[-1].split(".")[0]
+    else: fish_name_for_dataset = fish_name_string.split(".")[0]
+    
+    name_split_list = re.split(" |_|-", fish_name_for_dataset) # example_list : ['L', 'fish', '111', 'A', 'selected', '0']
+    
+    return name_split_list[0], int(name_split_list[2]), name_split_list[3], int(name_split_list[5])
