@@ -13,10 +13,10 @@ def create_new_dir(path:str, end="\n", display_in_CLI=True, use_tqdm=False):
 
 
 
-def resave_result(original_path:str, output_dir:str, result:str):
+def resave_result(original_path:str, output_dir:str, result_path:str):
     if "MetaImage" in original_path: fish_name = original_path.split(os.sep)[-3]
     else: fish_name = original_path.split(os.sep)[-2]
-    file_ext = result.split(".")[-1]
+    file_ext = result_path.split(".")[-1]
     out_path = os.path.join(output_dir, f"{fish_name}.{file_ext}")
     os.system(f"copy \"{original_path}\" \"{out_path}\" ")
     filecmp.cmp(original_path, out_path)
