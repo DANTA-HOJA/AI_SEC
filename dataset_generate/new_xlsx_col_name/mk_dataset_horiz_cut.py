@@ -14,7 +14,7 @@ import pandas as pd
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, \
+from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, \
                       append_log, logs_saver, gen_train_selected_summary, save_input_args
 
 
@@ -261,7 +261,7 @@ if __name__ == "__main__":
             for dir_path in [save_dir, save_dir_Mix_AP]:
                 
                 # save 'test_select_crop_img_list' 
-                crop_img_saver_kwargs = {
+                save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "test"),
                     "crop_img_list" : test_select_crop_img_list,
                     "crop_img_desc" : "selected",
@@ -271,10 +271,10 @@ if __name__ == "__main__":
                     "tqdm_process"  : pbar_n_select,
                     "tqdm_overwrite_desc" : "Saving selected... Test "
                 }
-                crop_img_saver(**crop_img_saver_kwargs)
+                save_crop_img(**save_crop_img_kwargs)
                 
                 # save 'test_drop_crop_img_list' 
-                crop_img_saver_kwargs = {
+                save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "test"),
                     "crop_img_list" : test_drop_crop_img_list,
                     "crop_img_desc" : "drop",
@@ -284,10 +284,10 @@ if __name__ == "__main__":
                     "tqdm_process"  : pbar_n_drop,
                     "tqdm_overwrite_desc" : "Saving drop... Test "
                 }
-                crop_img_saver(**crop_img_saver_kwargs)
+                save_crop_img(**save_crop_img_kwargs)
 
                 # save 'train_select_crop_img_list' 
-                crop_img_saver_kwargs = {
+                save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "train"),
                     "crop_img_list" : train_select_crop_img_list,
                     "crop_img_desc" : "selected",
@@ -297,10 +297,10 @@ if __name__ == "__main__":
                     "tqdm_process"  : pbar_n_select,
                     "tqdm_overwrite_desc" : "Saving selected... Train "
                 }
-                crop_img_saver(**crop_img_saver_kwargs)
+                save_crop_img(**save_crop_img_kwargs)
 
                 # save 'train_drop_crop_img_list' 
-                crop_img_saver_kwargs = {
+                save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "train"),
                     "crop_img_list" : train_drop_crop_img_list,
                     "crop_img_desc" : "drop",
@@ -310,7 +310,7 @@ if __name__ == "__main__":
                     "tqdm_process"  : pbar_n_drop,
                     "tqdm_overwrite_desc" : "Saving drop... Train "
                 }
-                crop_img_saver(**crop_img_saver_kwargs)
+                save_crop_img(**save_crop_img_kwargs)
 
 
 

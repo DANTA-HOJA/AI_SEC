@@ -147,7 +147,7 @@ def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) 
 
 
 
-def crop_img_saver(crop_img_list:List[Tuple[int, cv2.Mat]], crop_img_desc:str, save_dir:str, 
+def save_crop_img(crop_img_list:List[Tuple[int, cv2.Mat]], crop_img_desc:str, save_dir:str, 
                    fish_size:str, fish_id:str, fish_pos:str, 
                    tqdm_process:tqdm, tqdm_overwrite_desc:str=None):
     

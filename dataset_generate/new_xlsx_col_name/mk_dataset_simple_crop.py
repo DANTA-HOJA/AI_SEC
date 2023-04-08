@@ -11,7 +11,7 @@ import cv2
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, crop_img_saver, append_log, logs_saver
+from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, append_log, logs_saver
 
 
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
 
             # *** Save 'select_crop_img' ***
-            crop_img_saver_kwargs = {
+            save_crop_img_kwargs = {
                 "save_dir"      : os.path.join(save_dir, key),
                 "crop_img_list" : select_crop_img_list,
                 "crop_img_desc" : "selected",
@@ -216,11 +216,11 @@ if __name__ == "__main__":
                 "fish_pos"      : fish_pos,
                 "tqdm_process"  : pbar_n_select,
             }
-            crop_img_saver(**crop_img_saver_kwargs)
+            save_crop_img(**save_crop_img_kwargs)
 
 
             # *** Save 'drop_crop_img' ***
-            crop_img_saver_kwargs = {
+            save_crop_img_kwargs = {
                 "save_dir"      : os.path.join(save_dir, key),
                 "crop_img_list" : drop_crop_img_list,
                 "crop_img_desc" : "drop",
@@ -229,7 +229,7 @@ if __name__ == "__main__":
                 "fish_pos"      : fish_pos,
                 "tqdm_process"  : pbar_n_drop,
             }
-            crop_img_saver(**crop_img_saver_kwargs)
+            save_crop_img(**save_crop_img_kwargs)
 
 
             # *** Update log of current fish ***
