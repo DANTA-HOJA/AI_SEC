@@ -15,7 +15,7 @@ sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules"
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
 from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, \
-                      append_log, logs_saver, gen_train_selected_summary, save_input_args
+                      append_log, save_logs, gen_train_selected_summary, save_input_args
 
 
 
@@ -363,7 +363,7 @@ if __name__ == "__main__":
             else : show_df = True
             
             # 'trainset_logs'
-            logs_saver_kwargs = {
+            save_logs_kwargs = {
                 "logs"        : trainset_logs,
                 "save_dir"    : dir_path,
                 "log_desc"    : f"Logs_{pos[0]}_train",
@@ -372,10 +372,10 @@ if __name__ == "__main__":
                 "time_stamp"  : time_stamp,
                 "show_df"     : show_df
             }
-            logs_saver(**logs_saver_kwargs)
+            save_logs(**save_logs_kwargs)
 
             # 'testset_logs'
-            logs_saver_kwargs = {
+            save_logs_kwargs = {
                 "logs"        : testset_logs,
                 "save_dir"    : dir_path,
                 "log_desc"    : f"Logs_{pos[0]}_test",
@@ -384,7 +384,7 @@ if __name__ == "__main__":
                 "time_stamp"  : time_stamp,
                 "show_df"     : show_df
             }
-            logs_saver(**logs_saver_kwargs)
+            save_logs(**save_logs_kwargs)
 
 
     # Generate '{Logs}_train_selected_summary.log', '{Logs}_input_args.log'

@@ -201,7 +201,7 @@ def append_log(logs:List[Dict], fish_size:str, fish_id:str, fish_pos:str, select
 
 
 
-def logs_saver(logs:List[Dict], save_dir:str, log_desc:str, script_name:str, time_stamp:str, CLI_desc:str="", show_df:bool=True):
+def save_logs(logs:List[Dict], save_dir:str, log_desc:str, script_name:str, time_stamp:str, CLI_desc:str="", show_df:bool=True):
     
     df = pd.DataFrame(logs)
     df.loc['TOTAL'] = df.select_dtypes(np.number).sum()
