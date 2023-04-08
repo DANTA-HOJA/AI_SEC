@@ -2,6 +2,7 @@ from typing import List, Tuple
 import argparse
 from math import floor
 
+import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
@@ -112,7 +113,8 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 def plot_with_imglist(img_list:List[cv2.Mat],
                       fig_size:Tuple[float, float], row:int, column:int, 
                       fig_title:str, fig_title_font_size:int=26, 
-                      subtitle:List[str]=None, subtitle_font_size:int=13, use_rgb:bool=False, plt=plt):
+                      subtitle:List[str]=None, subtitle_font_size:int=13, 
+                      save_path:str=None, use_rgb:bool=False, show_fig:bool=True, plt=plt):
     
     """
     show an RGB image by splitting its channels.
@@ -128,7 +130,7 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     
-    # calculate 'figsize'
+    # calculate 'figsize' # TODO:  Auto figure size
     fig_dpi = 100
     fig_size_div_dpi = []
     fig_size_div_dpi.append(fig_size[0]/fig_dpi)
@@ -160,8 +162,49 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     fig.tight_layout()
     plt.subplots_adjust(top=0.9)
     
-    plt.show()
+    if save_path is not None: fig.savefig(save_path)
+    if show_fig: plt.show()
+    
     plt.close()
+
+
+
+def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, 
+                               fig_title:str="", fig_title_font_size:int=26, 
+                               subtitle:List[str]=None, subtitle_font_size:int=13, 
+                               save_path:str=None, use_rgb:bool=False, 
+                               verbose:bool=False, show_fig:bool=True, plt=plt):
+    
+    
+    assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
+    
+    # append empty arrays to the end of 'image_list' until its length is a multiple of 'column'
+    orig_len = len(img_list)
+    while len(img_list)%column != 0: img_list.append(np.ones_like(img_list[-1])*255)
+    if verbose: print(f"len(img_list): {orig_len} --> {len(img_list)}")
+    
+    auto_row = int(len(img_list)/column)
+    
+    # calculate 'figsize' # TODO:  Auto figure size
+    fig_w = (img_list[-1].shape[1])*column 
+    fig_h = (img_list[-1].shape[0])*auto_row
+    if verbose: print(f"figure resolution : {fig_w}, {fig_h}")
+    
+    # plot 
+    kwargs_plot_with_imglist = {
+        "img_list"             : img_list,
+        "fig_title"            : " , ".join([fig_title, f"( row, column ) = ( {auto_row}, {column} )"]),
+        "fig_title_font_size"  : fig_title_font_size,
+        "fig_size"             : (fig_w, fig_h),
+        "row"                  : auto_row,
+        "column"               : column,
+        "subtitle"             : subtitle,
+        "subtitle_font_size"   : subtitle_font_size,
+        "save_path"            : save_path,
+        "use_rgb"              : use_rgb,
+        "show_fig"             : show_fig,
+    }
+    plot_with_imglist(**kwargs_plot_with_imglist)
 
 
 
