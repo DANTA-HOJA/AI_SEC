@@ -16,19 +16,19 @@ from fileop import create_new_dir
 
 
 
-def gen_dataset_name(xlsx_file:str, crop_size:int, crop_shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
+def gen_dataset_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
     """To generate dataset's name corresponing to the passing parameters.
     
     Args:
         xlsx_file (str):                e.g. "{4CLS_BY_SurfStDev}_data.xlsx" ---> SURF4C
         crop_size (int):                e.g.       512                       ---> CRPS512
-        crop_shift_region (str):        e.g.      "1/4"                      ---> SF14
+        shift_region (str):        e.g.      "1/4"                      ---> SF14
         intensity (int):                e.g.        20                       ---> INT20
         drop_ratio (float):             e.g.        0.3                      ---> DRP30
         random_seed (int, optional):    e.g.       2022                      ---> RS2022. Defaults to None.
 
     Raises:
-        ValueError: "Numerator of 'crop_shift_region' needs to be 1"
+        ValueError: "Numerator of 'shift_region' needs to be 1"
 
     Returns:
         str:
@@ -41,10 +41,10 @@ def gen_dataset_name(xlsx_file:str, crop_size:int, crop_shift_region:str, intens
     n_class = xlsx_file_split[1].replace("CLS", "C")
     used_feature = xlsx_file_split[3].replace("StDev", "").upper()
     
-    # Converting... "crop_shift_region"
-    fraction = crop_shift_region.split("/")
+    # Converting... "shift_region"
+    fraction = shift_region.split("/")
     if int(fraction[0]) == 1: fraction = f"{fraction[0]}{fraction[1]}"
-    else: raise ValueError("Numerator of 'crop_shift_region' needs to be 1")
+    else: raise ValueError("Numerator of 'shift_region' needs to be 1")
     
     # Converting... "drop_ratio"
     ratio = int(drop_ratio*100)

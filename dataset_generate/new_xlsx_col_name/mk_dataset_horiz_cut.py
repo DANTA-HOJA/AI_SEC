@@ -53,7 +53,7 @@ def get_args():
         help="the size to crop images.",
     )
     parser.add_argument(
-        "--crop_shift_region",
+        "--shift_region",
         type=str,
         default="1/4",
         help="the overlapping region between each cropped image.",
@@ -86,8 +86,8 @@ def get_args():
     args = parser.parse_args()
     
     # Check arguments
-    fraction = args.crop_shift_region.split("/")
-    if int(fraction[0]) != 1: raise ValueError("Numerator of 'crop_shift_region' needs to be 1")
+    fraction = args.shift_region.split("/")
+    if int(fraction[0]) != 1: raise ValueError("Numerator of 'shift_region' needs to be 1")
     
     return args
 
@@ -111,8 +111,8 @@ if __name__ == "__main__":
     stacked_palmskin_dir = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection", args.stacked_palmskin_dir)
     #
     crop_size = args.crop_size # size of the crop image.
-    crop_shift_region = args.crop_shift_region # if 'shift_region' is passed, calculate the shift region while creating each cropped image,
-                                               # e.g. shift_region=1/3, the overlapping region of each cropped image is 2/3.                  
+    shift_region = args.shift_region # if 'shift_region' is passed, calculate the shift region while creating each cropped image,
+                                     # e.g. shift_region=1/3, the overlapping region of each cropped image is 2/3.                  
     intensity = args.intensity # a threshold to define too dark or not.
     drop_ratio = args.drop_ratio # a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop, 
                                  # if drop_ratio < 0.5, keeps the crop image.
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     np.random.seed(random_seed)
     #
     dataset_root = args.dataset_root
-    gen_name = gen_dataset_name(xlsx_file, crop_size, crop_shift_region, intensity, drop_ratio, random_seed)
+    gen_name = gen_dataset_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
     save_dir_A_only = os.path.join(args.dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", gen_name)
     save_dir_P_only = os.path.join(args.dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", gen_name)
     save_dir_Mix_AP = os.path.join(args.dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", gen_name)
@@ -237,11 +237,11 @@ if __name__ == "__main__":
                 rand_choice_result["test : lower, train: upper"] += 1
             #
             ## crop test
-            test_crop_img_list = gen_crop_img(used_for_test, crop_size, crop_shift_region)
+            test_crop_img_list = gen_crop_img(used_for_test, crop_size, shift_region)
             test_select_crop_img_list, test_drop_crop_img_list = drop_too_dark(test_crop_img_list, intensity, drop_ratio)
             #
             ## crop train
-            train_crop_img_list = gen_crop_img(used_for_train, crop_size, crop_shift_region)
+            train_crop_img_list = gen_crop_img(used_for_train, crop_size, shift_region)
             train_select_crop_img_list, train_drop_crop_img_list = drop_too_dark(train_crop_img_list, intensity, drop_ratio)
 
 
