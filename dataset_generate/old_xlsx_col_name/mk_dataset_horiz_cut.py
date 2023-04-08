@@ -1,31 +1,23 @@
 import os
 import sys
-import traceback
+import argparse
 from glob import glob
-from copy import deepcopy
 from typing import List
 from pathlib import Path
 from datetime import datetime
-import argparse
-
-import json
-import pandas as pd
-
-from math import floor
-import numpy as np
 from collections import Counter
+from copy import deepcopy
+from math import floor
+import traceback
+import json
 
 import cv2
+import pandas as pd
+import numpy as np
 
-from dataset_generate_functions import create_new_dir, gen_crop_img, drop_too_dark
-
-
-# *** Show images methods ***
-# cv2.imshow("fish", fish)
-# cv2.waitKey(0)
-# plt_show.img_rgb("fish", fish)
-# plt_show.img_gray("fish", fish)
-# plt_show.img_by_channel("fish", fish)
+sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
+from fileop import create_new_dir
+from datasetop import gen_crop_img, drop_too_dark
 
 
 
