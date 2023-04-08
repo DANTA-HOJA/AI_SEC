@@ -138,18 +138,18 @@ def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) 
         img_size = crop_img_list[i].shape
         # calculate ratio
         dark_ratio = pixel_too_dark/(img_size[0]*img_size[1])
-        if dark_ratio >= drop_ratio: # 有表皮資訊的
-            drop_crop_img_list.append((i, crop_img_list[i]))
+        if dark_ratio >= drop_ratio: # 減少 model 學習沒有表皮資訊的位置的可能性
+            drop_crop_img_list.append((i, crop_img_list[i], dark_ratio))
         else: 
-            select_crop_img_list.append((i, crop_img_list[i]))
+            select_crop_img_list.append((i, crop_img_list[i], dark_ratio))
 
     return select_crop_img_list, drop_crop_img_list
 
 
 
-def save_crop_img(crop_img_list:List[Tuple[int, cv2.Mat]], crop_img_desc:str, save_dir:str, 
-                   fish_size:str, fish_id:str, fish_pos:str, 
-                   tqdm_process:tqdm, tqdm_overwrite_desc:str=None):
+def save_crop_img(crop_img_list:List[Tuple[int, cv2.Mat]], darkratio_log:Dict[str, float],
+                  save_dir:str, crop_img_desc:str, fish_size:str, fish_id:str, fish_pos:str,
+                  tqdm_process:tqdm, tqdm_overwrite_desc:str=None):
     
     
     # adjust settings of 'tqdm_process'
@@ -159,16 +159,19 @@ def save_crop_img(crop_img_list:List[Tuple[int, cv2.Mat]], crop_img_desc:str, sa
     tqdm_process.refresh()
     
     # write crop images
-    for item in crop_img_list: # item : ( i, crop_img )
+    for item in crop_img_list: # item : ( crop_idx , crop_img, dark_ratio )
+        
         save_dir_size = os.path.join(save_dir, crop_img_desc, fish_size)
         create_new_dir(save_dir_size, display_in_CLI=False)
-        write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{item[0]}.tiff"
-        write_path = os.path.join(save_dir_size, write_name)
+        write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{item[0]}"
+        write_path = os.path.join(save_dir_size, f"{write_name}.tiff")
 
         crop_img = item[1] # convenience to debug preview
         cv2.imwrite(write_path, crop_img)
         # cv2.imshow(write_name, select_crop_img)
         # cv2.waitKey(0)
+        
+        if write_name not in darkratio_log: darkratio_log[write_name] = item[2]
         
         tqdm_process.update(1)
         tqdm_process.refresh()
@@ -209,7 +212,7 @@ def save_dataset_logs(logs:List[Dict], save_dir:str, log_desc:str, script_name:s
     if show_df: print(f"\n{CLI_desc}\n", df, "\n")
     
     # *** Save logs ***
-    log_path_abs = f"{save_dir}/{{{log_desc}}}_{{{script_name}}}_{time_stamp}.xlsx"
+    log_path_abs = os.path.normpath(f"{save_dir}/{{{log_desc}}}_{{{script_name}}}_{time_stamp}.xlsx")
     df.to_excel(log_path_abs, engine="openpyxl")
     print("\n", f"log save @ \n-> {log_path_abs}\n")
 

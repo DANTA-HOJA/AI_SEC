@@ -150,6 +150,8 @@ if __name__ == "__main__":
         testset_logs = []
         rand_choice_result = {"test : upper, train: lower": 0, 
                               "test : lower, train: upper": 0}
+        train_darkratio_log = {}
+        test_darkratio_log = {}
         
         
         # *** Print CMD section divider ***
@@ -246,13 +248,13 @@ if __name__ == "__main__":
 
             # *** Extracting / Looking up the information on current fish ***
             ## path, e.g. "...\{*}_RGB_reCollection\[*result]\20220727_CE012_palmskin_9dpf - Series002_fish_111_P_RGB.tif"
-            fish_ID, fish_pos = get_fish_ID_pos(fish_path)
+            fish_id, fish_pos = get_fish_ID_pos(fish_path)
             #
             ## looking up the class of current fish
             fish_size = df_class_list[i]
             #
-            # print(fish_size, fish_ID, fish_pos)
-            fish_name_for_dataset = f'{fish_size}_fish_{fish_ID}_{fish_pos}'
+            # print(fish_size, fish_id, fish_pos)
+            fish_name_for_dataset = f'{fish_size}_fish_{fish_id}_{fish_pos}'
             pbar_n_fish.desc = f"Cropping {pos}... '{fish_name_for_dataset}' "
             pbar_n_fish.refresh()
 
@@ -264,9 +266,10 @@ if __name__ == "__main__":
                 save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "test"),
                     "crop_img_list" : test_select_crop_img_list,
+                    "darkratio_log" : test_darkratio_log,
                     "crop_img_desc" : "selected",
                     "fish_size"     : fish_size,
-                    "fish_id"       : fish_ID,
+                    "fish_id"       : fish_id,
                     "fish_pos"      : fish_pos,
                     "tqdm_process"  : pbar_n_select,
                     "tqdm_overwrite_desc" : "Saving selected... Test "
@@ -277,9 +280,10 @@ if __name__ == "__main__":
                 save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "test"),
                     "crop_img_list" : test_drop_crop_img_list,
+                    "darkratio_log" : test_darkratio_log,
                     "crop_img_desc" : "drop",
                     "fish_size"     : fish_size,
-                    "fish_id"       : fish_ID,
+                    "fish_id"       : fish_id,
                     "fish_pos"      : fish_pos,
                     "tqdm_process"  : pbar_n_drop,
                     "tqdm_overwrite_desc" : "Saving drop... Test "
@@ -290,9 +294,10 @@ if __name__ == "__main__":
                 save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "train"),
                     "crop_img_list" : train_select_crop_img_list,
+                    "darkratio_log" : train_darkratio_log,
                     "crop_img_desc" : "selected",
                     "fish_size"     : fish_size,
-                    "fish_id"       : fish_ID,
+                    "fish_id"       : fish_id,
                     "fish_pos"      : fish_pos,
                     "tqdm_process"  : pbar_n_select,
                     "tqdm_overwrite_desc" : "Saving selected... Train "
@@ -303,9 +308,10 @@ if __name__ == "__main__":
                 save_crop_img_kwargs = {
                     "save_dir"      : os.path.join(dir_path, "train"),
                     "crop_img_list" : train_drop_crop_img_list,
+                    "darkratio_log" : train_darkratio_log,
                     "crop_img_desc" : "drop",
                     "fish_size"     : fish_size,
-                    "fish_id"       : fish_ID,
+                    "fish_id"       : fish_id,
                     "fish_pos"      : fish_pos,
                     "tqdm_process"  : pbar_n_drop,
                     "tqdm_overwrite_desc" : "Saving drop... Train "
@@ -318,7 +324,7 @@ if __name__ == "__main__":
             append_log_kwargs = {
                 "logs"                 : trainset_logs,
                 "fish_size"            : fish_size,
-                "fish_id"              : fish_ID,
+                "fish_id"              : fish_id,
                 "fish_pos"             : fish_pos,
                 "selected_part"        : part_of_train,
                 "all_class"            : all_class,
@@ -332,7 +338,7 @@ if __name__ == "__main__":
             append_log_kwargs = {
                 "logs"                 : testset_logs,
                 "fish_size"            : fish_size,
-                "fish_id"              : fish_ID,
+                "fish_id"              : fish_id,
                 "fish_pos"             : fish_pos,
                 "selected_part"        : part_of_test,
                 "all_class"            : all_class,
@@ -373,6 +379,10 @@ if __name__ == "__main__":
                 "show_df"     : show_df
             }
             save_dataset_logs(**save_dataset_logs_kwargs)
+            
+            train_darkratio_path = os.path.normpath(f"{dir_path}/{{Logs_{pos[0]}_train}}_train_darkratio_log.log")
+            with open(train_darkratio_path, mode="w") as f_writer: 
+                f_writer.write(json.dumps(train_darkratio_log, indent=4))
 
             # 'testset_logs'
             save_dataset_logs_kwargs = {
@@ -385,6 +395,10 @@ if __name__ == "__main__":
                 "show_df"     : show_df
             }
             save_dataset_logs(**save_dataset_logs_kwargs)
+            
+            test_darkratio_path = os.path.normpath(f"{dir_path}/{{Logs_{pos[0]}_test}}_test_darkratio_log.log")
+            with open(test_darkratio_path, mode="w") as f_writer: 
+                f_writer.write(json.dumps(test_darkratio_log, indent=4))
 
 
     # Generate '{Logs}_train_selected_summary.log', '{Logs}_input_args.log'
