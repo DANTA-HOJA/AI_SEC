@@ -11,7 +11,7 @@ import cv2
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, append_log, save_logs
+from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, append_log, save_dataset_logs
 
 
 
@@ -257,14 +257,14 @@ if __name__ == "__main__":
         # *** Save logs into XLSX and show in CLI ***
         ## get time to as file name
         time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        save_logs_kwargs = {
+        save_dataset_logs_kwargs = {
             "logs"        : logs,
             "save_dir"    : save_dir,
             "log_desc"    : f"Logs_{value}_{key}",
             "script_name" : "mk_dataset_simple_crop",
             "time_stamp"  : time_stamp
         }
-        save_logs(**save_logs_kwargs)
+        save_dataset_logs(**save_dataset_logs_kwargs)
 
 
     print("="*100, "\n", "process all complete !", "\n")
