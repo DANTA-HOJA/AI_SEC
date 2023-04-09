@@ -5,6 +5,7 @@ import argparse
 from typing import List, Dict, Tuple
 from glob import glob
 import json
+import yaml
 
 from tqdm.auto import tqdm
 import pandas as pd
@@ -13,6 +14,20 @@ import cv2
 
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
+
+
+
+def get_args():
+    
+    parser = argparse.ArgumentParser(description="zebrafish project: crop images into small pieces")
+    parser.add_argument(
+        "--config_path",
+        type=str,
+        required=True,
+        help="The config file in 'yaml' format for 'mk_dataset_horiz_cut.py'.",
+    )
+    
+    return parser.parse_args()
 
 
 
@@ -230,12 +245,10 @@ def gen_train_selected_summary(dir_path:str, all_class:List[str]):
 
 
 
-def save_input_args(save_path:str, args:argparse.Namespace):
+def save_config(save_path:str, config:Dict):
     
-    args_dict = vars(args)
-    
-    with open(os.path.normpath(f"{save_path}/{{Logs}}_input_args.log"), mode="w") as f_writer:
-        f_writer.write(json.dumps(args_dict, indent=4))
+    with open(os.path.normpath(f"{save_path}/config.yaml"), mode="w") as f_writer:
+        f_writer.write(yaml.dump(config))
 
 
 
@@ -247,3 +260,10 @@ def sortFishNameForDataset(fish_name_string:str) -> Tuple[int, str, int]:
     name_split_list = re.split(" |_|-", fish_name_for_dataset) # example_list : ['L', 'fish', '111', 'A', 'selected', '0']
     
     return name_split_list[0], int(name_split_list[2]), name_split_list[3], int(name_split_list[5])
+
+
+
+def save_dark_ratio_log(log:Dict[str, float], save_dir:str, log_desc):
+    
+    with open(os.path.normpath(f"{save_dir}/{{{log_desc}}}_dark_ratio.log"), mode="w") as f_writer: 
+        f_writer.write(json.dumps(log, indent=4))
