@@ -15,7 +15,7 @@ import pandas as pd
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from datasetop import get_args, gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, \
+from datasetop import get_args, gen_dataset_param_name, gen_crop_img, drop_too_dark, save_crop_img, \
                       append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
                       save_dark_ratio_log
 
@@ -48,10 +48,10 @@ if __name__ == "__main__":
     xlsx_file_path = os.path.join(data_root, r"{Modify}_xlsx", xlsx_file)
     stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_key)
     np.random.seed(random_seed)
-    gen_name = gen_dataset_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", gen_name)
-    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", gen_name)
-    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", gen_name)
+    dataset_param_name = gen_dataset_param_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
+    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", dataset_param_name)
+    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", dataset_param_name)
+    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", dataset_param_name)
     print("")
     create_new_dir(save_dir_A_only)
     create_new_dir(save_dir_P_only)
@@ -323,7 +323,7 @@ if __name__ == "__main__":
             save_dark_ratio_log(test_darkratio_log, dir_path, f"Logs_{pos[0]}_test")
 
 
-    # Generate '{Logs}_train_selected_summary.log', '{Logs}_input_args.log'
+    # Generate '{Logs}_train_selected_summary.log', 'dataset_config.yaml'
     for dir_path in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
         gen_train_selected_summary(dir_path, all_class)
         save_dataset_config(dir_path, config)

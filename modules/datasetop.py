@@ -31,13 +31,13 @@ def get_args():
 
 
 
-def gen_dataset_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
+def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
     """To generate dataset's name corresponing to the passing parameters.
     
     Args:
         xlsx_file (str):                e.g. "{4CLS_BY_SurfStDev}_data.xlsx" ---> SURF4C
         crop_size (int):                e.g.       512                       ---> CRPS512
-        shift_region (str):        e.g.      "1/4"                      ---> SF14
+        shift_region (str):             e.g.      "1/4"                      ---> SF14
         intensity (int):                e.g.        20                       ---> INT20
         drop_ratio (float):             e.g.        0.3                      ---> DRP30
         random_seed (int, optional):    e.g.       2022                      ---> RS2022. Defaults to None.
