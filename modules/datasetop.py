@@ -172,12 +172,14 @@ def save_crop_img(crop_img_list:List[Tuple[int, cv2.Mat]], darkratio_log:Dict[st
     tqdm_process.total = len(crop_img_list)
     tqdm_process.refresh()
     
+    fish_name_for_dataset = f"{fish_size}_fish_{fish_id}_{fish_pos}"
+    
     # write crop images
     for item in crop_img_list: # item : ( crop_idx , crop_img, dark_ratio )
         
         save_dir_size = os.path.join(save_dir, crop_img_desc, fish_size)
         create_new_dir(save_dir_size, display_in_CLI=False)
-        write_name = f"{fish_size}_fish_{fish_id}_{fish_pos}_{crop_img_desc}_{item[0]}"
+        write_name = f"{fish_name_for_dataset}_{crop_img_desc}_{item[0]}"
         write_path = os.path.join(save_dir_size, f"{write_name}.tiff")
 
         crop_img = item[1] # convenience to debug preview
@@ -185,7 +187,10 @@ def save_crop_img(crop_img_list:List[Tuple[int, cv2.Mat]], darkratio_log:Dict[st
         # cv2.imshow(write_name, select_crop_img)
         # cv2.waitKey(0)
         
-        if write_name not in darkratio_log: darkratio_log[write_name] = item[2]
+        if fish_name_for_dataset not in darkratio_log: 
+            darkratio_log[fish_name_for_dataset] = {}
+        if write_name not in darkratio_log[fish_name_for_dataset]: 
+            darkratio_log[fish_name_for_dataset][write_name] = item[2]
         
         tqdm_process.update(1)
         tqdm_process.refresh()

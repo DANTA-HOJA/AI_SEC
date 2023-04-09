@@ -182,7 +182,7 @@ if __name__ == "__main__":
             fish_size = df_class_list[i]
             #
             # print(fish_size, fish_id, fish_pos)
-            fish_name_for_dataset = f'{fish_size}_fish_{fish_id}_{fish_pos}'
+            fish_name_for_dataset = f"{fish_size}_fish_{fish_id}_{fish_pos}"
             pbar_n_fish.desc = f"Cropping {pos}... '{fish_name_for_dataset}' "
             pbar_n_fish.refresh()
 
