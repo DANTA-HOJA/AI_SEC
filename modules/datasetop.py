@@ -56,7 +56,7 @@ def gen_dataset_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:i
 
 
 
-def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str) -> List:
+def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List:
     """generate the crop images using 'crop_size' and 'shift_region'
 
     Args:
@@ -73,7 +73,8 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str) -> List:
     
     # *** calculate relation between img & crop_size ***
     
-    # if 'shift_region' is passed, calculate the shift region while creating each cropped image, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
+    # if 'shift_region' is passed, calculate the offset distance between cropped images, 
+    # e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
     fraction = shift_region.split("/")
     if int(fraction[0]) == 1: DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
     else: raise ValueError("Numerator of 'shift_region' needs to be 1")
