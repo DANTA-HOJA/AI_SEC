@@ -62,7 +62,7 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List[cv2
     Args:
         img (cv2.Mat): the image you want to generate its crop images
         crop_size (int): output size/shape of an crop image
-        shift_region (str): if 'shift_region' is passed, calculate the shift region while creating each cropped image, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
+        shift_region (str): if 'shift_region' is passed, calculate the offset distance between cropped images, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
 
     Returns:
         List[cv2.Mat]
@@ -73,8 +73,6 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List[cv2
     
     # *** calculate relation between img & crop_size ***
     
-    # if 'shift_region' is passed, calculate the offset distance between cropped images, 
-    # e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
     fraction = shift_region.split("/")
     if int(fraction[0]) == 1: DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
     else: raise ValueError("Numerator of 'shift_region' needs to be 1")
