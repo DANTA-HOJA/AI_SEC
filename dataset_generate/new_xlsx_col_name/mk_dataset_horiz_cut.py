@@ -16,7 +16,7 @@ sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules"
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
 from datasetop import get_args, gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, \
-                      append_log, save_dataset_logs, gen_train_selected_summary, save_config, \
+                      append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
                       save_dark_ratio_log
 
 
@@ -326,7 +326,7 @@ if __name__ == "__main__":
     # Generate '{Logs}_train_selected_summary.log', '{Logs}_input_args.log'
     for dir_path in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
         gen_train_selected_summary(dir_path, all_class)
-        save_config(dir_path, config)
+        save_dataset_config(dir_path, config)
     
     
     print("="*100, "\n", "process all complete !", "\n")

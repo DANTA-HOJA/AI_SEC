@@ -245,9 +245,9 @@ def gen_train_selected_summary(dir_path:str, all_class:List[str]):
 
 
 
-def save_config(save_path:str, config:Dict):
+def save_dataset_config(save_path:str, config:Dict):
     
-    with open(os.path.normpath(f"{save_path}/config.yaml"), mode="w") as f_writer:
+    with open(os.path.normpath(f"{save_path}/dataset_config.yaml"), mode="w") as f_writer:
         f_writer.write(yaml.dump(config))
 
 
