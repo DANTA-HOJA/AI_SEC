@@ -5,6 +5,7 @@ from datetime import datetime
 from collections import Counter
 from math import floor
 import json
+import yaml
 
 from tqdm.auto import tqdm
 import cv2
@@ -14,116 +15,43 @@ import pandas as pd
 sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, \
-                      append_log, save_dataset_logs, gen_train_selected_summary, save_input_args
-
-
-
-def get_args():
-    
-    parser = argparse.ArgumentParser(description="zebrafish project: crop images into small pieces")
-    parser.add_argument(
-        "--ap_data_root",
-        type=str,
-        required=True,
-        help="The root path of the data.",
-    )
-    parser.add_argument(
-        "--xlsx_file",
-        type=str,
-        required=True,
-        help=r"The name of the Excel book, under 'ap_data_root/{Modify}_xlsx' ",
-    )
-    parser.add_argument(
-        "--sheet_name",
-        type=str,
-        required=True,
-        help="The 'sheet_name' in 'xlsx_file' contain standard deviation classify result.",
-    )
-    parser.add_argument(
-        "--stacked_palmskin_dir",
-        type=str,
-        required=True,
-        help="The folder storing the 'stacked palmskin' images, relative to 'ap_data_root' ",
-    )
-    parser.add_argument(
-        "--crop_size",
-        type=int,
-        default=224,
-        help="the size to crop images.",
-    )
-    parser.add_argument(
-        "--shift_region",
-        type=str,
-        default="1/4",
-        help="the overlapping region between each cropped image.",
-    )
-    parser.add_argument(
-        "--intensity",
-        type=int,
-        default=20,
-        help="a threshold to define too dark or not.",
-    )
-    parser.add_argument(
-        "--drop_ratio",
-        type=float,
-        default=0.5,
-        help="a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop.",
-    )
-    parser.add_argument(
-        "--random_seed",
-        type=int,
-        default=2022,
-        help="random seed, for choosing upper or lower as train part.",
-    )
-    parser.add_argument(
-        "--dataset_root",
-        type=str,
-        required=True,
-        help="the root path of datasets to save the 'cropped images'.",
-    )
-    
-    args = parser.parse_args()
-    
-    # Check arguments
-    fraction = args.shift_region.split("/")
-    if int(fraction[0]) != 1: raise ValueError("Numerator of 'shift_region' needs to be 1")
-    
-    return args
+from datasetop import get_args, gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, \
+                      append_log, save_dataset_logs, gen_train_selected_summary, save_config, \
+                      save_dark_ratio_log
 
 
 
 if __name__ == "__main__":
 
     args = get_args()
+    
+    
+    with open(os.path.normpath(args.config_path), mode="r") as f_reader: 
+        config = yaml.load(f_reader, Loader=yaml.SafeLoader)
 
 
     # *** Variable ***
-    # args variable
-    ap_data_root = args.ap_data_root
-    data_name = ap_data_root.split(os.sep)[-1]
-    #
-    xlsx_file = args.xlsx_file
-    xlsx_file_fullpath = os.path.join(ap_data_root, r"{Modify}_xlsx", xlsx_file)
-    sheet_name = args.sheet_name
-    #
-    preprocess_method_desc = "ch4_min_proj, outer_rect"
-    stacked_palmskin_dir = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection", args.stacked_palmskin_dir)
-    #
-    crop_size = args.crop_size # size of the crop image.
-    shift_region = args.shift_region # if 'shift_region' is passed, calculate the shift region while creating each cropped image,
-                                     # e.g. shift_region=1/3, the overlapping region of each cropped image is 2/3.                  
-    intensity = args.intensity # a threshold to define too dark or not.
-    drop_ratio = args.drop_ratio # a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop, 
-                                 # if drop_ratio < 0.5, keeps the crop image.
-    random_seed = args.random_seed # for choosing upper or lower as train part.
+    ## set vars from config file (.yaml)
+    data_root  = os.path.normpath(config["data"]["root"])
+    xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
+    sheet_name = config["data"]["brightfield"]["sheet_name"]
+    palmskin_desc       = config["data"]["stacked_palmskin"]["desc"]
+    palmskin_result_key = config["data"]["stacked_palmskin"]["result_key"]
+    crop_size    = config["gen_param"]["crop_size"]
+    shift_region = config["gen_param"]["shift_region"]
+    intensity    = config["gen_param"]["intensity"]
+    drop_ratio   = config["gen_param"]["drop_ratio"]
+    random_seed  = config["gen_param"]["random_seed"]
+    dataset_root = os.path.normpath(config["dataset"]["root"])
+    ## compose/extract vars
+    data_name = data_root.split(os.sep)[-1]
+    xlsx_file_path = os.path.join(data_root, r"{Modify}_xlsx", xlsx_file)
+    stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_key)
     np.random.seed(random_seed)
-    #
-    dataset_root = args.dataset_root
     gen_name = gen_dataset_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    save_dir_A_only = os.path.join(args.dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", gen_name)
-    save_dir_P_only = os.path.join(args.dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", gen_name)
-    save_dir_Mix_AP = os.path.join(args.dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", gen_name)
+    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", gen_name)
+    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", gen_name)
+    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", gen_name)
     print("")
     create_new_dir(save_dir_A_only)
     create_new_dir(save_dir_P_only)
@@ -132,7 +60,7 @@ if __name__ == "__main__":
 
 
     # *** Load Excel sheet as DataFrame(pandas) ***
-    df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_fullpath, engine = 'openpyxl', sheet_name=sheet_name)
+    df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_path, engine = 'openpyxl', sheet_name=sheet_name)
     # print(df_input_xlsx)
     df_class_list = df_input_xlsx["class"].tolist()
     ## get how many classes in xlsx
@@ -379,10 +307,7 @@ if __name__ == "__main__":
                 "show_df"     : show_df
             }
             save_dataset_logs(**save_dataset_logs_kwargs)
-            
-            train_darkratio_path = os.path.normpath(f"{dir_path}/{{Logs_{pos[0]}_train}}_train_darkratio_log.log")
-            with open(train_darkratio_path, mode="w") as f_writer: 
-                f_writer.write(json.dumps(train_darkratio_log, indent=4))
+            save_dark_ratio_log(train_darkratio_log, dir_path, f"Logs_{pos[0]}_train")
 
             # 'testset_logs'
             save_dataset_logs_kwargs = {
@@ -395,16 +320,13 @@ if __name__ == "__main__":
                 "show_df"     : show_df
             }
             save_dataset_logs(**save_dataset_logs_kwargs)
-            
-            test_darkratio_path = os.path.normpath(f"{dir_path}/{{Logs_{pos[0]}_test}}_test_darkratio_log.log")
-            with open(test_darkratio_path, mode="w") as f_writer: 
-                f_writer.write(json.dumps(test_darkratio_log, indent=4))
+            save_dark_ratio_log(test_darkratio_log, dir_path, f"Logs_{pos[0]}_test")
 
 
     # Generate '{Logs}_train_selected_summary.log', '{Logs}_input_args.log'
     for dir_path in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
         gen_train_selected_summary(dir_path, all_class)
-        save_input_args(dir_path, args)
+        save_config(dir_path, config)
     
     
     print("="*100, "\n", "process all complete !", "\n")
