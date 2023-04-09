@@ -56,7 +56,7 @@ def gen_dataset_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:i
 
 
 
-def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List:
+def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List[cv2.Mat]:
     """generate the crop images using 'crop_size' and 'shift_region'
 
     Args:
@@ -65,7 +65,7 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List:
         shift_region (str): if 'shift_region' is passed, calculate the shift region while creating each cropped image, e.g. shift_region=1/3, the overlap region of each cropped image is 2/3
 
     Returns:
-        List
+        List[cv2.Mat]
     """
     
     img_size = img.shape
