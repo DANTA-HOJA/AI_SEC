@@ -1,0 +1,84 @@
+import os
+import sys
+from typing import List, Dict, Tuple
+from copy import deepcopy
+
+import numpy as np
+import cv2
+from PIL import Image, ImageDraw, ImageFont
+
+from pytorch_grad_cam.utils.image import show_cam_on_image
+
+
+
+def draw_x_on_image(rgb_image:Image.Image, crop_size:int, color:Tuple[int, int], line_width:int):
+    
+    draw = ImageDraw.Draw(rgb_image)
+    
+    # set 4 corners
+    top_left = (0, 0)
+    top_right = (crop_size, 0)
+    bottom_left = (0, crop_size)
+    bottom_right = (crop_size, crop_size)
+
+    # draw 2 diagonal lines
+    draw.line((top_left, bottom_right), fill=color, width=line_width) # RGB
+    draw.line((top_right, bottom_left), fill=color, width=line_width) # RGB
+
+
+    
+def add_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
+                     font_style:str="consola.ttf", font_size:int=None):
+    
+    draw = ImageDraw.Draw(rgb_image)
+    
+    # text
+    if font_size is not None: font_size=font_size
+    else: font_size = round(np.array(rgb_image).shape[0]*0.07) # auto_font_size = image_height * 0.07
+    pred_text = f"{'prediction '} : {pred_cls}"
+    gt_text   = f"{'groundtruth'} : {gt_cls}"
+    font = ImageFont.truetype(font_style, font_size)
+    
+    # text color
+    if gt_cls == pred_cls: text_color = (0, 255, 0) # RGB
+    else: text_color = (255, 255, 255) # RGB
+    
+    # calculate text position
+    text_width, text_height = draw.textsize(gt_text, font=font)
+    gt_w = rgb_image.width - text_width - rgb_image.width*0.05
+    gt_h = rgb_image.height  - text_height - rgb_image.height*0.05
+    gt_position = [gt_w, gt_h]
+    pred_position = [gt_w, (gt_h - font_size*1.5)]
+    
+    # shadow
+    shadow_color = (0, 0, 0)
+    shadow_offset = (2, 2)
+
+    # draw predict text
+    draw.text((pred_position[0] + shadow_offset[0], pred_position[1] + shadow_offset[1]), 
+              pred_text, font=font, fill=shadow_color) # shadow
+    draw.text(pred_position, pred_text, font=font, fill=text_color)
+    
+    # draw groundtruth text
+    draw.text((gt_position[0] + shadow_offset[0], gt_position[1] + shadow_offset[1]), 
+              gt_text, font=font, fill=shadow_color) # shadow
+    draw.text(gt_position, gt_text, font=font, fill=text_color)
+
+
+
+def postprocess_cam_image(image:np.ndarray, grayscale_cam:np.ndarray, use_rgb,
+                          colormap:int, image_weight:float, cam_save_path:str,
+                          pred_cls:str, gt_cls:str, resize:Tuple[int, int]=None,
+                          font_style:str="consola.ttf", font_size:int=None):
+    
+    if use_rgb: rgb_img = image
+    else: rgb_img = image[:, :, ::-1] # BGR -> RGB
+    
+    cam_image = show_cam_on_image(rgb_img, grayscale_cam, True, colormap, image_weight)
+    if resize is not None:
+        cam_image = cv2.resize(cam_image, resize, interpolation=cv2.INTER_CUBIC)
+    
+    cam_image = Image.fromarray(cam_image)
+    if pred_cls != gt_cls: add_ans_on_image(cam_image, pred_cls, gt_cls, font_style, font_size)
+    
+    cv2.imwrite(cam_save_path, cv2.cvtColor(np.array(cam_image), cv2.COLOR_RGB2BGR))
