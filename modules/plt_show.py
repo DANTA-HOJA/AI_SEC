@@ -119,7 +119,7 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     """
     show an RGB image by splitting its channels.
     
-    Args:
+    Args: [  TODO:  not update yet ]
         window_name (str): GUI_window/figure name.
         img_list ( List[cv2.Mat] ): an list contain several images, channel orient = BGR (default orient of 'cv2.imread()')
         row (int): number of rows in GUI_window.
@@ -143,8 +143,8 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     if (row == 1) or (column == 1):
         
         for iter in range(row*column):
-            if not use_rgb: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
-            else: img_rgb = img_list[iter]
+            if use_rgb: img_rgb = img_list[iter]
+            else: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
             axs[iter].imshow(img_rgb, vmin=0, vmax=255)
             if subtitle is not None: axs[iter].set_title(subtitle[iter], fontdict={'fontsize': subtitle_font_size}) # TODO:  Auto font size
     
@@ -154,8 +154,8 @@ def plot_with_imglist(img_list:List[cv2.Mat],
             i = floor(iter/column)
             j = floor(iter%column)
             # print(i, j)
-            if not use_rgb: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
-            else: img_rgb = img_list[iter]
+            if use_rgb: img_rgb = img_list[iter]
+            else: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
             axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
             if subtitle is not None: axs[i, j].set_title(subtitle[iter], fontdict={'fontsize': subtitle_font_size}) # TODO:  Auto font size
     
