@@ -11,15 +11,15 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 
 
 
-def draw_x_on_image(rgb_image:Image.Image, crop_size:int, color:Tuple[int, int], line_width:int):
+def draw_x_on_image(rgb_image:Image.Image, color:Tuple[int, int], line_width:int):
     
     draw = ImageDraw.Draw(rgb_image)
     
     # set 4 corners
     top_left = (0, 0)
-    top_right = (crop_size, 0)
-    bottom_left = (0, crop_size)
-    bottom_right = (crop_size, crop_size)
+    top_right = (rgb_image.width, 0)
+    bottom_left = (0, rgb_image.height)
+    bottom_right = (rgb_image.width, rgb_image.height)
 
     # draw 2 diagonal lines
     draw.line((top_left, bottom_right), fill=color, width=line_width) # RGB
