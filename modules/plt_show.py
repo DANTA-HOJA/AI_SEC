@@ -1,9 +1,11 @@
 from typing import List, Tuple
 import argparse
-from math import floor
 
 import numpy as np
 import cv2
+from PIL import ImageFont
+
+from matplotlib import font_manager
 import matplotlib.pyplot as plt
 
 
@@ -113,8 +115,9 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
                       fig_title:str, fig_title_font_size:int=26,
                       subtitle:List[str]=None, subtitle_font_size:int=13,
-                      save_path:str=None, use_rgb:bool=False, 
-                      show_fig:bool=True, verbose:bool=False):
+                      save_path:str=None, use_rgb:bool=False,
+                      show_fig:bool=True, verbose:bool=False,
+                      plt_default_font:str=None):
     
     """
     show an RGB image by splitting its channels.
@@ -130,42 +133,54 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     
+    # Get the path of matplotlib default font: `DejaVu Sans`
+    if plt_default_font is None:
+        plt_default_font=font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    
     # Get minimum image shape
     min_img_shape = [np.inf, np.inf]
     for img in img_list:
         if img.shape[0] < min_img_shape[0]: min_img_shape[0] = img.shape[0]
         if img.shape[1] < min_img_shape[1]: min_img_shape[1] = img.shape[1]
     
-    # Calculate auto 'figsize'
+    # Calculate auto `figsize`
     fig_w = min_img_shape[1]*column/100 # `100` is defalut value of `dpi` in `plt.figure()`
     fig_h = min_img_shape[0]*row/100 # `100` is defalut value of `dpi` in `plt.figure()`
     if verbose: print(f"figure resolution : {fig_w*fig_dpi}, {fig_h*fig_dpi}")
     
     # Create figure
     fig, axs = plt.subplots(row, column, figsize=(fig_w, fig_h), dpi=fig_dpi)
-    fig.suptitle(fig_title, fontsize=fig_title_font_size) # TODO:  Auto font size
-    # plot each image
-    if (row == 1) or (column == 1):
-        
-        for iter in range(row*column):
-            if use_rgb: img_rgb = img_list[iter]
-            else: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
-            axs[iter].imshow(img_rgb, vmin=0, vmax=255)
-            if subtitle is not None: axs[iter].set_title(subtitle[iter], fontdict={'fontsize': subtitle_font_size}) # TODO:  Auto font size
     
-    else:
-        
-        for iter in range(row*column):
-            i = floor(iter/column)
-            j = floor(iter%column)
-            # print(i, j)
-            if use_rgb: img_rgb = img_list[iter]
-            else: img_rgb = cv2.cvtColor(img_list[iter], cv2.COLOR_BGR2RGB) # BGR -> RGB
-            axs[i, j].imshow(img_rgb, vmin=0, vmax=255)
-            if subtitle is not None: axs[i, j].set_title(subtitle[iter], fontdict={'fontsize': subtitle_font_size}) # TODO:  Auto font size
+    # Calculate auto `fontsize`
+    fig_title_font_size = round(fig_h*fig_dpi*0.02)
+    font = ImageFont.truetype(plt_default_font, size=fig_title_font_size)
+    text_width, text_height = font.getsize(fig_title)
+    ## if `text_width` is too long, keep searching a proper font size
+    while text_width > (fig_w*fig_dpi)*0.7:
+        fig_title_font_size = round(fig_title_font_size*0.9)
+        font = ImageFont.truetype(plt_default_font, size=fig_title_font_size)
+        text_width, text_height = font.getsize(fig_title)
+        if verbose: print((f"(text_width, text_height) = ({text_width}, {text_height}), " 
+                           f"auto font size = {fig_title_font_size}"))
     
+    # Calculate the ratio between `text_height` and `fig_height`
+    title_h_ratio = text_height/(fig_h*fig_dpi)
+    if verbose: print(f"text_height = {text_height}, ratio = {title_h_ratio}")
+    
+    # Plot figure title
+    fig.text(0.5, (1-title_h_ratio), fig_title, fontsize=fig_title_font_size, ha='center', va='bottom')
+    
+    # Plot each image
+    for i, ax in enumerate(axs.flatten()):
+        
+        if use_rgb: img_rgb = img_list[i]
+        else: img_rgb = cv2.cvtColor(img_list[i], cv2.COLOR_BGR2RGB) # BGR -> RGB
+        ax.imshow(img_rgb, vmin=0, vmax=255)
+        if subtitle is not None: ax.set_title(subtitle[i], fontdict={'fontsize': subtitle_font_size}) # TODO:  optimize set_title() with `subtitle_font_size`
+    
+    # Adjust figure layout
     fig.tight_layout()
-    plt.subplots_adjust(top=0.9)
+    plt.subplots_adjust(top=(1-title_h_ratio*2))
     
     if save_path is not None: fig.savefig(save_path)
     if show_fig: plt.show()
@@ -177,11 +192,16 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
 def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
                                fig_title:str="", fig_title_font_size:int=26, 
                                subtitle:List[str]=None, subtitle_font_size:int=13, 
-                               save_path:str=None, use_rgb:bool=False, 
-                               show_fig:bool=True, verbose:bool=False):
+                               save_path:str=None, use_rgb:bool=False,
+                               show_fig:bool=True, verbose:bool=False,
+                               plt_default_font:str=None):
     
     
     assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
+    
+    # Get the path of matplotlib default font: `DejaVu Sans`
+    if plt_default_font is None:
+        plt_default_font=font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
     # append empty arrays to the end of 'image_list' until its length is a multiple of 'column'
     orig_len = len(img_list)
@@ -203,7 +223,8 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
         "save_path"            : save_path,
         "use_rgb"              : use_rgb,
         "show_fig"             : show_fig,
-        "verbose"              : verbose
+        "verbose"              : verbose,
+        "plt_default_font"     : plt_default_font
     }
     plot_with_imglist(**kwargs_plot_with_imglist)
 
