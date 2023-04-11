@@ -113,8 +113,7 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 
 
 def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
-                      fig_title:str, fig_title_font_size:int=26,
-                      subtitle:List[str]=None, subtitle_font_size:int=13,
+                      figtitle:str, subtitle:List[str]=None, subtitle_fontsize:int=13,
                       save_path:str=None, use_rgb:bool=False,
                       show_fig:bool=True, verbose:bool=False,
                       plt_default_font:str=None):
@@ -152,23 +151,23 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     fig, axs = plt.subplots(row, column, figsize=(fig_w, fig_h), dpi=fig_dpi)
     
     # Calculate auto `fontsize`
-    fig_title_font_size = round(fig_h*fig_dpi*0.02)
-    font = ImageFont.truetype(plt_default_font, size=fig_title_font_size)
-    text_width, text_height = font.getsize(fig_title)
+    figtitle_fontsize = round(fig_h*fig_dpi*0.02)
+    font = ImageFont.truetype(plt_default_font, size=figtitle_fontsize)
+    text_width, text_height = font.getsize(figtitle)
     ## if `text_width` is too long, keep searching a proper font size
     while text_width > (fig_w*fig_dpi)*0.7:
-        fig_title_font_size = round(fig_title_font_size*0.9)
-        font = ImageFont.truetype(plt_default_font, size=fig_title_font_size)
-        text_width, text_height = font.getsize(fig_title)
+        figtitle_fontsize = round(figtitle_fontsize*0.9)
+        font = ImageFont.truetype(plt_default_font, size=figtitle_fontsize)
+        text_width, text_height = font.getsize(figtitle)
         if verbose: print((f"(text_width, text_height) = ({text_width}, {text_height}), " 
-                           f"auto font size = {fig_title_font_size}"))
+                           f"auto font size = {figtitle_fontsize}"))
     
     # Calculate the ratio between `text_height` and `fig_height`
     title_h_ratio = text_height/(fig_h*fig_dpi)
     if verbose: print(f"text_height = {text_height}, ratio = {title_h_ratio}")
     
     # Plot figure title
-    fig.text(0.5, (1-title_h_ratio), fig_title, fontsize=fig_title_font_size, ha='center', va='bottom')
+    fig.text(0.5, (1-title_h_ratio), figtitle, fontsize=figtitle_fontsize, ha='center', va='bottom')
     
     # Plot each image
     for i, ax in enumerate(axs.flatten()):
@@ -176,7 +175,7 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
         if use_rgb: img_rgb = img_list[i]
         else: img_rgb = cv2.cvtColor(img_list[i], cv2.COLOR_BGR2RGB) # BGR -> RGB
         ax.imshow(img_rgb, vmin=0, vmax=255)
-        if subtitle is not None: ax.set_title(subtitle[i], fontdict={'fontsize': subtitle_font_size}) # TODO:  optimize set_title() with `subtitle_font_size`
+        if subtitle is not None: ax.set_title(subtitle[i], fontdict={'fontsize': subtitle_fontsize}) # TODO:  optimize set_title() with `subtitle_fontsize`
     
     # Adjust figure layout
     fig.tight_layout()
@@ -190,8 +189,7 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
 
 
 def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
-                               fig_title:str="", fig_title_font_size:int=26, 
-                               subtitle:List[str]=None, subtitle_font_size:int=13, 
+                               figtitle:str="", subtitle:List[str]=None, subtitle_fontsize:int=13,
                                save_path:str=None, use_rgb:bool=False,
                                show_fig:bool=True, verbose:bool=False,
                                plt_default_font:str=None):
@@ -203,6 +201,8 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
     if plt_default_font is None:
         plt_default_font=font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
+    input_args = locals() # collect all exist local variables (before this line) as a dict
+    
     # append empty arrays to the end of 'image_list' until its length is a multiple of 'column'
     orig_len = len(img_list)
     while len(img_list)%column != 0: img_list.append(np.ones_like(img_list[-1])*255)
@@ -210,23 +210,12 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
     
     auto_row = int(len(img_list)/column)
     
-    # plot 
-    kwargs_plot_with_imglist = {
-        "img_list"             : img_list,
-        "row"                  : auto_row,
-        "column"               : column,
-        "fig_dpi"              : fig_dpi,
-        "fig_title"            : " , ".join([fig_title, f"( row, column ) = ( {auto_row}, {column} )"]),
-        "fig_title_font_size"  : fig_title_font_size,
-        "subtitle"             : subtitle,
-        "subtitle_font_size"   : subtitle_font_size,
-        "save_path"            : save_path,
-        "use_rgb"              : use_rgb,
-        "show_fig"             : show_fig,
-        "verbose"              : verbose,
-        "plt_default_font"     : plt_default_font
-    }
-    plot_with_imglist(**kwargs_plot_with_imglist)
+    input_args["row"] = auto_row
+    input_args["figtitle"] = " , ".join([input_args["figtitle"], f"( row, column ) = ( {auto_row}, {column} )"])
+    input_args["subtitle_fontsize"] = 13 # TODO:  optimize set_title() with `subtitle_fontsize`
+    
+    # plot
+    plot_with_imglist(**input_args)
 
 
 
@@ -235,7 +224,7 @@ def parse_args():
     parser = argparse.ArgumentParser(prog="plt_show", description="show images")
     gp_single = parser.add_argument_group("single images")
     gp_single.add_argument(
-        "--fig_title",
+        "--figtitle",
         type=str,
         help="the BIG title of figure."
     )
