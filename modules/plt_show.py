@@ -110,11 +110,11 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 
 
 
-def plot_with_imglist(img_list:List[cv2.Mat],
-                      fig_size:Tuple[float, float], row:int, column:int, 
-                      fig_title:str, fig_title_font_size:int=26, 
-                      subtitle:List[str]=None, subtitle_font_size:int=13, 
-                      save_path:str=None, use_rgb:bool=False, show_fig:bool=True, plt=plt):
+def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
+                      fig_title:str, fig_title_font_size:int=26,
+                      subtitle:List[str]=None, subtitle_font_size:int=13,
+                      save_path:str=None, use_rgb:bool=False, 
+                      show_fig:bool=True, verbose:bool=False):
     
     """
     show an RGB image by splitting its channels.
@@ -130,14 +130,19 @@ def plot_with_imglist(img_list:List[cv2.Mat],
     
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     
-    # calculate 'figsize' # TODO:  Auto figure size
-    fig_dpi = 100
-    fig_size_div_dpi = []
-    fig_size_div_dpi.append(fig_size[0]/fig_dpi)
-    fig_size_div_dpi.append(fig_size[1]/fig_dpi)
+    # Get minimum image shape
+    min_img_shape = [np.inf, np.inf]
+    for img in img_list:
+        if img.shape[0] < min_img_shape[0]: min_img_shape[0] = img.shape[0]
+        if img.shape[1] < min_img_shape[1]: min_img_shape[1] = img.shape[1]
+    
+    # Calculate auto 'figsize'
+    fig_w = min_img_shape[1]*column/100 # `100` is defalut value of `dpi` in `plt.figure()`
+    fig_h = min_img_shape[0]*row/100 # `100` is defalut value of `dpi` in `plt.figure()`
+    if verbose: print(f"figure resolution : {fig_w*fig_dpi}, {fig_h*fig_dpi}")
     
     # Create figure
-    fig, axs = plt.subplots(row, column, figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig, axs = plt.subplots(row, column, figsize=(fig_w, fig_h), dpi=fig_dpi)
     fig.suptitle(fig_title, fontsize=fig_title_font_size) # TODO:  Auto font size
     # plot each image
     if (row == 1) or (column == 1):
@@ -169,11 +174,11 @@ def plot_with_imglist(img_list:List[cv2.Mat],
 
 
 
-def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, 
+def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
                                fig_title:str="", fig_title_font_size:int=26, 
                                subtitle:List[str]=None, subtitle_font_size:int=13, 
                                save_path:str=None, use_rgb:bool=False, 
-                               verbose:bool=False, show_fig:bool=True, plt=plt):
+                               show_fig:bool=True, verbose:bool=False):
     
     
     assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
@@ -185,24 +190,20 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int,
     
     auto_row = int(len(img_list)/column)
     
-    # calculate 'figsize' # TODO:  Auto figure size
-    fig_w = (img_list[-1].shape[1])*column 
-    fig_h = (img_list[-1].shape[0])*auto_row
-    if verbose: print(f"figure resolution : {fig_w}, {fig_h}")
-    
     # plot 
     kwargs_plot_with_imglist = {
         "img_list"             : img_list,
-        "fig_title"            : " , ".join([fig_title, f"( row, column ) = ( {auto_row}, {column} )"]),
-        "fig_title_font_size"  : fig_title_font_size,
-        "fig_size"             : (fig_w, fig_h),
         "row"                  : auto_row,
         "column"               : column,
+        "fig_dpi"              : fig_dpi,
+        "fig_title"            : " , ".join([fig_title, f"( row, column ) = ( {auto_row}, {column} )"]),
+        "fig_title_font_size"  : fig_title_font_size,
         "subtitle"             : subtitle,
         "subtitle_font_size"   : subtitle_font_size,
         "save_path"            : save_path,
         "use_rgb"              : use_rgb,
         "show_fig"             : show_fig,
+        "verbose"              : verbose
     }
     plot_with_imglist(**kwargs_plot_with_imglist)
 
