@@ -66,6 +66,50 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
 
 
 
+def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:float, drop_ratio:float, 
+                           font_style:str="consola.ttf", font_size:int=None):
+    
+    draw = ImageDraw.Draw(rgb_image)
+
+    # text
+    intensity_text = f"@ intensity: {intensity}"
+    darkratio_text = f">> dark_ratio: {dark_ratio:.5f}"
+    if font_size is not None: font_size=font_size
+    else: font_size = round(np.array(rgb_image).shape[0]*0.05) # auto_font_size = image_height * 0.05
+    font = ImageFont.truetype(font_style, font_size)
+
+    # text color
+    if dark_ratio >= drop_ratio: text_color = (255, 255, 127) # drop, color: RGB
+    else: text_color = (255, 255, 255) # selected, color: RGB
+    
+    # calculate text position
+    ## dark_ratio
+    text_width, text_height = draw.textsize(darkratio_text, font=font)
+    darkratio_w = (rgb_image.width - text_width)/2
+    darkratio_h = rgb_image.height  - text_height - rgb_image.height*0.06
+    darkratio_pos = [darkratio_w, darkratio_h]
+    ## intensity
+    text_width, text_height = draw.textsize(intensity_text, font=font)
+    intensity_w = (rgb_image.width - text_width)/2
+    intensity_h = (darkratio_h - font_size*1.5)
+    intensity_pos = [intensity_w, intensity_h]
+    
+    # shadow
+    shadow_color = (0, 0, 0)
+    shadow_offset = (2, 2)
+    
+    # draw 'intensity' text
+    draw.text((intensity_pos[0] + shadow_offset[0], intensity_pos[1] + shadow_offset[1]), 
+               intensity_text, font=font, fill=shadow_color) # shadow
+    draw.text(intensity_pos, intensity_text, font=font, fill=text_color)
+    
+    # draw 'dark_ratio' text
+    draw.text((darkratio_pos[0] + shadow_offset[0], darkratio_pos[1] + shadow_offset[1]), 
+               darkratio_text, font=font, fill=shadow_color) # shadow
+    draw.text(darkratio_pos, darkratio_text, font=font, fill=text_color)
+
+
+
 def postprocess_cam_image(image:np.ndarray, grayscale_cam:np.ndarray, use_rgb,
                           colormap:int, image_weight:float, cam_save_path:str,
                           pred_cls:str, gt_cls:str, resize:Tuple[int, int]=None,
