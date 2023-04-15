@@ -1,10 +1,12 @@
+import io
 from typing import List, Tuple
 import argparse
 
 import numpy as np
 import cv2
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
+from matplotlib import figure
 from matplotlib import font_manager
 import matplotlib.pyplot as plt
 
@@ -113,7 +115,7 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 
 
 def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
-                      figtitle:str, subtitle:List[str]=None, subtitle_fontsize:int=13,
+                      figtitle:str, subtitle_list:List[str]=None,
                       save_path:str=None, use_rgb:bool=False,
                       show_fig:bool=True, verbose:bool=False,
                       plt_default_font:str=None):
@@ -136,7 +138,7 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     if plt_default_font is None:
         plt_default_font=font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
-    # Get minimum image shape
+    # Get minimum image shape ( image may in different size )
     min_img_shape = [np.inf, np.inf]
     for img in img_list:
         if img.shape[0] < min_img_shape[0]: min_img_shape[0] = img.shape[0]
@@ -150,46 +152,37 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     # Create figure
     fig, axs = plt.subplots(row, column, figsize=(fig_w, fig_h), dpi=fig_dpi)
     
-    # Calculate auto `fontsize`
-    figtitle_fontsize = round(fig_h*fig_dpi*0.02)
-    font = ImageFont.truetype(plt_default_font, size=figtitle_fontsize)
-    text_width, text_height = font.getsize(figtitle)
-    ## if `text_width` is too long, keep searching a proper font size
-    while text_width > (fig_w*fig_dpi)*0.7:
-        figtitle_fontsize = round(figtitle_fontsize*0.9)
-        font = ImageFont.truetype(plt_default_font, size=figtitle_fontsize)
-        text_width, text_height = font.getsize(figtitle)
-        if verbose: print((f"(text_width, text_height) = ({text_width}, {text_height}), " 
-                           f"auto font size = {figtitle_fontsize}"))
-    
-    # Calculate the ratio between `text_height` and `fig_height`
-    title_h_ratio = text_height/(fig_h*fig_dpi)
-    if verbose: print(f"text_height = {text_height}, ratio = {title_h_ratio}")
-    
-    # Plot figure title
-    fig.text(0.5, (1-title_h_ratio), figtitle, fontsize=figtitle_fontsize, ha='center', va='bottom')
-    
     # Plot each image
     for i, ax in enumerate(axs.flatten()):
         
         if use_rgb: img_rgb = img_list[i]
         else: img_rgb = cv2.cvtColor(img_list[i], cv2.COLOR_BGR2RGB) # BGR -> RGB
         ax.imshow(img_rgb, vmin=0, vmax=255)
-        if subtitle is not None: ax.set_title(subtitle[i], fontdict={'fontsize': subtitle_fontsize}) # TODO:  optimize set_title() with `subtitle_fontsize`
+        if subtitle_list is not None: ax.set_title(subtitle_list[i]) # TODO:  find method to optimize `fontsize` of `subtitle`
     
-    # Adjust figure layout
-    fig.tight_layout()
-    plt.subplots_adjust(top=(1-title_h_ratio*2))
+    fig.tight_layout() # auto layout
     
-    if save_path is not None: fig.savefig(save_path)
-    if show_fig: plt.show()
+    # Calculate space occupied by yaxis and ylabel
+    fig.canvas.draw()
+    bbox = ax.yaxis.get_tightbbox(fig.canvas.get_renderer())
+    y_width, y_height = bbox.width, bbox.height
+    
+    # Store figure into `buffer`
+    rgba_image = plt_to_pillow(fig) # matplotlib figure 預設為 RGBA (透明背景)
+    
+    # Draw `title` on `background`
+    rgba_image = add_big_title(rgba_image, figtitle, ylabel_width=y_width, 
+                               font_style=plt_default_font, verbose=verbose)
+    
+    if save_path is not None: rgba_image.save(save_path)
+    if show_fig: rgba_image.show()
     
     plt.close()
 
 
 
 def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
-                               figtitle:str="", subtitle:List[str]=None, subtitle_fontsize:int=13,
+                               figtitle:str="", subtitle_list:List[str]=None,
                                save_path:str=None, use_rgb:bool=False,
                                show_fig:bool=True, verbose:bool=False,
                                plt_default_font:str=None):
@@ -205,17 +198,81 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
     
     # append empty arrays to the end of 'image_list' until its length is a multiple of 'column'
     orig_len = len(img_list)
-    while len(img_list)%column != 0: img_list.append(np.ones_like(img_list[-1])*255)
+    while len(img_list)%column != 0:
+        img_list.append(np.ones_like(img_list[-1])*255)
+        subtitle_list.append(f"Empty")
     if verbose: print(f"len(img_list): {orig_len} --> {len(img_list)}")
     
     auto_row = int(len(img_list)/column)
     
     input_args["row"] = auto_row
     input_args["figtitle"] = " , ".join([input_args["figtitle"], f"( row, column ) = ( {auto_row}, {column} )"])
-    input_args["subtitle_fontsize"] = 13 # TODO:  optimize set_title() with `subtitle_fontsize`
     
     # plot
     plot_with_imglist(**input_args)
+
+
+
+def plt_to_pillow(figure:figure.Figure):
+    
+    buffer = io.BytesIO()
+    figure.savefig(buffer, format='png')
+    buffer.seek(0)
+
+    # 轉換成 PIL Image
+    ## Note: matplotlib figure 預設為 RGBA (透明背景)
+    return Image.open(buffer)
+
+
+
+def calculate_opti_title_param(title:str, max_width:int, fontsize:int, font_style:str="consola.ttf", 
+                               verbose:bool=False):
+       
+    font = ImageFont.truetype(font_style, fontsize)
+
+    # Get title size
+    title_bbox = font.getbbox(title) # (left, top, right, bottom) bounding box
+    title_width = title_bbox[2] - title_bbox[0]
+    title_height = title_bbox[3] - title_bbox[1]
+    
+    if verbose: 
+        print(f'fontsize: {fontsize}, (title_width, title_height): ({title_width}, {title_height})')
+    
+    if title_width > max_width:
+        return calculate_opti_title_param(title, max_width, int(0.9*fontsize), font_style, verbose)
+    
+    return title_width, title_height, font
+
+
+
+def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2, 
+                  font_style:str="consola.ttf", font_color: Tuple[int, int, int, int]=(0, 0, 0, 255),
+                  ylabel_width:int=0, verbose:bool=False):
+
+    # Get title parameters
+    fontsize = int(rgba_image.height*0.05)
+    max_width = rgba_image.width*0.95
+    title_width, title_height, font = calculate_opti_title_param(title, max_width, fontsize, font_style, verbose)    
+    title_space = int(title_height*title_line_height) # title + line height
+
+    # Create empty background in RGBA
+    background_size = (rgba_image.width, rgba_image.height + title_space)
+    # background = Image.new('RGB', (pil_img_rgba.width, pil_img_rgba.height+100), color = (255, 255, 255))
+    background = Image.new('RGBA', background_size, color = (0, 0, 0, 0)) # RGBA 可以建立透明背景
+    if verbose: print(f'background.size {type(background.size)}: {background.size}')
+    
+    # Create `drawer`
+    draw = ImageDraw.Draw(background)
+
+    # Put the `rgba_image` with offset `title_space`
+    background.paste(rgba_image, (0, title_space))
+
+    # Draw `title` on `background`
+    # width center posistion = Simplify[ ((background.width - ylabel_width) - title_width)/2 + ylabel_width ]
+    title_width_center = (background.width - title_width)/2 + 0.5*ylabel_width
+    draw.text((title_width_center, 0), title, font=font, fill=font_color)
+    
+    return background
 
 
 
