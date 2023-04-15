@@ -11,9 +11,14 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 
 
 
-def draw_x_on_image(rgb_image:Image.Image, color:Tuple[int, int], line_width:int):
+def draw_x_on_image(rgb_image:Image.Image,
+                    line_color:Tuple[int, int, int], line_width:int):
     
     draw = ImageDraw.Draw(rgb_image)
+    
+    # set default value, color: RGB
+    if line_color is None: line_color = (180, 160, 0)
+    if line_width is None: line_width = 2
     
     # set 4 corners
     top_left = (0, 0)
@@ -22,26 +27,35 @@ def draw_x_on_image(rgb_image:Image.Image, color:Tuple[int, int], line_width:int
     bottom_right = (rgb_image.width, rgb_image.height)
 
     # draw 2 diagonal lines
-    draw.line((top_left, bottom_right), fill=color, width=line_width) # RGB
-    draw.line((top_right, bottom_left), fill=color, width=line_width) # RGB
+    draw.line((top_left, bottom_right), fill=tuple(line_color), width=line_width)
+    draw.line((top_right, bottom_left), fill=tuple(line_color), width=line_width)
 
 
     
 def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
-                     font_style:str="consola.ttf", font_size:int=None):
+                              font_style:str, font_size:int,
+                              correct_color:Tuple[int, int, int],
+                              incorrect_color:Tuple[int, int, int],
+                              shadow_color:Tuple[int, int, int]):
     
     draw = ImageDraw.Draw(rgb_image)
+    
+    # set default value, color: RGB
+    if font_style is None: font_style = "consola.ttf"
+    ## auto `fontsize` = image_height * 0.07
+    if font_size is None: font_size = round(np.array(rgb_image).shape[0]*0.07)
+    if correct_color is None: correct_color = (0, 255, 0)
+    if incorrect_color is None: incorrect_color = (255, 255, 255)
+    if shadow_color is None: shadow_color = (0, 0, 0)
     
     # text
     pred_text = f"prediction : {pred_cls}"
     gt_text   = f"groundtruth: {gt_cls}"
-    if font_size is not None: font_size=font_size
-    else: font_size = round(np.array(rgb_image).shape[0]*0.07) # auto_font_size = image_height * 0.07
     font = ImageFont.truetype(font_style, font_size)
     
     # text color
-    if gt_cls == pred_cls: text_color = (0, 255, 0) # color: RGB
-    else: text_color = (255, 255, 255) # color: RGB
+    if gt_cls == pred_cls: text_color = correct_color
+    else: text_color = incorrect_color
     
     # calculate text position
     text_width, text_height = draw.textsize(gt_text, font=font)
@@ -50,37 +64,48 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
     gt_pos = [gt_w, gt_h]
     pred_pos = [gt_w, (gt_h - font_size*1.5)]
     
-    # shadow
-    shadow_color = (0, 0, 0)
+    # shadow, stroke (text border)
     shadow_offset = (2, 2)
+    stroke_width = 2
 
     # draw 'prediction' text
     draw.text((pred_pos[0] + shadow_offset[0], pred_pos[1] + shadow_offset[1]), 
-               pred_text, font=font, fill=shadow_color) # shadow
-    draw.text(pred_pos, pred_text, font=font, fill=text_color)
+               pred_text, font=font, fill=tuple(shadow_color),
+               stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
+    draw.text(pred_pos, pred_text, font=font, fill=tuple(text_color))
     
     # draw 'groundtruth' text
     draw.text((gt_pos[0] + shadow_offset[0], gt_pos[1] + shadow_offset[1]), 
-               gt_text, font=font, fill=shadow_color) # shadow
-    draw.text(gt_pos, gt_text, font=font, fill=text_color)
+               gt_text, font=font, fill=tuple(shadow_color),
+               stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
+    draw.text(gt_pos, gt_text, font=font, fill=tuple(text_color))
 
 
 
 def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:float, drop_ratio:float, 
-                           font_style:str="consola.ttf", font_size:int=None):
+                            font_style:str, font_size:int,
+                            selected_color:Tuple[int, int, int],
+                            drop_color:Tuple[int, int, int],
+                            shadow_color:Tuple[int, int, int]):
     
     draw = ImageDraw.Draw(rgb_image)
+    
+    # set default value, color: RGB
+    if font_style is None: font_style = "consola.ttf"
+    ## auto `fontsize` = image_height * 0.05
+    if font_size is None: font_size = round(np.array(rgb_image).shape[0]*0.05)
+    if selected_color is None: selected_color = (255, 255, 255)
+    if drop_color is None: drop_color = (255, 255, 127)
+    if shadow_color is None: shadow_color = (0, 0, 0)
 
     # text
     intensity_text = f"@ intensity: {intensity}"
     darkratio_text = f">> dark_ratio: {dark_ratio:.5f}"
-    if font_size is not None: font_size=font_size
-    else: font_size = round(np.array(rgb_image).shape[0]*0.05) # auto_font_size = image_height * 0.05
     font = ImageFont.truetype(font_style, font_size)
 
     # text color
-    if dark_ratio >= drop_ratio: text_color = (255, 255, 127) # drop, color: RGB
-    else: text_color = (255, 255, 255) # selected, color: RGB
+    if dark_ratio >= drop_ratio: text_color = drop_color
+    else: text_color = selected_color
     
     # calculate text position
     ## dark_ratio
@@ -94,19 +119,21 @@ def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:flo
     intensity_h = (darkratio_h - font_size*1.5)
     intensity_pos = [intensity_w, intensity_h]
     
-    # shadow
-    shadow_color = (0, 0, 0)
+    # shadow, stroke (text border)
     shadow_offset = (2, 2)
+    stroke_width = 2
     
     # draw 'intensity' text
     draw.text((intensity_pos[0] + shadow_offset[0], intensity_pos[1] + shadow_offset[1]), 
-               intensity_text, font=font, fill=shadow_color) # shadow
-    draw.text(intensity_pos, intensity_text, font=font, fill=text_color)
+               intensity_text, font=font, fill=tuple(shadow_color), 
+               stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
+    draw.text(intensity_pos, intensity_text, font=font, fill=tuple(text_color))
     
     # draw 'dark_ratio' text
     draw.text((darkratio_pos[0] + shadow_offset[0], darkratio_pos[1] + shadow_offset[1]), 
-               darkratio_text, font=font, fill=shadow_color) # shadow
-    draw.text(darkratio_pos, darkratio_text, font=font, fill=text_color)
+               darkratio_text, font=font, fill=tuple(shadow_color), 
+               stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
+    draw.text(darkratio_pos, darkratio_text, font=font, fill=tuple(text_color))
 
 
 
