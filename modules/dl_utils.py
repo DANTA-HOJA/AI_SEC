@@ -86,7 +86,7 @@ class ImgDataset(Dataset):
         img = torch.from_numpy(img).float()  # 32-bit float
         cls_idx = torch.tensor(cls_idx) # 64-bit int, can be [0] or [1] or [2] only
         
-        return img, cls_idx, imgname_no_ext_list
+        return img, cls_idx, imgname_no_ext
 
 
 
