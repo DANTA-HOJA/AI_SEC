@@ -215,7 +215,9 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
 
 def plt_to_pillow(figure:figure.Figure):
     
-    buffer = io.BytesIO()
+    size_mb = 50
+    initial_bytes = b"\0" * size_mb * 1024 * 1024
+    buffer = io.BytesIO(initial_bytes=initial_bytes)
     figure.savefig(buffer, format='png')
     buffer.seek(0)
 
