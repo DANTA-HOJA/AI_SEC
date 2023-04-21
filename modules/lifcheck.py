@@ -152,15 +152,19 @@ def check_BF_format(name_list:List[str], check_pos:int, failed_cnt:int, check_di
 
 def check_image_name(image_name_list:List[str], format_and_type:str, debug_mode:bool=False) -> Tuple[int, Dict[str, str]]:
 
-        # rgb image name example:
-        #
-        # 20220610_CE001_palmskin_8dpf - Series001_fish_1_palmskin_8dpf_A (old format)
-        # 20221125_AI005_palmskin_10dpf - Series001_fish_165_A_RGB (new format)
-        #
-        # 20220617_CE002_palmskin_8dpf - Series001_fish_11_palmskin_8dpf (old format)
-        # 20221127_AI005_palmskin_12dpf - Series005_fish_207_BF (new format)
-        # 
-        # format_and_type: old_rgb, new_rgb, old_bf, new_bf
+        """
+        - rgb image name example:
+        
+            - 20220610_CE001_palmskin_8dpf - Series001_fish_1_palmskin_8dpf_A (old format)
+            - 20221125_AI005_palmskin_10dpf - Series001_fish_165_A_RGB (new format)
+        
+        - bf image name example:
+            
+            - 20220617_CE002_palmskin_8dpf - Series001_fish_11_palmskin_8dpf (old format)
+            - 20221127_AI005_palmskin_12dpf - Series005_fish_207_BF (new format)
+        
+        format_and_type: old_rgb, new_rgb, old_bf, new_bf
+        """
         
         
         check_dict = {}
