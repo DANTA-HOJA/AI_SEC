@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
 
             # user variable
-            ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230305_NEW_STRUCT}_Academia_Sinica_i409"
+            ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230424_Update}_Academia_Sinica_i505"
             print(ap_data_root)
             # --- BF
             analysis_method_desc = "KY_with_NameChecker"
