@@ -13,7 +13,7 @@ from dataop import get_fish_ID_pos
 
 
 # input
-ap_data_root = r"C:\Users\confocal_microscope\Desktop\{PyIJ_OutTest}_RGB_preprocess" # r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
+ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230424_Update}_Academia_Sinica_i505"
 preprocess_method_desc = "ch4_min_proj, outer_rect"
 preprocess_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_preprocess")
 

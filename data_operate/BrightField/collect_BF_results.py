@@ -13,7 +13,7 @@ from dataop import get_fish_ID_pos
 
 
 # input
-ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230305_NEW_STRUCT}_Academia_Sinica_i409" # r"C:\Users\confocal_microscope\Desktop\WorkingDir\(D2)_Image_AP\{Data}_Data\{20221209_UPDATE_82}_Academia_Sinica_i324"
+ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230424_Update}_Academia_Sinica_i505"
 analysis_method_desc = "KY_with_NameChecker"
 analysis_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_Analysis")
 detection_mode = "missing" # missing / finding
