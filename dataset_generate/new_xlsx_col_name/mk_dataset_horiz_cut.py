@@ -22,11 +22,9 @@ from datasetop import get_args, gen_dataset_param_name, gen_crop_img, drop_too_d
 
 
 if __name__ == "__main__":
-
-    args = get_args()
     
     
-    with open(os.path.normpath(args.config_path), mode="r") as f_reader: 
+    with open("mk_dataset_horiz_cut.yaml", mode="r") as f_reader:
         config = yaml.load(f_reader, Loader=yaml.SafeLoader)
 
 
@@ -49,9 +47,9 @@ if __name__ == "__main__":
     stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_key)
     np.random.seed(random_seed)
     dataset_param_name = gen_dataset_param_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", dataset_param_name)
-    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", dataset_param_name)
-    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", dataset_param_name)
+    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", sheet_name, dataset_param_name)
+    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", sheet_name, dataset_param_name)
+    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", sheet_name, dataset_param_name)
     print("")
     create_new_dir(save_dir_A_only)
     create_new_dir(save_dir_P_only)
