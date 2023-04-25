@@ -25,7 +25,6 @@ import torch
 from torch import nn, utils
 from torch.utils.data import Dataset, DataLoader
 from torchvision.models import resnet18, resnet50, resnext50_32x4d, vit_b_16
-from torchsummary import summary
 
 
 
