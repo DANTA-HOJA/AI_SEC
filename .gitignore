@@ -18,3 +18,4 @@ FuncTest_with_ipynb/*.tif
 FuncTest_with_ipynb/*.tiff
 
 *.sh
+*.code-workspace
