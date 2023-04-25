@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 import pandas as pd
 import cv2
 
-sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
+sys.path.append("/home/rime97410000/ZebraFish_Code/ZebraFish_AP_POS/modules") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
 from datasetop import gen_dataset_name, gen_crop_img, drop_too_dark, save_crop_img, append_log, save_dataset_logs

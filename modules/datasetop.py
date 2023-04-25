@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import cv2
 
-sys.path.append(r"C:\Users\confocal_microscope\Desktop\ZebraFish_AP_POS\modules") # add path to scan customized module
+sys.path.append("/home/rime97410000/ZebraFish_Code/ZebraFish_AP_POS/modules") # add path to scan customized module
 from fileop import create_new_dir
 
 
