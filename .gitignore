@@ -16,3 +16,5 @@ __pycache__
 FuncTest_with_ipynb/*.png
 FuncTest_with_ipynb/*.tif
 FuncTest_with_ipynb/*.tiff
+
+*.sh
