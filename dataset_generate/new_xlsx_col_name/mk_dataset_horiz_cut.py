@@ -30,6 +30,7 @@ if __name__ == "__main__":
 
     # *** Variable ***
     ## set vars from config file (.yaml)
+    script_name = config["script_name"]
     data_root  = os.path.normpath(config["data"]["root"])
     xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
     sheet_name = config["data"]["brightfield"]["sheet_name"]
@@ -299,7 +300,7 @@ if __name__ == "__main__":
                 "logs"        : trainset_logs,
                 "save_dir"    : dir_path,
                 "log_desc"    : f"Logs_{pos[0]}_train",
-                "script_name" : "mk_dataset_horiz_cut",
+                "script_name" : script_name,
                 "CLI_desc"    : "Train :\n",
                 "time_stamp"  : time_stamp,
                 "show_df"     : show_df
@@ -312,7 +313,7 @@ if __name__ == "__main__":
                 "logs"        : testset_logs,
                 "save_dir"    : dir_path,
                 "log_desc"    : f"Logs_{pos[0]}_test",
-                "script_name" : "mk_dataset_horiz_cut",
+                "script_name" : script_name,
                 "CLI_desc"    : "Test :\n",
                 "time_stamp"  : time_stamp,
                 "show_df"     : show_df
