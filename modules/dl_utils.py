@@ -96,9 +96,9 @@ def caulculate_metrics(log:Dict, average_loss:float,
     
     # Calculate different f1-score
     class_f1 = f1_score(groundtruth_list, predict_list, average=None) # by class
+    micro_f1 = f1_score(groundtruth_list, predict_list, average='micro')
     macro_f1 = f1_score(groundtruth_list, predict_list, average='macro')
     weighted_f1 = f1_score(groundtruth_list, predict_list, average='weighted')
-    micro_f1 = f1_score(groundtruth_list, predict_list, average='micro')
     
     # Update 'log'
     ## average_loss
@@ -106,10 +106,9 @@ def caulculate_metrics(log:Dict, average_loss:float,
     else: log["average_loss"] = None
     ## f1-score
     for key, value in class_mapper.items(): log[f"{key}_f1"] = round(class_f1[value], 5)
+    log["micro_f1"] = round(micro_f1, 5)
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
-    log["micro_f1"] = round(micro_f1, 5)
-    log["average_f1"] = round(((macro_f1 + micro_f1)/2), 5)
 
 
 
