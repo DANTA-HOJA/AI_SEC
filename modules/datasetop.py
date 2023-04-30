@@ -5,7 +5,8 @@ import argparse
 from typing import List, Dict, Tuple
 from glob import glob
 import json
-import yaml
+import toml
+import tomlkit # use this branch can preserve all content and order in the `toml` file
 
 from tqdm.auto import tqdm
 import pandas as pd
@@ -252,8 +253,8 @@ def gen_train_selected_summary(dir_path:str, all_class:List[str]):
 
 def save_dataset_config(save_path:str, config:Dict):
     
-    with open(os.path.normpath(f"{save_path}/dataset_config.yaml"), mode="w") as f_writer:
-        f_writer.write(yaml.dump(config))
+    with open(os.path.normpath(f"{save_path}/dataset_config.toml"), mode="w") as f_writer:
+        tomlkit.dump(config, f_writer)
 
 
 

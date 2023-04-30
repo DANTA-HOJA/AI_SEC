@@ -5,7 +5,8 @@ from datetime import datetime
 from collections import Counter
 from math import floor
 import json
-import yaml
+import toml
+import tomlkit # use this branch can preserve all content and order in the `toml` file
 
 from tqdm.auto import tqdm
 import cv2
@@ -24,12 +25,12 @@ from datasetop import get_args, gen_dataset_param_name, gen_crop_img, drop_too_d
 if __name__ == "__main__":
     
     
-    with open("mk_dataset_horiz_cut.yaml", mode="r") as f_reader:
-        config = yaml.load(f_reader, Loader=yaml.SafeLoader)
+    with open("mk_dataset_horiz_cut.toml", mode="r") as f_reader:
+        config = tomlkit.load(f_reader)
 
 
     # *** Variable ***
-    ## set vars from config file (.yaml)
+    ## set vars from config file (.toml)
     script_name = config["script_name"]
     data_root  = os.path.normpath(config["data"]["root"])
     xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
