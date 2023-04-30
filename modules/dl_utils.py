@@ -171,7 +171,7 @@ def plot_training_trend(plt, save_dir:str,
     # Close figure
     plt.close()
     # Save figure
-    fig_path = os.path.normpath(f"{save_dir}/training_trend.png")
+    fig_path = os.path.normpath(f"{save_dir}/training_trend_{score_key}.png")
     fig.savefig(fig_path)
     # print("\n", f"figure save @ \n-> {fig_path}\n")
 
@@ -295,12 +295,16 @@ def save_training_logs(save_dir:str, train_logs:List[Dict[str, any]],
     # train_logs
     df_train_logs = pd.DataFrame(train_logs)
     df_train_logs.set_index("epoch", inplace=True)
-    df_train_logs.to_excel(os.path.join(save_dir, "{Logs}_train.xlsx"), engine="openpyxl")
 
     # valid_logs
     df_valid_logs = pd.DataFrame(valid_logs)
     df_valid_logs.set_index("epoch", inplace=True)
-    df_valid_logs.to_excel(os.path.join(save_dir, "{Logs}_valid.xlsx"), engine="openpyxl")
+    
+    # join two logs
+    df_concat = pd.concat([df_train_logs, df_valid_logs], axis=1)
+    
+    # save log
+    df_concat.to_excel(os.path.join(save_dir, "{Logs}_training_log.xlsx"), engine="openpyxl")
     
     # best_val_log
     with open(os.path.normpath(f"{save_dir}/{{Logs}}_best_valid.log"), mode="w") as f_writer:
