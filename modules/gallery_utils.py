@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional # Optional[] = Union[ , None]
 from copy import deepcopy
 
 import numpy as np
@@ -12,13 +12,13 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 
 
 def draw_x_on_image(rgb_image:Image.Image,
-                    line_color:Tuple[int, int, int], line_width:int):
+                    line_color:Optional[Tuple[int, int, int]]=None, line_width:Optional[int]=None):
     
     draw = ImageDraw.Draw(rgb_image)
     
     # set default value, color: RGB
-    if line_color is None: line_color = (180, 160, 0)
-    if line_width is None: line_width = 2
+    if not line_color: line_color = (180, 160, 0)
+    if not line_width: line_width = 2
     
     # set 4 corners
     top_left = (0, 0)
@@ -33,20 +33,20 @@ def draw_x_on_image(rgb_image:Image.Image,
 
     
 def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
-                              font_style:str, font_size:int,
-                              correct_color:Tuple[int, int, int],
-                              incorrect_color:Tuple[int, int, int],
-                              shadow_color:Tuple[int, int, int]):
+                              font_style:Optional[str]=None, font_size:Optional[int]=None,
+                              correct_color:Optional[Tuple[int, int, int]]=None,
+                              incorrect_color:Optional[Tuple[int, int, int]]=None,
+                              shadow_color:Optional[Tuple[int, int, int]]=None):
     
     draw = ImageDraw.Draw(rgb_image)
     
     # set default value, color: RGB
-    if font_style is None: font_style = "consola.ttf"
+    if not font_style: font_style = "consola.ttf"
     ## auto `fontsize` = image_height * 0.07
-    if font_size is None: font_size = round(np.array(rgb_image).shape[0]*0.07)
-    if correct_color is None: correct_color = (0, 255, 0)
-    if incorrect_color is None: incorrect_color = (255, 255, 255)
-    if shadow_color is None: shadow_color = (0, 0, 0)
+    if not font_size: font_size = round(np.array(rgb_image).shape[0]*0.07)
+    if not correct_color: correct_color = (0, 255, 0)
+    if not incorrect_color: incorrect_color = (255, 255, 255)
+    if not shadow_color: shadow_color = (0, 0, 0)
     
     # text
     pred_text = f"prediction : {pred_cls}"
@@ -72,31 +72,31 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
     draw.text((pred_pos[0] + shadow_offset[0], pred_pos[1] + shadow_offset[1]), 
                pred_text, font=font, fill=tuple(shadow_color),
                stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
-    draw.text(pred_pos, pred_text, font=font, fill=tuple(text_color))
+    draw.text(tuple(pred_pos), pred_text, font=font, fill=tuple(text_color))
     
     # draw 'groundtruth' text
     draw.text((gt_pos[0] + shadow_offset[0], gt_pos[1] + shadow_offset[1]), 
                gt_text, font=font, fill=tuple(shadow_color),
                stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
-    draw.text(gt_pos, gt_text, font=font, fill=tuple(text_color))
+    draw.text(tuple(gt_pos), gt_text, font=font, fill=tuple(text_color))
 
 
 
 def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:float, drop_ratio:float, 
-                            font_style:str, font_size:int,
-                            selected_color:Tuple[int, int, int],
-                            drop_color:Tuple[int, int, int],
-                            shadow_color:Tuple[int, int, int]):
+                            font_style:Optional[str]=None, font_size:Optional[int]=None,
+                            selected_color:Optional[Tuple[int, int, int]]=None,
+                            drop_color:Optional[Tuple[int, int, int]]=None,
+                            shadow_color:Optional[Tuple[int, int, int]]=None):
     
     draw = ImageDraw.Draw(rgb_image)
     
     # set default value, color: RGB
-    if font_style is None: font_style = "consola.ttf"
+    if not font_style: font_style = "consola.ttf"
     ## auto `fontsize` = image_height * 0.05
-    if font_size is None: font_size = round(np.array(rgb_image).shape[0]*0.05)
-    if selected_color is None: selected_color = (255, 255, 255)
-    if drop_color is None: drop_color = (255, 255, 127)
-    if shadow_color is None: shadow_color = (0, 0, 0)
+    if not font_size: font_size = round(np.array(rgb_image).shape[0]*0.05)
+    if not selected_color: selected_color = (255, 255, 255)
+    if not drop_color: drop_color = (255, 255, 127)
+    if not shadow_color: shadow_color = (0, 0, 0)
 
     # text
     intensity_text = f"@ intensity: {intensity}"
@@ -127,20 +127,23 @@ def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:flo
     draw.text((intensity_pos[0] + shadow_offset[0], intensity_pos[1] + shadow_offset[1]), 
                intensity_text, font=font, fill=tuple(shadow_color), 
                stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
-    draw.text(intensity_pos, intensity_text, font=font, fill=tuple(text_color))
+    draw.text(tuple(intensity_pos), intensity_text, font=font, fill=tuple(text_color))
     
     # draw 'dark_ratio' text
     draw.text((darkratio_pos[0] + shadow_offset[0], darkratio_pos[1] + shadow_offset[1]), 
                darkratio_text, font=font, fill=tuple(shadow_color), 
                stroke_width=stroke_width, stroke_fill=tuple(shadow_color)) # shadow
-    draw.text(darkratio_pos, darkratio_text, font=font, fill=tuple(text_color))
+    draw.text(tuple(darkratio_pos), darkratio_text, font=font, fill=tuple(text_color))
 
 
 
 def postprocess_cam_image(image:np.ndarray, grayscale_cam:np.ndarray, use_rgb,
                           colormap:int, image_weight:float, cam_save_path:str,
-                          pred_cls:str, gt_cls:str, resize:Tuple[int, int]=None,
-                          font_style:str="consola.ttf", font_size:int=None):
+                          pred_cls:str, gt_cls:str, resize:Optional[Tuple[int, int]]=None,
+                          font_style:Optional[str]=None, font_size:Optional[int]=None):
+    
+    if not font_style: font_style = "consola.ttf"
+    if not font_size: font_size = 16
     
     if use_rgb: rgb_img = image
     else: rgb_img = image[:, :, ::-1] # BGR -> RGB
