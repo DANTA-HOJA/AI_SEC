@@ -22,7 +22,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-sys.path.append("/home/rime97410000/ZebraFish_Code/ZebraFish_AP_POS/modules")
+sys.path.append("./../modules/")
 from logger import init_logger
 from dataop import get_fish_ID_pos, create_dict_by_fishID, merge_BF_analysis
 

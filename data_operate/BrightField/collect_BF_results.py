@@ -6,7 +6,7 @@ import json
 
 from glob import glob
 
-sys.path.append("/home/rime97410000/ZebraFish_Code/ZebraFish_AP_POS/modules") # add path to scan customized module
+sys.path.append("./../../modules/") # add path to scan customized module
 from fileop import create_new_dir, resave_result
 from dataop import get_fish_ID_pos
 
