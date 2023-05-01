@@ -1,5 +1,6 @@
+import os
 import io
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import argparse
 
 import numpy as np
@@ -115,10 +116,10 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 
 
 def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
-                      figtitle:str, subtitle_list:List[str]=None,
+                      figtitle:str="", subtitle_list:Optional[List[str]]=None,
+                      font_style:Optional[str]=None,
                       save_path:str=None, use_rgb:bool=False,
-                      show_fig:bool=True, verbose:bool=False,
-                      plt_default_font:str=None):
+                      show_fig:bool=True, verbose:bool=False):
     
     """
     show an RGB image by splitting its channels.
@@ -135,8 +136,8 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     
     # Get the path of matplotlib default font: `DejaVu Sans`
-    if plt_default_font is None:
-        plt_default_font=font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    if font_style is None:
+        font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
     # Get minimum image shape ( image may in different size )
     min_img_shape = [np.inf, np.inf]
@@ -172,9 +173,9 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     
     # Draw `title` on `background`
     rgba_image = add_big_title(rgba_image, figtitle, ylabel_width=y_width, 
-                               font_style=plt_default_font, verbose=verbose)
+                               font_style=font_style, verbose=verbose)
     
-    if save_path is not None: rgba_image.save(save_path)
+    if save_path is not None: rgba_image.save(os.path.normpath(save_path))
     if show_fig: rgba_image.show()
     
     plt.close()
@@ -182,17 +183,17 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
 
 
 def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
-                               figtitle:str="", subtitle_list:List[str]=None,
+                               figtitle:str="", subtitle_list:Optional[List[str]]=None,
+                               font_style:Optional[str]=None,
                                save_path:str=None, use_rgb:bool=False,
-                               show_fig:bool=True, verbose:bool=False,
-                               plt_default_font:str=None):
+                               show_fig:bool=True, verbose:bool=False):
     
     
     assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
     
     # Get the path of matplotlib default font: `DejaVu Sans`
-    if plt_default_font is None:
-        plt_default_font=font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    if font_style is None:
+        font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
     input_args = locals() # collect all exist local variables (before this line) as a dict
     
