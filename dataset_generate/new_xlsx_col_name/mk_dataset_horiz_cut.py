@@ -26,7 +26,7 @@ if __name__ == "__main__":
     
     
     with open("mk_dataset_horiz_cut.toml", mode="r") as f_reader:
-        config = tomlkit.load(f_reader)
+        config = toml.load(f_reader)
 
 
     # *** Variable ***
