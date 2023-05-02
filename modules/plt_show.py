@@ -36,6 +36,7 @@ def plot_in_rgb(img_path:str, fig_size:Tuple[float, float], plt=plt):
     fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
     fig.suptitle(f"Channel: ' RGB ' , shape = {img_rgb.shape}")
     plt.imshow(img_rgb, vmin=0, vmax=255)
+    
     plt.show()
     plt.close()
 
@@ -134,10 +135,11 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     """
     
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
+    if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
     
     # Get the path of matplotlib default font: `DejaVu Sans`
-    if font_style is None:
-        font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    default_font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    if font_style is None: font_style = default_font_style
     
     # Get minimum image shape ( image may in different size )
     min_img_shape = [np.inf, np.inf]
@@ -152,16 +154,20 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     
     # Create figure
     fig, axs = plt.subplots(row, column, figsize=(fig_w, fig_h), dpi=fig_dpi)
+    fig.tight_layout() # auto layout
     
     # Plot each image
     for i, ax in enumerate(axs.flatten()):
-        
         if use_rgb: img_rgb = img_list[i]
         else: img_rgb = cv2.cvtColor(img_list[i], cv2.COLOR_BGR2RGB) # BGR -> RGB
         ax.imshow(img_rgb, vmin=0, vmax=255)
-        if subtitle_list is not None: ax.set_title(subtitle_list[i]) # TODO:  find method to optimize `fontsize` of `subtitle`
     
-    fig.tight_layout() # auto layout
+    if subtitle_list is not None:
+        for i, ax in enumerate(axs.flatten()):
+            fontsize = int(min_img_shape[0]*0.05)
+            max_width = min_img_shape[1]*0.91*0.75
+            opti_font_info = calculate_opti_title_param(subtitle_list[i], max_width, fontsize, default_font_style, verbose)
+            ax.set_title(subtitle_list[i], fontsize=opti_font_info[3]) # TODO:  find method to optimize `fontsize` of `subtitle`
     
     # Calculate space occupied by yaxis and ylabel
     fig.canvas.draw()
@@ -178,7 +184,8 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     if save_path is not None: rgba_image.save(os.path.normpath(save_path))
     if show_fig: rgba_image.show()
     
-    plt.close()
+    rgba_image.close()
+    plt.close(fig)
 
 
 
@@ -190,22 +197,26 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
     
     
     assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
+    if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
     
     # Get the path of matplotlib default font: `DejaVu Sans`
     if font_style is None:
         font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
-    input_args = locals() # collect all exist local variables (before this line) as a dict
-    
     # append empty arrays to the end of 'image_list' until its length is a multiple of 'column'
     orig_len = len(img_list)
+    
+    if (len(img_list)%column != 0) and (subtitle_list is None):
+        subtitle_list = [ "" for _ in range(len(img_list)) ]
     while len(img_list)%column != 0:
         img_list.append(np.ones_like(img_list[-1])*255)
-        subtitle_list.append(f"Empty")
+        subtitle_list.append(f"[Empty]")
     if verbose: print(f"len(img_list): {orig_len} --> {len(img_list)}")
     
-    auto_row = int(len(img_list)/column)
+    input_args = locals() # collect all exist local variables (before this line) as a dict
+    input_args.pop("orig_len")
     
+    auto_row = int(len(img_list)/column)
     input_args["row"] = auto_row
     input_args["figtitle"] = " , ".join([input_args["figtitle"], f"( row, column ) = ( {auto_row}, {column} )"])
     
@@ -244,7 +255,8 @@ def calculate_opti_title_param(title:str, max_width:int, fontsize:int, font_styl
     if title_width > max_width:
         return calculate_opti_title_param(title, max_width, int(0.9*fontsize), font_style, verbose)
     
-    return title_width, title_height, font
+    print("="*100, "\n")
+    return title_width, title_height, font, fontsize
 
 
 
@@ -255,7 +267,7 @@ def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
     # Get title parameters
     fontsize = int(rgba_image.height*0.05)
     max_width = rgba_image.width*0.95
-    title_width, title_height, font = calculate_opti_title_param(title, max_width, fontsize, font_style, verbose)    
+    title_width, title_height, font, _ = calculate_opti_title_param(title, max_width, fontsize, font_style, verbose)
     title_space = int(title_height*title_line_height) # title + line height
 
     # Create empty background in RGBA
