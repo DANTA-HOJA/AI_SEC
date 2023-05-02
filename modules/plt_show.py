@@ -255,7 +255,7 @@ def calculate_opti_title_param(title:str, max_width:int, fontsize:int, font_styl
     if title_width > max_width:
         return calculate_opti_title_param(title, max_width, int(0.9*fontsize), font_style, verbose)
     
-    print("="*100, "\n")
+    if verbose: print("="*100, "\n")
     return title_width, title_height, font, fontsize
 
 
