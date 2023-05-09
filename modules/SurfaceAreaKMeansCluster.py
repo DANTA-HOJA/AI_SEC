@@ -13,11 +13,8 @@ import matplotlib.patheffects as path_effects
 from sklearn.neighbors import KernelDensity
 from sklearn.cluster import KMeans
 
-sys.path.append("./../../modules/") # add path to scan customized module
 from fileop import create_new_dir
 
-
-# -----------------------------------------------------------------------------------
 
 
 class SurfaceAreaKMeansCluster():
