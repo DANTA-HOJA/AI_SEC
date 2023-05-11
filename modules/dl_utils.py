@@ -99,6 +99,7 @@ def caulculate_metrics(log:Dict, average_loss:float,
     micro_f1 = f1_score(groundtruth_list, predict_list, average='micro')
     macro_f1 = f1_score(groundtruth_list, predict_list, average='macro')
     weighted_f1 = f1_score(groundtruth_list, predict_list, average='weighted')
+    maweavg_f1 = (macro_f1 + weighted_f1)/2
     
     # Update 'log'
     ## average_loss
@@ -109,6 +110,7 @@ def caulculate_metrics(log:Dict, average_loss:float,
     log["micro_f1"] = round(micro_f1, 5)
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
+    log["maweavg_f1"] = round(maweavg_f1, 5)
 
 
 
