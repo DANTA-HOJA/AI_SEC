@@ -16,7 +16,7 @@ import pandas as pd
 sys.path.append("./../../modules/") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from datasetop import get_args, gen_dataset_param_name, gen_crop_img, drop_too_dark, save_crop_img, \
+from dataset.utils import get_args, gen_dataset_param_name, gen_crop_img, drop_too_dark, save_crop_img, \
                       append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
                       save_dark_ratio_log
 
