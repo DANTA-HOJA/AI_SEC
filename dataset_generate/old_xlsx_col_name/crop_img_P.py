@@ -14,7 +14,7 @@ import numpy as np
 
 sys.path.append("/home/rime97410000/ZebraFish_Code/ZebraFish_AP_POS/modules") # add path to scan customized module
 from fileop import create_new_dir
-from datasetop import gen_crop_img, drop_too_dark
+from dataset.utils import gen_crop_img, drop_too_dark
     
 
 
