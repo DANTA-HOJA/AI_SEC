@@ -32,30 +32,38 @@ def get_args():
 
 
 
+def xlsx_file_name_parser(xlsx_file_name:str):
+    
+    # xlsx_file_name, e.g. "{3CLS_SURF_KMeansLOG10_RND2022}_data.xlsx"
+    name_list = re.split("{|}", xlsx_file_name)[1] # 3CLS_SURF_KMeansLOG10_RND2022
+    name_list = name_list.split("_") # 
+    return "_".join(name_list[2:]) # KMeansLOG10_RND2022
+
+
+
 def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
     """To generate dataset's name corresponing to the passing parameters.
     
     Args:
-        xlsx_file (str):                e.g. "{4CLS_BY_SurfStDev}_data.xlsx" ---> SURF4C
-        crop_size (int):                e.g.       512                       ---> CRPS512
-        shift_region (str):             e.g.      "1/4"                      ---> SF14
-        intensity (int):                e.g.        20                       ---> INT20
-        drop_ratio (float):             e.g.        0.3                      ---> DRP30
-        random_seed (int, optional):    e.g.       2022                      ---> RS2022. Defaults to None.
+        xlsx_file (str):                e.g. "{3CLS_SURF_KMeansLOG10_RND2022}_data.xlsx" ---> SURF3C \n
+        crop_size (int):                e.g.                   512                       ---> CRPS512 \n
+        shift_region (str):             e.g.                  "1/4"                      ---> SF14 \n
+        intensity (int):                e.g.                    20                       ---> INT20 \n
+        drop_ratio (float):             e.g.                   0.3                       ---> DRP30 \n
+        random_seed (int, optional):    e.g.                  2022                       ---> RS2022. Defaults to None.
 
     Raises:
-        ValueError: "Numerator of 'shift_region' needs to be 1"
+        ValueError: "Numerator of `shift_region` needs to be 1"
 
     Returns:
-        str:
-        e.g. 'DS_SURF4C_CRPS512_SF14_INT20_DRP30' or 'DS_SURF4C_CRPS512_SF14_INT20_DRP30_RS2022'
+        str: e.g. `DS_SURF4C_CRPS512_SF14_INT20_DRP30` or `DS_SURF4C_CRPS512_SF14_INT20_DRP30_RS2022`
     
     """
     
     # Converting... "xlsx_file" 
     xlsx_file_split = re.split("{|_|}", xlsx_file)
     n_class = xlsx_file_split[1].replace("CLS", "C")
-    used_feature = xlsx_file_split[3].replace("StDev", "").upper()
+    used_feature = xlsx_file_split[2]
     
     # Converting... "shift_region"
     fraction = shift_region.split("/")

@@ -16,9 +16,9 @@ import pandas as pd
 sys.path.append("./../../modules/") # add path to scan customized module
 from fileop import create_new_dir
 from dataop import get_fish_ID_pos
-from dataset.utils import get_args, gen_dataset_param_name, gen_crop_img, drop_too_dark, save_crop_img, \
-                      append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
-                      save_dark_ratio_log
+from dataset.utils import get_args, xlsx_file_name_parser, gen_dataset_param_name, gen_crop_img, drop_too_dark, \
+                          save_crop_img, append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
+                          save_dark_ratio_log
 
 
 
@@ -34,7 +34,6 @@ if __name__ == "__main__":
     script_name = config["script_name"]
     data_root  = os.path.normpath(config["data"]["root"])
     xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
-    sheet_name = config["data"]["brightfield"]["sheet_name"]
     palmskin_desc       = config["data"]["stacked_palmskin"]["desc"]
     palmskin_result_key = config["data"]["stacked_palmskin"]["result_key"]
     crop_size    = config["gen_param"]["crop_size"]
@@ -45,13 +44,17 @@ if __name__ == "__main__":
     dataset_root = os.path.normpath(config["dataset"]["root"])
     ## compose/extract vars
     data_name = data_root.split(os.sep)[-1]
+    classif_strategy = xlsx_file_name_parser(xlsx_file)
     xlsx_file_path = os.path.join(data_root, r"{Modify}_xlsx", xlsx_file)
     stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_key)
-    np.random.seed(random_seed)
+    random_state = np.random.RandomState(seed=random_seed)
     dataset_param_name = gen_dataset_param_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", sheet_name, dataset_param_name)
-    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", sheet_name, dataset_param_name)
-    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", sheet_name, dataset_param_name)
+    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
+    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
+    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
+    assert not os.path.exists(save_dir_A_only), f"dir: '{save_dir_A_only}' already exists"
+    assert not os.path.exists(save_dir_P_only), f"dir: '{save_dir_P_only}' already exists"
+    assert not os.path.exists(save_dir_Mix_AP), f"dir: '{save_dir_Mix_AP}' already exists"
     print("")
     create_new_dir(save_dir_A_only)
     create_new_dir(save_dir_P_only)
@@ -60,7 +63,7 @@ if __name__ == "__main__":
 
 
     # *** Load Excel sheet as DataFrame(pandas) ***
-    df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_path, engine = 'openpyxl', sheet_name=sheet_name)
+    df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_path, engine = 'openpyxl')
     # print(df_input_xlsx)
     df_class_list = df_input_xlsx["class"].tolist()
     ## get how many classes in xlsx
@@ -151,7 +154,7 @@ if __name__ == "__main__":
             #
             part_of_train = ""
             part_of_test = ""
-            if np.random.choice([True, False], size=1, replace=False)[0]:
+            if random_state.choice([True, False], size=1, replace=False)[0]:
                 used_for_test = fish_upper
                 used_for_train = fish_lower
                 part_of_test = "U"
