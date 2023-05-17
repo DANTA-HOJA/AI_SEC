@@ -14,8 +14,10 @@ config_path = Path(r"./../../Config/mk_cam_gallery.toml")
 
 # -------------------------------------------------------------------------------------
 
-log.info(f"Start {Fore.BLUE}`{os.path.basename(__file__)}`{Style.RESET_ALL}")
+print(); log.info(f"Start {Fore.BLUE}`{os.path.basename(__file__)}`{Style.RESET_ALL}")
 log.info(f"config_path: {Fore.GREEN}'{config_path.resolve()}'{Style.RESET_ALL}\n")
 
 cam_gallery_creator = CamGalleryCreator(config_path=config_path)
 cam_gallery_creator.run()
+
+print(); log.info(f"Done {Fore.BLUE}`{os.path.basename(__file__)}`{Style.RESET_ALL}\n")
