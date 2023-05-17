@@ -3,6 +3,7 @@ import sys
 import re
 import argparse
 from typing import List, Dict, Tuple
+from pathlib import Path
 from glob import glob
 import json
 import toml
@@ -266,14 +267,18 @@ def save_dataset_config(save_path:str, config:Dict):
 
 
 
-def sortFishNameForDataset(fish_name_string:str) -> Tuple[int, str, int]:
+def sortFishNameForDataset(text_with_fish_dsname:Path|str) -> Tuple[int, str, int]:
     
-    if os.sep in fish_name_string: fish_name_for_dataset = fish_name_string.split(os.sep)[-1].split(".")[0]
-    else: fish_name_for_dataset = fish_name_string.split(".")[0]
+    if isinstance(text_with_fish_dsname, Path): text_with_fish_dsname = str(text_with_fish_dsname)
+    elif isinstance(text_with_fish_dsname, str): pass
+    else: raise TypeError("unrecognized type of `text_with_fish_dsname`. Only `pathlib.Path` or `str` are accepted.")
     
-    name_split_list = re.split(" |_|-", fish_name_for_dataset) # example_list : ['L', 'fish', '111', 'A', 'selected', '0']
+    if os.sep in text_with_fish_dsname: fish_dsname = text_with_fish_dsname.split(os.sep)[-1].split(".")[0]
+    else: fish_dsname = text_with_fish_dsname.split(".")[0]
     
-    return name_split_list[0], int(name_split_list[2]), name_split_list[3], int(name_split_list[5])
+    fish_dsname_split = re.split(" |_|-", fish_dsname) # example_list : ['L', 'fish', '111', 'A', 'selected', '0']
+    
+    return fish_dsname_split[0], int(fish_dsname_split[2]), fish_dsname_split[3], int(fish_dsname_split[5])
 
 
 
