@@ -15,6 +15,7 @@ import traceback
 
 sys.path.append("./../../modules/") # add path to scan customized module
 from logger import init_logger
+from gallery.utils import divide_in_grop
 from gallery.cam.MtCamGalleryCreator import MtCamGalleryCreator
 
 
@@ -47,7 +48,6 @@ assert not os.path.exists(cam_gallery_dir), f"dir: '{cam_gallery_dir}' already e
 
 fish_dsname_list = [ str(path).split(os.sep)[-1] for path in list(cam_result_root.glob("*")) ] # will get dir_name likes `L_fish_111_A`
 fish_dsname_list.sort()
-fish_dsname_list = fish_dsname_list[:16]
 
 """ get `max_str_len` in `fish_dsname_list` """
 for fish_dsname in fish_dsname_list:
@@ -55,11 +55,7 @@ for fish_dsname in fish_dsname_list:
         max_str_len_dict["fish_dsname"] = len(fish_dsname)
 
 """ divide `fish_dsname_list` for each worker """
-fish_dsname_list_group = []
-quotient  = int(len(fish_dsname_list)/(worker-1))
-for i in range((worker-1)):
-    fish_dsname_list_group.append([ fish_dsname_list.pop(0) for i in range(quotient)])
-fish_dsname_list_group.append(fish_dsname_list)
+fish_dsname_list_group = divide_in_grop(fish_dsname_list, worker)
 
 # -------------------------------------------------------------------------------------
 
@@ -72,9 +68,9 @@ lock = Lock()
 def mt_cam_gallery(config_path:Path, fish_dsname_list:List[str], max_str_len_dict:int, 
                    lock:Lock, log:Logger, progressbar:tqdm):
     
-    mt_cam_gallery_creator2 = MtCamGalleryCreator(config_path, max_str_len_dict, 
+    mt_cam_gallery_creator = MtCamGalleryCreator(config_path, max_str_len_dict, 
                                                    lock, log, progressbar)
-    mt_cam_gallery_creator2.gen_batch_cam_gallery(fish_dsname_list)
+    mt_cam_gallery_creator.gen_batch_cam_gallery(fish_dsname_list)
 
 
 with executor:

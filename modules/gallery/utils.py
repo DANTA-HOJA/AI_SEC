@@ -11,6 +11,18 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 
 
 
+def divide_in_grop(fish_dsname_list:List[str], worker:int) -> List[List[str]]:
+    
+    fish_dsname_list_group = []
+    quotient  = int(len(fish_dsname_list)/(worker-1))
+    for i in range((worker-1)):
+        fish_dsname_list_group.append([ fish_dsname_list.pop(0) for i in range(quotient)])
+    fish_dsname_list_group.append(fish_dsname_list)
+
+    return fish_dsname_list_group
+
+
+
 def draw_x_on_image(rgb_image:Image.Image,
                     line_color:Optional[Tuple[int, int, int]]=None, line_width:Optional[int]=None):
     
