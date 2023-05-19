@@ -48,6 +48,7 @@ assert not os.path.exists(cam_gallery_dir), f"dir: '{cam_gallery_dir}' already e
 
 fish_dsname_list = [ str(path).split(os.sep)[-1] for path in list(cam_result_root.glob("*")) ] # will get dir_name likes `L_fish_111_A`
 fish_dsname_list.sort()
+# fish_dsname_list = fish_dsname_list[:16]
 
 """ get `max_str_len` in `fish_dsname_list` """
 for fish_dsname in fish_dsname_list:
@@ -79,13 +80,14 @@ with executor:
                                 lock, log, progressbars[i]) \
                 for i, fish_dsname_list in enumerate(fish_dsname_list_group) ]
     
-    for future in concurrent.futures.as_completed(futures):
-        try:
+    try:
+        for future in concurrent.futures.as_completed(futures):
             future.result()
-        except Exception:
-            traceback.print_exc()  # 打印异常堆栈跟踪信息
-
-for progressbar in progressbars: progressbar.close()
-# -------------------------------------------------------------------------------------
-
-print(); log.info(f"Done {Fore.BLUE}`{os.path.basename(__file__)}`{Style.RESET_ALL}\n")
+        
+    except Exception:
+        for progressbar in progressbars: progressbar.close()
+        print(); print(f"{traceback.format_exc()}") # 輸出異常訊息
+    
+    else:
+        for progressbar in progressbars: progressbar.close()
+        print(); log.info(f"Done {Fore.BLUE}`{os.path.basename(__file__)}`{Style.RESET_ALL}\n")
