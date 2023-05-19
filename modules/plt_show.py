@@ -1,6 +1,8 @@
 import os
-import io
 from typing import List, Tuple, Optional
+import io
+import tempfile
+from copy import deepcopy
 import argparse
 
 import numpy as np
@@ -170,7 +172,6 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
             ax.set_title(subtitle_list[i], fontsize=opti_font_info[3]) # TODO:  find method to optimize `fontsize` of `subtitle`
     
     # Calculate space occupied by yaxis and ylabel
-    fig.canvas.draw()
     bbox = ax.yaxis.get_tightbbox(fig.canvas.get_renderer())
     y_width, y_height = bbox.width, bbox.height
     
@@ -227,15 +228,21 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
 
 def plt_to_pillow(figure:figure.Figure):
     
-    size_mb = 50
-    initial_bytes = b"\0" * size_mb * 1024 * 1024
-    buffer = io.BytesIO(initial_bytes=initial_bytes)
-    figure.savefig(buffer, format='png')
-    buffer.seek(0)
-
-    # 轉換成 PIL Image
-    ## Note: matplotlib figure 預設為 RGBA (透明背景)
-    return Image.open(buffer)
+    # size_mb = 50
+    # initial_bytes = b"\0" * size_mb * 1024 * 1024
+    # buffer = io.BytesIO(initial_bytes=initial_bytes)
+    # figure.savefig(buffer, format='png')
+    # buffer.seek(0)
+    # pil_img = deepcopy(Image.open(buffer)) # 轉換成 PIL Image
+    #                                        ## Note: matplotlib figure 預設為 RGBA (透明背景)
+    # buffer.close()
+    
+    with tempfile.NamedTemporaryFile(suffix='.png') as temp_file:
+        figure.savefig(temp_file.name, format='png')
+        temp_file.seek(0)
+        pil_img = deepcopy(Image.open(temp_file))
+    
+    return pil_img
 
 
 
