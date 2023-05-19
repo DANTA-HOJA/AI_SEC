@@ -21,20 +21,20 @@ class SurfaceAreaKMeansCluster():
     
     def __init__(self, xlsx_path:Path, n_clusters:int, label_str:List[str], kmeans_rnd:int, 
                  log_base:int=10, cluster_with_log_scale:bool=False, with_kde:bool=False,
-                 old_classdiv_sheet_name:str=None) -> None:
+                 old_classdiv_xlsx_path:str=None) -> None:
+        
+        # -------------------------------------------------------------------------------------
         
         if isinstance(xlsx_path, Path): 
             self.orig_xlsx_path = xlsx_path
         else: raise TypeError("xlsx_path should be a 'Path' object, please using `from pathlib import Path`")
         
-        # -------------------------------------------------------------------------------------
-        
         self.orig_xlsx_path_split = str(self.orig_xlsx_path).split(os.sep)
-        self.orig_xlsx_df = None
-        self.surface_area = None # column: "Trunk surface area, SA (um2)"
+        self.orig_xlsx_df: pd.DataFrame = pd.read_excel(self.orig_xlsx_path, engine = 'openpyxl')
+        self.surface_area = self.orig_xlsx_df["Trunk surface area, SA (um2)"].to_numpy()[:, None] # reshape: (100) -> (100, )
         self.sinica_dir_idx = None
         self.find_sinica_dir_in_path()
-        self.dataset_id = self.orig_xlsx_path_spxlit[self.sinica_dir_idx].split("_")[-1] # e.g. i409, i505
+        self.dataset_id = self.orig_xlsx_path_split[self.sinica_dir_idx].split("_")[-1] # e.g. i409, i505
         
         # -------------------------------------------------------------------------------------
         
@@ -47,8 +47,17 @@ class SurfaceAreaKMeansCluster():
         
         # -------------------------------------------------------------------------------------
         
-        self.old_classdiv_sheet_name = old_classdiv_sheet_name
-        self.show_old_classdiv = True if self.old_classdiv_sheet_name is not None else False
+        if isinstance(xlsx_path, Path): 
+            self.old_classdiv_xlsx_path = old_classdiv_xlsx_path
+        else: raise TypeError("xlsx_path should be a 'Path' object, please using `from pathlib import Path`")
+        
+        self.old_classdiv_xlsx_df: pd.DataFrame = pd.read_excel(self.old_classdiv_xlsx_path, engine = 'openpyxl')
+        old_classdiv_xlsx_name = str(self.old_classdiv_xlsx_path).split(os.sep)[-1] # '{3CLS_SURF_050STDEV}_data.xlsx'
+        old_classdiv_xlsx_name_split = re.split("{|_|}", old_classdiv_xlsx_name) # ['', '3CLS', 'SURF', '050STDEV', '', 'data.xlsx']
+        old_classdiv = int(old_classdiv_xlsx_name_split[1].replace("CLS", ""))
+        assert old_classdiv == n_clusters, f"n clusters of `old_classdiv_xlsx` not match, expect {n_clusters}, but got {old_classdiv}"
+        self.old_classdiv_strategy = int(old_classdiv_xlsx_name_split[3].replace("STDEV", ""))/100 # '050STDEV' -> 0.5
+        self.show_old_classdiv = True if self.old_classdiv_xlsx_path is not None else False
         self.old_classdiv_info_dict = {}
         
         # -------------------------------------------------------------------------------------
@@ -60,12 +69,16 @@ class SurfaceAreaKMeansCluster():
         self.kmeans_centers = None
         self.y_kmeans = None # predict
         
-        self.bins = None
+        # -------------------------------------------------------------------------------------
         
         self.with_kde = with_kde
         self.log_base = log_base
+        self.bins = None # x position for kde
         self.kde = None
-        self.compared_cluster_img_dir = Path( f"./k_means/cluster{'_with_kde' if self.with_kde else ''}/" ).joinpath(self.dataset_id)
+        self.kde_kwargs = {"bandwidth": 0.01178167723136119, "kernel": 'gaussian'}
+        self.compared_cluster_img_dir = self.clustered_xlsx_dir.joinpath(f"compare_clustering/KMeans_comp_STDEV/cluster{'_with_kde' if self.with_kde else ''}" )
+        
+        # -------------------------------------------------------------------------------------
         
         self.label_str = label_str # small -> big, e.g. ["S", "M", "L"]
         self.surf2pred_dict = None
@@ -76,7 +89,7 @@ class SurfaceAreaKMeansCluster():
         self.fig = plt.figure(figsize=(12.8, 7.2), dpi=200)
         self.ax = self.fig.add_subplot(1, 1, 1)
         self.fig_name = (f"{self.dataset_id}, {self.clustered_xlsx_name}"
-                         f"{f', {self.old_classdiv_sheet_name}' if self.show_old_classdiv else ''}"
+                         f"{f', {self.old_classdiv_strategy}_STDEV' if self.show_old_classdiv else ''}"
                          f"{', KDE' if self.with_kde else ''}")
         self.clusters_pt_y_pos = None # misc
         self.digits = None # misc
@@ -93,8 +106,9 @@ class SurfaceAreaKMeansCluster():
                 f'self.log_base                : {self.log_base}\n'
                 f'self.cluster_with_log_scale  : {self.cluster_with_log_scale}\n'
                 f'self.with_kde                : {self.with_kde}\n'
+                f'self.old_classdiv_xlsx_path  : {self.old_classdiv_xlsx_path}\n'
                 f'self.show_old_classdiv       : {self.show_old_classdiv}\n'
-                f'self.old_classdiv_sheet_name : {self.old_classdiv_sheet_name}\n')
+                f'self.old_classdiv_strategy   : {self.old_classdiv_strategy}\n')
     
     
     def log(self, base, x):
@@ -104,27 +118,17 @@ class SurfaceAreaKMeansCluster():
     def find_sinica_dir_in_path(self): # To find `{ Reminder }_Academia_Sinica_i[num_RGB]` in `split_path`
         for i, text in enumerate(self.orig_xlsx_path_split):
             if "Academia_Sinica" in text: self.sinica_dir_idx = i
-    
-    
-    def read_xlsx(self):
-        if self.show_old_classdiv: self.orig_xlsx_df :pd.DataFrame = pd.read_excel(self.orig_xlsx_path, engine = 'openpyxl', sheet_name=self.old_classdiv_sheet_name)
-        else: self.orig_xlsx_df :pd.DataFrame = pd.read_excel(self.orig_xlsx_path, engine = 'openpyxl') # read first sheet
-        
-
-    def extract_surface_area(self):
-        self.surface_area = self.orig_xlsx_df["Trunk surface area, SA (um2)"].to_numpy()
-        self.surface_area = self.surface_area[:, None] # (100) -> (100, )
 
     
     def get_old_classdiv_info(self):
         if self.cluster_with_log_scale or self.with_kde:
-            self.old_classdiv_info_dict['L_std_value'] = self.log(self.log_base, self.orig_xlsx_df["L_1s"][0])
-            self.old_classdiv_info_dict['avg_value']   = self.log(self.log_base, self.orig_xlsx_df["average"][0])
-            self.old_classdiv_info_dict['R_std_value'] = self.log(self.log_base, self.orig_xlsx_df["R_1s"][0])
+            self.old_classdiv_info_dict['L_std_value'] = self.log(self.log_base, self.old_classdiv_xlsx_df["L_1s"][0])
+            self.old_classdiv_info_dict['avg_value']   = self.log(self.log_base, self.old_classdiv_xlsx_df["average"][0])
+            self.old_classdiv_info_dict['R_std_value'] = self.log(self.log_base, self.old_classdiv_xlsx_df["R_1s"][0])
         else: 
-            self.old_classdiv_info_dict['L_std_value'] = self.orig_xlsx_df["L_1s"][0]
-            self.old_classdiv_info_dict['avg_value']   = self.orig_xlsx_df["average"][0]
-            self.old_classdiv_info_dict['R_std_value'] = self.orig_xlsx_df["R_1s"][0]
+            self.old_classdiv_info_dict['L_std_value'] = self.old_classdiv_xlsx_df["L_1s"][0]
+            self.old_classdiv_info_dict['avg_value']   = self.old_classdiv_xlsx_df["average"][0]
+            self.old_classdiv_info_dict['R_std_value'] = self.old_classdiv_xlsx_df["R_1s"][0]
     
     
     def run_kmeans(self):
@@ -145,9 +149,9 @@ class SurfaceAreaKMeansCluster():
         print(f"accum_p = {(density * widths).sum()}\n")
 
     
-    def run_kde(self):
+    def plot_kde(self):
         # instantiate and fit the KDE model
-        self.kde = KernelDensity(bandwidth=0.01178167723136119, kernel='gaussian')
+        self.kde = KernelDensity(**self.kde_kwargs)
         self.kde.fit(self.surface_area)
 
         # score_samples returns the log of the probability density
@@ -256,7 +260,6 @@ class SurfaceAreaKMeansCluster():
     def save_fig_with_old_classdiv(self):
         create_new_dir(str(self.compared_cluster_img_dir), display_in_CLI=False)
         self.fig.savefig(str(self.compared_cluster_img_dir/ f"{self.fig_name}.png"))
-        plt.close(self.fig)
     
     
     def save_clustered_xlsx_df(self):
@@ -267,12 +270,10 @@ class SurfaceAreaKMeansCluster():
     
     
     def plot_and_save_xlsx(self):
-        self.read_xlsx()
-        self.extract_surface_area()
         if self.show_old_classdiv: self.get_old_classdiv_info()
         self.run_kmeans()
         self.plot_hist()
-        if self.with_kde: self.run_kde()
+        if self.with_kde: self.plot_kde()
         self.count_cluster_element()
         self.gen_surf2pred_dict()
         self.find_clusters_max_area()
@@ -286,3 +287,4 @@ class SurfaceAreaKMeansCluster():
         if self.show_old_classdiv: self.plot_old_classdiv_boundary()
         if self.show_old_classdiv: self.save_fig_with_old_classdiv()
         self.save_clustered_xlsx_df()
+        plt.close(self.fig)
