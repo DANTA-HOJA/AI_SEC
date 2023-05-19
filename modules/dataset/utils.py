@@ -2,7 +2,7 @@ import os
 import sys
 import re
 import argparse
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from pathlib import Path
 from glob import glob
 import json
@@ -267,14 +267,14 @@ def save_dataset_config(save_path:str, config:Dict):
 
 
 
-def sortFishNameForDataset(text_with_fish_dsname:Path|str) -> Tuple[int, str, int]:
+def sortFishNameForDataset(string_with_fish_dsname:Union[Path, str]) -> Tuple[int, str, int]:
     
-    if isinstance(text_with_fish_dsname, Path): text_with_fish_dsname = str(text_with_fish_dsname)
-    elif isinstance(text_with_fish_dsname, str): pass
+    if isinstance(string_with_fish_dsname, Path): string_with_fish_dsname = str(string_with_fish_dsname)
+    elif isinstance(string_with_fish_dsname, str): pass
     else: raise TypeError("unrecognized type of `text_with_fish_dsname`. Only `pathlib.Path` or `str` are accepted.")
     
-    if os.sep in text_with_fish_dsname: fish_dsname = text_with_fish_dsname.split(os.sep)[-1].split(".")[0]
-    else: fish_dsname = text_with_fish_dsname.split(".")[0]
+    if os.sep in string_with_fish_dsname: fish_dsname = string_with_fish_dsname.split(os.sep)[-1].split(".")[0]
+    else: fish_dsname = string_with_fish_dsname.split(".")[0]
     
     fish_dsname_split = re.split(" |_|-", fish_dsname) # example_list : ['L', 'fish', '111', 'A', 'selected', '0']
     
