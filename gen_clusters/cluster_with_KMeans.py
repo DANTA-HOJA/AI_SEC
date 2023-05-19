@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.append("./../modules/") # add path to scan customized module
-from SurfaceAreaKMeansCluster import SurfaceAreaKMeansCluster
+from clustering.SurfaceAreaKMeansCluster import SurfaceAreaKMeansCluster
 
 kmeans_rnd = 2022
 
