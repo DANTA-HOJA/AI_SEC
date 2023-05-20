@@ -40,9 +40,9 @@ class SurfaceAreaKMeansCluster():
         self.fish_dname = list(self.orig_xlsx_df["Posterior (SP8, .tif)"])
         self.fish_batch_divnum = [0, 116, 164, 207, 255] # n1 < x <= n2
         self.fish_batch_mark2str = {0: "i162", 1:"i242", 2:"i409", 3: "i505"}
-        self.fish_batch_mark = None # 標記不同 batch 的 data
+        self.fish_batch_mark = None # 建立一個 list 標記 data 對應的 batch
         self.get_fish_batch_info()
-        self.fish_day_mark = None
+        self.fish_day_mark = None # 建立一個 list 標記 data 對應的 day (dpf)
         self.get_fish_day_info()
         
         # -------------------------------------------------------------------------------------
@@ -104,10 +104,12 @@ class SurfaceAreaKMeansCluster():
         self.fig_name = (f"{self.dataset_id}, {self.clustered_xlsx_name}"
                          f"{f', {self.old_classdiv_strategy}_STDEV' if self.show_old_classdiv else ''}"
                          f"{', KDE' if self.with_kde else ''}")
+        self.fig.suptitle(self.fig_name, size=20); 
+        self.fig.subplots_adjust(top=0.9)
+        
         self.clusters_pt_y_pos = None # misc
         self.digits = None # misc
-        self.text_path_effect = None
-        self.plot_misc_settings()
+        self.text_path_effect = None # misc
     
     
     def __repr__(self):
@@ -180,25 +182,6 @@ class SurfaceAreaKMeansCluster():
         if self.with_kde and (not self.cluster_with_log_scale):
             self.surface_area   = self.log(self.log_base, self.surface_area)
             self.kmeans_centers = self.log(self.log_base, self.kmeans_centers)
-    
-    
-    def plot_hist(self):
-        hist = self.ax.hist(self.surface_area, bins=100, density=True, alpha=0.7)
-        density, self.bins, patches = hist
-        widths = self.bins[1:] - self.bins[:-1]
-        print(f"accum_p = {(density * widths).sum()}\n")
-
-    
-    def plot_kde(self):
-        # instantiate and fit the KDE model
-        self.kde = KernelDensity(**self.kde_kwargs)
-        self.kde.fit(self.surface_area)
-
-        # score_samples returns the log of the probability density
-        logprob = self.kde.score_samples(self.bins[:, None])
-
-        self.ax.fill_between(self.bins, np.exp(logprob), alpha=0.5, color="orange")
-        # self.ax.plot(self.bins, np.exp(logprob), label='KDE', color="orange") # , linestyle='--'
 
     
     def count_cluster_element(self): # dependency: self.y_kmeans
@@ -232,8 +215,6 @@ class SurfaceAreaKMeansCluster():
     
     
     def plot_misc_settings(self):
-        self.fig.suptitle(self.fig_name, size=20)
-        self.fig.subplots_adjust(top=0.9)
         
         if self.cluster_with_log_scale or self.with_kde: self.clusters_pt_y_pos = -0.175
         else: self.clusters_pt_y_pos = -2e-7
@@ -241,7 +222,27 @@ class SurfaceAreaKMeansCluster():
         if self.cluster_with_log_scale or self.with_kde: self.digits = 8
         else: self.digits = 2
 
-        self.text_path_effect = path_effects.withSimplePatchShadow(offset=(0.5, -0.5), linewidth=1, foreground='black')
+        self.text_path_effect = path_effects.withSimplePatchShadow(
+                                    offset=(0.5, -0.5), linewidth=1, foreground='black')
+    
+    
+    def plot_hist(self):
+        hist = self.ax.hist(self.surface_area, bins=100, density=True, alpha=0.7)
+        density, self.bins, patches = hist
+        widths = self.bins[1:] - self.bins[:-1]
+        print(f"accum_p = {(density * widths).sum()}\n")
+
+    
+    def plot_kde(self):
+        # instantiate and fit the KDE model
+        self.kde = KernelDensity(**self.kde_kwargs)
+        self.kde.fit(self.surface_area)
+
+        # score_samples returns the log of the probability density
+        logprob = self.kde.score_samples(self.bins[:, None])
+
+        self.ax.fill_between(self.bins, np.exp(logprob), alpha=0.5, color="orange")
+        # self.ax.plot(self.bins, np.exp(logprob), label='KDE', color="orange") # , linestyle='--'
     
     
     def plot_cluster_distribution(self):
@@ -345,21 +346,27 @@ class SurfaceAreaKMeansCluster():
     
     
     def plot_and_save_xlsx(self):
+        # -------------------------------------------------------------------------------------
         self.run_kmeans()
-        self.plot_hist()
-        if self.with_kde: self.plot_kde()
         self.count_cluster_element()
         self.gen_surf2pred_dict()
         self.find_clusters_max_area()
         self.gen_label_idx2str()
         self.gen_clustered_xlsx_df()
+        self.save_clustered_xlsx_df()
+        
+        # -------------------------------------------------------------------------------------
+        self.plot_misc_settings()
+        self.plot_hist()
+        if self.with_kde: self.plot_kde()
         self.plot_cluster_distribution()
         self.plot_batch_mark()
         self.plot_day_mark()
         self.plot_cluster_boundary()
         self.plot_cluster_count()
         self.save_fig()
+        
+        # -------------------------------------------------------------------------------------
         if self.show_old_classdiv: self.plot_old_classdiv_boundary()
         if self.show_old_classdiv: self.save_fig_with_old_classdiv()
-        self.save_clustered_xlsx_df()
         plt.close(self.fig)
