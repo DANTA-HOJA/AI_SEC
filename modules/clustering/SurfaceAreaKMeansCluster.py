@@ -24,9 +24,7 @@ class SurfaceAreaKMeansCluster():
     def __init__(self, xlsx_path:Path, n_clusters:int, label_str:List[str], kmeans_rnd:int, 
                  log_base:int=10, cluster_with_log_scale:bool=False, with_kde:bool=False,
                  old_classdiv_xlsx_path:Path=None) -> None:
-        
         # -------------------------------------------------------------------------------------
-        
         if isinstance(xlsx_path, Path): 
             self.orig_xlsx_path = xlsx_path
         else: raise TypeError("`xlsx_path` should be a `Path` object, please using `from pathlib import Path`")
@@ -48,7 +46,6 @@ class SurfaceAreaKMeansCluster():
         self.get_fish_day_info()
         
         # -------------------------------------------------------------------------------------
-        
         self.clustered_xlsx_dir = Path( os.sep.join(self.orig_xlsx_path_split[:(self.sinica_dir_idx+1)]) ) / r"{Modify}_xlsx"
         self.clustered_xlsx_name = (f"{n_clusters}CLS_SURF_"
                                     f"KMeans{f'LOG{log_base}' if cluster_with_log_scale else 'ORIG'}_"
@@ -57,7 +54,6 @@ class SurfaceAreaKMeansCluster():
         self.clustered_xlsx_df = None
         
         # -------------------------------------------------------------------------------------
-        
         self.show_old_classdiv = None
         self.old_classdiv_xlsx_path = None
         self.old_classdiv_xlsx_df = None
@@ -71,7 +67,6 @@ class SurfaceAreaKMeansCluster():
             else: raise TypeError("`old_classdiv_xlsx_path` should be a `Path` object, please using `from pathlib import Path`")
         
         # -------------------------------------------------------------------------------------
-        
         self.n_clusters = n_clusters
         self.cluster_with_log_scale = cluster_with_log_scale
         self.log_base = log_base
@@ -81,7 +76,6 @@ class SurfaceAreaKMeansCluster():
         self.y_kmeans = None # predict
         
         # -------------------------------------------------------------------------------------
-        
         self.with_kde = with_kde
         self.bins = None # x position for kde
         self.kde = None
@@ -89,7 +83,6 @@ class SurfaceAreaKMeansCluster():
         self.compared_cluster_img_dir = self.clustered_xlsx_dir.joinpath(f"compare_clustering/KMeans_comp_STDEV/cluster{'_with_kde' if self.with_kde else ''}" )
         
         # -------------------------------------------------------------------------------------
-        
         self.label_str = label_str # small -> big, e.g. ["S", "M", "L"]
         self.surf2pred_dict = None
         self.clusters_max_area = [0]*n_clusters
@@ -97,7 +90,6 @@ class SurfaceAreaKMeansCluster():
         self.label_idx2str = None
         
         # -------------------------------------------------------------------------------------
-        
         if self.show_old_classdiv: self.get_old_classdiv_info()
         
         self.fig = plt.figure(figsize=(16, 9), dpi=200)
@@ -122,6 +114,7 @@ class SurfaceAreaKMeansCluster():
         self.clusters_legend = None
         self.fish_batch_legend = None
         self.fish_day_legend = None
+        # -------------------------------------------------------------------------------------
     
     
     def __repr__(self):
@@ -138,15 +131,18 @@ class SurfaceAreaKMeansCluster():
         output = (part1 + part2) if self.show_old_classdiv else part1
         
         return output
+        # -------------------------------------------------------------------------------------
     
     
     def log(self, base, x):
         return np.log(x) / np.log(base)
+        # -------------------------------------------------------------------------------------
     
     
     def find_sinica_dir_in_path(self): # To find `{ Reminder }_Academia_Sinica_i[num_RGB]` in `split_path`
         for i, text in enumerate(self.orig_xlsx_path_split):
             if "Academia_Sinica" in text: self.sinica_dir_idx = i
+        # -------------------------------------------------------------------------------------
 
     
     def get_fish_batch_info(self):
@@ -157,6 +153,7 @@ class SurfaceAreaKMeansCluster():
                 if (fish_dname_id > self.fish_batch_divnum[j]) and (fish_dname_id <= self.fish_batch_divnum[j+1]):
                     self.fish_batch_mark[i] = list(self.fish_batch_mark2str.keys())[j]
                     break
+        # -------------------------------------------------------------------------------------
     
     
     def get_fish_day_info(self):
@@ -164,7 +161,8 @@ class SurfaceAreaKMeansCluster():
         for i, fish_dname in enumerate(self.fish_dname):
             fish_day = int(re.split(" |_|-", fish_dname)[3].replace("dpf", ""))
             self.fish_day_mark[i] = fish_day
-        
+        # -------------------------------------------------------------------------------------
+    
     
     def get_old_classdiv_info(self):
         self.old_classdiv_xlsx_df: pd.DataFrame = pd.read_excel(self.old_classdiv_xlsx_path, engine = 'openpyxl')
@@ -183,6 +181,7 @@ class SurfaceAreaKMeansCluster():
             self.old_classdiv_info_dict['L_std_value'] = self.old_classdiv_xlsx_df["L_1s"][0]
             self.old_classdiv_info_dict['avg_value']   = self.old_classdiv_xlsx_df["average"][0]
             self.old_classdiv_info_dict['R_std_value'] = self.old_classdiv_xlsx_df["R_1s"][0]
+        # -------------------------------------------------------------------------------------
     
     
     def run_kmeans(self):
@@ -194,14 +193,17 @@ class SurfaceAreaKMeansCluster():
         if self.with_kde and (not self.cluster_with_log_scale):
             self.surface_area   = self.log(self.log_base, self.surface_area)
             self.kmeans_centers = self.log(self.log_base, self.kmeans_centers)
+        # -------------------------------------------------------------------------------------
 
     
     def count_cluster_element(self): # dependency: self.y_kmeans
         self.clusters_count = Counter(self.y_kmeans)
+        # -------------------------------------------------------------------------------------
     
     
     def gen_surf2pred_dict(self): # dependency: self.y_kmeans
         self.surf2pred_dict = { area : label for area, label in zip(self.surface_area.squeeze(), self.y_kmeans)}
+        # -------------------------------------------------------------------------------------
     
     
     def find_clusters_max_area(self): # dependency: self.surf2pred_dict
@@ -211,11 +213,13 @@ class SurfaceAreaKMeansCluster():
         self.clusters_max_area = { cluster: max_area for cluster, max_area in enumerate(self.clusters_max_area)}
         self.clusters_max_area = OrderedDict(sorted(list(self.clusters_max_area.items()), key=lambda x: x[1]))
         print(f'self.clusters_max_area {type(self.clusters_max_area)}: {self.clusters_max_area}\n')
+        # -------------------------------------------------------------------------------------
     
     
     def gen_label_idx2str(self): # dependency: self.clusters_max_area
         self.label_idx2str = { cls_idx: cls_str for (cls_idx, _), cls_str in zip(self.clusters_max_area.items(), self.label_str) }
         print(f'self.label_idx2str {type(self.label_idx2str)}: {self.label_idx2str}\n')
+        # -------------------------------------------------------------------------------------
     
     
     def gen_clustered_xlsx_df(self): # dependency: self.label_idx2str
@@ -224,6 +228,7 @@ class SurfaceAreaKMeansCluster():
             col_class_dict[area] = self.label_idx2str[pred]
         col_class_series = pd.Series(list(col_class_dict.values()), name="class")
         self.clustered_xlsx_df = pd.concat([self.orig_xlsx_df, col_class_series], axis=1)
+        # -------------------------------------------------------------------------------------
     
     
     def plot_misc_settings(self):
@@ -236,10 +241,12 @@ class SurfaceAreaKMeansCluster():
 
         self.text_path_effect = path_effects.withSimplePatchShadow(
                                     offset=(0.5, -0.5), linewidth=1, foreground='black')
+        # -------------------------------------------------------------------------------------
     
     
     def get_current_xlim(self):
         self.ax_x_lim = self.ax.get_xlim()
+        # -------------------------------------------------------------------------------------
     
     
     def add_colorbar(self, mapping_list:list, name:str, cmap:str,
@@ -252,6 +259,7 @@ class SurfaceAreaKMeansCluster():
         cbar = self.fig.colorbar(mappable, cax=cax) # create a `color_bar`
         cbar.ax.set_xlabel(name, labelpad=10)  # 設置 `color_bar` 的標籤
         cbar.set_ticks(ticks, labels=ticklabels)
+        # -------------------------------------------------------------------------------------
     
     
     def plot_hist(self):
@@ -259,7 +267,8 @@ class SurfaceAreaKMeansCluster():
         density, self.bins, patches = hist
         widths = self.bins[1:] - self.bins[:-1]
         print(f"accum_p = {(density * widths).sum()}\n")
-
+        # -------------------------------------------------------------------------------------
+    
     
     def plot_kde(self):
         # instantiate and fit the KDE model
@@ -271,6 +280,7 @@ class SurfaceAreaKMeansCluster():
 
         self.ax.fill_between(self.bins, np.exp(logprob), alpha=0.5, color="orange")
         # self.ax.plot(self.bins, np.exp(logprob), label='KDE', color="orange") # , linestyle='--'
+        # -------------------------------------------------------------------------------------
     
     
     def plot_cluster_distribution(self):
@@ -399,6 +409,7 @@ class SurfaceAreaKMeansCluster():
             self.ax.text(max_area, 0.92, f'x={max_area:.{self.digits}f}  ',
                          transform=self.ax.get_xaxis_transform(), ha='right',
                          color='black', path_effects=[self.text_path_effect])
+        # -------------------------------------------------------------------------------------
     
     
     def plot_cluster_count(self):
@@ -413,6 +424,7 @@ class SurfaceAreaKMeansCluster():
                                 fontsize=16, color='#FFFFF2', path_effects=[self.text_path_effect])
             text.set_bbox(dict(boxstyle="round", pad=0.8, facecolor='#EE7785', alpha=0.7, edgecolor='none',
                                path_effects=[path_effects.withSimplePatchShadow(offset=(2, -2), foreground='black')]))
+        # -------------------------------------------------------------------------------------
     
     
     def plot_old_classdiv_boundary(self):
@@ -421,16 +433,19 @@ class SurfaceAreaKMeansCluster():
             self.ax.text(value, 0.22*(i+1), f'  {key}:\n  {value:.{self.digits}f}', 
                          transform=self.ax.get_xaxis_transform(), ha='left',
                          color='red', path_effects=[self.text_path_effect], alpha=0.7)
+        # -------------------------------------------------------------------------------------
     
     
     def save_fig(self):
         create_new_dir(str(self.clustered_xlsx_dir), display_in_CLI=False)
         self.fig.savefig(str(self.clustered_xlsx_dir/ f"{{{self.clustered_xlsx_name}}}{'_kde' if self.with_kde else ''}.png"))
+        # -------------------------------------------------------------------------------------
     
     
     def save_fig_with_old_classdiv(self):
         create_new_dir(str(self.compared_cluster_img_dir), display_in_CLI=False)
         self.fig.savefig(str(self.compared_cluster_img_dir/ f"{self.fig_name}.png"))
+        # -------------------------------------------------------------------------------------
     
     
     def save_clustered_xlsx_df(self):
@@ -438,6 +453,7 @@ class SurfaceAreaKMeansCluster():
         self.clustered_xlsx_path = self.clustered_xlsx_dir / f"{{{self.clustered_xlsx_name}}}_data.xlsx"
         if not os.path.exists(str(self.clustered_xlsx_path)):
             self.clustered_xlsx_df.to_excel(str(self.clustered_xlsx_path), engine="openpyxl", index=False)
+        # -------------------------------------------------------------------------------------
     
     
     def plot_and_save_xlsx(self):
