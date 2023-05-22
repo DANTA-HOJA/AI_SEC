@@ -22,7 +22,7 @@ from fileop import create_new_dir
 class SurfaceAreaKMeansCluster():
     
     def __init__(self, xlsx_path:Path, n_clusters:int, clusters_str:List[str], kmeans_rnd:int, 
-                 log_base:int=10, cluster_with_log_scale:bool=False, with_kde:bool=False,
+                 log_base:int=10, cluster_with_log_scale:bool=False, x_axis_log_scale:bool=False,
                  old_classdiv_xlsx_path:Path=None) -> None:
         # -------------------------------------------------------------------------------------
         if isinstance(xlsx_path, Path): 
@@ -67,20 +67,23 @@ class SurfaceAreaKMeansCluster():
             else: raise TypeError("`old_classdiv_xlsx_path` should be a `Path` object, please using `from pathlib import Path`")
         
         # -------------------------------------------------------------------------------------
-        self.n_clusters = n_clusters
         self.cluster_with_log_scale = cluster_with_log_scale
         self.log_base = log_base
+        self.x_axis_log_scale = x_axis_log_scale
+        
+        # -------------------------------------------------------------------------------------
+        self.n_clusters = n_clusters
         self.kmeans_rnd = kmeans_rnd
         self.kmeans = KMeans(n_clusters = self.n_clusters, random_state=self.kmeans_rnd)
         self.kmeans_centers = None
         self.y_kmeans = None # predict
         
         # -------------------------------------------------------------------------------------
-        self.with_kde = with_kde
         self.bins = None # x position for kde
         self.kde = None
         self.kde_kwargs = {"bandwidth": 0.01178167723136119, "kernel": 'gaussian'}
-        self.compared_cluster_img_dir = self.clustered_xlsx_dir.joinpath(f"compare_clustering/KMeans_comp_STDEV/cluster{'_with_kde' if self.with_kde else ''}" )
+        self.compared_cluster_img_dir = self.clustered_xlsx_dir.joinpath("compare_clustering", "KMeans_comp_STDEV",
+                                                                         f"{f'x-axis in LOG{self.log_base} scale' if self.x_axis_log_scale else 'x-axis in ORIG scale'}" )
         
         # -------------------------------------------------------------------------------------
         self.clusters_str = clusters_str # small -> big, e.g. ["S", "M", "L"]
@@ -92,12 +95,13 @@ class SurfaceAreaKMeansCluster():
         # -------------------------------------------------------------------------------------
         if self.show_old_classdiv: self.get_old_classdiv_info()
         
-        self.fig = plt.figure(figsize=(16, 9), dpi=200)
+        self.fig = plt.figure(figsize=(16, 16), dpi=200) # figure 內的 element 都是用比例決定位置的
+                                                         #  一旦決定 figsize 之後如果要調整圖片"長寬比"最好只調整一邊
+                                                         #  調整"整張圖片大小" -> dpi
         self.ax = self.fig.add_subplot(1, 1, 1)
         self.divider = make_axes_locatable(self.ax)
-        self.fig_name = (f"{self.dataset_id}, {self.clustered_xlsx_name}"
-                         f"{f', {self.old_classdiv_strategy}_STDEV' if self.show_old_classdiv else ''}"
-                         f"{', KDE' if self.with_kde else ''}")
+        self.fig_name = f"{self.dataset_id}, {self.clustered_xlsx_name}{', KDE' if self.x_axis_log_scale else ''}"
+        self.fig_name_old_classdiv = f"{self.fig_name}, {self.old_classdiv_strategy}_STDEV"
         self.fig.suptitle(self.fig_name, size=20)
         self.fig.subplots_adjust(top=0.9)
         
@@ -125,7 +129,7 @@ class SurfaceAreaKMeansCluster():
                  f'self.kmeans_rnd              : {self.kmeans_rnd}\n'
                  f'self.log_base                : {self.log_base}\n'
                  f'self.cluster_with_log_scale  : {self.cluster_with_log_scale}\n'
-                 f'self.with_kde                : {self.with_kde}\n')
+                 f'self.x_axis_log_scale        : {self.x_axis_log_scale}\n')
         part2 = (f'self.old_classdiv_xlsx_path  : {self.old_classdiv_xlsx_path}\n'
                  f'self.old_classdiv_strategy   : {self.old_classdiv_strategy}\n')
         output = (part1 + part2) if self.show_old_classdiv else part1
@@ -173,7 +177,7 @@ class SurfaceAreaKMeansCluster():
                                                      f"expect {self.n_clusters}, but got {old_classdiv_num}")
         self.old_classdiv_strategy = int(old_classdiv_xlsx_name_split[3].replace("STDEV", ""))/100 # '050STDEV' -> 0.5
         
-        if self.cluster_with_log_scale or self.with_kde:
+        if self.x_axis_log_scale:
             self.old_classdiv_info_dict['L_std_value'] = self.log(self.log_base, self.old_classdiv_xlsx_df["L_1s"][0])
             self.old_classdiv_info_dict['avg_value']   = self.log(self.log_base, self.old_classdiv_xlsx_df["average"][0])
             self.old_classdiv_info_dict['R_std_value'] = self.log(self.log_base, self.old_classdiv_xlsx_df["R_1s"][0])
@@ -189,8 +193,13 @@ class SurfaceAreaKMeansCluster():
         self.kmeans.fit(self.surface_area)
         self.kmeans_centers = self.kmeans.cluster_centers_ # 群心
         print(f'kmeans_centers {type(self.kmeans_centers)}: \n{self.kmeans_centers}\n')
-        self.y_kmeans = self.kmeans.predict(self.surface_area) # 分群
-        if self.with_kde and (not self.cluster_with_log_scale):
+        self.y_kmeans = self.kmeans.predict(self.surface_area) # 產生分群結果
+        
+        if (not self.x_axis_log_scale) and self.cluster_with_log_scale: # 還原回 x-axis 的原始刻度（量級）
+            self.surface_area   = self.log_base ** self.surface_area
+            self.kmeans_centers = self.log_base ** self.kmeans_centers
+        
+        if self.x_axis_log_scale and (not self.cluster_with_log_scale): # 將 x-axis 的原始刻度（量級）取 LOG
             self.surface_area   = self.log(self.log_base, self.surface_area)
             self.kmeans_centers = self.log(self.log_base, self.kmeans_centers)
         # -------------------------------------------------------------------------------------
@@ -241,10 +250,10 @@ class SurfaceAreaKMeansCluster():
     
     def plot_misc_settings(self):
         
-        if self.cluster_with_log_scale or self.with_kde: self.scatter_init_pos = -0.175
+        if self.x_axis_log_scale: self.scatter_init_pos = -0.175
         else: self.scatter_init_pos = -8e-8
         
-        if self.cluster_with_log_scale or self.with_kde: self.digits = 8
+        if self.x_axis_log_scale: self.digits = 8
         else: self.digits = 2
 
         self.text_path_effect = path_effects.withSimplePatchShadow(
@@ -312,7 +321,7 @@ class SurfaceAreaKMeansCluster():
         legend_labels = OrderedDict(sorted(list(self.clusters_idx2str.items()), key=lambda x: x[0])).values() # sort by cluster_idx
         self.clusters_legend = self.ax.legend(handles=scatter.legend_elements()[0],
                                              labels=list(legend_labels),
-                                             title='cluster', loc='upper left', bbox_to_anchor=(0, 0.99))
+                                             title='cluster', loc='upper right', bbox_to_anchor=(1, 0.99))
         # -------------------------------------------------------------------------------------
     
     
@@ -344,7 +353,7 @@ class SurfaceAreaKMeansCluster():
             print(f"batch = {batch}, {len(batch_mark_list)}")
         
         # collect and create the legend set of scatters
-        self.fish_batch_legend = self.ax.legend(handles=scatter_list, title='batch', loc='upper left', bbox_to_anchor=(0, 0.83))
+        self.fish_batch_legend = self.ax.legend(handles=scatter_list, title='batch', loc='upper left', bbox_to_anchor=(0, 0.99))
         # -------------------------------------------------------------------------------------
     
     
@@ -438,7 +447,7 @@ class SurfaceAreaKMeansCluster():
     def plot_old_classdiv_boundary(self):
         for i, (key, value) in enumerate(self.old_classdiv_info_dict.items()):
             self.ax.axvline(x=value, color='r', linestyle='--', alpha=0.7)
-            self.ax.text(value, 0.22*(i+1), f'  {key}:\n  {value:.{self.digits}f}', 
+            self.ax.text(value, 0.666, f'  {key:{self.digits}}:\n  {value:.{self.digits}f}', 
                          transform=self.ax.get_xaxis_transform(), ha='left',
                          color='red', path_effects=[self.text_path_effect], alpha=0.7)
         # -------------------------------------------------------------------------------------
@@ -446,13 +455,14 @@ class SurfaceAreaKMeansCluster():
     
     def save_fig(self):
         create_new_dir(str(self.clustered_xlsx_dir), display_in_CLI=False)
-        self.fig.savefig(str(self.clustered_xlsx_dir/ f"{{{self.clustered_xlsx_name}}}{'_kde' if self.with_kde else ''}.png"))
+        self.fig.savefig(str(self.clustered_xlsx_dir/ f"{{{self.clustered_xlsx_name}}}{'_kde' if self.x_axis_log_scale else ''}.png"))
         # -------------------------------------------------------------------------------------
     
     
     def save_fig_with_old_classdiv(self):
         create_new_dir(str(self.compared_cluster_img_dir), display_in_CLI=False)
-        self.fig.savefig(str(self.compared_cluster_img_dir/ f"{self.fig_name}.png"))
+        self.fig.suptitle(self.fig_name_old_classdiv, size=20)
+        self.fig.savefig(str(self.compared_cluster_img_dir/ f"{self.fig_name_old_classdiv}.png"))
         # -------------------------------------------------------------------------------------
     
     
@@ -476,7 +486,7 @@ class SurfaceAreaKMeansCluster():
         # -------------------------------------------------------------------------------------
         self.plot_misc_settings()
         self.plot_hist()
-        if self.with_kde: self.plot_kde()
+        if self.x_axis_log_scale: self.plot_kde()
         # cluster
         self.plot_cluster_distribution()
         self.plot_cluster_boundary()
