@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-from typing import List
+from typing import List, Dict, Union
 from pathlib import Path
 from copy import deepcopy
 from collections import OrderedDict, Counter
@@ -9,6 +9,7 @@ from collections import OrderedDict, Counter
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import matplotlib.patheffects as path_effects
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.neighbors import KernelDensity
@@ -43,6 +44,7 @@ class SurfaceAreaKMeansCluster():
         self.fish_batch_mark = None # 建立一個 list 標記 data 對應的 batch
         self.get_fish_batch_info()
         self.fish_day_mark = None # 建立一個 list 標記 data 對應的 day (dpf)
+        self.fish_day_cnt = None
         self.get_fish_day_info()
         
         # -------------------------------------------------------------------------------------
@@ -98,18 +100,28 @@ class SurfaceAreaKMeansCluster():
         
         if self.show_old_classdiv: self.get_old_classdiv_info()
         
-        self.fig = plt.figure(figsize=(12.8, 7.2), dpi=200)
+        self.fig = plt.figure(figsize=(16, 9), dpi=200)
         self.ax = self.fig.add_subplot(1, 1, 1)
         self.divider = make_axes_locatable(self.ax)
         self.fig_name = (f"{self.dataset_id}, {self.clustered_xlsx_name}"
                          f"{f', {self.old_classdiv_strategy}_STDEV' if self.show_old_classdiv else ''}"
                          f"{', KDE' if self.with_kde else ''}")
-        self.fig.suptitle(self.fig_name, size=20); 
+        self.fig.suptitle(self.fig_name, size=20)
         self.fig.subplots_adjust(top=0.9)
         
-        self.clusters_pt_y_pos = None # misc
+        self.ax_x_lim = None # 記憶 self.ax.get_xlim()
+        self.scatter_init_pos = None # misc
+        self.scatter_n_gap = 0 # 各 scatter 的間距倍數: self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)
         self.digits = None # misc
         self.text_path_effect = None # misc
+        
+        self.colorbar_n_gap = 0
+        self.clusters_cmap = "viridis"
+        self.fish_batch_cmap = "Paired"
+        self.fish_day_cmap = "Dark2"
+        self.clusters_legend = None
+        self.fish_batch_legend = None
+        self.fish_day_legend = None
     
     
     def __repr__(self):
@@ -125,7 +137,7 @@ class SurfaceAreaKMeansCluster():
                  f'self.old_classdiv_strategy   : {self.old_classdiv_strategy}\n')
         output = (part1 + part2) if self.show_old_classdiv else part1
         
-        return output                
+        return output
     
     
     def log(self, base, x):
@@ -216,14 +228,30 @@ class SurfaceAreaKMeansCluster():
     
     def plot_misc_settings(self):
         
-        if self.cluster_with_log_scale or self.with_kde: self.clusters_pt_y_pos = -0.175
-        else: self.clusters_pt_y_pos = -2e-7
+        if self.cluster_with_log_scale or self.with_kde: self.scatter_init_pos = -0.175
+        else: self.scatter_init_pos = -8e-8
         
         if self.cluster_with_log_scale or self.with_kde: self.digits = 8
         else: self.digits = 2
 
         self.text_path_effect = path_effects.withSimplePatchShadow(
                                     offset=(0.5, -0.5), linewidth=1, foreground='black')
+    
+    
+    def get_current_xlim(self):
+        self.ax_x_lim = self.ax.get_xlim()
+    
+    
+    def add_colorbar(self, mapping_list:list, name:str, cmap:str,
+                           ticks:List, ticklabels:Union[List[str], None]=None):
+        
+        cax = self.divider.append_axes("right", "2%", pad=0.3+self.colorbar_n_gap*0.2) # "右側" 加新的軸
+        self.colorbar_n_gap += 1                                                       # init: self.divider = make_axes_locatable(self.ax)
+        mappable = cm.ScalarMappable(cmap=cmap)
+        mappable.set_array(mapping_list)  # 會自動統計 items 並排序
+        cbar = self.fig.colorbar(mappable, cax=cax) # create a `color_bar`
+        cbar.ax.set_xlabel(name, labelpad=10)  # 設置 `color_bar` 的標籤
+        cbar.set_ticks(ticks, labels=ticklabels)
     
     
     def plot_hist(self):
@@ -247,58 +275,125 @@ class SurfaceAreaKMeansCluster():
     
     def plot_cluster_distribution(self):
         # black_ticks
-        self.ax.plot(self.surface_area, np.full_like(self.surface_area, self.clusters_pt_y_pos), '|k', 
-                     markeredgewidth=1)
+        self.ax.plot(self.surface_area, np.full_like(self.surface_area, self.scatter_init_pos), 
+                     '|k', markeredgewidth=1)
         # cluster
         scatter = self.ax.scatter(
-            self.surface_area, np.full_like(self.surface_area, self.clusters_pt_y_pos*(2.85+0*1.83)),
+            self.surface_area, np.full_like(self.surface_area, self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)),
             c = self.y_kmeans,    # 指定標記
             edgecolor = 'none',   # 無邊框
             # alpha = 0.5         # 不透明度
-            cmap="viridis"
+            cmap=self.clusters_cmap,
         )
         # cluster_center
         self.ax.scatter(self.kmeans_centers.reshape(-1), 
-                        np.full_like(self.kmeans_centers.reshape(-1), self.clusters_pt_y_pos*(2.85+0*1.83)),
+                        np.full_like(self.kmeans_centers.reshape(-1), self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)),
                         marker="x", s=50, color="black")
-        # add colorbar
-        cax = self.divider.append_axes("right", "2%", pad=0.3)
-        cbar = self.fig.colorbar(scatter, cax=cax) # create a `color_bar`
-        cbar.ax.set_xlabel('cluster', labelpad=10)  # 設置 `color_bar` 的標籤
-        cbar.set_ticks(list(self.label_idx2str.keys()))
-        cbar.set_ticklabels(list(self.label_idx2str.values()))
+        self.scatter_n_gap += 1
+        # legend
+        legend_labels = OrderedDict(sorted(list(self.label_idx2str.items()), key=lambda x: x[0])).values() # sort by cluster_idx
+        self.clusters_legend = self.ax.legend(handles=scatter.legend_elements()[0],
+                                             labels=list(legend_labels),
+                                             title='cluster', loc='upper left', bbox_to_anchor=(0, 0.99))
+        # -------------------------------------------------------------------------------------
     
     
     def plot_batch_mark(self):
-        scatter = self.ax.scatter(
-            self.surface_area, np.full_like(self.surface_area, self.clusters_pt_y_pos*(2.85+1*1.83)),
-            c = self.fish_batch_mark,    # 指定標記
-            edgecolor = 'none',   # 無邊框
-            # alpha = 0.5         # 不透明度
-            cmap="Paired"
-        )
-        cax = self.divider.append_axes("right", "2%", pad=0.5)
-        cbar = self.fig.colorbar(scatter, cax=cax) # create a `color_bar`
-        cbar.ax.set_xlabel('batch', labelpad=10)  # 設置 `color_bar` 的標籤
-        cbar.set_ticks(list(self.fish_batch_mark2str.keys()))
-        cbar.set_ticklabels(list(self.fish_batch_mark2str.values()))
+        
+        batch_mark_dict = { area: batch_mark for area, batch_mark in zip(self.surface_area.squeeze(), self.fish_batch_mark) }
+        cmap = cm.get_cmap(self.fish_batch_cmap)
+        colors = cmap(np.linspace(0, 1, len(self.fish_batch_mark2str)))
+        
+        scatter_list = []
+        for i, batch in enumerate(self.fish_batch_mark2str.keys()):
+            
+            surface_area_list = []
+            batch_mark_list = []
+            for area, batch_mark in batch_mark_dict.items():
+                if batch_mark == batch:
+                    surface_area_list.append(area)
+                    batch_mark_list.append(batch_mark)
+        
+            scatter = self.ax.scatter(
+                surface_area_list, np.full_like(surface_area_list, self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)),
+                edgecolor = 'none',   # 無邊框
+                # alpha = 0.5         # 不透明度
+                color=colors[i],
+                label=self.fish_batch_mark2str[i],
+            ); self.scatter_n_gap += 1
+            
+            scatter_list.append(scatter)
+            print(f"batch = {batch}, {len(batch_mark_list)}")
+        
+        # collect and create the legend set of scatters
+        self.fish_batch_legend = self.ax.legend(handles=scatter_list, title='batch', loc='upper left', bbox_to_anchor=(0, 0.83))
+        # -------------------------------------------------------------------------------------
     
     
     def plot_day_mark(self):
-        scatter = self.ax.scatter(
-            self.surface_area, np.full_like(self.surface_area, self.clusters_pt_y_pos*(2.85+2*1.83)),
-            c = self.fish_day_mark,    # 指定標記
+        
+        self.fish_day_cnt = Counter(self.fish_day_mark)
+        self.fish_day_cnt = OrderedDict(sorted(self.fish_day_cnt.items(), key=lambda x: x[0])) # sort by day
+        day_mark_dict = { area: day_mark for area, day_mark in zip(self.surface_area.squeeze(), self.fish_day_mark) }
+        cmap = cm.get_cmap(self.fish_day_cmap)
+        colors = cmap(np.linspace(0, 1, len(self.fish_day_cnt)))
+        
+        scatter_list = []
+        for i, day in enumerate(self.fish_day_cnt.keys()):
+            
+            surface_area_list = []
+            day_mark_list = []
+            for area, day_mark in day_mark_dict.items():
+                if day_mark == day:
+                    surface_area_list.append(area)
+                    day_mark_list.append(day_mark)
+            
+            scatter = self.ax.scatter(
+                surface_area_list, np.full_like(surface_area_list, self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)),
+                edgecolor = 'none',   # 無邊框
+                # alpha = 0.5         # 不透明度
+                color=colors[i],
+                label=f"{day}",
+                marker='s'
+            ); self.scatter_n_gap += 1
+            
+            scatter_list.append(scatter)
+            print(f"day = {day}, {len(day_mark_list)}")
+        
+        # collect and create the legend set of scatters
+        self.fish_day_legend = self.ax.legend(handles=scatter_list, title='day', loc='upper right', bbox_to_anchor=(1, 0.98))
+        # -------------------------------------------------------------------------------------
+    
+    
+    def plot_marks_overlay(self, mark_list:List, mark_style:str, cmap:str):
+        
+        # dividing line
+        self.ax.hlines(self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83), 
+                       self.ax_x_lim[0], self.ax_x_lim[1], 
+                       color="dodgerblue", linestyles='dashed')
+        self.scatter_n_gap += 1
+        # scatter
+        self.ax.scatter(
+            self.surface_area, np.full_like(self.surface_area, self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)),
+            c = mark_list,    # 指定標記
             edgecolor = 'none',   # 無邊框
             # alpha = 0.5         # 不透明度
-            cmap="Dark2"
-        )
-        cax = self.divider.append_axes("right", "2%", pad=0.7)
-        cbar = self.fig.colorbar(scatter, cax=cax) # create a `color_bar`
-        cbar.ax.set_xlabel('day', labelpad=10)  # 設置 `color_bar` 的標籤
-        cbar.set_ticks(list(Counter(self.fish_day_mark).keys()))
+            cmap=cmap,
+            marker=mark_style
+        ); self.scatter_n_gap += 1
+        # -------------------------------------------------------------------------------------
     
     
     def plot_cluster_boundary(self):
+        
+        # min_value line
+        min_value = self.surface_area.squeeze().min()
+        self.ax.axvline(x=min_value, color='k', linestyle='--')
+        self.ax.text(min_value, 0.92, f'  x={min_value:.{self.digits}f}',
+                         transform=self.ax.get_xaxis_transform(), ha='left',
+                         color='black', path_effects=[self.text_path_effect])
+        
+        # cluster_max_value lines
         for max_area in self.clusters_max_area.values():
             self.ax.axvline(x=max_area, color='k', linestyle='--')
             self.ax.text(max_area, 0.92, f'x={max_area:.{self.digits}f}  ',
@@ -359,11 +454,31 @@ class SurfaceAreaKMeansCluster():
         self.plot_misc_settings()
         self.plot_hist()
         if self.with_kde: self.plot_kde()
+        # cluster
         self.plot_cluster_distribution()
-        self.plot_batch_mark()
-        self.plot_day_mark()
         self.plot_cluster_boundary()
         self.plot_cluster_count()
+        self.get_current_xlim()
+        # batch
+        self.plot_marks_overlay(self.fish_batch_mark, 'o', self.fish_batch_cmap)
+        self.plot_batch_mark()
+        # day
+        self.plot_marks_overlay(self.fish_day_mark, 's', self.fish_day_cmap)
+        self.plot_day_mark()
+        # legend
+        self.ax.get_legend().remove()
+        self.ax.add_artist(self.clusters_legend)
+        self.ax.add_artist(self.fish_batch_legend)
+        # self.ax.add_artist(self.fish_day_legend)
+        # # colorbar
+        # self.add_colorbar(self.y_kmeans, "cluster", self.clusters_cmap,
+        #                   ticks=list(self.label_idx2str.keys()), 
+        #                   ticklabels=list(self.label_idx2str.values()))
+        # self.add_colorbar(self.fish_batch_mark, "batch", self.fish_batch_cmap, 
+        #                   ticks=list(self.fish_batch_mark2str.keys()), 
+        #                   ticklabels=list(self.fish_batch_mark2str.values()))
+        self.add_colorbar(self.fish_day_mark, "day", self.fish_day_cmap, ticks=list(self.fish_day_cnt.keys()))
+        
         self.save_fig()
         
         # -------------------------------------------------------------------------------------
