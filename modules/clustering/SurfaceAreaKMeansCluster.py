@@ -226,8 +226,16 @@ class SurfaceAreaKMeansCluster():
         col_class_dict = deepcopy(self.surf2pred_dict)
         for area, pred in col_class_dict.items():
             col_class_dict[area] = self.clusters_idx2str[pred]
-        col_class_series = pd.Series(list(col_class_dict.values()), name="class")
-        self.clustered_xlsx_df = pd.concat([self.orig_xlsx_df, col_class_series], axis=1)
+        # class
+        new_series = pd.Series(list(col_class_dict.values()), name="class")
+        self.clustered_xlsx_df = pd.concat([self.orig_xlsx_df, new_series], axis=1)
+        # batch
+        new_list = [ self.fish_batch_mark2str[batch_mark] for batch_mark in self.fish_batch_mark ]
+        new_series = pd.Series(new_list, name="batch")
+        self.clustered_xlsx_df = pd.concat([self.clustered_xlsx_df, new_series], axis=1)
+        # day
+        new_series = pd.Series(self.fish_day_mark, name="day")
+        self.clustered_xlsx_df = pd.concat([self.clustered_xlsx_df, new_series], axis=1)
         # -------------------------------------------------------------------------------------
     
     
@@ -451,8 +459,7 @@ class SurfaceAreaKMeansCluster():
     def save_clustered_xlsx_df(self):
         create_new_dir(str(self.clustered_xlsx_dir), display_in_CLI=False)
         self.clustered_xlsx_path = self.clustered_xlsx_dir / f"{{{self.clustered_xlsx_name}}}_data.xlsx"
-        if not os.path.exists(str(self.clustered_xlsx_path)):
-            self.clustered_xlsx_df.to_excel(str(self.clustered_xlsx_path), engine="openpyxl", index=False)
+        self.clustered_xlsx_df.to_excel(str(self.clustered_xlsx_path), engine="openpyxl", index=False)
         # -------------------------------------------------------------------------------------
     
     
