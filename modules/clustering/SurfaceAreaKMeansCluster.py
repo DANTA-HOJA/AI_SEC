@@ -21,7 +21,7 @@ from fileop import create_new_dir
 
 class SurfaceAreaKMeansCluster():
     
-    def __init__(self, xlsx_path:Path, n_clusters:int, label_str:List[str], kmeans_rnd:int, 
+    def __init__(self, xlsx_path:Path, n_clusters:int, clusters_str:List[str], kmeans_rnd:int, 
                  log_base:int=10, cluster_with_log_scale:bool=False, with_kde:bool=False,
                  old_classdiv_xlsx_path:Path=None) -> None:
         # -------------------------------------------------------------------------------------
@@ -83,11 +83,11 @@ class SurfaceAreaKMeansCluster():
         self.compared_cluster_img_dir = self.clustered_xlsx_dir.joinpath(f"compare_clustering/KMeans_comp_STDEV/cluster{'_with_kde' if self.with_kde else ''}" )
         
         # -------------------------------------------------------------------------------------
-        self.label_str = label_str # small -> big, e.g. ["S", "M", "L"]
+        self.clusters_str = clusters_str # small -> big, e.g. ["S", "M", "L"]
         self.surf2pred_dict = None
         self.clusters_max_area = [0]*n_clusters
         self.clusters_count = None
-        self.label_idx2str = None
+        self.clusters_idx2str = None
         
         # -------------------------------------------------------------------------------------
         if self.show_old_classdiv: self.get_old_classdiv_info()
@@ -121,7 +121,7 @@ class SurfaceAreaKMeansCluster():
         part1 = (f'self.dataset_id              : {self.dataset_id}\n'
                  f'self.orig_xlsx_path          : {self.orig_xlsx_path}\n'
                  f'self.n_clusters              : {self.n_clusters}\n'
-                 f'self.label_str               : {self.label_str}\n'
+                 f'self.clusters_str            : {self.clusters_str}\n'
                  f'self.kmeans_rnd              : {self.kmeans_rnd}\n'
                  f'self.log_base                : {self.log_base}\n'
                  f'self.cluster_with_log_scale  : {self.cluster_with_log_scale}\n'
@@ -216,16 +216,16 @@ class SurfaceAreaKMeansCluster():
         # -------------------------------------------------------------------------------------
     
     
-    def gen_label_idx2str(self): # dependency: self.clusters_max_area
-        self.label_idx2str = { cls_idx: cls_str for (cls_idx, _), cls_str in zip(self.clusters_max_area.items(), self.label_str) }
-        print(f'self.label_idx2str {type(self.label_idx2str)}: {self.label_idx2str}\n')
+    def gen_clusters_idx2str(self): # dependency: self.clusters_max_area
+        self.clusters_idx2str = { cls_idx: cls_str for (cls_idx, _), cls_str in zip(self.clusters_max_area.items(), self.clusters_str) }
+        print(f'self.clusters_idx2str {type(self.clusters_idx2str)}: {self.clusters_idx2str}\n')
         # -------------------------------------------------------------------------------------
     
     
-    def gen_clustered_xlsx_df(self): # dependency: self.label_idx2str
+    def gen_clustered_xlsx_df(self): # dependency: self.clusters_idx2str
         col_class_dict = deepcopy(self.surf2pred_dict)
         for area, pred in col_class_dict.items():
-            col_class_dict[area] = self.label_idx2str[pred]
+            col_class_dict[area] = self.clusters_idx2str[pred]
         col_class_series = pd.Series(list(col_class_dict.values()), name="class")
         self.clustered_xlsx_df = pd.concat([self.orig_xlsx_df, col_class_series], axis=1)
         # -------------------------------------------------------------------------------------
@@ -301,7 +301,7 @@ class SurfaceAreaKMeansCluster():
                         marker="x", s=50, color="black")
         self.scatter_n_gap += 1
         # legend
-        legend_labels = OrderedDict(sorted(list(self.label_idx2str.items()), key=lambda x: x[0])).values() # sort by cluster_idx
+        legend_labels = OrderedDict(sorted(list(self.clusters_idx2str.items()), key=lambda x: x[0])).values() # sort by cluster_idx
         self.clusters_legend = self.ax.legend(handles=scatter.legend_elements()[0],
                                              labels=list(legend_labels),
                                              title='cluster', loc='upper left', bbox_to_anchor=(0, 0.99))
@@ -419,7 +419,7 @@ class SurfaceAreaKMeansCluster():
         for i, cluster in enumerate(key_list):
             text_center = (value_list[i+1] + value_list[i])/2
             # self.ax.axvline(x=text_center, color='green', linestyle='--')
-            text = self.ax.text(text_center, 0.8, f'{self.label_idx2str[cluster]}={self.clusters_count[cluster]}', 
+            text = self.ax.text(text_center, 0.8, f'{self.clusters_idx2str[cluster]}={self.clusters_count[cluster]}', 
                                 transform=self.ax.get_xaxis_transform(), ha='center',
                                 fontsize=16, color='#FFFFF2', path_effects=[self.text_path_effect])
             text.set_bbox(dict(boxstyle="round", pad=0.8, facecolor='#EE7785', alpha=0.7, edgecolor='none',
@@ -462,7 +462,7 @@ class SurfaceAreaKMeansCluster():
         self.count_cluster_element()
         self.gen_surf2pred_dict()
         self.find_clusters_max_area()
-        self.gen_label_idx2str()
+        self.gen_clusters_idx2str()
         self.gen_clustered_xlsx_df()
         self.save_clustered_xlsx_df()
         
@@ -488,8 +488,8 @@ class SurfaceAreaKMeansCluster():
         # self.ax.add_artist(self.fish_day_legend)
         # # colorbar
         # self.add_colorbar(self.y_kmeans, "cluster", self.clusters_cmap,
-        #                   ticks=list(self.label_idx2str.keys()), 
-        #                   ticklabels=list(self.label_idx2str.values()))
+        #                   ticks=list(self.clusters_idx2str.keys()), 
+        #                   ticklabels=list(self.clusters_idx2str.values()))
         # self.add_colorbar(self.fish_batch_mark, "batch", self.fish_batch_cmap, 
         #                   ticks=list(self.fish_batch_mark2str.keys()), 
         #                   ticklabels=list(self.fish_batch_mark2str.values()))
