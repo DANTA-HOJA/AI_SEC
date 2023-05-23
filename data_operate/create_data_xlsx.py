@@ -24,7 +24,7 @@ import pandas as pd
 
 sys.path.append("./../modules/")
 from logger import init_logger
-from dataop import get_fish_ID_pos, create_dict_by_fishID, merge_BF_analysis
+from data.utils import get_fish_ID_pos, create_dict_by_fishID, merge_BF_analysis
 
 
 

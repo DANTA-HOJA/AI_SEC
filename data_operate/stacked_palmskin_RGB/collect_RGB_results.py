@@ -8,7 +8,7 @@ from glob import glob
 
 sys.path.append("./../../modules/") # add path to scan customized module
 from fileop import create_new_dir, resave_result
-from dataop import get_fish_ID_pos
+from data.utils import get_fish_ID_pos
 
 
 
