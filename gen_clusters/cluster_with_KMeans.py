@@ -9,7 +9,7 @@ kmeans_rnd = 2022
 # xlsx: .../{Data}_Processed/{ Reminder }_Academia_Sinica_i[num]/data.xlsx
 
 xlsx_path = Path( r"C:\Users\confocal_microscope\Desktop\WorkingDir\ZebraFish_DB\{Data}_Processed\{20230424_Update}_Academia_Sinica_i505\data.xlsx" )
-old_classdiv_xlsx_path = Path(r"C:\Users\confocal_microscope\Desktop\WorkingDir\ZebraFish_DB\!~OLD_FILE\xlsx\!~BeforeCluster (20230508)\{20230424_Update}_Academia_Sinica_i505\{Modify}_xlsx\{3CLS_SURF_050STDEV}_data.xlsx")
+old_classdiv_xlsx_path = Path( r"C:\Users\confocal_microscope\Desktop\WorkingDir\ZebraFish_DB\!~OLD_FILE\xlsx\!~BeforeCluster (20230508)\{20230424_Update}_Academia_Sinica_i505\{Modify}_xlsx\{3CLS_SURF_050STDEV}_data.xlsx" )
 
 # -----------------------------------------------------------------------------------
 n_clusters = 3
