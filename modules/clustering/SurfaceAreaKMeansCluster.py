@@ -8,6 +8,7 @@ from collections import OrderedDict, Counter
 
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.patheffects as path_effects
@@ -307,7 +308,7 @@ class SurfaceAreaKMeansCluster():
                            mark_style:str, separately:bool, show_info:bool, legend_name:str,
                            legend_loc:str, legend_bbox_to_anchor:Tuple[float, float]):
         
-        colormap = cm.get_cmap(getattr(self, f"{attr_prefix}_cmap"))
+        colormap = matplotlib.colormaps[getattr(self, f"{attr_prefix}_cmap")]
         colors = colormap(np.linspace(0, 1, len(mapping_dict)))
         
         setattr(self, f"{attr_prefix}_scatter_list", [])
