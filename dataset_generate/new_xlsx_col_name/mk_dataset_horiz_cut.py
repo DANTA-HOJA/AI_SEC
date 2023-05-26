@@ -34,8 +34,8 @@ if __name__ == "__main__":
     script_name = config["script_name"]
     data_root  = os.path.normpath(config["data"]["root"])
     xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
-    palmskin_desc       = config["data"]["stacked_palmskin"]["desc"]
-    palmskin_result_key = config["data"]["stacked_palmskin"]["result_key"]
+    palmskin_desc       = config["data"]["stacked_palmskin"]["palmskin_desc"]
+    palmskin_result_alias = config["data"]["stacked_palmskin"]["result_alias"]
     crop_size    = config["gen_param"]["crop_size"]
     shift_region = config["gen_param"]["shift_region"]
     intensity    = config["gen_param"]["intensity"]
@@ -46,12 +46,15 @@ if __name__ == "__main__":
     data_name = data_root.split(os.sep)[-1]
     classif_strategy = xlsx_file_name_parser(xlsx_file)
     xlsx_file_path = os.path.join(data_root, r"{Modify}_xlsx", xlsx_file)
-    stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_key)
+    stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_alias)
     random_state = np.random.RandomState(seed=random_seed)
     dataset_param_name = gen_dataset_param_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    save_dir_A_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
-    save_dir_P_only = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
-    save_dir_Mix_AP = os.path.join(dataset_root, data_name, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
+    save_dir_A_only = os.path.join(dataset_root, data_name, palmskin_desc, "fish_dataset_horiz_cut_1l2_A_only", 
+                                            palmskin_result_alias, classif_strategy, dataset_param_name)
+    save_dir_P_only = os.path.join(dataset_root, data_name, palmskin_desc, "fish_dataset_horiz_cut_1l2_P_only", 
+                                            palmskin_result_alias, classif_strategy, dataset_param_name)
+    save_dir_Mix_AP = os.path.join(dataset_root, data_name, palmskin_desc, "fish_dataset_horiz_cut_1l2_Mix_AP", 
+                                            palmskin_result_alias, classif_strategy, dataset_param_name)
     assert not os.path.exists(save_dir_A_only), f"dir: '{save_dir_A_only}' already exists"
     assert not os.path.exists(save_dir_P_only), f"dir: '{save_dir_P_only}' already exists"
     assert not os.path.exists(save_dir_Mix_AP), f"dir: '{save_dir_Mix_AP}' already exists"
