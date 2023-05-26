@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 import pandas as pd
 
-rel_module_path = "./../modules/"
+rel_module_path = "./../../modules/"
 sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
 
 from logger import init_logger
