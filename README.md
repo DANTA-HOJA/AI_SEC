@@ -126,3 +126,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 - ```BF_Analysis``` 不再額外複製 ```{NAS_DL}_Academia_Sinica_Data/.../BrightField_RAW/``` ，改採 *直接讀取* 檔案產生 *SA* , *SL* 計算結果
 - ```BF_Analysis``` 開始加上 prefix， {} 內用於紀錄該次針對計算所調整的項目
 - 合併 ```/data_operate/BrightField/collect_BF_raw_lif.py``` 的操作合併至 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
+
+### 2023/05/26
+
+- 做好初版 `train_config` parser ( data, dataset info not yet )， `{Dataset}_Cropped` 路徑開始加入 `result_alias`、`palmskin_desc` (現在還是 rewrite 不是 update)
