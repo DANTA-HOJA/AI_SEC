@@ -71,7 +71,7 @@ class SinglePredictionParser():
         self.find_model_prediction_dir_in_path()
 
         self.zebrafish_db_root = Path(os.sep.join(self.prediction_dir_split[:self.model_prediction_dir_idx]))
-        self.data_processed_dir = self.zebrafish_db_root.joinpath(r"{Data}_Processed")
+        self.data_processed_dir = self.zebrafish_db_root.joinpath(r"{Data}_Preprocessed")
         self.dataset_cropped_dir = self.zebrafish_db_root.joinpath(r"{Dataset}_Cropped")
         self.model_cmd_dir = self.zebrafish_db_root.joinpath(r"{Model}_CMD")
         self.model_prediction_dir = self.zebrafish_db_root.joinpath(r"{Model}_Prediction")
