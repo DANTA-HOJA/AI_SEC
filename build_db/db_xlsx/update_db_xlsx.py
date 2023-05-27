@@ -15,7 +15,7 @@ zebrafish_db_root = Path(r"/home/rime97410000/ZebraFish_DB")
 db_name = r"{DB}_Predictions"
 
 # -----------------------------------------------------------------------------------
-log = init_logger(f"SinglePredictionParser")
+log = init_logger(f"Build DB Xlsx")
 
 predictions_dir_root = zebrafish_db_root.joinpath(r"{Model}_Prediction")
 prediction_dir_list = sorted(list(predictions_dir_root.glob("*")), key=lambda x: str(x).split(os.sep)[-1])
