@@ -110,3 +110,21 @@ def create_rect(img: np.ndarray, relative_pos:str) -> np.ndarray:
     rect[rr, cc] = 255
     
     return rect
+
+
+
+def direct_max_zproj(img_list, ZProjector, RGBStackMerge, RGBStackConverter):
+    
+    ch_B = img_list[0]
+    ch_G = img_list[1]
+    ch_R = img_list[2]
+    
+    max_zproj_ch_B = ZProjector.run(ch_B, "max")
+    max_zproj_ch_G = ZProjector.run(ch_G, "max")
+    max_zproj_ch_R = ZProjector.run(ch_R, "max")
+    
+    stack_RGB = RGBStackMerge.mergeChannels([max_zproj_ch_R, max_zproj_ch_G, max_zproj_ch_B], True)
+    
+    RGBStackConverter.convertToRGB(stack_RGB)
+    
+    return stack_RGB
