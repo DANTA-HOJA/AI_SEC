@@ -20,31 +20,48 @@ preprocess_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_
 
 # result
 result_map = {
-    "B_processed":                "MetaImage/01_B_processed.tif",
-	"B_processed_Kuwahara":       "MetaImage/02_B_processed_Kuwahara*.tif",
-    "G_processed":                "MetaImage/03_G_processed.tif",
-    "G_processed_Kuwahara":       "MetaImage/04_G_processed_Kuwahara*.tif",
-    "R_processed":                "MetaImage/05_R_processed.tif",
-    "R_processed_Kuwahara":       "MetaImage/06_R_processed_Kuwahara*.tif",
-    "RGB":                        "MetaImage/07_composite_RGB.tif",
-    "RGB_HE" :                    "08_composite_RGB_HE.tif", # CHECK_PT 
-    "RGB_Kuwahara":               "MetaImage/09_composite_RGB_Kuwahara.tif",
-	"RGB_Kuwahara_HE" :           "10_composite_RGB_Kuwahara_HE.tif", # CHECK_PT 
-	"RGB_HE_mix" :                "11_composite_RGB_HE_mix.tif", # CHECK_PT 
-    "BF_Zproj":                   "MetaImage/12_BF_Zproj_*.tif",
-    "BF_Zproj_HE":                "MetaImage/13_BF_Zproj_*_HE.tif",
-    "Threshold":                  "MetaImage/14_Threshold_*_*.tif",
-    "outer_rect":                 "MetaImage/15_outer_rect.tif",
-    "inner_rect":                 "MetaImage/16_inner_rect.tif",
-    "RGB_HE--MIX":                "MetaImage/17_composite_RGB_HE--MIX.tif",
-    "RGB_Kuwahara_HE--MIX":       "MetaImage/18_composite_RGB_Kuwahara_HE--MIX.tif",
-    "RGB_HE_mix--MIX":            "MetaImage/19_composite_RGB_HE_mix--MIX.tif",
-    "cropped_RGB_HE" :            "20_cropped_composite_RGB_HE.tif", # CHECK_PT 
-	"cropped_RGB_Kuwahara_HE" :   "21_cropped_composite_RGB_Kuwahara_HE.tif", # CHECK_PT 
-	"cropped_RGB_HE_mix" :        "22_cropped_composite_RGB_HE_mix.tif", # CHECK_PT 
-    "RoiSet" :                    "MetaImage/RoiSet.zip",
+    "ch_B":                          "MetaImage/*_B_processed.tif",
+	"ch_B_Kuwahara":                 "MetaImage/*_B_processed_Kuwahara*.tif",
+    "ch_B_fusion":                   "*_B_processed_fusion.tif", # CHECK_PT 
+    "ch_B_HE":                       "MetaImage/*_B_processed_HE.tif",
+    "ch_B_Kuwahara_HE":              "MetaImage/*_B_processed_Kuwahara_HE.tif",
+    "ch_B_fusion":                   "*_B_processed_HE_fusion.tif", # CHECK_PT 
+    # -----------------------------------------------------------------------------------
+    "ch_G":                          "MetaImage/*_G_processed.tif",
+    "ch_G_Kuwahara":                 "MetaImage/*_G_processed_Kuwahara*.tif",
+    "ch_G_fusion":                   "*_G_processed_fusion.tif", # CHECK_PT 
+    "ch_G_HE":                       "MetaImage/*_G_processed_HE.tif",
+    "ch_G_Kuwahara_HE":              "MetaImage/*_G_processed_Kuwahara_HE.tif",
+    "ch_G_fusion":                   "*_G_processed_HE_fusion.tif", # CHECK_PT 
+    # -----------------------------------------------------------------------------------
+    "ch_R":                          "MetaImage/*_R_processed.tif",
+    "ch_R_Kuwahara":                 "MetaImage/*_R_processed_Kuwahara*.tif",
+    "ch_R_fusion":                   "*_R_processed_fusion.tif", # CHECK_PT 
+    "ch_R_HE":                       "MetaImage/*_R_processed_HE.tif",
+    "ch_R_Kuwahara_HE":              "MetaImage/*_R_processed_Kuwahara_HE.tif",
+    "ch_R_fusion":                   "*_R_processed_HE_fusion.tif", # CHECK_PT 
+    # -----------------------------------------------------------------------------------
+    "RGB":                           "MetaImage/*_RGB_processed.tif",
+    "RGB_Kuwahara":                  "MetaImage/*_RGB_processed_Kuwahara.tif",
+    "RGB_fusion":                    "*_RGB_processed_fusion.tif", # CHECK_PT  = Average(RGB_processed, RGB_processed_Kuwahara)
+    "RGB_HE" :                       "MetaImage/*_RGB_processed_HE.tif",
+	"RGB_Kuwahara_HE" :              "MetaImage/*_RGB_processed_Kuwahara_HE.tif",
+	"RGB_HE_fusion" :                "*_RGB_processed_HE_fusion.tif", # CHECK_PT  = Average(RGB_processed_HE, RGB_processed_Kuwahara_HE)
+    # -----------------------------------------------------------------------------------
+    "BF_Zproj":                      "MetaImage/*_BF_Zproj_*.tif",
+    "BF_Zproj_HE":                   "MetaImage/*_BF_Zproj_*_HE.tif",
+    "Threshold":                     "MetaImage/*_Threshold_*_*.tif",
+    "outer_rect":                    "MetaImage/*_outer_rect.tif",
+    "inner_rect":                    "MetaImage/*_inner_rect.tif",
+    "RoiSet" :                       "MetaImage/RoiSet_AutoRect.zip",
+    # -----------------------------------------------------------------------------------
+    "RGB_Kuwahara_HE--AutoRect":     "*_RGB_processed_fusion--AutoRect.tif", # CHECK_PT 
+    "RGB_HE_fusion--AutoRect":       "*_RGB_processed_HE_fusion--AutoRect.tif", # CHECK_PT 
+    # -----------------------------------------------------------------------------------
+    "autocropped_RGB_fusion" :       "*_autocropped_RGB_processed_fusion.tif", # CHECK_PT 
+	"autocropped_RGB_HE_fusion" :    "*_autocropped_RGB_processed_HE_fusion.tif", # CHECK_PT 
 }
-result_key = "RGB_HE_mix"
+result_key = "RGB_HE_fusion"
 
 
 # output
