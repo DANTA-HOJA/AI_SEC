@@ -15,7 +15,7 @@ from data.utils import get_fish_ID_pos
 # input
 ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230424_Update}_Academia_Sinica_i505"
 preprocess_method_desc = "ch4_min_proj, outer_rect"
-preprocess_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_preprocess")
+preprocess_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_PalmSkin_preprocess")
 
 
 # result
