@@ -20,6 +20,8 @@ preprocess_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_
 
 # result
 result_map = {
+    "RGB_direct_max_zproj":          "*_RGB_direct_max_zproj.tif", # CHECK_PT 
+    # -----------------------------------------------------------------------------------
     "ch_B":                          "MetaImage/*_B_processed.tif",
 	"ch_B_Kuwahara":                 "MetaImage/*_B_processed_Kuwahara*.tif",
     "ch_B_fusion":                   "*_B_processed_fusion.tif", # CHECK_PT 
