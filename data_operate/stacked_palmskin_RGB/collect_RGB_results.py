@@ -46,9 +46,11 @@ result_map = {
     "RGB":                           "MetaImage/*_RGB_processed.tif",
     "RGB_Kuwahara":                  "MetaImage/*_RGB_processed_Kuwahara.tif",
     "RGB_fusion":                    "*_RGB_processed_fusion.tif", # CHECK_PT  = Average(RGB_processed, RGB_processed_Kuwahara)
+    "RGB_fusion2Gray"                "*_RGB_processed_fusion2Gray.tif" # CHECK_PT 
     "RGB_HE" :                       "MetaImage/*_RGB_processed_HE.tif",
 	"RGB_Kuwahara_HE" :              "MetaImage/*_RGB_processed_Kuwahara_HE.tif",
 	"RGB_HE_fusion" :                "*_RGB_processed_HE_fusion.tif", # CHECK_PT  = Average(RGB_processed_HE, RGB_processed_Kuwahara_HE)
+    "RGB_HE_fusion2Gray"             "*_RGB_processed_HE_fusion2Gray.tif" # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "BF_Zproj":                      "MetaImage/*_BF_Zproj_*.tif",
     "BF_Zproj_HE":                   "MetaImage/*_BF_Zproj_*_HE.tif",
