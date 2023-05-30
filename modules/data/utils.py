@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Tuple, Dict, Union
+from typing import List, Dict, Tuple, Union
 
 
 
@@ -31,12 +31,12 @@ def get_fish_ID_pos(string_with_fish_Dname:Union[str, Path]) -> Tuple[int, str]:
 
 
 
-def create_dict_by_fishID(path_list:list) -> Dict[int, str]:
+def create_dict_by_fishID(path_list:List[Path]) -> Dict[int, Path]:
     return {get_fish_ID_pos(path)[0] : path for path in path_list}
 
 
 
-def merge_BF_analysis(auto_analysis_dict:Dict[int, str], manual_analysis_dict:Dict[int, str]):
+def merge_BF_analysis(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Dict[int, Path]):
     for key, value in manual_analysis_dict.items():
         auto_analysis_dict.pop(key, None)
         auto_analysis_dict[key] = manual_analysis_dict[key]
