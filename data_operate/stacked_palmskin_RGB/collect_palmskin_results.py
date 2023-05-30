@@ -21,8 +21,8 @@ with open("./../../Config/db_path_plan.toml", mode="r") as f_reader:
 db_root = Path(dbpp_config["root"])
 
 # -----------------------------------------------------------------------------------
-# Load `(reCollection) palmskin.toml`
-with open("./../../Config/(reCollection) palmskin.toml", mode="r") as f_reader:
+# Load `(CollectResult)_palmskin.toml`
+with open("./../../Config/(CollectResult)_palmskin.toml", mode="r") as f_reader:
     config = toml.load(f_reader)
 preprocessed_desc = config["data_preprocessed"]["desc"]
 result_alias = config["result_alias"]
@@ -33,7 +33,7 @@ result_alias = config["result_alias"]
 # Check `{desc}_Academia_Sinica_i[num]`
 data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
 target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
-assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(Preprocessing) palmskin.toml` is not unique/exists, "
+assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(CollectResult)_palmskin.toml` is not unique/exists, "
                                    f"find {len(target_dir_list)} possible directories, {target_dir_list}")
 preprocessed_root = target_dir_list[0]
 
