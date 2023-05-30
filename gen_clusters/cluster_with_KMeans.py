@@ -1,23 +1,48 @@
 import sys
 from pathlib import Path
-sys.path.append("./../modules/") # add path to scan customized module
+import toml
+
+rel_module_path = "./../modules/"
+sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
+
 from clustering.SurfaceAreaKMeansCluster import SurfaceAreaKMeansCluster
 
-kmeans_rnd = 2022
 
 # -----------------------------------------------------------------------------------
-# xlsx: .../{Data}_Preprocessed/{ Reminder }_Academia_Sinica_i[num]/data.xlsx
+# Load `db_path_plan.toml`
+with open("./../Config/db_path_plan.toml", mode="r") as f_reader:
+    dbpp_config = toml.load(f_reader)
+db_root = Path(dbpp_config["root"])
 
-xlsx_path = Path( r"C:\Users\confocal_microscope\Desktop\WorkingDir\ZebraFish_DB\{Data}_Preprocessed\{20230424_Update}_Academia_Sinica_i505\data.xlsx" )
-old_classdiv_xlsx_path = Path( r"C:\Users\confocal_microscope\Desktop\WorkingDir\ZebraFish_DB\!~OLD_FILE\xlsx\!~BeforeCluster (20230508)\{20230424_Update}_Academia_Sinica_i505\{Modify}_xlsx\{3CLS_SURF_050STDEV}_data.xlsx" )
-
-# -----------------------------------------------------------------------------------
-n_clusters = 3
-label_str = ["S", "M", "L"]
 
 # -----------------------------------------------------------------------------------
-# n_clusters = 4
-# label_str = ["S", "M", "L", "XL"]
+# Load `(Cluster)_data.toml`
+with open("./../Config/(Cluster)_data.toml", mode="r") as f_reader:
+    config = toml.load(f_reader)
+
+preprocessed_desc = config["data_preprocessed"]["desc"]
+
+if not config["old_classdiv_xlsx"]["full_path"]: old_classdiv_xlsx_path=None
+else: old_classdiv_xlsx_path = Path(config["old_classdiv_xlsx"]["full_path"])
+
+kmeans_rnd = config["param"]["random_seed"]
+n_clusters = config["param"]["n_clusters"]
+label_str  = config["param"]["label_str"]
+
+
+# -----------------------------------------------------------------------------------
+# Generate `path_vars`
+
+# Check `{desc}_Academia_Sinica_i[num]`
+data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(Cluster)_data.toml` is not unique/exists, "
+                                   f"find {len(target_dir_list)} possible directories, {target_dir_list}")
+preprocessed_root = target_dir_list[0]
+
+# xlsx: .../{Data}_Preprocessed/{desc}_Academia_Sinica_i[num]/data.xlsx
+xlsx_path = preprocessed_root.joinpath("data.xlsx")
+
 
 # -----------------------------------------------------------------------------------
 for arg_6 in [False, True]:
