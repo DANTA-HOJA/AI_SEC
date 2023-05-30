@@ -36,14 +36,13 @@ result_alias = config["result_alias"]
 # Check `{desc}_Academia_Sinica_i[num]`
 data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
 target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
-assert len(target_dir_list) <= 1, (f"[data_preprocessed.desc] in `(Preprocessing) palmskin.toml` is not unique, "
+assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(Preprocessing) palmskin.toml` is not unique/exists, "
                                    f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-data_root = target_dir_list[0]
+preprocessed_root = target_dir_list[0]
 
 # Check `{reminder}_PalmSkin_preprocess`
-target_dir_list = list(data_root.glob(f"*PalmSkin_preprocess*"))
-assert len(target_dir_list) <= 1, (f"Too many directories are found, only one `PalmSkin_preprocess` is accepted. "
-                                   f"Directories: {target_dir_list}")
+target_dir_list = list(preprocessed_root.glob(f"*PalmSkin_preprocess*"))
+assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_preprocess` is accepted.")
 preprocessed_dir = target_dir_list[0]
 preprocessed_reminder = re.split("{|}", str(preprocessed_dir).split(os.sep)[-1])[1]
 
@@ -112,7 +111,7 @@ result_map = {
 
 
 # output
-output_dir = data_root.joinpath(f"{{{preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
+output_dir = preprocessed_root.joinpath(f"{{{preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
 assert not output_dir.exists(), f"Directory: '{output_dir}' already exists, please delete the folder before collecting results."
 create_new_dir(output_dir)
 
@@ -178,3 +177,9 @@ log_path = os.path.join(output_dir, f"{{Logs}}_{{collect_RGB_results}}_{time_sta
 log_writer = open(log_path, mode="w")
 log_writer.write(json.dumps(summary, indent=4))
 log_writer.close()
+
+
+# rename dir
+preprocessed_root_split = re.split("{|}", str(preprocessed_root).split(os.sep)[-1]) # {20230424_Update}_Academia_Sinica_iTBA
+new_name = f"{{{preprocessed_root_split[1]}}}_Academia_Sinica_i{summary['total files']}"
+os.rename(preprocessed_root, data_root.joinpath(new_name))
