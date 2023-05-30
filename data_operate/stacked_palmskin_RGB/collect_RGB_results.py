@@ -7,14 +7,11 @@ from datetime import datetime
 import json
 import toml
 
-from glob import glob
-
 rel_module_path = "./../../modules/"
 sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
 
 from fileop import create_new_dir, resave_result
 from data.utils import get_fish_ID_pos
-
 
 
 # -----------------------------------------------------------------------------------
