@@ -17,7 +17,6 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
-from glob import glob
 import toml
 
 import numpy as np
