@@ -118,17 +118,20 @@ path_list = sorted(preprocessed_dir.glob(f"*/{result_map[result_alias]}"), key=g
 pattern = result_map[result_alias].split(os.sep)[-1]
 pattern = pattern.replace("*", r"[0-9]*")
 num = 0
+actual_name = None
 for _ in range(len(path_list)):
     path_str = str(path_list[num]).split(os.sep)[-1]
-    if not re.fullmatch(pattern, path_str): 
+    if not re.fullmatch(pattern, path_str):
         path_list.pop(num)
-    else: num += 1
+    else: 
+        num += 1
+        if actual_name is None: actual_name = path_str
 # for i in path_list: print(i)
 
 
 summary = {}
 summary["result_alias"] = result_alias
-summary["actual_name"] = path_str
+summary["actual_name"] = actual_name
 summary["max_probable_num"] = get_fish_ID_pos(path_list[-1])[0]
 summary["total files"] = len(path_list)
 summary["missing"] = []
