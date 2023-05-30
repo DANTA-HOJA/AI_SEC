@@ -1,86 +1,138 @@
 import os
 import sys
-from typing import *
+import re
+from pathlib import Path
+from typing import List, Dict, Union
 from datetime import datetime
 import json
+import toml
 
 from glob import glob
 
-sys.path.append("./../../modules/") # add path to scan customized module
+rel_module_path = "./../../modules/"
+sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
+
 from fileop import create_new_dir, resave_result
 from data.utils import get_fish_ID_pos
 
 
 
-# input
-ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230424_Update}_Academia_Sinica_i505"
-preprocess_method_desc = "ch4_min_proj, outer_rect"
-preprocess_root = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_PalmSkin_preprocess")
+# -----------------------------------------------------------------------------------
+# Load `db_path_plan.toml`
+with open("./../../Config/db_path_plan.toml", mode="r") as f_reader:
+    dbpp_config = toml.load(f_reader)
+db_root = Path(dbpp_config["root"])
+
+# -----------------------------------------------------------------------------------
+# Load `(reCollection) palmskin.toml`
+with open("./../../Config/(reCollection) palmskin.toml", mode="r") as f_reader:
+    config = toml.load(f_reader)
+preprocessed_desc = config["data_preprocessed"]["desc"]
+result_alias = config["result_alias"]
+
+# -----------------------------------------------------------------------------------
+# Generate `path_vars`
+
+# Check `{desc}_Academia_Sinica_i[num]`
+data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+assert len(target_dir_list) <= 1, (f"[data_preprocessed.desc] in `(Preprocessing) palmskin.toml` is not unique, "
+                                   f"find {len(target_dir_list)} possible directories, {target_dir_list}")
+data_root = target_dir_list[0]
+
+# Check `{reminder}_PalmSkin_preprocess`
+target_dir_list = list(data_root.glob(f"*PalmSkin_preprocess*"))
+assert len(target_dir_list) <= 1, (f"Too many directories are found, only one `PalmSkin_preprocess` is accepted. "
+                                   f"Directories: {target_dir_list}")
+preprocessed_dir = target_dir_list[0]
+preprocessed_reminder = re.split("{|}", str(preprocessed_dir).split(os.sep)[-1])[1]
 
 
-# result
+# -----------------------------------------------------------------------------------
+# Load `palmskin_preprocess_config.toml`
+palmskin_preprocess_config_path = preprocessed_dir.joinpath("palmskin_preprocess_config.toml")
+
+with open(palmskin_preprocess_config_path, mode="r") as f_reader:
+    palmskin_preprocess_config = toml.load(f_reader)
+
+preprocess_kwargs = palmskin_preprocess_config["param"]
+Kuwahara = f"Kuwahara{preprocess_kwargs['Kuwahara_sampleing']}"
+bf_zproj_type = f"BF_Zproj_{preprocess_kwargs['bf_zproj_type']}"
+bf_treshold = f"0_{preprocess_kwargs['bf_treshold_value']}"
+
+
+
+# -----------------------------------------------------------------------------------
 result_map = {
     "RGB_direct_max_zproj":          "*_RGB_direct_max_zproj.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "ch_B":                          "MetaImage/*_B_processed.tif",
-	"ch_B_Kuwahara":                 "MetaImage/*_B_processed_Kuwahara*.tif",
+	"ch_B_Kuwahara":                 f"MetaImage/*_B_processed_{Kuwahara}.tif",
     "ch_B_fusion":                   "*_B_processed_fusion.tif", # CHECK_PT 
     "ch_B_HE":                       "MetaImage/*_B_processed_HE.tif",
-    "ch_B_Kuwahara_HE":              "MetaImage/*_B_processed_Kuwahara_HE.tif",
+    "ch_B_Kuwahara_HE":              f"MetaImage/*_B_processed_{Kuwahara}_HE.tif",
     "ch_B_fusion":                   "*_B_processed_HE_fusion.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "ch_G":                          "MetaImage/*_G_processed.tif",
-    "ch_G_Kuwahara":                 "MetaImage/*_G_processed_Kuwahara*.tif",
+    "ch_G_Kuwahara":                 f"MetaImage/*_G_processed_{Kuwahara}.tif",
     "ch_G_fusion":                   "*_G_processed_fusion.tif", # CHECK_PT 
     "ch_G_HE":                       "MetaImage/*_G_processed_HE.tif",
-    "ch_G_Kuwahara_HE":              "MetaImage/*_G_processed_Kuwahara_HE.tif",
+    "ch_G_Kuwahara_HE":              f"MetaImage/*_G_processed_{Kuwahara}_HE.tif",
     "ch_G_fusion":                   "*_G_processed_HE_fusion.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "ch_R":                          "MetaImage/*_R_processed.tif",
-    "ch_R_Kuwahara":                 "MetaImage/*_R_processed_Kuwahara*.tif",
+    "ch_R_Kuwahara":                 f"MetaImage/*_R_processed_{Kuwahara}.tif",
     "ch_R_fusion":                   "*_R_processed_fusion.tif", # CHECK_PT 
     "ch_R_HE":                       "MetaImage/*_R_processed_HE.tif",
-    "ch_R_Kuwahara_HE":              "MetaImage/*_R_processed_Kuwahara_HE.tif",
+    "ch_R_Kuwahara_HE":              f"MetaImage/*_R_processed_{Kuwahara}_HE.tif",
     "ch_R_fusion":                   "*_R_processed_HE_fusion.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "RGB":                           "MetaImage/*_RGB_processed.tif",
-    "RGB_Kuwahara":                  "MetaImage/*_RGB_processed_Kuwahara.tif",
+    "RGB_Kuwahara":                  f"MetaImage/*_RGB_processed_{Kuwahara}.tif",
     "RGB_fusion":                    "*_RGB_processed_fusion.tif", # CHECK_PT  = Average(RGB_processed, RGB_processed_Kuwahara)
-    "RGB_fusion2Gray"                "*_RGB_processed_fusion2Gray.tif" # CHECK_PT 
+    "RGB_fusion2Gray":               "*_RGB_processed_fusion2Gray.tif", # CHECK_PT 
     "RGB_HE" :                       "MetaImage/*_RGB_processed_HE.tif",
-	"RGB_Kuwahara_HE" :              "MetaImage/*_RGB_processed_Kuwahara_HE.tif",
+	"RGB_Kuwahara_HE" :              f"MetaImage/*_RGB_processed_{Kuwahara}_HE.tif",
 	"RGB_HE_fusion" :                "*_RGB_processed_HE_fusion.tif", # CHECK_PT  = Average(RGB_processed_HE, RGB_processed_Kuwahara_HE)
-    "RGB_HE_fusion2Gray"             "*_RGB_processed_HE_fusion2Gray.tif" # CHECK_PT 
+    "RGB_HE_fusion2Gray":            "*_RGB_processed_HE_fusion2Gray.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
-    "BF_Zproj":                      "MetaImage/*_BF_Zproj_*.tif",
-    "BF_Zproj_HE":                   "MetaImage/*_BF_Zproj_*_HE.tif",
-    "Threshold":                     "MetaImage/*_Threshold_*_*.tif",
+    "BF_Zproj":                      f"MetaImage/*_{bf_zproj_type}.tif",
+    "BF_Zproj_HE":                   f"MetaImage/*_{bf_zproj_type}_HE.tif",
+    "Threshold":                     f"MetaImage/*_Threshold_{bf_treshold}.tif",
     "outer_rect":                    "MetaImage/*_outer_rect.tif",
     "inner_rect":                    "MetaImage/*_inner_rect.tif",
     "RoiSet" :                       "MetaImage/RoiSet_AutoRect.zip",
     # -----------------------------------------------------------------------------------
-    "RGB_Kuwahara_HE--AutoRect":     "*_RGB_processed_fusion--AutoRect.tif", # CHECK_PT 
+    "RGB_fusion--AutoRect":          "*_RGB_processed_fusion--AutoRect.tif", # CHECK_PT 
     "RGB_HE_fusion--AutoRect":       "*_RGB_processed_HE_fusion--AutoRect.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "autocropped_RGB_fusion" :       "*_autocropped_RGB_processed_fusion.tif", # CHECK_PT 
 	"autocropped_RGB_HE_fusion" :    "*_autocropped_RGB_processed_HE_fusion.tif", # CHECK_PT 
 }
-result_key = "RGB_HE_fusion"
 
 
 # output
-output_dir = os.path.join(ap_data_root, f"{{{preprocess_method_desc}}}_RGB_reCollection", result_key)
+output_dir = data_root.joinpath(f"{{{preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
+assert not output_dir.exists(), f"Directory: '{output_dir}' already exists, please delete the folder before collecting results."
 create_new_dir(output_dir)
 
 
-path_list = glob(os.path.normpath("{}/*/{}".format(preprocess_root, result_map[result_key])))
-path_list.sort(key=get_fish_ID_pos)
+# regex filter
+path_list = sorted(preprocessed_dir.glob(f"*/{result_map[result_alias]}"), key=get_fish_ID_pos)
+pattern = result_map[result_alias].split(os.sep)[-1]
+pattern = pattern.replace("*", r"[0-9]*")
+num = 0
+for _ in range(len(path_list)):
+    path_str = str(path_list[num]).split(os.sep)[-1]
+    if not re.fullmatch(pattern, path_str): 
+        path_list.pop(num)
+    else: num += 1
 # for i in path_list: print(i)
 
 
 summary = {}
-summary["result_key"] = result_key
-summary["actual_name"] = result_map[result_key]
+summary["result_alias"] = result_alias
+summary["actual_name"] = path_str
 summary["max_probable_num"] = get_fish_ID_pos(path_list[-1])[0]
 summary["total files"] = len(path_list)
 summary["missing"] = []
@@ -107,7 +159,7 @@ for i in range(summary["max_probable_num"]):
             
             if fish_pos == pos :
                 path = path_list.pop(0)
-                resave_result(path, output_dir, result_map[result_key])
+                resave_result(path, output_dir, result_map[result_alias])
                 previous_fish = current_name
             else: # 部分缺失
                 summary["missing"].append(f"{expect_name}")
