@@ -1,6 +1,7 @@
 import os
 import sys
-import argparse
+import re
+from pathlib import Path
 from datetime import datetime
 from collections import Counter
 from math import floor
@@ -13,48 +14,77 @@ import cv2
 import numpy as np
 import pandas as pd
 
-sys.path.append("./../../modules/") # add path to scan customized module
+rel_module_path = "./../../modules/"
+sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
+
 from fileop import create_new_dir
 from data.utils import get_fish_ID_pos
 from dataset.utils import get_args, xlsx_file_name_parser, gen_dataset_param_name, gen_crop_img, drop_too_dark, \
                           save_crop_img, append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
                           save_dark_ratio_log
 
+config_dir = Path( "./../../Config/" ).resolve()
 
 
 if __name__ == "__main__":
+        
+    # -----------------------------------------------------------------------------------
+    # Load `db_path_plan.toml`
+    with open(config_dir.joinpath("db_path_plan.toml"), mode="r") as f_reader:
+        dbpp_config = toml.load(f_reader)
+    db_root = Path(dbpp_config["root"])
     
     
-    with open("mk_dataset_horiz_cut.toml", mode="r") as f_reader:
+    # -----------------------------------------------------------------------------------
+    config_name = "(MakeDataset)_horiz_cut.toml"
+    
+    with open(config_dir.joinpath(config_name), mode="r") as f_reader:
         config = toml.load(f_reader)
-
-
-    # *** Variable ***
-    ## set vars from config file (.toml)
+    
     script_name = config["script_name"]
-    data_root  = os.path.normpath(config["data"]["root"])
+    preprocessed_desc = config["data_preprocessed"]["desc"]
     xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
-    palmskin_desc       = config["data"]["stacked_palmskin"]["palmskin_desc"]
-    palmskin_result_alias = config["data"]["stacked_palmskin"]["result_alias"]
+    palmskin_result_alias = config["data"]["palmskin"]["result_alias"]
     crop_size    = config["gen_param"]["crop_size"]
     shift_region = config["gen_param"]["shift_region"]
     intensity    = config["gen_param"]["intensity"]
     drop_ratio   = config["gen_param"]["drop_ratio"]
     random_seed  = config["gen_param"]["random_seed"]
-    dataset_root = os.path.normpath(config["dataset"]["root"])
-    ## compose/extract vars
-    data_name = data_root.split(os.sep)[-1]
-    classif_strategy = xlsx_file_name_parser(xlsx_file)
-    xlsx_file_path = os.path.join(data_root, r"{Modify}_xlsx", xlsx_file)
-    stacked_palmskin_dir   = os.path.join(data_root, f"{{{palmskin_desc}}}_RGB_reCollection", palmskin_result_alias)
     random_state = np.random.RandomState(seed=random_seed)
+    
+    
+    # -----------------------------------------------------------------------------------
+    # Generate `path_vars`
+
+    # Check `{desc}_Academia_Sinica_i[num]`
+    data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+    target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+    assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `{config_name}` is not unique/exists, "
+                                       f"find {len(target_dir_list)} possible directories, {target_dir_list}")
+    preprocessed_root = target_dir_list[0]
+
+    # Check `{reminder}_PalmSkin_reCollection`
+    target_dir_list = list(preprocessed_root.glob(f"*PalmSkin_reCollection*"))
+    assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_reCollection` is accepted.")
+    palmskin_recollect_root = target_dir_list[0]
+    palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_recollect_root).split(os.sep)[-1])[1]
+    
+    palmskin_result_alias_dir = palmskin_recollect_root.joinpath(palmskin_result_alias)
+    assert palmskin_result_alias_dir.exists(), ((f"Can't find directory: '{palmskin_result_alias_dir}', "
+                                                 f"please check [data.palmskin.result_alias] in `{config_name}`"))
+
+    # xlsx
+    xlsx_file_path = preprocessed_root.joinpath(r"{Modify}_xlsx", xlsx_file)
+
+    # dataset_dir
+    data_name = str(preprocessed_root).split(os.sep)[-1]
+    classif_strategy = xlsx_file_name_parser(xlsx_file)
     dataset_param_name = gen_dataset_param_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    save_dir_A_only = os.path.join(dataset_root, data_name, palmskin_desc, "fish_dataset_horiz_cut_1l2_A_only", 
-                                            palmskin_result_alias, classif_strategy, dataset_param_name)
-    save_dir_P_only = os.path.join(dataset_root, data_name, palmskin_desc, "fish_dataset_horiz_cut_1l2_P_only", 
-                                            palmskin_result_alias, classif_strategy, dataset_param_name)
-    save_dir_Mix_AP = os.path.join(dataset_root, data_name, palmskin_desc, "fish_dataset_horiz_cut_1l2_Mix_AP", 
-                                            palmskin_result_alias, classif_strategy, dataset_param_name)
+    dataset_root = db_root.joinpath(dbpp_config["dataset"])
+    
+    save_dir_A_only = dataset_root.joinpath(data_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
+    save_dir_P_only = dataset_root.joinpath(data_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
+    save_dir_Mix_AP = dataset_root.joinpath(data_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
     assert not os.path.exists(save_dir_A_only), f"dir: '{save_dir_A_only}' already exists"
     assert not os.path.exists(save_dir_P_only), f"dir: '{save_dir_P_only}' already exists"
     assert not os.path.exists(save_dir_Mix_AP), f"dir: '{save_dir_Mix_AP}' already exists"
@@ -62,9 +92,9 @@ if __name__ == "__main__":
     create_new_dir(save_dir_A_only)
     create_new_dir(save_dir_P_only)
     create_new_dir(save_dir_Mix_AP)
-
-
-
+    
+    
+    # -----------------------------------------------------------------------------------
     # *** Load Excel sheet as DataFrame(pandas) ***
     df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_path, engine = 'openpyxl')
     # print(df_input_xlsx)
@@ -73,7 +103,6 @@ if __name__ == "__main__":
     all_class = Counter(df_class_list)
     all_class = sorted(list(all_class.keys()))
     # print(all_class)
-
 
 
     pos_dict = {"Anterior": save_dir_A_only, "Posterior": save_dir_P_only}
@@ -106,12 +135,12 @@ if __name__ == "__main__":
         
         
         # *** Start process ***
-        for i, fish_name_for_data in enumerate(df_palmskin_list):
+        for i, fish_dname in enumerate(df_palmskin_list):
             
             
             # *** Load image ***
-            fish_path = os.path.normpath(f"{stacked_palmskin_dir}/{fish_name_for_data}.tif")
-            fish = cv2.imread(fish_path)
+            fish_path = palmskin_result_alias_dir.joinpath(f"{fish_dname}.tif")
+            fish = cv2.imread(str(fish_path))
             
             
             # *** If the image is horizontal, rotate the image ***
@@ -188,8 +217,8 @@ if __name__ == "__main__":
             fish_size = df_class_list[i]
             #
             # print(fish_size, fish_id, fish_pos)
-            fish_name_for_dataset = f"{fish_size}_fish_{fish_id}_{fish_pos}"
-            pbar_n_fish.desc = f"Cropping {pos}... '{fish_name_for_dataset}' "
+            fish_dsname = f"{fish_size}_fish_{fish_id}_{fish_pos}"
+            pbar_n_fish.desc = f"Cropping {pos}... '{fish_dsname}' "
             pbar_n_fish.refresh()
 
 
