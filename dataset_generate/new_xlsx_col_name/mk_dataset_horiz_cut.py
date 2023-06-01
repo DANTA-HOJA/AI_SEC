@@ -42,9 +42,9 @@ if __name__ == "__main__":
         config = toml.load(f_reader)
     
     script_name = config["script_name"]
-    preprocessed_desc = config["data_preprocessed"]["desc"]
-    xlsx_file  = config["data"]["brightfield"]["xlsx_file"]
-    palmskin_result_alias = config["data"]["palmskin"]["result_alias"]
+    preprocessed_desc     = config["data_preprocessed"]["desc"]
+    clustered_xlsx_file   = config["data_preprocessed"]["clustered_xlsx_file"]
+    palmskin_result_alias = config["data_preprocessed"]["palmskin_result_alias"]
     crop_size    = config["gen_param"]["crop_size"]
     shift_region = config["gen_param"]["shift_region"]
     intensity    = config["gen_param"]["intensity"]
@@ -57,34 +57,34 @@ if __name__ == "__main__":
     # Generate `path_vars`
 
     # Check `{desc}_Academia_Sinica_i[num]`
-    data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
-    target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+    data_preprocessed_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+    target_dir_list = list(data_preprocessed_root.glob(f"*{preprocessed_desc}*"))
     assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `{config_name}` is not unique/exists, "
                                        f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-    preprocessed_root = target_dir_list[0]
+    data_preprocessed_dir = target_dir_list[0]
 
     # Check `{reminder}_PalmSkin_reCollection`
-    target_dir_list = list(preprocessed_root.glob(f"*PalmSkin_reCollection*"))
+    target_dir_list = list(data_preprocessed_dir.glob(f"*PalmSkin_reCollection*"))
     assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_reCollection` is accepted.")
-    palmskin_recollect_root = target_dir_list[0]
-    palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_recollect_root).split(os.sep)[-1])[1]
+    palmskin_recollect_dir = target_dir_list[0]
+    palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_recollect_dir).split(os.sep)[-1])[1]
     
-    palmskin_result_alias_dir = palmskin_recollect_root.joinpath(palmskin_result_alias)
+    palmskin_result_alias_dir = palmskin_recollect_dir.joinpath(palmskin_result_alias)
     assert palmskin_result_alias_dir.exists(), ((f"Can't find directory: '{palmskin_result_alias_dir}', "
-                                                 f"please check [data.palmskin.result_alias] in `{config_name}`"))
+                                                 f"please check [data_preprocessed.palmskin_result_alias] in `{config_name}`"))
 
     # xlsx
-    xlsx_file_path = preprocessed_root.joinpath(r"{Modify}_xlsx", xlsx_file)
+    xlsx_file_path = data_preprocessed_dir.joinpath(r"{Modify}_xlsx", clustered_xlsx_file)
 
     # dataset_dir
-    data_name = str(preprocessed_root).split(os.sep)[-1]
-    classif_strategy = xlsx_file_name_parser(xlsx_file)
-    dataset_param_name = gen_dataset_param_name(xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
+    data_preprocessed_dir_name = str(data_preprocessed_dir).split(os.sep)[-1]
+    classif_strategy = xlsx_file_name_parser(clustered_xlsx_file)
+    dataset_param_name = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
     dataset_root = db_root.joinpath(dbpp_config["dataset"])
     
-    save_dir_A_only = dataset_root.joinpath(data_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
-    save_dir_P_only = dataset_root.joinpath(data_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
-    save_dir_Mix_AP = dataset_root.joinpath(data_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
+    save_dir_A_only = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
+    save_dir_P_only = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
+    save_dir_Mix_AP = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
     assert not os.path.exists(save_dir_A_only), f"dir: '{save_dir_A_only}' already exists"
     assert not os.path.exists(save_dir_P_only), f"dir: '{save_dir_P_only}' already exists"
     assert not os.path.exists(save_dir_Mix_AP), f"dir: '{save_dir_Mix_AP}' already exists"
