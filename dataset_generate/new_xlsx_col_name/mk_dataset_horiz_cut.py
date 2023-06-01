@@ -80,7 +80,7 @@ if __name__ == "__main__":
     data_preprocessed_dir_name = str(data_preprocessed_dir).split(os.sep)[-1]
     classif_strategy = xlsx_file_name_parser(clustered_xlsx_file)
     dataset_param_name = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    dataset_root = db_root.joinpath(dbpp_config["dataset"])
+    dataset_root = db_root.joinpath(dbpp_config["dataset_cropped"])
     
     save_dir_A_only = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
     save_dir_P_only = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
