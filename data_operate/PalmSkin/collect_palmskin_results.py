@@ -31,22 +31,22 @@ result_alias = config["result_alias"]
 # Generate `path_vars`
 
 # Check `{desc}_Academia_Sinica_i[num]`
-data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
-target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+data_preprocessed_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+target_dir_list = list(data_preprocessed_root.glob(f"*{preprocessed_desc}*"))
 assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(CollectResult)_palmskin.toml` is not unique/exists, "
                                    f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-preprocessed_root = target_dir_list[0]
+data_preprocessed_dir = target_dir_list[0]
 
 # Check `{reminder}_PalmSkin_preprocess`
-target_dir_list = list(preprocessed_root.glob(f"*PalmSkin_preprocess*"))
+target_dir_list = list(data_preprocessed_dir.glob(f"*PalmSkin_preprocess*"))
 assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_preprocess` is accepted.")
-preprocessed_dir = target_dir_list[0]
-preprocessed_reminder = re.split("{|}", str(preprocessed_dir).split(os.sep)[-1])[1]
+palmskin_preprocess_dir = target_dir_list[0]
+palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_preprocess_dir).split(os.sep)[-1])[1]
 
 
 # -----------------------------------------------------------------------------------
 # Load `palmskin_preprocess_config.toml`
-palmskin_preprocess_config_path = preprocessed_dir.joinpath("palmskin_preprocess_config.toml")
+palmskin_preprocess_config_path = palmskin_preprocess_dir.joinpath("palmskin_preprocess_config.toml")
 
 with open(palmskin_preprocess_config_path, mode="r") as f_reader:
     palmskin_preprocess_config = toml.load(f_reader)
@@ -108,13 +108,13 @@ result_map = {
 
 
 # output
-output_dir = preprocessed_root.joinpath(f"{{{preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
+output_dir = data_preprocessed_dir.joinpath(f"{{{palmskin_preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
 assert not output_dir.exists(), f"Directory: '{output_dir}' already exists, please delete the folder before collecting results."
 create_new_dir(output_dir)
 
 
 # regex filter
-path_list = sorted(preprocessed_dir.glob(f"*/{result_map[result_alias]}"), key=get_fish_ID_pos)
+path_list = sorted(palmskin_preprocess_dir.glob(f"*/{result_map[result_alias]}"), key=get_fish_ID_pos)
 pattern = result_map[result_alias].split(os.sep)[-1]
 pattern = pattern.replace("*", r"[0-9]*")
 num = 0
@@ -180,6 +180,5 @@ log_writer.close()
 
 
 # rename dir
-preprocessed_root_split = re.split("{|}", str(preprocessed_root).split(os.sep)[-1]) # {20230424_Update}_Academia_Sinica_iTBA
-new_name = f"{{{preprocessed_root_split[1]}}}_Academia_Sinica_i{summary['total files']}"
-os.rename(preprocessed_root, data_root.joinpath(new_name))
+new_name = f"{{{preprocessed_desc}}}_Academia_Sinica_i{summary['total files']}"
+os.rename(data_preprocessed_dir, data_preprocessed_root.joinpath(new_name))
