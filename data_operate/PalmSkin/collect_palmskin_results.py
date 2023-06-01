@@ -67,29 +67,29 @@ result_map = {
     "ch_B_fusion":                   "*_B_processed_fusion.tif", # CHECK_PT 
     "ch_B_HE":                       "MetaImage/*_B_processed_HE.tif",
     "ch_B_Kuwahara_HE":              f"MetaImage/*_B_processed_{Kuwahara}_HE.tif",
-    "ch_B_fusion":                   "*_B_processed_HE_fusion.tif", # CHECK_PT 
+    "ch_B_HE_fusion":                "*_B_processed_HE_fusion.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "ch_G":                          "MetaImage/*_G_processed.tif",
     "ch_G_Kuwahara":                 f"MetaImage/*_G_processed_{Kuwahara}.tif",
     "ch_G_fusion":                   "*_G_processed_fusion.tif", # CHECK_PT 
     "ch_G_HE":                       "MetaImage/*_G_processed_HE.tif",
     "ch_G_Kuwahara_HE":              f"MetaImage/*_G_processed_{Kuwahara}_HE.tif",
-    "ch_G_fusion":                   "*_G_processed_HE_fusion.tif", # CHECK_PT 
+    "ch_G_HE_fusion":                "*_G_processed_HE_fusion.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "ch_R":                          "MetaImage/*_R_processed.tif",
     "ch_R_Kuwahara":                 f"MetaImage/*_R_processed_{Kuwahara}.tif",
     "ch_R_fusion":                   "*_R_processed_fusion.tif", # CHECK_PT 
     "ch_R_HE":                       "MetaImage/*_R_processed_HE.tif",
     "ch_R_Kuwahara_HE":              f"MetaImage/*_R_processed_{Kuwahara}_HE.tif",
-    "ch_R_fusion":                   "*_R_processed_HE_fusion.tif", # CHECK_PT 
+    "ch_R_HE_fusion":                "*_R_processed_HE_fusion.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "RGB":                           "MetaImage/*_RGB_processed.tif",
     "RGB_Kuwahara":                  f"MetaImage/*_RGB_processed_{Kuwahara}.tif",
-    "RGB_fusion":                    "*_RGB_processed_fusion.tif", # CHECK_PT  = Average(RGB_processed, RGB_processed_Kuwahara)
+    "RGB_fusion":                    "*_RGB_processed_fusion.tif", # CHECK_PT  => Average(RGB_processed, RGB_processed_Kuwahara)
     "RGB_fusion2Gray":               "*_RGB_processed_fusion2Gray.tif", # CHECK_PT 
     "RGB_HE" :                       "MetaImage/*_RGB_processed_HE.tif",
 	"RGB_Kuwahara_HE" :              f"MetaImage/*_RGB_processed_{Kuwahara}_HE.tif",
-	"RGB_HE_fusion" :                "*_RGB_processed_HE_fusion.tif", # CHECK_PT  = Average(RGB_processed_HE, RGB_processed_Kuwahara_HE)
+	"RGB_HE_fusion" :                "*_RGB_processed_HE_fusion.tif", # CHECK_PT  => Average(RGB_processed_HE, RGB_processed_Kuwahara_HE)
     "RGB_HE_fusion2Gray":            "*_RGB_processed_HE_fusion2Gray.tif", # CHECK_PT 
     # -----------------------------------------------------------------------------------
     "BF_Zproj":                      f"MetaImage/*_{bf_zproj_type}.tif",
