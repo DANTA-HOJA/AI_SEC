@@ -48,28 +48,28 @@ palmskin_result_alias = config["result_alias"]
 # Generate `path_vars`
 
 # Check `{desc}_Academia_Sinica_i[num]`
-data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
-target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+data_preprocessed_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+target_dir_list = list(data_preprocessed_root.glob(f"*{preprocessed_desc}*"))
 assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(CreateXlsx)_data.toml` is not unique/exists, "
                                    f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-preprocessed_root = target_dir_list[0]
+data_preprocessed_dir = target_dir_list[0]
 
 
 # -----------------------------------------------------------------------------------
 # BrightField : `{reminder}_BrightField_reCollection`
 
 # Check `{reminder}_BrightField_reCollection`
-target_dir_list = list(preprocessed_root.glob(f"*BrightField_reCollection*"))
+target_dir_list = list(data_preprocessed_dir.glob(f"*BrightField_reCollection*"))
 assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `BrightField_reCollection` is accepted.")
-bf_recollect_root = target_dir_list[0]
-bf_analyzed_reminder = re.split("{|}", str(bf_recollect_root).split(os.sep)[-1])[1]
+bf_recollect_dir = target_dir_list[0]
+bf_analyzed_reminder = re.split("{|}", str(bf_recollect_dir).split(os.sep)[-1])[1]
 
 # Scan `AutoAnalysis` files, and sort ( Due to OS scanning strategy 10 may listed before 8 )
-bf_recollect_auto_list = sorted(bf_recollect_root.glob("AutoAnalysis/*.csv"), key=get_fish_ID_pos)
-assert len(bf_recollect_auto_list) > 0, f"Can't find directory: `{bf_recollect_root}/AutoAnalysis`, or it is empty."
+bf_recollect_auto_list = sorted(bf_recollect_dir.glob("AutoAnalysis/*.csv"), key=get_fish_ID_pos)
+assert len(bf_recollect_auto_list) > 0, f"Can't find directory: `{bf_recollect_dir}/AutoAnalysis`, or it is empty."
 
 # Scan `ManualAnalysis` files, and sort ( Due to OS scanning strategy 10 may listed before 8 )
-bf_recollect_manual_list = sorted(bf_recollect_root.glob("ManualAnalysis/*.csv"), key=get_fish_ID_pos)
+bf_recollect_manual_list = sorted(bf_recollect_dir.glob("ManualAnalysis/*.csv"), key=get_fish_ID_pos)
 
 # show info
 log.info((f"BrightField_reCollection: Found {len(bf_recollect_auto_list)} AutoAnalysis.csv, "
@@ -88,14 +88,14 @@ log.info(f"--> After Merging , Total: {len(bf_recollect_merge_list)} files")
 # PalmSkin : `{reminder}_PalmSkin_reCollection`
 
 # Check `{reminder}_PalmSkin_reCollection`
-target_dir_list = list(preprocessed_root.glob(f"*PalmSkin_reCollection*"))
+target_dir_list = list(data_preprocessed_dir.glob(f"*PalmSkin_reCollection*"))
 assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_reCollection` is accepted.")
-palmskin_recollect_root = target_dir_list[0]
-palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_recollect_root).split(os.sep)[-1])[1]
+palmskin_recollect_dir = target_dir_list[0]
+palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_recollect_dir).split(os.sep)[-1])[1]
 
 # Scan files, and sort ( Due to OS scanning strategy 10 may listed before 8 )
-palmskin_recollect_list = sorted(palmskin_recollect_root.glob(f"{palmskin_result_alias}/*.tif"), key=get_fish_ID_pos)
-assert len(palmskin_recollect_list) > 0, f"Can't find directory: `{palmskin_recollect_root}/{palmskin_result_alias}`, or it is empty."
+palmskin_recollect_list = sorted(palmskin_recollect_dir.glob(f"{palmskin_result_alias}/*.tif"), key=get_fish_ID_pos)
+assert len(palmskin_recollect_list) > 0, f"Can't find directory: `{palmskin_recollect_dir}/{palmskin_result_alias}`, or it is empty."
 log.info(f"PalmSkin_reCollection: Found {len(palmskin_recollect_list)} .tif files")
 
 
@@ -103,7 +103,7 @@ log.info(f"PalmSkin_reCollection: Found {len(palmskin_recollect_list)} .tif file
 # Processing
 
 delete_uncomplete_row = True
-output = os.path.join(preprocessed_root, r"data.xlsx")
+output = os.path.join(data_preprocessed_dir, r"data.xlsx")
 # Creating "data.xlsx"
 data = pd.DataFrame(columns=["BrightField name with Analysis statement (CSV)",
                              "Anterior (SP8, .tif)", 
