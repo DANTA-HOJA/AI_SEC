@@ -34,14 +34,14 @@ label_str  = config["param"]["label_str"]
 # Generate `path_vars`
 
 # Check `{desc}_Academia_Sinica_i[num]`
-data_root = db_root.joinpath(dbpp_config["data_preprocessed"])
-target_dir_list = list(data_root.glob(f"*{preprocessed_desc}*"))
+data_preprocessed_root = db_root.joinpath(dbpp_config["data_preprocessed"])
+target_dir_list = list(data_preprocessed_root.glob(f"*{preprocessed_desc}*"))
 assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(Cluster)_data.toml` is not unique/exists, "
                                    f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-preprocessed_root = target_dir_list[0]
+data_preprocessed_dir = target_dir_list[0]
 
 # xlsx: .../{Data}_Preprocessed/{desc}_Academia_Sinica_i[num]/data.xlsx
-xlsx_path = preprocessed_root.joinpath("data.xlsx")
+xlsx_path = data_preprocessed_dir.joinpath("data.xlsx")
 
 
 # -----------------------------------------------------------------------------------
