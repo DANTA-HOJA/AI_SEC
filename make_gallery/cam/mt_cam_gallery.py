@@ -51,7 +51,8 @@ load_dir = load_dir_root.joinpath(model_history)
 cam_result_root = load_dir.joinpath("cam_result")
 cam_gallery_dir = load_dir.joinpath("!--- CAM Gallery")
 
-assert not os.path.exists(cam_gallery_dir), f"dir: '{cam_gallery_dir}' already exists"
+assert cam_result_root.exists(), f"Can't find 'cam_result' directory: '{cam_result_root}'"
+assert not cam_gallery_dir.exists(), f"Directory '!--- CAM Gallery' already exists: '{cam_gallery_dir}'"
 
 # -------------------------------------------------------------------------------------
 # Multi-Thread instance
