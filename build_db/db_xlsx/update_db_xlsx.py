@@ -22,8 +22,8 @@ db_root = Path(dbpp_config["root"])
 
 # -----------------------------------------------------------------------------------
 
-predictions_dir_root = db_root.joinpath(dbpp_config["model_prediction"])
-prediction_dir_list = sorted(list(predictions_dir_root.glob("*")), key=lambda x: str(x).split(os.sep)[-1])
+model_prediction_root = db_root.joinpath(dbpp_config["model_prediction"])
+prediction_dir_list = sorted(list(model_prediction_root.glob("*")), key=lambda x: str(x).split(os.sep)[-1])
 # prediction_dir_list = prediction_dir_list[:2]
 
 # rm "temp" directory
