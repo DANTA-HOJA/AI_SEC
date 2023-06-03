@@ -29,15 +29,23 @@ import plt_show
 
 class MtCamGalleryCreator():
     
-    def __init__(self, config_path:Path, max_str_len_dict:int, 
+    def __init__(self, config_dir:Path, config_name:str, max_str_len_dict:int, 
                        lock:Lock, log:Logger, progressbar:tqdm) -> None:
+        
+        if isinstance(config_dir, Path): pass
+        else: raise TypeError("'config_dir' should be a 'Path' object, please using `from pathlib import Path`")
+        
+        # Load `db_path_plan.toml` -------------------------------------------------------------------------------------
+        with lock:
+            with open(config_dir.joinpath("db_path_plan.toml"), mode="r") as f_reader:
+                self.dbpp_config = toml.load(f_reader)
+        
+        self.db_root = Path(self.dbpp_config["root"])
         
         # Load `make_cam_gallery.toml` -------------------------------------------------------------------------------------
         with lock:
-            if isinstance(config_path, Path):
-                with open(config_path, mode="r") as f_reader:
-                    self.config = toml.load(f_reader)
-            else: raise TypeError("'config_path' should be a 'Path' object, please using `from pathlib import Path`")
+            with open(config_dir.joinpath(config_name), mode="r") as f_reader:
+                self.config = toml.load(f_reader)
         
         self.column = self.config["layout"]["column"]
         
@@ -54,26 +62,27 @@ class MtCamGalleryCreator():
         self.text_incorrect_color = self.config["draw"]["cam_image"]["text"]["color"]["incorrect"]
         self.text_shadow_color    = self.config["draw"]["cam_image"]["text"]["color"]["shadow"]
 
-        self.load_dir_root = Path(self.config["model"]["history_root"])
-        self.model_name    = self.config["model"]["model_name"]
-        self.model_history = self.config["model"]["history"]
+        self.model_history = self.config["model_prediction"]["history"]
         
         # Load `train_config.toml` -------------------------------------------------------------------------------------
-        self.load_dir = self.load_dir_root.joinpath(self.model_name, self.model_history)
+        self.load_dir_root = self.db_root.joinpath(self.dbpp_config["model_prediction"])
+        self.load_dir = self.load_dir_root.joinpath(self.model_history)
         self.train_config_path = self.load_dir.joinpath("train_config.toml")
 
         with lock:
             with open(self.train_config_path, mode="r") as f_reader:
                 self.train_config = toml.load(f_reader)
 
-        self.dataset_root        = Path(self.train_config["dataset"]["root"])
+        self.dataset_cropped_root     = self.db_root.joinpath(self.dbpp_config["dataset_cropped"])
         self.dataset_name             = self.train_config["dataset"]["name"]
+        self.dataset_result_alias     = self.train_config["dataset"]["result_alias"]
         self.dataset_gen_method       = self.train_config["dataset"]["gen_method"]
         self.dataset_classif_strategy = self.train_config["dataset"]["classif_strategy"]
         self.dataset_param_name       = self.train_config["dataset"]["param_name"]
 
         # Generate `path_vars` -------------------------------------------------------------------------------------
-        self.dataset_dir       = self.dataset_root.joinpath(self.dataset_name, self.dataset_gen_method, self.dataset_classif_strategy, self.dataset_param_name)
+        self.dataset_dir       = self.dataset_cropped_root.joinpath(self.dataset_name, self.dataset_result_alias, self.dataset_gen_method, 
+                                                                    self.dataset_classif_strategy, self.dataset_param_name)
         self.test_selected_dir = self.dataset_dir.joinpath("test", "selected")
         self.test_drop_dir     = self.dataset_dir.joinpath("test", "drop")
 
