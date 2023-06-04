@@ -29,26 +29,21 @@ from logging import Logger
 #  TODO:  data_operate 要新增 config 紀錄 parameters（原本 parameters 有存在 Log 內），並 parse 進來
 
 #  TODO: 
-# 因為要新增 `不同 image 作為 source` 的功能，資料夾路徑會加上 result_alias (result_key), palmskin_desc 層級，
-# 新的 configs 都要加上 result_alias, palmskin_desc ( KEY_NAME 待定 )，
-#   --> cropping, training 的 scripts, configs 也要加上路徑
-# 舊的 train_config 找不到 `result_alias` 的話自動將 value 設為 "( RGB_HE_mix )"
-# 舊的 train_config 找不到 `palmskin_desc` 的話自動將 value 設為 "( ch4_min_proj, outer_rect )"
-# TBA: 考慮把 desc 換成 uuid
+# 因為要新增 `不同 image 作為 source` 的功能，資料夾路徑會加上 result_alias 層級，
+# 新的 configs 都要加上 result_alias 相關的 scripts（Cropping, Training, ...）, configs 都要加上路徑
+# 舊的 train_config 找不到 `result_alias` 的話自動將 value 設為 "( RGB_HE_fusion )"
 
-#  TODO:  透過 history name 判斷哪些還沒更新過，是 `更新` 不是 Rewrite (保存可能使用 PKL or XLSX)
+#  TODO:  透過 history name 判斷哪些還沒更新過，是 `Update` 不是 Rewrite（保存可能使用 PKL or XLSX）
 
 #  TODO: 
-# 把 dataset 和 data 的資訊 parser 進來，檢查重複性，若有重複要刪除，
+# 將 dataset 和 data 的資訊 parser 進來，檢查 column 是否重複，若有重複的 column 要刪除，
 # 例如："(TrainSet)" : "{ dataset_* }_{ train_* }_{ valid_* }" 在 dataset info 加進來之後應該要刪除
 
 #  TODO: 
-# 產生專門 render 路徑的 script
+# 產生專門 render 路徑的 script（HYPERLINK text 的 funcion）
 # data, dataset 的路徑都可以由 train_config 重新組合，
-# 查巡當下的電腦裡面是否有對應的 data, dataset 存在，有對應的檔案即可替原始的 marker 加上 HYPERLINK
-# 生成的 xlsx 在每台 PC 上要重新 render 路徑
-
-#  TODO:  產生 HYPERLINE text 的 funcion
+# 查巡當下的電腦裡面是否有對應的 data, dataset 存在，有對應的檔案即可替原始的 content 加上 HYPERLINK
+# 每台 PC 上都能重新 render 路徑
 
 # -----------------------------------------------------------------------------------
 
@@ -148,18 +143,14 @@ class SinglePredictionParser():
             with open(path, mode="r") as f_reader: train_config = toml.load(f_reader)
             # dataset
             self.parsed_dict["(TrainConfig) dataset.name"] = train_config["dataset"]["name"]
-            try: # self.parsed_dict["(TrainConfig) dataset.palmskin_desc"], new folder hierarchy
-                self.parsed_dict["(TrainConfig) dataset.palmskin_desc"] = train_config["dataset"]["palmskin_desc"]
-            except KeyError: # old hierarchy --> default "( ch4_min_proj, outer_rect )"
-                self.parsed_dict["(TrainConfig) dataset.palmskin_desc"] = "( ch4_min_proj, outer_rect )"
-            self.parsed_dict["(TrainConfig) dataset.gen_method"] = train_config["dataset"]["gen_method"]
             try: # self.parsed_dict["(TrainConfig) dataset.result_alias"], new folder hierarchy
                 self.parsed_dict["(TrainConfig) dataset.result_alias"] = train_config["dataset"]["result_alias"]
-            except KeyError: # old hierarchy --> default "( RGB_HE_mix )"
-                self.parsed_dict["(TrainConfig) dataset.result_alias"] = "( RGB_HE_mix )"
-            try: # self.parsed_dict["(TrainConfig) dataset.gen_method"], key == 'stdev' (old key)
+            except KeyError: # old hierarchy --> default "( RGB_HE_fusion )"
+                self.parsed_dict["(TrainConfig) dataset.result_alias"] = "( RGB_HE_fusion )"
+            self.parsed_dict["(TrainConfig) dataset.gen_method"] = train_config["dataset"]["gen_method"]
+            try: # self.parsed_dict["(TrainConfig) dataset.classif_strategy"], key == 'stdev' (old key)
                 stdev = str(train_config["dataset"]["stdev"]) # e.g. "0.75_STDEV"
-                stdev = float(stdev.replace("_STDEV", ""))*100 # e.g. 0.75
+                stdev = float(stdev.replace("_STDEV", ""))*100 # e.g. 75.0
                 self.parsed_dict["(TrainConfig) dataset.classif_strategy"] = f"{int(stdev):03d}STDEV" # "075STDEV"
             except KeyError: # key == 'classif_strategy' (new key)
                 self.parsed_dict["(TrainConfig) dataset.classif_strategy"] = train_config["dataset"]["classif_strategy"]
