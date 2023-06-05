@@ -1,21 +1,24 @@
 import os
 import sys
-from typing import *
+import re
+from pathlib import Path
+from typing import List, Dict, Union
 from datetime import datetime
 import json
+import toml
 
-from glob import glob
+rel_module_path = "./../../modules/"
+sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
 
-sys.path.append("./../../modules/") # add path to scan customized module
 from fileop import create_new_dir, resave_result
 from data.utils import get_fish_ID_pos
 
 
 
 # input
-ap_data_root = r"C:\Users\confocal_microscope\Desktop\{Temp}_Data\{20230424_Update}_Academia_Sinica_i505"
+ap_data_root = Path(r"/home/rime97410000/ZebraFish_DB/{Data}_Preprocessed/{20230605_rebuild_i242}_Academia_Sinica_i324")
 analysis_method_desc = "KY_with_NameChecker"
-analysis_root = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_Analysis")
+analysis_root = ap_data_root.joinpath(f"{{{analysis_method_desc}}}_BrightField_analyze")
 detection_mode = "missing" # missing / finding
 
 if not ((detection_mode == "missing") or (detection_mode == "finding")): 
@@ -39,12 +42,11 @@ result_key = "ManualAnalysis"
 
 
 # output
-output_dir = os.path.join(ap_data_root, f"{{{analysis_method_desc}}}_BF_reCollection", result_key)
+output_dir = ap_data_root.joinpath(f"{{{analysis_method_desc}}}_BrightField_reCollection", result_key)
 create_new_dir(output_dir)
 
 
-path_list = glob(os.path.normpath("{}/*/{}".format(analysis_root, result_map[result_key])))
-path_list.sort(key=get_fish_ID_pos)
+path_list = sorted(analysis_root.glob(f"*/{result_map[result_key]}"), key=get_fish_ID_pos)
 # for i in path_list: print(i)
 
 
