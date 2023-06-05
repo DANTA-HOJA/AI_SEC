@@ -129,4 +129,4 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ### 2023/05/26
 
-- 做好初版 `train_config` parser ( data, dataset info not yet )， `{Dataset}_Cropped` 路徑開始加入 `result_alias`、`palmskin_desc` (現在還是 rewrite 不是 update)
+- 做好初版 `train_config` parser ( data, dataset info not yet )， `{Dataset}_Cropped` 路徑開始加入 `result_alias` ( 現在還是 rewrite 不是 update，詳細 TODO 參照 [SinglePredictionParser.py](/modules/db/SinglePredictionParser.py) )
