@@ -81,8 +81,10 @@ class MtCamGalleryCreator():
         self.dataset_param_name       = self.train_config["dataset"]["param_name"]
 
         # Generate `path_vars` -------------------------------------------------------------------------------------
-        self.dataset_dir       = self.dataset_cropped_root.joinpath(self.dataset_name, self.dataset_result_alias, self.dataset_gen_method, 
-                                                                    self.dataset_classif_strategy, self.dataset_param_name)
+        self.dataset_dir = self.dataset_cropped_root.joinpath(self.dataset_name, self.dataset_result_alias, self.dataset_gen_method, 
+                                                              self.dataset_classif_strategy, self.dataset_param_name)
+        assert self.dataset_dir.exists(), f"Can't find dataset directory: '{self.dataset_dir}'"
+        
         self.test_selected_dir = self.dataset_dir.joinpath("test", "selected")
         self.test_drop_dir     = self.dataset_dir.joinpath("test", "drop")
 
@@ -203,7 +205,8 @@ class MtCamGalleryCreator():
         
         for key, _ in self.class_counts_dict.items():
             for _, value in self.rank_dict.items():
-                create_new_dir(os.path.join(self.cam_gallery_dir, key, value), display_in_CLI=False)
+                with self.lock:
+                    create_new_dir(os.path.join(self.cam_gallery_dir, key, value), display_in_CLI=False)
     
     
     def scan_fish_img_path(self, fish_dsname, fish_cls):
