@@ -3,13 +3,13 @@ import sys
 from pathlib import Path
 import toml
 
-abs_module_path = str(Path("./../modules/").resolve())
-if abs_module_path not in sys.path: sys.path.append(abs_module_path) # add path to scan customized module
+abs_module_path = Path("./../modules/").resolve()
+if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
+    sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from data.ProcessedDataInstance import ProcessedDataInstance
 
 config_dir = Path( "./../Config/" ).resolve()
-
 
 # -----------------------------------------------------------------------------------
 # Load `(CollectResult)_palmskin.toml`
