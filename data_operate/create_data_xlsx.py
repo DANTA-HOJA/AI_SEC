@@ -26,7 +26,7 @@ abs_module_path = str(Path("./../modules/").resolve())
 if abs_module_path not in sys.path: sys.path.append(abs_module_path) # add path to scan customized module
 
 from logger import init_logger
-from data.utils import get_fish_id_pos, create_dict_by_fishID, merge_BF_analysis
+from data.utils import get_fish_id_pos, create_dict_by_fishid, merge_bf_analysis
 from data.ProcessedDataInstance import ProcessedDataInstance
 
 config_dir = Path( "./../Config/" ).resolve()
@@ -61,9 +61,9 @@ log.info((f"BrightField: Found {len(bf_recollect_auto_list)} AutoAnalysis.csv, "
           f"Total: {len(bf_recollect_auto_list) + len(bf_recollect_manual_list)} files"))
 
 # Merge `AutoAnalysis` and `ManualAnalysis` list
-bf_recollect_auto_dict = create_dict_by_fishID(bf_recollect_auto_list)
-bf_recollect_manual_dict = create_dict_by_fishID(bf_recollect_manual_list)
-bf_recollect_merge_dict = merge_BF_analysis(bf_recollect_auto_dict, bf_recollect_manual_dict)
+bf_recollect_auto_dict = create_dict_by_fishid(bf_recollect_auto_list)
+bf_recollect_manual_dict = create_dict_by_fishid(bf_recollect_manual_list)
+bf_recollect_merge_dict = merge_bf_analysis(bf_recollect_auto_dict, bf_recollect_manual_dict)
 bf_recollect_merge_list = sorted(list(bf_recollect_merge_dict.values()), key=get_fish_id_pos)
 log.info(f"--> After Merging , Total: {len(bf_recollect_merge_list)} files")
 
@@ -92,8 +92,6 @@ print("\n\nprocessing...\n")
 # Variable
 max_probable_num = get_fish_id_pos(bf_recollect_merge_list[-1])[0]
 log.info(f'max_probable_num {type(max_probable_num)}: {max_probable_num}\n')
-bf_result_iter_i = 0
-palmskin_RGB_iter_i = 0
 
 
 # Starting...
