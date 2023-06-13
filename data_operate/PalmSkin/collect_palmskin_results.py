@@ -11,7 +11,7 @@ rel_module_path = "./../../modules/"
 sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
 
 from fileop import create_new_dir, resave_result
-from data.utils import get_fish_ID_pos
+from data.utils import get_fish_id_pos
 
 
 # -----------------------------------------------------------------------------------
@@ -24,21 +24,21 @@ db_root = Path(dbpp_config["root"])
 # Load `(CollectResult)_palmskin.toml`
 with open("./../../Config/(CollectResult)_palmskin.toml", mode="r") as f_reader:
     config = toml.load(f_reader)
-preprocessed_desc = config["data_preprocessed"]["desc"]
+processed_desc = config["data_processed"]["desc"]
 result_alias = config["result_alias"]
 
 # -----------------------------------------------------------------------------------
 # Generate `path_vars`
 
 # Check `{desc}_Academia_Sinica_i[num]`
-data_preprocessed_root = db_root.joinpath(dbpp_config["data_preprocessed"])
-target_dir_list = list(data_preprocessed_root.glob(f"*{preprocessed_desc}*"))
-assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `(CollectResult)_palmskin.toml` is not unique/exists, "
+data_processed_root = db_root.joinpath(dbpp_config["data_processed"])
+target_dir_list = list(data_processed_root.glob(f"*{processed_desc}*"))
+assert len(target_dir_list) == 1, (f"[data_processed.desc] in `(CollectResult)_palmskin.toml` is not unique/exists, "
                                    f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-data_preprocessed_dir = target_dir_list[0]
+data_processed_dir = target_dir_list[0]
 
 # Check `{reminder}_PalmSkin_preprocess`
-target_dir_list = list(data_preprocessed_dir.glob(f"*PalmSkin_preprocess*"))
+target_dir_list = list(data_processed_dir.glob(f"*PalmSkin_preprocess*"))
 assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_preprocess` is accepted.")
 palmskin_preprocess_dir = target_dir_list[0]
 palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_preprocess_dir).split(os.sep)[-1])[1]
@@ -108,13 +108,13 @@ result_map = {
 
 
 # output
-output_dir = data_preprocessed_dir.joinpath(f"{{{palmskin_preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
+output_dir = data_processed_dir.joinpath(f"{{{palmskin_preprocessed_reminder}}}_PalmSkin_reCollection", result_alias)
 assert not output_dir.exists(), f"Directory: '{output_dir}' already exists, please delete the folder before collecting results."
 create_new_dir(output_dir)
 
 
 # regex filter
-path_list = sorted(palmskin_preprocess_dir.glob(f"*/{result_map[result_alias]}"), key=get_fish_ID_pos)
+path_list = sorted(palmskin_preprocess_dir.glob(f"*/{result_map[result_alias]}"), key=get_fish_id_pos)
 pattern = result_map[result_alias].split(os.sep)[-1]
 pattern = pattern.replace("*", r"[0-9]*")
 num = 0
@@ -132,7 +132,7 @@ for _ in range(len(path_list)):
 summary = {}
 summary["result_alias"] = result_alias
 summary["actual_name"] = actual_name
-summary["max_probable_num"] = get_fish_ID_pos(path_list[-1])[0]
+summary["max_probable_num"] = get_fish_id_pos(path_list[-1])[0]
 summary["total files"] = len(path_list)
 summary["missing"] = []
 
@@ -148,25 +148,20 @@ for i in range(summary["max_probable_num"]):
         expect_name = f"{one_base_iter_num}_{pos}"
         # fish
         try:
-            fish_ID, fish_pos = get_fish_ID_pos(path_list[0])
+            fish_ID, fish_pos = get_fish_id_pos(path_list[0])
             current_name = f"{fish_ID}_{fish_pos}"
             assert current_name != previous_fish, f"fish_dir repeated!, check '{previous_fish}' "
         except: pass
         
         
-        if one_base_iter_num == fish_ID:
+        if current_name == expect_name:
             
-            if fish_pos == pos :
-                path = path_list.pop(0)
-                resave_result(path, output_dir, result_map[result_alias])
-                previous_fish = current_name
-            else: # 部分缺失
-                summary["missing"].append(f"{expect_name}")
-                # print("missing : {}".format(summary["missing"][-1]))
+            path = path_list.pop(0)
+            resave_result(path, output_dir, result_map[result_alias])
+            previous_fish = current_name
             
-        else: # 缺號
+        else:
             summary["missing"].append(f"{expect_name}")
-            # print("missing : {}".format(summary["missing"][-1]))
 
 
 summary["len(missing)"] = len(summary["missing"])
@@ -180,5 +175,5 @@ log_writer.close()
 
 
 # rename dir
-new_name = f"{{{preprocessed_desc}}}_Academia_Sinica_i{summary['total files']}"
-os.rename(data_preprocessed_dir, data_preprocessed_root.joinpath(new_name))
+new_name = f"{{{processed_desc}}}_Academia_Sinica_i{summary['total files']}"
+os.rename(data_processed_dir, data_processed_root.joinpath(new_name))
