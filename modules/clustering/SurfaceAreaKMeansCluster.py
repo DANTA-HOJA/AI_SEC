@@ -47,7 +47,7 @@ class SurfaceAreaKMeansCluster():
         self.get_fish_day_info()
         
         # -------------------------------------------------------------------------------------
-        self.clustered_xlsx_dir = Path( os.sep.join(self.orig_xlsx_path_split[:(self.sinica_dir_idx+1)]) ) / r"{Modify}_xlsx"
+        self.clustered_xlsx_dir = Path( os.sep.join(self.orig_xlsx_path_split[:(self.sinica_dir_idx+1)]) ) / r"Clustered_xlsx"
         self.clustered_xlsx_name = (f"{n_clusters}CLS_SURF_"
                                     f"KMeans{f'LOG{log_base}' if cluster_with_log_scale else 'ORIG'}_"
                                     f"RND{kmeans_rnd}")
