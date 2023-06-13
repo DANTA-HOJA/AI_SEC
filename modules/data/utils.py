@@ -4,8 +4,9 @@ import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
-abs_module_path = str(Path("./../../modules/").resolve())
-if abs_module_path not in sys.path: sys.path.append(abs_module_path) # add path to scan customized module
+abs_module_path = Path("./../../modules/").resolve()
+if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
+    sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from misc.utils import get_target_str_idx_in_list
 

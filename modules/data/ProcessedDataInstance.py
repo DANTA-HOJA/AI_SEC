@@ -12,8 +12,9 @@ from logging import Logger
 import numpy as np
 import pandas as pd
 
-abs_module_path = str(Path("./../../modules/").resolve())
-if abs_module_path not in sys.path: sys.path.append(abs_module_path) # add path to scan customized module
+abs_module_path = Path("./../../modules/").resolve()
+if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
+    sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from logger import init_logger
 from fileop import create_new_dir, resave_result
