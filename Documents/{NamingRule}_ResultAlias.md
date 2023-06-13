@@ -1,4 +1,6 @@
-# result_alias <-> actual_name
+# result alias ↔ general name
+
+## PalmSkin_preprocess
 
 ```text
 "RGB_direct_max_zproj":          "*_RGB_direct_max_zproj.tif",
@@ -45,4 +47,19 @@
 -----------------------------------------------------------------------------------
 "autocropped_RGB_fusion" :       "*_autocropped_RGB_processed_fusion.tif",
 "autocropped_RGB_HE_fusion" :    "*_autocropped_RGB_processed_HE_fusion.tif",
+```
+
+## BrightField_analyze
+
+```text
+"original_16bit" :          "MetaImage/*_original_16bit.tif",
+"cropped_BF" :              "*_cropped_BF.tif",
+"AutoThreshold" :           f"MetaImage/*_AutoThreshold_{autothreshold_algo}.tif",
+"measured_mask" :           "MetaImage/*_measured_mask.tif",
+"cropped_BF--MIX" :         "*_cropped_BF--MIX.tif",
+"RoiSet" :                  "MetaImage/RoiSet.zip",
+"AutoAnalysis" :            "AutoAnalysis.csv",
+"ManualAnalysis" :          "ManualAnalysis.csv",
+"Manual_measured_mask" :    "Manual_measured_mask.tif",
+"Manual_cropped_BF--MIX" :  "Manual_cropped_BF--MIX.tif",
 ```
