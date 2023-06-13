@@ -571,3 +571,34 @@ class ProcessedDataInstance():
         data.to_excel(output, engine="openpyxl")
 
         self._check_data_xlsx_path()
+    
+    
+    
+    def __repr__(self):
+        
+        repr_string = f'self.data_processed_root {type(self.data_processed_root)}: {self.data_processed_root}\n\n'
+                
+        repr_string += f'self.instance_desc : "{self.instance_desc}"\n'
+        repr_string += f'self.instance_root {type(self.instance_root)}: "{self.instance_root}"\n'
+        repr_string += f'self.instance_name : "{self.instance_name}"\n\n'
+                
+        repr_string += f'self.palmskin_preprocess_dir {type(self.palmskin_preprocess_dir)}: "{self.palmskin_preprocess_dir}"\n'
+        repr_string += f'self.palmskin_preprocess_reminder : {self.palmskin_preprocess_reminder}\n'
+        repr_string += f'self.palmskin_preprocess_config.param : {json.dumps(self.palmskin_preprocess_config["param"], indent=4)}\n\n'
+                
+        repr_string += f'self.brightfield_analyze_dir {type(self.brightfield_analyze_dir)}: "{self.brightfield_analyze_dir}"\n'
+        repr_string += f'self.brightfield_analyze_reminder : {self.brightfield_analyze_reminder}\n'
+        repr_string += f'self.brightfield_analyze_config.param : {json.dumps(self.brightfield_analyze_config["param"], indent=4)}\n\n'
+                
+        repr_string += f'self.palmskin_recollect_dir {type(self.palmskin_recollect_dir)}: "{self.palmskin_recollect_dir}"\n'
+        repr_string += f'self.palmskin_recollected_dirs_dict : {json.dumps(list(self.palmskin_recollected_dirs_dict.keys()), indent=4)}\n\n'
+                
+        repr_string += f'self.brightfield_recollect_dir {type(self.brightfield_recollect_dir)}: "{self.brightfield_recollect_dir}"\n'
+        repr_string += f'self.brightfield_recollected_dirs_dict : {json.dumps(list(self.brightfield_recollected_dirs_dict.keys()), indent=4)}\n\n'
+                
+        repr_string += f'self.data_xlsx_path : "{self.data_xlsx_path}"\n\n'
+                
+        repr_string += f'self.clustered_xlsx_dir {type(self.clustered_xlsx_dir)}: "{self.clustered_xlsx_dir}"\n'
+        repr_string += f'self.clustered_xlsx_paths_dict : {json.dumps(list(self.clustered_xlsx_paths_dict.keys()), indent=4)}\n\n'
+        
+        return repr_string
