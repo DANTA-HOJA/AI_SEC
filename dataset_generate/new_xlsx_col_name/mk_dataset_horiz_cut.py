@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+from colorama import Fore, Back, Style
 from pathlib import Path
 from datetime import datetime
 from collections import Counter
@@ -14,11 +15,13 @@ import cv2
 import numpy as np
 import pandas as pd
 
-rel_module_path = "./../../modules/"
-sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
+abs_module_path = Path("./../../modules/").resolve()
+if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
+    sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from fileop import create_new_dir
-from data.utils import get_fish_ID_pos
+from data.utils import get_fish_id_pos
+from data.ProcessedDataInstance import ProcessedDataInstance
 from dataset.utils import get_args, xlsx_file_name_parser, gen_dataset_param_name, gen_crop_img, drop_too_dark, \
                           save_crop_img, append_log, save_dataset_logs, gen_train_selected_summary, save_dataset_config, \
                           save_dark_ratio_log
@@ -27,13 +30,6 @@ config_dir = Path( "./../../Config/" ).resolve()
 
 
 if __name__ == "__main__":
-        
-    # -----------------------------------------------------------------------------------
-    # Load `db_path_plan.toml`
-    with open(config_dir.joinpath("db_path_plan.toml"), mode="r") as f_reader:
-        dbpp_config = toml.load(f_reader)
-    db_root = Path(dbpp_config["root"])
-    
     
     # -----------------------------------------------------------------------------------
     config_name = "(MakeDataset)_horiz_cut.toml"
@@ -42,9 +38,9 @@ if __name__ == "__main__":
         config = toml.load(f_reader)
     
     script_name = config["script_name"]
-    preprocessed_desc     = config["data_preprocessed"]["desc"]
-    clustered_xlsx_file   = config["data_preprocessed"]["clustered_xlsx_file"]
-    palmskin_result_alias = config["data_preprocessed"]["palmskin_result_alias"]
+    processed_inst_desc   = config["data_processed"]["desc"]
+    clustered_xlsx_file   = config["data_processed"]["clustered_xlsx_file"]
+    palmskin_result_alias = config["data_processed"]["palmskin_result_alias"]
     crop_size    = config["gen_param"]["crop_size"]
     shift_region = config["gen_param"]["shift_region"]
     intensity    = config["gen_param"]["intensity"]
@@ -52,39 +48,24 @@ if __name__ == "__main__":
     random_seed  = config["gen_param"]["random_seed"]
     random_state = np.random.RandomState(seed=random_seed)
     
-    
     # -----------------------------------------------------------------------------------
-    # Generate `path_vars`
+    # Initialize a `ProcessedDataInstance` object
 
-    # Check `{desc}_Academia_Sinica_i[num]`
-    data_preprocessed_root = db_root.joinpath(dbpp_config["data_preprocessed"])
-    target_dir_list = list(data_preprocessed_root.glob(f"*{preprocessed_desc}*"))
-    assert len(target_dir_list) == 1, (f"[data_preprocessed.desc] in `{config_name}` is not unique/exists, "
-                                       f"find {len(target_dir_list)} possible directories, {target_dir_list}")
-    data_preprocessed_dir = target_dir_list[0]
-
-    # Check `{reminder}_PalmSkin_reCollection`
-    target_dir_list = list(data_preprocessed_dir.glob(f"*PalmSkin_reCollection*"))
-    assert len(target_dir_list) == 1, (f"found {len(target_dir_list)} directories, only one `PalmSkin_reCollection` is accepted.")
-    palmskin_recollect_dir = target_dir_list[0]
-    palmskin_preprocessed_reminder = re.split("{|}", str(palmskin_recollect_dir).split(os.sep)[-1])[1]
-    
-    palmskin_result_alias_dir = palmskin_recollect_dir.joinpath(palmskin_result_alias)
-    assert palmskin_result_alias_dir.exists(), ((f"Can't find directory: '{palmskin_result_alias_dir}', "
-                                                 f"please check [data_preprocessed.palmskin_result_alias] in `{config_name}`"))
+    processed_data_instance = ProcessedDataInstance(config_dir, processed_inst_desc)
 
     # xlsx
-    xlsx_file_path = data_preprocessed_dir.joinpath(r"{Modify}_xlsx", clustered_xlsx_file)
+    cluster_desc = re.split("{|}", clustered_xlsx_file)[1]
+    xlsx_file_path = processed_data_instance.clustered_xlsx_paths_dict[cluster_desc]
 
     # dataset_dir
-    data_preprocessed_dir_name = str(data_preprocessed_dir).split(os.sep)[-1]
+    instance_name = processed_data_instance.instance_name
     classif_strategy = xlsx_file_name_parser(clustered_xlsx_file)
     dataset_param_name = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, random_seed)
-    dataset_root = db_root.joinpath(dbpp_config["dataset_cropped"])
+    dataset_root = processed_data_instance.db_root.joinpath(processed_data_instance.dbpp_config["dataset_cropped"])
     
-    save_dir_A_only = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
-    save_dir_P_only = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
-    save_dir_Mix_AP = dataset_root.joinpath(data_preprocessed_dir_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
+    save_dir_A_only = dataset_root.joinpath(instance_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_A_only", classif_strategy, dataset_param_name)
+    save_dir_P_only = dataset_root.joinpath(instance_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_P_only", classif_strategy, dataset_param_name)
+    save_dir_Mix_AP = dataset_root.joinpath(instance_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP", classif_strategy, dataset_param_name)
     assert not os.path.exists(save_dir_A_only), f"dir: '{save_dir_A_only}' already exists"
     assert not os.path.exists(save_dir_P_only), f"dir: '{save_dir_P_only}' already exists"
     assert not os.path.exists(save_dir_Mix_AP), f"dir: '{save_dir_Mix_AP}' already exists"
@@ -105,6 +86,27 @@ if __name__ == "__main__":
     # print(all_class)
 
 
+    # check images are existing and readable
+    palmskin_list = list(pd.concat([df_input_xlsx["Anterior (SP8, .tif)"], df_input_xlsx["Posterior (SP8, .tif)"]]))
+    actual_name, processed_palmskin_results = processed_data_instance.get_existing_processed_results("PalmSkin_preprocess", palmskin_result_alias)
+    processed_palmskin_results = {str(result_path).split(os.sep)[-2]: result_path for result_path in processed_palmskin_results}
+    temp_list = []
+    read_failed = 0
+    for fish_dname in palmskin_list:
+        try:
+            path = processed_palmskin_results.pop(fish_dname)
+            if cv2.imread(str(path)) is None: 
+                read_failed += 1
+                print(f"{Fore.RED}{Back.BLACK}Can't read '{actual_name}' of '{fish_dname}'{Style.RESET_ALL}")
+            else:
+                temp_list.append(path)
+        except:
+            print(f"{Fore.RED}{Back.BLACK}Can't find '{actual_name}' of '{fish_dname}'{Style.RESET_ALL}")
+            read_failed += 1
+    assert read_failed == 0, f"{Fore.RED}Due to broken/non-existing images, the crop process has been halted.{Style.RESET_ALL}\n"
+    
+    
+
     pos_dict = {"Anterior": save_dir_A_only, "Posterior": save_dir_P_only}
     for pos, save_dir in pos_dict.items():
         
@@ -123,7 +125,7 @@ if __name__ == "__main__":
 
 
         df_palmskin_list = df_input_xlsx[f"{pos} (SP8, .tif)"].tolist()
-        assert len(df_palmskin_list) == len(df_class_list), "length of 'palmskin_list' and 'class_list' misMatch"
+        assert len(df_palmskin_list) == len(df_class_list), "length of 'df_palmskin_list' and 'class_list' misMatch"
         print(f"len(df_palmskin_list) = len(df_class_list) = {len(df_class_list)}\n")
 
 
@@ -139,7 +141,7 @@ if __name__ == "__main__":
             
             
             # *** Load image ***
-            fish_path = palmskin_result_alias_dir.joinpath(f"{fish_dname}.tif")
+            fish_path = processed_data_instance.palmskin_preprocess_dir.joinpath(fish_dname, actual_name)
             fish = cv2.imread(str(fish_path))
             
             
@@ -211,7 +213,7 @@ if __name__ == "__main__":
 
             # *** Extracting / Looking up the information on current fish ***
             ## path, e.g. "...\{*}_RGB_reCollection\[*result]\20220727_CE012_palmskin_9dpf - Series002_fish_111_P_RGB.tif"
-            fish_id, fish_pos = get_fish_ID_pos(fish_path)
+            fish_id, fish_pos = get_fish_id_pos(fish_path)
             #
             ## looking up the class of current fish
             fish_size = df_class_list[i]
