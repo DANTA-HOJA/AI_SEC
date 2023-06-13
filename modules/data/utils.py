@@ -4,10 +4,10 @@ import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
-abs_module_path = str(Path("./../modules/").resolve())
+abs_module_path = str(Path("./../../modules/").resolve())
 if abs_module_path not in sys.path: sys.path.append(abs_module_path) # add path to scan customized module
 
-from utils import get_target_str_idx_in_list
+from misc.utils import get_target_str_idx_in_list
 
 
 def get_fish_id_pos(string_with_fish_dname:Union[str, Path]) -> Tuple[int, str]:
