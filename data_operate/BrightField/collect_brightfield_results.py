@@ -11,7 +11,7 @@ rel_module_path = "./../../modules/"
 sys.path.append( str(Path(rel_module_path).resolve()) ) # add path to scan customized module
 
 from fileop import create_new_dir, resave_result
-from data.utils import get_fish_ID_pos
+from data.utils import get_fish_id_pos
 
 
 
@@ -21,7 +21,7 @@ analysis_method_desc = "KY_with_NameChecker"
 analysis_root = ap_data_root.joinpath(f"{{{analysis_method_desc}}}_BrightField_analyze")
 detection_mode = "missing" # missing / finding
 
-if not ((detection_mode == "missing") or (detection_mode == "finding")): 
+if not ((detection_mode == "missing") or (detection_mode == "finding")):
     raise KeyError("Key: 'detection_mode' can only be 'missing' or 'finding' ")
 
 
@@ -46,14 +46,14 @@ output_dir = ap_data_root.joinpath(f"{{{analysis_method_desc}}}_BrightField_reCo
 create_new_dir(output_dir)
 
 
-path_list = sorted(analysis_root.glob(f"*/{result_map[result_key]}"), key=get_fish_ID_pos)
+path_list = sorted(analysis_root.glob(f"*/{result_map[result_key]}"), key=get_fish_id_pos)
 # for i in path_list: print(i)
 
 
 summary = {}
 summary["result_key"] = result_key
 summary["actual_name"] = result_map[result_key]
-summary["max_probable_num"] = get_fish_ID_pos(path_list[-1])[0]
+summary["max_probable_num"] = get_fish_id_pos(path_list[-1])[0]
 summary["total files"] = len(path_list)
 summary[detection_mode] = []
 
@@ -67,7 +67,7 @@ for i in range(summary["max_probable_num"]):
         
         # fish
         try:
-            fish_ID, _ = get_fish_ID_pos(path_list[0])
+            fish_ID, _ = get_fish_id_pos(path_list[0])
             current_name = f"{fish_ID}"
             assert current_name != previous_fish, f"fish_dir repeated!, check '{previous_fish}' "
         except: pass
