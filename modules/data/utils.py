@@ -49,12 +49,12 @@ def get_fish_id_pos(string_with_fish_dname:Union[str, Path]) -> Tuple[int, str]:
 
 
 
-def create_dict_by_fishID(path_list:List[Path]) -> Dict[int, Path]:
+def create_dict_by_fishid(path_list:List[Path]) -> Dict[int, Path]:
     return {get_fish_id_pos(path)[0] : path for path in path_list}
 
 
 
-def merge_BF_analysis(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Dict[int, Path]):
+def merge_bf_analysis(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Dict[int, Path]):
     for key, value in manual_analysis_dict.items():
         auto_analysis_dict.pop(key, None)
         auto_analysis_dict[key] = manual_analysis_dict[key]
