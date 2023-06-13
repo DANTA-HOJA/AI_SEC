@@ -124,6 +124,44 @@ class ProcessedDataInstance():
     
     
     
+    def _get_existing_processed_fish_dirs(self, processed_name:str):
+        """
+
+        Args:
+            processed_name (str): `'BrightField_analyze'` or `'PalmSkin_preprocess'`
+        """
+        assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
+            f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
+        processed_name_lower = processed_name.lower()
+        
+        processed_dir:Path = getattr(self, f"{processed_name_lower}_dir")
+        fish_dirs = processed_dir.glob("*")
+        
+        fish_dirs_dict = {str(fish_dir).split(os.sep)[-1]: fish_dir
+                                          for fish_dir in fish_dirs}
+        
+        for key in list(fish_dirs_dict.keys()):
+            if key == "!~delete": fish_dirs_dict.pop(key) # rm "!~delete" directory
+            if ".log" in key: fish_dirs_dict.pop(key) # rm "log" files
+            if ".toml" in key: fish_dirs_dict.pop(key) # rm "toml" file
+        
+        fish_dirs_dict = OrderedDict(sorted(list(fish_dirs_dict.items()), key=lambda x: get_fish_id_pos(x[0])))
+        
+        setattr(self, f"{processed_name_lower}_fish_dirs_dict", fish_dirs_dict)
+    
+    
+    
+    def _update_instance_num_postfix(self):
+        
+        new_name = f"{{{self.instance_desc}}}_Academia_Sinica_i{len(self.palmskin_preprocess_fish_dirs_dict)}"
+        os.rename(self.instance_root, self.data_processed_root.joinpath(new_name))
+        
+        self.instance_root = Path(str(self.instance_root).replace(self.instance_name, new_name))
+        self.palmskin_preprocess_dir = Path(str(self.palmskin_preprocess_dir).replace(self.instance_name, new_name))
+        self.instance_name = new_name
+    
+    
+    
     def _check_recollect_dir(self, source_name:str):
         """
 
@@ -170,80 +208,6 @@ class ProcessedDataInstance():
     def _check_data_xlsx(self):
         path = self.instance_root.joinpath("data.xlsx")
         if path.exists(): self.data_xlsx_path = path
-    
-    
-    
-    def _update_instance_num_postfix(self):
-        
-        new_name = f"{{{self.instance_desc}}}_Academia_Sinica_i{len(self.palmskin_preprocess_fish_dirs_dict)}"
-        os.rename(self.instance_root, self.data_processed_root.joinpath(new_name))
-        
-        self.instance_root = Path(str(self.instance_root).replace(self.instance_name, new_name))
-        self.palmskin_preprocess_dir = Path(str(self.palmskin_preprocess_dir).replace(self.instance_name, new_name))
-        self.instance_name = new_name
-    
-    
-    
-    def _get_existing_processed_fish_dirs(self, processed_name:str):
-        """
-
-        Args:
-            processed_name (str): `'BrightField_analyze'` or `'PalmSkin_preprocess'`
-        """
-        assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
-            f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
-        processed_name_lower = processed_name.lower()
-        
-        processed_dir:Path = getattr(self, f"{processed_name_lower}_dir")
-        fish_dirs = processed_dir.glob("*")
-        
-        fish_dirs_dict = {str(fish_dir).split(os.sep)[-1]: fish_dir
-                                          for fish_dir in fish_dirs}
-        
-        for key in list(fish_dirs_dict.keys()):
-            if key == "!~delete": fish_dirs_dict.pop(key) # rm "!~delete" directory
-            if ".log" in key: fish_dirs_dict.pop(key) # rm "log" files
-            if ".toml" in key: fish_dirs_dict.pop(key) # rm "toml" file
-        
-        fish_dirs_dict = OrderedDict(sorted(list(fish_dirs_dict.items()), key=lambda x: get_fish_id_pos(x[0])))
-        
-        setattr(self, f"{processed_name_lower}_fish_dirs_dict", fish_dirs_dict)
-    
-    
-    
-    def get_existing_processed_results(self, processed_name:str, result_alias:str) -> Tuple[str, List[Path]]:
-        """
-
-        Args:
-            processed_name (str): `'BrightField_analyze'` or `'PalmSkin_preprocess'`
-            result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository
-
-        Returns:
-            Tuple[str, List[Path]]: `(actual_name, results)`
-        """
-        assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
-            f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
-        processed_name_lower = processed_name.lower()
-        
-        processed_dir:Path = getattr(self, f"{processed_name_lower}_dir")
-        alias_map = getattr(self, f"{processed_name_lower}_alias_map")
-        assert alias_map[result_alias]
-        
-        # regex filter
-        results = sorted(processed_dir.glob(f"*/{alias_map[result_alias]}"), key=get_fish_id_pos)
-        pattern = alias_map[result_alias].split("/")[-1]
-        pattern = pattern.replace("*", r"[0-9]*")
-        num = 0
-        actual_name = None
-        for _ in range(len(results)):
-            result_name = str(results[num]).split(os.sep)[-1]
-            if not re.fullmatch(pattern, result_name):
-                results.pop(num)
-            else:
-                num += 1
-                if actual_name is None: actual_name = result_name
-            
-        return actual_name, results
     
     
     
@@ -326,6 +290,42 @@ class ProcessedDataInstance():
             "Manual_measured_mask" :    "Manual_measured_mask.tif", # CHECK_PT 
             "Manual_cropped_BF--MIX" :  "Manual_cropped_BF--MIX.tif", # CHECK_PT 
         }
+    
+    
+    
+    def get_existing_processed_results(self, processed_name:str, result_alias:str) -> Tuple[str, List[Path]]:
+        """
+
+        Args:
+            processed_name (str): `'BrightField_analyze'` or `'PalmSkin_preprocess'`
+            result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository
+
+        Returns:
+            Tuple[str, List[Path]]: `(actual_name, results)`
+        """
+        assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
+            f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
+        processed_name_lower = processed_name.lower()
+        
+        processed_dir:Path = getattr(self, f"{processed_name_lower}_dir")
+        alias_map = getattr(self, f"{processed_name_lower}_alias_map")
+        assert alias_map[result_alias]
+        
+        # regex filter
+        results = sorted(processed_dir.glob(f"*/{alias_map[result_alias]}"), key=get_fish_id_pos)
+        pattern = alias_map[result_alias].split("/")[-1]
+        pattern = pattern.replace("*", r"[0-9]*")
+        num = 0
+        actual_name = None
+        for _ in range(len(results)):
+            result_name = str(results[num]).split(os.sep)[-1]
+            if not re.fullmatch(pattern, result_name):
+                results.pop(num)
+            else:
+                num += 1
+                if actual_name is None: actual_name = result_name
+            
+        return actual_name, results
     
     
     
