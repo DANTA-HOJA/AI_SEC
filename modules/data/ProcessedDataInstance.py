@@ -12,7 +12,7 @@ from logging import Logger
 import numpy as np
 import pandas as pd
 
-abs_module_path = str(Path("./../modules/").resolve())
+abs_module_path = str(Path("./../../modules/").resolve())
 if abs_module_path not in sys.path: sys.path.append(abs_module_path) # add path to scan customized module
 
 from logger import init_logger
@@ -418,6 +418,18 @@ class ProcessedDataInstance():
     
     
     def create_data_xlsx(self, logger:Logger):
+        """To generate data information in XLSX ( XLSX file will used to compute the classes in classification task ):
+
+            All fish will process with the following step : 
+            
+                1. Run ImageJ Macro : Use bright field (BF) images to compute the surface area (SA) and surface length (SL), and store their results in CSV format.
+                2. Collect all generated CSV files using pandas.DataFrame().
+                3. Use `fish_id` to find and add their `palmskin_RGB` images into the DataFrame.
+                4. Save results in XLSX format.
+
+        Args:
+            logger (Logger): external logger created using package `logging`
+        """
         
         # -----------------------------------------------------------------------------------
         # BrightField
@@ -523,4 +535,4 @@ class ProcessedDataInstance():
         if delete_uncomplete_row: data.dropna(inplace=True)
         data.to_excel(output, engine="openpyxl")
 
-        print("="*100, "\n", "process all complete !", "\n")
+        self._check_data_xlsx()
