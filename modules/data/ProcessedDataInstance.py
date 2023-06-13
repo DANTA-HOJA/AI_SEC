@@ -55,13 +55,16 @@ class ProcessedDataInstance():
         self.brightfield_analyze_alias_map:Union[None, Dict[str, str]]       = None
         self.brightfield_analyze_fish_dirs_dict:Union[None, Dict[str, Path]] = None
         
-        self.palmskin_recollect_dir:Union[None, Path]                   = None
-        self.palmskin_recollected_dir_dict:Union[None, Dict[str, Path]] = None
+        self.palmskin_recollect_dir:Union[None, Path]                    = None
+        self.palmskin_recollected_dirs_dict:Union[None, Dict[str, Path]] = None
         
-        self.brightfield_recollect_dir:Union[None, Path]                   = None
-        self.brightfield_recollected_dir_dict:Union[None, Dict[str, Path]] = None
+        self.brightfield_recollect_dir:Union[None, Path]                    = None
+        self.brightfield_recollected_dirs_dict:Union[None, Dict[str, Path]] = None
         
-        self.data_xlsx_path = None
+        self.data_xlsx_path:Union[None, Path] = None
+        
+        self.clustered_xlsx_dir:Union[None, Path] = None
+        self.clustered_xlsx_paths_dict:Union[None, Dict[str, Path]] = None
         
         # -----------------------------------------------------------------------------------
         # Check uniqueness of `instance_desc` ( full directory name: `{instance_desc}_Academia_Sinica_i[num]` )
@@ -69,7 +72,7 @@ class ProcessedDataInstance():
         self._find_instance_dir()
         
         # -----------------------------------------------------------------------------------
-        # Check `{reminder}_PalmSkin_preprocess`
+        # Check direcotry: `{reminder}_PalmSkin_preprocess`
         
         self._check_processed_dir("PalmSkin_preprocess")
         self._get_existing_processed_fish_dirs("PalmSkin_preprocess")
@@ -77,22 +80,29 @@ class ProcessedDataInstance():
         self._init_palmskin_preprocess_alias_map()
         
         # -----------------------------------------------------------------------------------
-        # Check `{reminder}_BrightField_analyze`, 
+        # Check direcotry: `{reminder}_BrightField_analyze`, 
         
         self._check_processed_dir("BrightField_analyze")
         self._get_existing_processed_fish_dirs("BrightField_analyze")
         self._init_brightfield_analyze_alias_map()
 
         # -----------------------------------------------------------------------------------
-        # Check `{reminder}_PalmSkin_reCollection`, `{reminder}_BrightField_reCollection`
+        # Check direcotries: `{reminder}_PalmSkin_reCollection`, `{reminder}_BrightField_reCollection`
         
         self._check_recollect_dir("PalmSkin")
         self._check_recollect_dir("BrightField")
     
         # -----------------------------------------------------------------------------------
-        # Check uniqueness of `instance_desc` ( full directory name: `{instance_desc}_Academia_Sinica_i[num]` )
+        # Check file: `data.xlsx`
         
-        self._check_data_xlsx()
+        self._check_data_xlsx_path()
+        
+        # -----------------------------------------------------------------------------------
+        # Check direcotry: `Clustered_xlsx`
+        
+        self._check_clustered_xlsx_dir()
+        
+        # End section -----------------------------------------------------------------------------------
     
     
     
@@ -176,11 +186,11 @@ class ProcessedDataInstance():
         assert len(candidate_dir_list) <= 1, (f"found {len(candidate_dir_list)} compatible directories, only one `{source_name}_reCollection` is accepted.")
         if len(candidate_dir_list) == 1: 
             setattr(self, f"{source_name_lower}_recollect_dir", candidate_dir_list[0])
-            self._update_recollected_dir_dict(source_name)
+            self._update_recollected_dirs_dict(source_name)
     
     
     
-    def _update_recollected_dir_dict(self, source_name:str):
+    def _update_recollected_dirs_dict(self, source_name:str):
         """
 
         Args:
@@ -191,9 +201,9 @@ class ProcessedDataInstance():
         source_name_lower = source_name.lower()
         
         recollect_dir:Path = getattr(self, f"{source_name_lower}_recollect_dir")
-        if getattr(self, f"{source_name_lower}_recollected_dir_dict") is None:
-            setattr(self, f"{source_name_lower}_recollected_dir_dict", {})
-        recollected_dict:Union[None, Dict[str, Path]] = getattr(self, f"{source_name_lower}_recollected_dir_dict")
+        if getattr(self, f"{source_name_lower}_recollected_dirs_dict") is None:
+            setattr(self, f"{source_name_lower}_recollected_dirs_dict", {})
+        recollected_dict:Union[None, Dict[str, Path]] = getattr(self, f"{source_name_lower}_recollected_dirs_dict")
         
         scaned_list = list(recollect_dir.glob("*"))
         for dir in scaned_list:
@@ -205,9 +215,34 @@ class ProcessedDataInstance():
     
     
     
-    def _check_data_xlsx(self):
+    def _check_data_xlsx_path(self):
         path = self.instance_root.joinpath("data.xlsx")
         if path.exists(): self.data_xlsx_path = path
+    
+    
+    
+    def _check_clustered_xlsx_dir(self):
+        candidate_dir_list = list(self.instance_root.glob(f"Clustered_xlsx"))
+        assert len(candidate_dir_list) <= 1, (f"found {len(candidate_dir_list)} compatible directories, only one `Clustered_xlsx` is accepted.")
+        if len(candidate_dir_list) == 1: 
+            self.clustered_xlsx_dir = candidate_dir_list[0]
+            self._update_clustered_xlsx_paths_dict()
+    
+    
+    
+    def _update_clustered_xlsx_paths_dict(self):
+        
+        if self.clustered_xlsx_paths_dict is None:
+            self.clustered_xlsx_paths_dict = {}
+        
+        scaned_list = list(self.clustered_xlsx_dir.glob("*.xlsx"))
+        for xlsx_path in scaned_list:
+            xlsx_name = str(xlsx_path).split(os.sep)[-1]
+            cluster_desc = re.split("{|}", xlsx_name)[1]
+            try:
+                self.clustered_xlsx_paths_dict[cluster_desc]
+            except:
+                self.clustered_xlsx_paths_dict[cluster_desc] = xlsx_path
     
     
     
@@ -413,7 +448,7 @@ class ProcessedDataInstance():
         
         # update `recollect_dir`
         if recollect_dir is None: self._check_recollect_dir(source_name)
-        else: self._update_recollected_dir_dict(source_name)
+        else: self._update_recollected_dirs_dict(source_name)
     
     
     
@@ -535,4 +570,4 @@ class ProcessedDataInstance():
         if delete_uncomplete_row: data.dropna(inplace=True)
         data.to_excel(output, engine="openpyxl")
 
-        self._check_data_xlsx()
+        self._check_data_xlsx_path()
