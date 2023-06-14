@@ -18,3 +18,6 @@ FuncTest_with_ipynb/**/*.png
 
 *.sh
 *.code-workspace
+
+# !Config/*.toml
+# Config/db_path_plan.toml
