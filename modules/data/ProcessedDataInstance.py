@@ -623,12 +623,12 @@ class ProcessedDataInstance():
         
         df_xlsx :pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
         
-        palmskin_dname = list(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]))
+        palmskin_dnames = list(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]))
         actual_name, processed_palmskin_results = self.get_existing_processed_results("PalmSkin_preprocess", palmskin_result_alias)
         processed_palmskin_results = {str(result_path).split(os.sep)[-2]: result_path for result_path in processed_palmskin_results}
         
         read_failed = 0
-        for dname in palmskin_dname:
+        for dname in palmskin_dnames:
             try:
                 path = processed_palmskin_results.pop(dname)
                 if cv2.imread(str(path)) is None: 
