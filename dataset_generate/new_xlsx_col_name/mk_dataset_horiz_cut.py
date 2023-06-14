@@ -52,7 +52,13 @@ if __name__ == "__main__":
     # Initialize a `ProcessedDataInstance` object
 
     processed_data_instance = ProcessedDataInstance(config_dir, processed_inst_desc)
-
+    # check images are existing and readable
+    check_statement, relative_path_in_fish_dir = processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
+    assert check_statement, f"{Fore.RED}Due to broken/non-existing images, the crop process has been halted.{Style.RESET_ALL}\n"
+    
+    # -----------------------------------------------------------------------------------
+    # Generate `path_vars`
+    
     # xlsx
     cluster_desc = re.split("{|}", clustered_xlsx_file)[1]
     xlsx_file_path = processed_data_instance.clustered_xlsx_paths_dict[cluster_desc]
@@ -74,9 +80,9 @@ if __name__ == "__main__":
     create_new_dir(save_dir_P_only)
     create_new_dir(save_dir_Mix_AP)
     
-    
     # -----------------------------------------------------------------------------------
-    # *** Load Excel sheet as DataFrame(pandas) ***
+    # Load Excel sheet as DataFrame(pandas) 
+    
     df_input_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_path, engine = 'openpyxl')
     # print(df_input_xlsx)
     df_class_list = df_input_xlsx["class"].tolist()
@@ -84,13 +90,10 @@ if __name__ == "__main__":
     all_class = Counter(df_class_list)
     all_class = sorted(list(all_class.keys()))
     # print(all_class)
-
-
-    # check images are existing and readable
-    check_statement, relative_path_in_fish_dir = processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
-    assert check_statement, f"{Fore.RED}Due to broken/non-existing images, the crop process has been halted.{Style.RESET_ALL}\n"
     
-
+    # -----------------------------------------------------------------------------------
+    # Do Crop
+    
     pos_dict = {"Anterior": save_dir_A_only, "Posterior": save_dir_P_only}
     for pos, save_dir in pos_dict.items():
         
