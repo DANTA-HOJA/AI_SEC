@@ -105,6 +105,11 @@ class ProcessedDataInstance():
         
         self._check_clustered_xlsx_dir()
         
+        # -----------------------------------------------------------------------------------
+        #  TODO:  Check direcotry: `Modified_xlsx`
+        
+        # self._check_modified_xlsx_dir()  (func name TBA)
+        
         # End section -----------------------------------------------------------------------------------
     
     
