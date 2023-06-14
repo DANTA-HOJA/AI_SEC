@@ -344,7 +344,7 @@ class ProcessedDataInstance():
             result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository
 
         Returns:
-            Tuple[str, List[Path]]: `(actual_name, results)`
+            Tuple[str, List[Path]]: `(relative_path_in_fish_dir, sorted_results)`
         """
         assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
             f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
@@ -352,11 +352,13 @@ class ProcessedDataInstance():
         
         processed_dir:Path = getattr(self, f"{processed_name_lower}_dir")
         alias_map = getattr(self, f"{processed_name_lower}_alias_map")
+        
         assert alias_map[result_alias]
+        rel_path_in_fish_dir = alias_map[result_alias]
         
         # regex filter
         results = sorted(processed_dir.glob(f"*/{alias_map[result_alias]}"), key=get_fish_id_pos)
-        pattern = alias_map[result_alias].split("/")[-1]
+        pattern = rel_path_in_fish_dir.split("/")[-1]
         pattern = pattern.replace("*", r"[0-9]*")
         num = 0
         actual_name = None
@@ -367,8 +369,9 @@ class ProcessedDataInstance():
             else:
                 num += 1
                 if actual_name is None: actual_name = result_name
-            
-        return actual_name, results
+        
+        if rel_path_in_fish_dir.split("/")[0] == "MetaImage": return f"MetaImage/{actual_name}", results
+        else: return actual_name, results
     
     
     
@@ -401,11 +404,11 @@ class ProcessedDataInstance():
         assert not output_dir.exists(), f"Directory: '{output_dir}' already exists, please delete it before collecting results."
         create_new_dir(output_dir)
         
-        actual_name, results = self.get_existing_processed_results(processed_name, result_alias)
+        relative_path_in_fish_dir, results = self.get_existing_processed_results(processed_name, result_alias)
         
         summary = {}
         summary["result_alias"] = result_alias
-        summary["actual_name"] = actual_name
+        summary["actual_name"] = relative_path_in_fish_dir.split("/")[-1]
         summary["max_probable_num"] = get_fish_id_pos(results[-1])[0]
         summary["total files"] = len(results)
         summary[log_mode] = []
@@ -613,12 +616,15 @@ class ProcessedDataInstance():
     
     
     
-    def check_palmskin_images_condition(self, palmskin_result_alias:str, xlsx_name:str=None) -> bool:
+    def check_palmskin_images_condition(self, palmskin_result_alias:str, xlsx_name:str=None) -> Tuple[bool, Union[str, None]]:
         """Check the existence and readability of the palm skin images recorded in the XLSX file.
 
         Args:
             palmskin_result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository.
             xlsx_name (str, optional): If `None`, use `self.data_xlsx_path`
+
+        Returns:
+            Tuple[bool, Union[str, None]]: `(check_statement, relative_path_in_fish_dir)`
         """
         if xlsx_name is None:
             assert self.data_xlsx_path is not None, "Can't find `data.xlsx` please use `self.create_data_xlsx()` to create it."
@@ -629,8 +635,12 @@ class ProcessedDataInstance():
         df_xlsx :pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
         
         palmskin_dnames = list(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]))
-        actual_name, processed_palmskin_results = self.get_existing_processed_results("PalmSkin_preprocess", palmskin_result_alias)
-        processed_palmskin_results = {str(result_path).split(os.sep)[-2]: result_path for result_path in processed_palmskin_results}
+        relative_path_in_fish_dir, processed_palmskin_results = self.get_existing_processed_results("PalmSkin_preprocess", palmskin_result_alias)
+        actual_name = relative_path_in_fish_dir.split("/")[-1]
+        
+        if relative_path_in_fish_dir.split("/")[0] == "MetaImage": target_idx = -3
+        else: target_idx = -2
+        processed_palmskin_results = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in processed_palmskin_results}
         
         read_failed = 0
         for dname in palmskin_dnames:
@@ -643,5 +653,5 @@ class ProcessedDataInstance():
                 print(f"{Fore.RED}{Back.BLACK}Can't find '{actual_name}' of '{dname}'{Style.RESET_ALL}")
                 read_failed += 1
         
-        if read_failed == 0: return True
-        else: return False
+        if read_failed == 0: return True, relative_path_in_fish_dir 
+        else: return False, None

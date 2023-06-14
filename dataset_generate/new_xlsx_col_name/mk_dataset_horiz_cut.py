@@ -87,7 +87,8 @@ if __name__ == "__main__":
 
 
     # check images are existing and readable
-    processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
+    check_statement, relative_path_in_fish_dir = processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
+    assert check_statement, f"{Fore.RED}Due to broken/non-existing images, the crop process has been halted.{Style.RESET_ALL}\n"
     
 
     pos_dict = {"Anterior": save_dir_A_only, "Posterior": save_dir_P_only}
@@ -124,7 +125,7 @@ if __name__ == "__main__":
             
             
             # *** Load image ***
-            fish_path = processed_data_instance.palmskin_preprocess_dir.joinpath(fish_dname, actual_name)
+            fish_path = processed_data_instance.palmskin_preprocess_dir.joinpath(fish_dname, relative_path_in_fish_dir)
             fish = cv2.imread(str(fish_path))
             
             
