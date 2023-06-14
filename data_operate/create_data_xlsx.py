@@ -15,9 +15,9 @@ config_dir = Path( "./../Config/" ).resolve()
 log = init_logger(r"Create Data Xlsx")
 
 # -----------------------------------------------------------------------------------
-# Load `(CreateXlsx)_data.toml`
+config_name = "(CreateXlsx)_data.toml"
 
-with open(config_dir.joinpath("(CreateXlsx)_data.toml"), mode="r") as f_reader:
+with open(config_dir.joinpath(config_name), mode="r") as f_reader:
     config = toml.load(f_reader)
     
 processed_inst_desc = config["data_processed"]["desc"]

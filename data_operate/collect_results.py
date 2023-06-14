@@ -12,9 +12,9 @@ from data.ProcessedDataInstance import ProcessedDataInstance
 config_dir = Path( "./../Config/" ).resolve()
 
 # -----------------------------------------------------------------------------------
-# Load `(CollectResult)_palmskin.toml`
+config_name = "(CollectResults)_data.toml"
 
-with open(config_dir.joinpath("(CollectResults)_data.toml"), mode="r") as f_reader:
+with open(config_dir.joinpath(config_name), mode="r") as f_reader:
     config = toml.load(f_reader)
 
 processed_inst_desc = config["data_processed"]["desc"]

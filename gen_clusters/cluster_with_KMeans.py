@@ -13,8 +13,9 @@ from clustering.SurfaceAreaKMeansCluster import SurfaceAreaKMeansCluster
 config_dir = Path( "./../Config/" ).resolve()
 
 # -----------------------------------------------------------------------------------
-# Load `(Cluster)_data.toml`
-with open(config_dir.joinpath("(Cluster)_data.toml"), mode="r") as f_reader:
+config_name = "(Cluster)_data.toml"
+
+with open(config_dir.joinpath(config_name), mode="r") as f_reader:
     config = toml.load(f_reader)
 
 processed_inst_desc = config["data_processed"]["desc"]
