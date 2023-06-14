@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 import re
+from colorama import Fore, Back, Style
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
 from collections import OrderedDict
@@ -11,6 +12,7 @@ from logging import Logger
 
 import numpy as np
 import pandas as pd
+import cv2
 
 abs_module_path = Path("./../../modules/").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
@@ -603,3 +605,38 @@ class ProcessedDataInstance():
         repr_string += f'self.clustered_xlsx_paths_dict : {json.dumps(list(self.clustered_xlsx_paths_dict.keys()), indent=4)}\n\n'
         
         return repr_string
+    
+    
+    
+    def check_palmskin_images_condition(self, palmskin_result_alias:str, xlsx_name:str=None) -> bool:
+        """Check the existence and readability of the palm skin images recorded in the XLSX file.
+
+        Args:
+            palmskin_result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository.
+            xlsx_name (str, optional): If `None`, use `self.data_xlsx_path`
+        """
+        if xlsx_name is None:
+            assert self.data_xlsx_path is not None, "Can't find `data.xlsx` please use `self.create_data_xlsx()` to create it."
+            xlsx_path = self.data_xlsx_path
+        
+        #  TODO:  xlsx_name is not None, use given xlsx under `Modified_xlsx/`
+        
+        df_xlsx :pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
+        
+        palmskin_dname = list(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]))
+        actual_name, processed_palmskin_results = self.get_existing_processed_results("PalmSkin_preprocess", palmskin_result_alias)
+        processed_palmskin_results = {str(result_path).split(os.sep)[-2]: result_path for result_path in processed_palmskin_results}
+        
+        read_failed = 0
+        for dname in palmskin_dname:
+            try:
+                path = processed_palmskin_results.pop(dname)
+                if cv2.imread(str(path)) is None: 
+                    read_failed += 1
+                    print(f"{Fore.RED}{Back.BLACK}Can't read '{actual_name}' of '{dname}'{Style.RESET_ALL}")
+            except:
+                print(f"{Fore.RED}{Back.BLACK}Can't find '{actual_name}' of '{dname}'{Style.RESET_ALL}")
+                read_failed += 1
+        
+        if read_failed == 0: return True
+        else: return False
