@@ -87,24 +87,7 @@ if __name__ == "__main__":
 
 
     # check images are existing and readable
-    palmskin_list = list(pd.concat([df_input_xlsx["Anterior (SP8, .tif)"], df_input_xlsx["Posterior (SP8, .tif)"]]))
-    actual_name, processed_palmskin_results = processed_data_instance.get_existing_processed_results("PalmSkin_preprocess", palmskin_result_alias)
-    processed_palmskin_results = {str(result_path).split(os.sep)[-2]: result_path for result_path in processed_palmskin_results}
-    temp_list = []
-    read_failed = 0
-    for fish_dname in palmskin_list:
-        try:
-            path = processed_palmskin_results.pop(fish_dname)
-            if cv2.imread(str(path)) is None: 
-                read_failed += 1
-                print(f"{Fore.RED}{Back.BLACK}Can't read '{actual_name}' of '{fish_dname}'{Style.RESET_ALL}")
-            else:
-                temp_list.append(path)
-        except:
-            print(f"{Fore.RED}{Back.BLACK}Can't find '{actual_name}' of '{fish_dname}'{Style.RESET_ALL}")
-            read_failed += 1
-    assert read_failed == 0, f"{Fore.RED}Due to broken/non-existing images, the crop process has been halted.{Style.RESET_ALL}\n"
-    
+    processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
     
 
     pos_dict = {"Anterior": save_dir_A_only, "Posterior": save_dir_P_only}
