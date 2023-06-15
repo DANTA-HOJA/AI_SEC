@@ -17,7 +17,7 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 from fileop import create_new_dir
 from data.utils import get_fish_id_pos
 from data.ProcessedDataInstance import ProcessedDataInstance
-from dataset.utils import gen_crop_img, sort_fish_dsname
+from dataset.utils import gen_dataset_param_name, sort_fish_dsname, gen_crop_img
 
 config_dir = Path( "./../Config/" ).resolve()
 
@@ -65,19 +65,23 @@ for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
 assert not_found_cnt == 0, f"{Fore.RED} Can't find directories, run `mk_dataset_horiz_cut.py` before crop. {Style.RESET_ALL}\n"
 
 # -----------------------------------------------------------------------------------
-# Detect `CropSize_{crop_size}` directories
+# Detect `Crop` directories
+
+dataset_param_name = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
+                                            random_seed, dict_format=True)
+crop_dir_name =  f"{dataset_param_name['crop_size']}_{dataset_param_name['shift_region']}"
 
 replace = False #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
 
 existing_crop_dir = []
 for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
-    temp_list = list(dir.glob(f"*/*/CropSize_{crop_size}"))
-    print(f"{Fore.YELLOW}{Back.BLACK} Detect {len(temp_list)} 'CropSize_{crop_size}' directories in '{dir}' {Style.RESET_ALL}")
+    temp_list = list(dir.glob(f"*/*/{crop_dir_name}"))
+    print(f"{Fore.YELLOW}{Back.BLACK} Detect {len(temp_list)} '{crop_dir_name}' directories in '{dir}' {Style.RESET_ALL}")
     existing_crop_dir.extend(temp_list)
 
 if existing_crop_dir:
     if replace: # (config varname TBA)
-        print(f"Deleting {len(existing_crop_dir)} 'CropSize_{crop_size}' directories")
+        print(f"Deleting {len(existing_crop_dir)} '{crop_dir_name}' directories")
         for dir in existing_crop_dir: shutil.rmtree(dir)
         print("Done!")
     else:
@@ -101,7 +105,7 @@ for path in img_paths:
     
     # generate `save_dir`
     save_dir = path_split[:-1]
-    save_dir.append(f"CropSize_{crop_size}")
+    save_dir.append(crop_dir_name)
     save_dir = Path(os.sep.join(save_dir))
     create_new_dir(save_dir, display_in_CLI=False)
     
@@ -131,7 +135,7 @@ pbar.close()
 
 for pos in ["A", "P"]:
     
-    img_paths = sorted(save_dir_Mix_AP.glob(f"*/*{pos}*/CropSize_{crop_size}"), key=sort_fish_dsname)
+    img_paths = sorted(save_dir_Mix_AP.glob(f"*/*{pos}*/{crop_dir_name}"), key=sort_fish_dsname)
     pbar = tqdm(total=len(img_paths), desc=f"[ Crop Images ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only: ")
 
     for img_path in img_paths:
