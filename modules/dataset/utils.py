@@ -286,3 +286,18 @@ def save_dark_ratio_log(log:Dict[str, float], save_dir:str, log_desc):
     
     with open(os.path.normpath(f"{save_dir}/{{{log_desc}}}_dark_ratio.log"), mode="w") as f_writer: 
         f_writer.write(json.dumps(log, indent=4))
+
+
+
+def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]) -> Tuple[int, str, int]:
+    
+    if isinstance(string_with_fish_dsname, Path): string_with_fish_dsname = str(string_with_fish_dsname)
+    elif isinstance(string_with_fish_dsname, str): pass
+    else: raise TypeError("unrecognized type of `text_with_fish_dsname`. Only `pathlib.Path` or `str` are accepted.")
+    
+    if os.sep in string_with_fish_dsname: fish_dsname = string_with_fish_dsname.split(os.sep)[-1].split(".")[0]
+    else: fish_dsname = string_with_fish_dsname.split(".")[0]
+    
+    fish_dsname_split = re.split(" |_|-", fish_dsname) # example_list : ['fish', '228', 'A', 'D']
+    
+    return int(fish_dsname_split[1]), fish_dsname_split[2], fish_dsname_split[3]
