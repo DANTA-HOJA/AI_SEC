@@ -87,7 +87,7 @@ rand_choice_result = {"up : train, down: test": 0,
                       "up : test, down: train": 0}
 palmskin_dnames = sorted(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]), key=get_fish_id_pos)
 
-pbar = tqdm(total=len(palmskin_dnames), desc=f"Horizontal Cut: ")
+pbar = tqdm(total=len(palmskin_dnames), desc=f"[ Horizontal_Cut ] : ")
 
 for i, palmskin_dname in enumerate(palmskin_dnames):
     
