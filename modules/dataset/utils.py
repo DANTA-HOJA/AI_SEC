@@ -156,7 +156,7 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List[cv2
 
 
 
-def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) -> Tuple[List[cv2.Mat], List[cv2.Mat]] : 
+def drop_too_dark(crop_img_list:List[cv2.Mat], intensity:int, drop_ratio:float) -> tuple[list[tuple], list[tuple]]:
     """drop the image which too many dark pixels
 
     Args:
