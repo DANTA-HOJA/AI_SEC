@@ -69,7 +69,7 @@ create_new_dir(save_dir_P_only)
 create_new_dir(save_dir_Mix_AP)
 
 # -----------------------------------------------------------------------------------
-# Load Excel sheet as DataFrame(pandas) 
+# Load `data.xlsx` as DataFrame(pandas) 
 
 # `data.xlsx` existence has been checked by `processed_data_instance.check_palmskin_images_condition()`
 df_xlsx :pd.DataFrame = pd.read_excel(processed_data_instance.data_xlsx_path, engine = 'openpyxl')
