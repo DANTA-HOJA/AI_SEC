@@ -46,7 +46,8 @@ def xlsx_file_name_parser(xlsx_file_name:str):
 
 
 
-def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, random_seed:int=None) -> str:
+def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, 
+                           random_seed:int=None, dict_format:bool=False) -> str:
     """To generate dataset's name corresponing to the passing parameters.
     
     Args:
@@ -67,21 +68,35 @@ def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, inten
     
     # Converting... "xlsx_file" 
     xlsx_file_split = re.split("{|_|}", xlsx_file)
-    n_class = xlsx_file_split[1].replace("CLS", "C")
+    n_class = xlsx_file_split[1].replace("CLS", "")
     used_feature = xlsx_file_split[2]
     
     # Converting... "shift_region"
     fraction = shift_region.split("/")
-    if int(fraction[0]) == 1: fraction = f"{fraction[0]}{fraction[1]}"
-    else: raise ValueError("Numerator of 'shift_region' needs to be 1")
+    assert (len(fraction) == 2) and (int(fraction[0]) == 1),  "Invalid format, expect '1/[denominator]'"
+    fraction = f"{fraction[0]}{fraction[1]}"
     
     # Converting... "drop_ratio"
     ratio = int(drop_ratio*100)
-     
-    gen_name = f"DS_{used_feature}{n_class}_CRPS{str(crop_size)}_SF{fraction}_INT{str(intensity)}_DRP{str(ratio)}"
     
-    if random_seed is None: return gen_name
-    else: return f"{gen_name}_RS{str(random_seed)}"
+    if dict_format == True:
+        
+        temp_dict = {}
+        temp_dict["prefix"]       = "DS"
+        temp_dict["used_feature"] = used_feature
+        temp_dict["n_class"]      = n_class
+        temp_dict["crop_size"]    = f"CRPS{crop_size}"
+        temp_dict["shift_region"] = f"SF{fraction}"
+        temp_dict["intensity"]    = f"INT{intensity}"
+        temp_dict["drop_ratio"]   = f"DRP{ratio}"
+        
+        if random_seed is None: return temp_dict
+        else: temp_dict["random_seed"] = f"RS{random_seed}"; return temp_dict
+    
+    else:
+        gen_name = f"DS_{used_feature}{n_class}C_CRPS{crop_size}_SF{fraction}_INT{intensity}_DRP{ratio}"
+        if random_seed is None: return gen_name
+        else: return f"{gen_name}_RS{random_seed}"
 
 
 
