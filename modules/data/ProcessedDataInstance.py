@@ -628,7 +628,8 @@ class ProcessedDataInstance():
             Tuple[bool, Union[str, None]]: if the check is passed, return the `relative_path_in_fish_dir` of `self.get_existing_processed_results()`.
         """
         if xlsx_name is None:
-            assert self.data_xlsx_path is not None, "Can't find `data.xlsx` please use `self.create_data_xlsx()` to create it."
+            assert self.data_xlsx_path is not None, \
+                f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx` please use `self.create_data_xlsx()` to create it. {Style.RESET_ALL}\n"
             xlsx_path = self.data_xlsx_path
         
         #  TODO:  xlsx_name is not None, use given xlsx under `Modified_xlsx/`
