@@ -69,7 +69,7 @@ assert not_found_cnt == 0, f"{Fore.RED} Can't find directories, run `mk_dataset_
 
 dataset_param_name = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
                                             random_seed, dict_format=True)
-crop_dir_name =  f"{dataset_param_name['crop_size']}_{dataset_param_name['shift_region']}"
+crop_dir_name =  f"{dataset_param_name['crop_size']}_{dataset_param_name['shift_region']}_{dataset_param_name['random_seed']}"
 
 replace = False #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
 
