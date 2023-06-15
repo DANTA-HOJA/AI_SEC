@@ -103,8 +103,8 @@ def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List[cv2
     # *** calculate relation between img & crop_size ***
     
     fraction = shift_region.split("/")
-    if int(fraction[0]) == 1: DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
-    else: raise ValueError("Numerator of 'shift_region' needs to be 1")
+    assert (len(fraction) == 2) and (int(fraction[0]) == 1),  "Invalid format, expect '1/[denominator]'"
+    DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
     # print(DIV_PIECES, "\n")
     # input()
     
