@@ -14,8 +14,12 @@ import pandas as pd
 import numpy as np
 import cv2
 
-sys.path.append("/home/rime97410000/ZebraFish_Code/ZebraFish_AP_POS/modules") # add path to scan customized module
+abs_module_path = Path("./../../modules/").resolve()
+if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
+    sys.path.append(str(abs_module_path)) # add path to scan customized module
+
 from fileop import create_new_dir
+from misc.utils import get_target_str_idx_in_list
 
 
 
@@ -295,7 +299,16 @@ def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]) -> Tuple[int, str
     elif isinstance(string_with_fish_dsname, str): pass
     else: raise TypeError("unrecognized type of `text_with_fish_dsname`. Only `pathlib.Path` or `str` are accepted.")
     
-    if os.sep in string_with_fish_dsname: fish_dsname = string_with_fish_dsname.split(os.sep)[-1].split(".")[0]
+    if os.sep in string_with_fish_dsname:
+        
+        string_with_fish_dsname_split = string_with_fish_dsname.split(os.sep)
+        for target_str in ['fish_dataset_horiz_cut_1l2_A_only', 
+                            'fish_dataset_horiz_cut_1l2_Mix_AP', 'fish_dataset_horiz_cut_1l2_P_only']:
+            target_idx = get_target_str_idx_in_list(string_with_fish_dsname_split, target_str)
+            if target_idx is not None:
+                fish_dsname = string_with_fish_dsname_split[target_idx+2]
+                break
+            
     else: fish_dsname = string_with_fish_dsname.split(".")[0]
     
     fish_dsname_split = re.split(" |_|-", fish_dsname) # example_list : ['fish', '228', 'A', 'D']
