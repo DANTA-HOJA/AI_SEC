@@ -308,7 +308,7 @@ def save_dark_ratio_log(log:Dict[str, float], save_dir:str, log_desc):
 
 
 
-def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]) -> Tuple[int, str, int]:
+def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]):
     
     if isinstance(string_with_fish_dsname, Path): string_with_fish_dsname = str(string_with_fish_dsname)
     elif isinstance(string_with_fish_dsname, str): pass
@@ -317,15 +317,23 @@ def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]) -> Tuple[int, str
     if os.sep in string_with_fish_dsname:
         
         string_with_fish_dsname_split = string_with_fish_dsname.split(os.sep)
-        for target_str in ['fish_dataset_horiz_cut_1l2_A_only', 
-                            'fish_dataset_horiz_cut_1l2_Mix_AP', 'fish_dataset_horiz_cut_1l2_P_only']:
-            target_idx = get_target_str_idx_in_list(string_with_fish_dsname_split, target_str)
-            if target_idx is not None:
-                fish_dsname = string_with_fish_dsname_split[target_idx+2]
-                break
+        
+        temp = string_with_fish_dsname_split[-1].split(".")
+        if  temp[-1] == "tiff":
+            fish_dsname = temp[0]
+        else:
+            for target_str in ['fish_dataset_horiz_cut_1l2_A_only', 
+                                'fish_dataset_horiz_cut_1l2_Mix_AP', 'fish_dataset_horiz_cut_1l2_P_only']:
+                target_idx = get_target_str_idx_in_list(string_with_fish_dsname_split, target_str)
+                if target_idx is not None:
+                    fish_dsname = string_with_fish_dsname_split[target_idx+2]
+                    break
             
     else: fish_dsname = string_with_fish_dsname.split(".")[0]
     
     fish_dsname_split = re.split(" |_|-", fish_dsname) # example_list : ['fish', '228', 'A', 'D']
     
-    return int(fish_dsname_split[1]), fish_dsname_split[2], fish_dsname_split[3]
+    if len(fish_dsname_split) == 4:
+        return int(fish_dsname_split[1]), fish_dsname_split[2], fish_dsname_split[3]
+    elif len(fish_dsname_split) == 6:
+        return int(fish_dsname_split[1]), fish_dsname_split[2], fish_dsname_split[3], int(fish_dsname_split[5])
