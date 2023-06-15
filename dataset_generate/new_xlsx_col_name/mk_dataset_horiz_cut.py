@@ -53,8 +53,7 @@ if __name__ == "__main__":
 
     processed_data_instance = ProcessedDataInstance(config_dir, processed_inst_desc)
     # check images are existing and readable
-    check_statement, relative_path_in_fish_dir = processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
-    assert check_statement, f"{Fore.RED}Due to broken/non-existing images, the crop process has been halted.{Style.RESET_ALL}\n"
+    relative_path_in_fish_dir = processed_data_instance.check_palmskin_images_condition(palmskin_result_alias)
     
     # -----------------------------------------------------------------------------------
     # Generate `path_vars`

@@ -10,6 +10,7 @@ import json
 import toml
 from logging import Logger
 
+from tqdm.auto import tqdm
 import numpy as np
 import pandas as pd
 import cv2
@@ -616,7 +617,7 @@ class ProcessedDataInstance():
     
     
     
-    def check_palmskin_images_condition(self, palmskin_result_alias:str, xlsx_name:str=None) -> Tuple[bool, Union[str, None]]:
+    def check_palmskin_images_condition(self, palmskin_result_alias:str, xlsx_name:str=None) -> str:
         """Check the existence and readability of the palm skin images recorded in the XLSX file.
 
         Args:
@@ -624,7 +625,7 @@ class ProcessedDataInstance():
             xlsx_name (str, optional): If `None`, use `self.data_xlsx_path`
 
         Returns:
-            Tuple[bool, Union[str, None]]: `(check_statement, relative_path_in_fish_dir)`
+            Tuple[bool, Union[str, None]]: if the check is passed, return the `relative_path_in_fish_dir` of `self.get_existing_processed_results()`.
         """
         if xlsx_name is None:
             assert self.data_xlsx_path is not None, "Can't find `data.xlsx` please use `self.create_data_xlsx()` to create it."
@@ -642,16 +643,22 @@ class ProcessedDataInstance():
         else: target_idx = -2
         processed_palmskin_results = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in processed_palmskin_results}
         
+        pbar = tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ")
         read_failed = 0
         for dname in palmskin_dnames:
+            pbar.desc = f"Check Image Condition ( {dname} ) : "
+            pbar.refresh()
             try:
                 path = processed_palmskin_results.pop(dname)
                 if cv2.imread(str(path)) is None: 
                     read_failed += 1
-                    print(f"{Fore.RED}{Back.BLACK}Can't read '{actual_name}' of '{dname}'{Style.RESET_ALL}")
+                    tqdm.write(f"{Fore.RED}{Back.BLACK}Can't read '{actual_name}' of '{dname}'{Style.RESET_ALL}")
             except:
-                print(f"{Fore.RED}{Back.BLACK}Can't find '{actual_name}' of '{dname}'{Style.RESET_ALL}")
+                tqdm.write(f"{Fore.RED}{Back.BLACK}Can't find '{actual_name}' of '{dname}'{Style.RESET_ALL}")
                 read_failed += 1
+            pbar.update(1)
+            pbar.refresh()
+        pbar.close()
         
-        if read_failed == 0: return True, relative_path_in_fish_dir 
-        else: return False, None
+        assert read_failed == 0, f"{Fore.RED} Due to broken/non-existing images, the process has been halted. {Style.RESET_ALL}\n"
+        return relative_path_in_fish_dir
