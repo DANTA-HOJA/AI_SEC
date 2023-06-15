@@ -49,10 +49,6 @@ relative_path_in_fish_dir = processed_data_instance.check_palmskin_images_condit
 # -----------------------------------------------------------------------------------
 # Generate `path_vars`
 
-# xlsx
-cluster_desc = re.split("{|}", clustered_xlsx_file)[1]
-xlsx_file_path = processed_data_instance.clustered_xlsx_paths_dict[cluster_desc]
-
 # dataset_dir
 instance_name = processed_data_instance.instance_name
 dataset_root = processed_data_instance.db_root.joinpath(processed_data_instance.dbpp_config["dataset_cropped_v2"])
@@ -75,7 +71,8 @@ create_new_dir(save_dir_Mix_AP)
 # -----------------------------------------------------------------------------------
 # Load Excel sheet as DataFrame(pandas) 
 
-df_xlsx :pd.DataFrame = pd.read_excel(xlsx_file_path, engine = 'openpyxl')
+# `data.xlsx` existence has been checked by `processed_data_instance.check_palmskin_images_condition()`
+df_xlsx :pd.DataFrame = pd.read_excel(processed_data_instance.data_xlsx_path, engine = 'openpyxl')
 
 # -----------------------------------------------------------------------------------
 # Do `Horizontal Cut`
