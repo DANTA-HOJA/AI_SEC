@@ -103,7 +103,7 @@ for i, palmskin_dname in enumerate(palmskin_dnames):
     # get `palmskin_dsname``
     fish_id, fish_pos = get_fish_id_pos(palmskin_dname)
     palmskin_dsname = f"fish_{fish_id}_{fish_pos}"
-    pbar.desc = f"Horizontal Cut ( {palmskin_dsname} ): "
+    pbar.desc = f"[ Horizontal_Cut ] {palmskin_dsname} : "
     pbar.refresh()
     
     if i%2 == 0: action = random_state.choice([True, False], size=1, replace=False)[0]
@@ -158,20 +158,19 @@ print(f"rand_choice_result = {rand_choice_result}\n")
 
 for pos in ["A", "P"]:
     
-    img_paths = sorted(save_dir_Mix_AP.glob(f"*/*{pos}*/*.tiff"), key=sort_fish_dsname)
-    pbar = tqdm(total=len(img_paths), desc=f"save_dir_Mix_AP ---copy---> save_dir_{pos}_only: ")
+    img_paths = sorted(save_dir_Mix_AP.glob(f"*/*{pos}*"), key=sort_fish_dsname)
+    pbar = tqdm(total=len(img_paths), desc=f"[ Horizontal_Cut ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only: ")
 
     for img_path in img_paths:
         
-        palmskin_dsname = str(img_path).split(os.sep)[-1].split(".")[0]
-        pbar.desc = f"save_dir_Mix_AP ---copy---> save_dir_{pos}_only ( {palmskin_dsname} ) : "
+        palmskin_dsname = str(img_path).split(os.sep)[-1]
+        pbar.desc = f"[ Horizontal_Cut ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only ( {palmskin_dsname} ) : "
         pbar.refresh()
         
         original_path = img_path
         new_path = Path(str(original_path).replace("fish_dataset_horiz_cut_1l2_Mix_AP",
                                                    f"fish_dataset_horiz_cut_1l2_{pos}_only"))
-        create_new_dir(new_path.joinpath("../").resolve(), display_in_CLI=False)
-        shutil.copy(original_path, new_path)
+        shutil.copytree(original_path, new_path)
         
         pbar.update(1)
         pbar.refresh()
