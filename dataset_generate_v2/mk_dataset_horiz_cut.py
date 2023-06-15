@@ -84,7 +84,7 @@ rand_choice_result = {"up : train, down: test": 0,
                       "up : test, down: train": 0}
 palmskin_dnames = sorted(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]), key=get_fish_id_pos)
 
-pbar = tqdm(total=len(palmskin_dnames), desc=f"[ Horizontal_Cut ] : ")
+pbar = tqdm(total=len(palmskin_dnames), desc=f"[ Horizontal Cut ] : ")
 
 for i, palmskin_dname in enumerate(palmskin_dnames):
     
@@ -100,7 +100,7 @@ for i, palmskin_dname in enumerate(palmskin_dnames):
     # get `palmskin_dsname``
     fish_id, fish_pos = get_fish_id_pos(palmskin_dname)
     palmskin_dsname = f"fish_{fish_id}_{fish_pos}"
-    pbar.desc = f"[ Horizontal_Cut ] {palmskin_dsname} : "
+    pbar.desc = f"[ Horizontal Cut ] {palmskin_dsname} : "
     pbar.refresh()
     
     if i%2 == 0: action = random_state.choice([True, False], size=1, replace=False)[0]
@@ -156,12 +156,12 @@ print(f"rand_choice_result = {rand_choice_result}\n")
 for pos in ["A", "P"]:
     
     img_paths = sorted(save_dir_Mix_AP.glob(f"*/*{pos}*"), key=sort_fish_dsname)
-    pbar = tqdm(total=len(img_paths), desc=f"[ Horizontal_Cut ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only: ")
+    pbar = tqdm(total=len(img_paths), desc=f"[ Horizontal Cut ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only: ")
 
     for img_path in img_paths:
         
         palmskin_dsname = str(img_path).split(os.sep)[-1]
-        pbar.desc = f"[ Horizontal_Cut ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only ( {palmskin_dsname} ) : "
+        pbar.desc = f"[ Horizontal Cut ] save_dir_Mix_AP ---copy---> save_dir_{pos}_only ( {palmskin_dsname} ) : "
         pbar.refresh()
         
         original_path = img_path
