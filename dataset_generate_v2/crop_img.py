@@ -67,7 +67,7 @@ assert not_found_cnt == 0, f"{Fore.RED} Can't find directories, run `mk_dataset_
 # -----------------------------------------------------------------------------------
 # Detect `CropSize_{crop_size}` directories
 
-replace = True #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
+replace = False #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
 
 existing_crop_dir = []
 for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
