@@ -308,7 +308,7 @@ def save_dark_ratio_log(log:Dict[str, float], save_dir:str, log_desc):
 
 
 
-def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]):
+def sort_fish_dsname(string_with_fish_dsname:Union[Path, str]) -> tuple:
     
     if isinstance(string_with_fish_dsname, Path): string_with_fish_dsname = str(string_with_fish_dsname)
     elif isinstance(string_with_fish_dsname, str): pass
