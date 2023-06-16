@@ -82,8 +82,8 @@ param_name_str:str = gen_dataset_param_name(clustered_xlsx_file, crop_size, shif
                                             random_seed, dict_format=False)
 if dyn_train: param_name_str = param_name_str.replace(f"{param_name_dict['intensity']}_{param_name_dict['drop_ratio']}", "DYNTRAIN")
 dataset_xlsx_path = dataset_xlsx_dir.joinpath(f"{param_name_str}.xlsx")
-assert not dataset_xlsx_path.exists(), f"{Fore.RED}{Back.BLACK} `dataset_xlsx` already exists: '{dataset_xlsx_path}' {Style.RESET_ALL}\n"
 print(f"dataset_xlsx ( plan to save @ ) : '{dataset_xlsx_path}'\n")
+assert not dataset_xlsx_path.exists(), f"{Fore.RED}{Back.BLACK} `dataset_xlsx` already exists: '{dataset_xlsx_path}' {Style.RESET_ALL}\n"
 
 # -----------------------------------------------------------------------------------
 # Load `clustered_xlsx` as DataFrame(pandas)
