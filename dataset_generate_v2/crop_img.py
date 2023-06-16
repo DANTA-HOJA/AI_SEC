@@ -84,9 +84,9 @@ for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
 
 if existing_crop_dir:
     if replace: # (config varname TBA)
-        print(f"Deleting {len(existing_crop_dir)} '{crop_dir_name}' directories... ", end="")
+        print(f"Deleting {len(existing_crop_dir)} '{crop_dir_name}' directories... ")
         for dir in existing_crop_dir: shutil.rmtree(dir)
-        print(f"{Fore.GREEN} Done! {Style.RESET_ALL}\n")
+        print(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}\n")
     else:
         raise FileExistsError(f"{Fore.YELLOW}{Back.BLACK} To re-crop the images, set `config.replace` = True {Style.RESET_ALL}\n")
 
