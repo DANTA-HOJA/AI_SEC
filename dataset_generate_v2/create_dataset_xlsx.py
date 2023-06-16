@@ -20,6 +20,9 @@ from data.utils import get_fish_id_pos
 from data.ProcessedDataInstance import ProcessedDataInstance
 from dataset.utils import gen_dataset_param_name, sort_fish_dsname, drop_too_dark, \
                           xlsx_file_name_parser
+from misc.CLIDivider import CLIDivider
+cli_divider = CLIDivider()
+cli_divider.process_start(use_tqdm=True)
 
 config_dir = Path( "./../Config/" ).resolve()
 
@@ -53,19 +56,19 @@ processed_data_instance = ProcessedDataInstance(config_dir, processed_inst_desc)
 # clustered_xlsx_path
 clustered_desc = re.split("{|}", clustered_xlsx_file)[1]
 clustered_xlsx_path = processed_data_instance.clustered_xlsx_paths_dict[clustered_desc]
-print(f"path of `clustered_xlsx`: {clustered_xlsx_path}\n")
+print(f"clustered_xlsx ( load from ) : '{clustered_xlsx_path}'\n")
 
 # dataset_dir
 instance_name = processed_data_instance.instance_name
 dataset_root = processed_data_instance.db_root.joinpath(processed_data_instance.dbpp_config["dataset_cropped_v2"])
 
 save_dir_Mix_AP = dataset_root.joinpath(instance_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP")
-assert save_dir_Mix_AP.exists(), f"{Fore.RED}{Back.BLACK} Cant' find diretory: '{save_dir_Mix_AP}' {Style.RESET_ALL}"
+assert save_dir_Mix_AP.exists(), f"{Fore.RED}{Back.BLACK} Cant' find diretory: '{save_dir_Mix_AP}' {Style.RESET_ALL}\n"
 
 # crop_dir_name
 param_name_dict = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
                                          random_seed, dict_format=True)
-crop_dir_name =  f"{param_name_dict['crop_size']}_{param_name_dict['shift_region']}_{param_name_dict['random_seed']}"
+crop_dir_name =  f"{param_name_dict['crop_size']}_{param_name_dict['shift_region']}"
 
 # dataset_xlsx_dir
 classif_strategy = xlsx_file_name_parser(clustered_xlsx_file)
@@ -76,8 +79,8 @@ create_new_dir(dataset_xlsx_dir)
 param_name_str = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
                                         random_seed, dict_format=False)
 dataset_xlsx_path = dataset_xlsx_dir.joinpath(f"{param_name_str}.xlsx")
-assert not dataset_xlsx_path.exists(), f"{Fore.RED}{Back.BLACK} `dataset_xlsx` already exists: '{dataset_xlsx_path}' {Style.RESET_ALL}"
-print(f"path of `dataset_xlsx`: {dataset_xlsx_path}\n")
+assert not dataset_xlsx_path.exists(), f"{Fore.RED}{Back.BLACK} `dataset_xlsx` already exists: '{dataset_xlsx_path}' {Style.RESET_ALL}\n"
+print(f"dataset_xlsx ( plan to save @ ) : '{dataset_xlsx_path}'\n")
 
 # -----------------------------------------------------------------------------------
 # Load `clustered_xlsx` as DataFrame(pandas)
@@ -129,7 +132,7 @@ for img_path in img_paths:
         
     if drop:
         state = "discard"
-        darkratio = select[0][2]
+        darkratio = drop[0][2]
     
     
     # create `temp_dict`
@@ -163,4 +166,9 @@ pbar.close()
 # -----------------------------------------------------------------------------------
 # Save `dataset_xlsx`
 
+print("saving `dataset_xlsx`... ", end="")
 df_dataset.to_excel(dataset_xlsx_path)
+print(f"{Fore.GREEN} Done! {Style.RESET_ALL}")
+
+# -----------------------------------------------------------------------------------
+cli_divider.process_completed()
