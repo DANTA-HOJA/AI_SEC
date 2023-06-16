@@ -166,9 +166,9 @@ pbar.close()
 # -----------------------------------------------------------------------------------
 # Save `dataset_xlsx`
 
-print("saving `dataset_xlsx`... ", end="")
+print("\nSaving `dataset_xlsx`... ")
 df_dataset.to_excel(dataset_xlsx_path)
-print(f"{Fore.GREEN} Done! {Style.RESET_ALL}")
+print(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
 
 # -----------------------------------------------------------------------------------
 cli_divider.process_completed()
