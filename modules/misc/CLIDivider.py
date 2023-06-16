@@ -20,5 +20,5 @@ class CLIDivider():
         if use_tqdm: cli_out = tqdm.write
         else: cli_out = print
         
-        cli_out(f"{Fore.GREEN}{Back.BLACK}"); cli_out("="*100)
+        cli_out(f"{Fore.GREEN}"); cli_out("="*100)
         cli_out("process complete !"); cli_out(f"{Style.RESET_ALL}")
