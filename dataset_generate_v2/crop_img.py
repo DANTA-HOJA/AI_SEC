@@ -18,6 +18,9 @@ from fileop import create_new_dir
 from data.utils import get_fish_id_pos
 from data.ProcessedDataInstance import ProcessedDataInstance
 from dataset.utils import gen_dataset_param_name, sort_fish_dsname, gen_crop_img
+from misc.CLIDivider import CLIDivider
+cli_divider = CLIDivider()
+cli_divider.process_start(use_tqdm=True)
 
 config_dir = Path( "./../Config/" ).resolve()
 
@@ -69,23 +72,23 @@ assert not_found_cnt == 0, f"{Fore.RED}{Back.BLACK} Can't find directories, run 
 
 dataset_param_name = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
                                             random_seed, dict_format=True)
-crop_dir_name =  f"{dataset_param_name['crop_size']}_{dataset_param_name['shift_region']}_{dataset_param_name['random_seed']}"
+crop_dir_name =  f"{dataset_param_name['crop_size']}_{dataset_param_name['shift_region']}"
 
 replace = False #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
 
 existing_crop_dir = []
 for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
     temp_list = list(dir.glob(f"*/*/{crop_dir_name}"))
-    print(f"{Fore.YELLOW}{Back.BLACK} Detect {len(temp_list)} '{crop_dir_name}' directories in '{dir}' {Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}{Back.BLACK} Detect {len(temp_list)} '{crop_dir_name}' directories in '{dir}' {Style.RESET_ALL}\n")
     existing_crop_dir.extend(temp_list)
 
 if existing_crop_dir:
     if replace: # (config varname TBA)
-        print(f"Deleting {len(existing_crop_dir)} '{crop_dir_name}' directories")
+        print(f"Deleting {len(existing_crop_dir)} '{crop_dir_name}' directories... ", end="")
         for dir in existing_crop_dir: shutil.rmtree(dir)
-        print("Done!")
+        print(f"{Fore.GREEN} Done! {Style.RESET_ALL}\n")
     else:
-        raise FileExistsError(f"{Fore.YELLOW}{Back.BLACK} To re-crop the images, set `config.replace` = True {Style.RESET_ALL}")
+        raise FileExistsError(f"{Fore.YELLOW}{Back.BLACK} To re-crop the images, set `config.replace` = True {Style.RESET_ALL}\n")
 
 # -----------------------------------------------------------------------------------
 # Do `Crop`
@@ -153,3 +156,6 @@ for pos in ["A", "P"]:
         pbar.refresh()
 
     pbar.close()
+
+# -----------------------------------------------------------------------------------
+cli_divider.process_completed()
