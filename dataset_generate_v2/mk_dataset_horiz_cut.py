@@ -63,7 +63,7 @@ for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
     if os.path.exists(dir): 
         print(f"{Fore.RED}{Back.BLACK} dir: '{dir}' already exists {Style.RESET_ALL}")
         exists_cnt += 1
-assert exists_cnt == 0, f"{Fore.RED} Diretory already exists, process has been halted. {Style.RESET_ALL}\n"
+assert exists_cnt == 0, f"{Fore.RED}{Back.BLACK} Directories already exists, process has been halted. {Style.RESET_ALL}\n"
 create_new_dir(save_dir_A_only)
 create_new_dir(save_dir_P_only)
 create_new_dir(save_dir_Mix_AP)

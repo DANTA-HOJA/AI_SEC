@@ -62,7 +62,7 @@ for dir in [save_dir_A_only, save_dir_P_only, save_dir_Mix_AP]:
     if not os.path.exists(dir): 
         print(f"{Fore.RED}{Back.BLACK} Can't find directory: '{dir}' {Style.RESET_ALL}")
         not_found_cnt += 1
-assert not_found_cnt == 0, f"{Fore.RED} Can't find directories, run `mk_dataset_horiz_cut.py` before crop. {Style.RESET_ALL}\n"
+assert not_found_cnt == 0, f"{Fore.RED}{Back.BLACK} Can't find directories, run `mk_dataset_horiz_cut.py` before crop. {Style.RESET_ALL}\n"
 
 # -----------------------------------------------------------------------------------
 # Detect `Crop` directories
