@@ -162,7 +162,7 @@ for img_path in img_paths:
     temp_dict["darkratio"] = darkratio
     temp_dict["state"]     = state
     # -------------------------------------------------------
-    temp_dict["path"] = img_path.relative_to(processed_data_instance.db_root)
+    temp_dict["path"] = img_path
     # -------------------------------------------------------
     temp_df = pd.DataFrame(temp_dict, index=[0])
     
