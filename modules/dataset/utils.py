@@ -47,7 +47,7 @@ def xlsx_file_name_parser(xlsx_file_name:str):
 
 
 def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, intensity:int, drop_ratio:float, 
-                           random_seed:int=None, dict_format:bool=False) -> str:
+                           random_seed:int=None, dict_format:bool=False) -> Union[dict, str]:
     """To generate dataset's name corresponing to the passing parameters.
     
     Args:
