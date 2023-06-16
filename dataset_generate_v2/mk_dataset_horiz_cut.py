@@ -19,6 +19,9 @@ from fileop import create_new_dir
 from data.utils import get_fish_id_pos
 from data.ProcessedDataInstance import ProcessedDataInstance
 from dataset.utils import sort_fish_dsname
+from misc.CLIDivider import CLIDivider
+cli_divider = CLIDivider()
+cli_divider.process_start(use_tqdm=True)
 
 config_dir = Path( "./../Config/" ).resolve()
 
@@ -36,7 +39,7 @@ crop_size    = config["gen_param"]["crop_size"]
 shift_region = config["gen_param"]["shift_region"]
 intensity    = config["gen_param"]["intensity"]
 drop_ratio   = config["gen_param"]["drop_ratio"]
-random_seed  = config["gen_param"]["random_seed"]
+random_seed  = config["gen_param"]["random_seed"] #  TODO:  資訊是否放到路徑中? ( 目前只有 `dataset_xlsx` 檔名中有 RS2022 )
 random_state = np.random.RandomState(seed=random_seed)
 
 # -----------------------------------------------------------------------------------
@@ -173,3 +176,6 @@ for pos in ["A", "P"]:
         pbar.refresh()
 
     pbar.close()
+
+# -----------------------------------------------------------------------------------
+cli_divider.process_completed()
