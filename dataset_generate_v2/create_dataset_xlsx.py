@@ -60,7 +60,7 @@ instance_name = processed_data_instance.instance_name
 dataset_root = processed_data_instance.db_root.joinpath(processed_data_instance.dbpp_config["dataset_cropped_v2"])
 
 save_dir_Mix_AP = dataset_root.joinpath(instance_name, palmskin_result_alias, "fish_dataset_horiz_cut_1l2_Mix_AP")
-assert save_dir_Mix_AP.exists(), f"Cant' find diretory: '{save_dir_Mix_AP}'"
+assert save_dir_Mix_AP.exists(), f"{Fore.RED}{Back.BLACK} Cant' find diretory: '{save_dir_Mix_AP}' {Style.RESET_ALL}"
 
 # crop_dir_name
 param_name_dict = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
