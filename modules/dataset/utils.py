@@ -104,7 +104,10 @@ def parse_dataset_param_name(dataset_param_name:str) -> dict:
     """
 
     Args:
-        dataset_param_name (str): example: `DS_SURF3C_CRPS512_SF14_INT20_DRP100_RS2022`
+        dataset_param_name (str): \n
+            1. `DS_SURF3C_CRPS512_SF14_INT20_DRP100`
+            2. `DS_SURF3C_CRPS512_SF14_INT20_DRP100_RS2022`
+            3. `DS_SURF3C_CRPS512_SF14_DYNTRAIN_RS2022`
 
     Returns:
         dict: 
@@ -112,14 +115,17 @@ def parse_dataset_param_name(dataset_param_name:str) -> dict:
     dataset_param_name_split = dataset_param_name.split("_")
     temp_dict = {}
     # temp_dict["used_feature"] = dataset_param_name_split[1].replace("") #  TODO: 
-    # temp_dict["n_class"]      = n_class #  TODO: 
+    # temp_dict["n_class"]      = dataset_param_name_split[1].replace("") #  TODO: 
     temp_dict["crop_size"]    = int(dataset_param_name_split[2].replace("CRPS", ""))
     temp_dict["shift_region"] = dataset_param_name_split[3].replace("SF1", "1/")
-    temp_dict["intensity"]    = int(dataset_param_name_split[4].replace("INT", ""))
-    temp_dict["drop_ratio"]   = int(dataset_param_name_split[5].replace("DRP", ""))/100
     
-    if len(dataset_param_name_split) == 7:
-        temp_dict["random_seed"] = int(dataset_param_name_split[6].replace("RS", ""))
+    if dataset_param_name_split[4] == "DYNTRAIN": pass
+    else: 
+        temp_dict["intensity"]    = int(dataset_param_name_split[4].replace("INT", ""))
+        temp_dict["drop_ratio"]   = int(dataset_param_name_split[5].replace("DRP", ""))/100
+    
+    if "RS" in dataset_param_name_split[-1]:
+        temp_dict["random_seed"] = int(dataset_param_name_split[-1].replace("RS", ""))
     
     return temp_dict
 
