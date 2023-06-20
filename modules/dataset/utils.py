@@ -100,6 +100,31 @@ def gen_dataset_param_name(xlsx_file:str, crop_size:int, shift_region:str, inten
 
 
 
+def parse_dataset_param_name(dataset_param_name:str) -> dict:
+    """
+
+    Args:
+        dataset_param_name (str): example: `DS_SURF3C_CRPS512_SF14_INT20_DRP100_RS2022`
+
+    Returns:
+        dict: 
+    """
+    dataset_param_name_split = dataset_param_name.split("_")
+    temp_dict = {}
+    # temp_dict["used_feature"] = dataset_param_name_split[1].replace("") #  TODO: 
+    # temp_dict["n_class"]      = n_class #  TODO: 
+    temp_dict["crop_size"]    = int(dataset_param_name_split[2].replace("CRPS", ""))
+    temp_dict["shift_region"] = dataset_param_name_split[3].replace("SF1", "1/")
+    temp_dict["intensity"]    = int(dataset_param_name_split[4].replace("INT", ""))
+    temp_dict["drop_ratio"]   = int(dataset_param_name_split[5].replace("DRP", ""))/100
+    
+    if len(dataset_param_name_split) == 7:
+        temp_dict["random_seed"] = int(dataset_param_name_split[6].replace("RS", ""))
+    
+    return temp_dict
+
+
+
 def gen_crop_img(img:cv2.Mat, crop_size:int, shift_region:str="1/1") -> List[cv2.Mat]:
     """generate the crop images using 'crop_size' and 'shift_region'
 
