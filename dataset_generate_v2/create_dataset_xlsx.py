@@ -130,7 +130,7 @@ for img_path in img_paths:
     
     # preserve / discard ( if dyn_train == False )
     if dyn_train:
-        state = "---"
+        state = "preserve"
         darkratio = "---"
     else:
         img = cv2.imread(img_path_str)
