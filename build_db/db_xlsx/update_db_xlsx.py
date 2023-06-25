@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from pathlib import Path
 import toml
 import pandas as pd
@@ -26,27 +27,60 @@ model_prediction_root = db_root.joinpath(dbpp_config["model_prediction"])
 prediction_dir_list = sorted(list(model_prediction_root.glob("*")), key=lambda x: str(x).split(os.sep)[-1])
 # prediction_dir_list = prediction_dir_list[:2]
 
-# rm "temp" directory
 prediction_dir_dict = {str(prediction_dir).split(os.sep)[-1]: prediction_dir
                                         for prediction_dir in prediction_dir_list}
-prediction_dir_dict.pop("temp")
+
+# rm "temp" and "un-tested" directory
+for name in list(prediction_dir_dict.keys()):
+    name_split = re.split("{|}", name)
+    if len(name_split) <= 5: prediction_dir_dict.pop(name)
 
 # -----------------------------------------------------------------------------------
 
 db_xlsx_name = r"{DB}_Predictions"
 db_xlsx_path = db_root.joinpath(f"{db_xlsx_name}.xlsx")
 db_xlsx = None
+existing_history_dict = {}
 
-if db_xlsx_path.exists(): db_xlsx = pd.read_excel(db_xlsx_path, index_col=0)
+if db_xlsx_path.exists():
+    
+    db_xlsx = pd.read_excel(db_xlsx_path, engine="openpyxl", index_col=0)
+
+    for name in list(db_xlsx["History Name"]):
+        name_split = re.split("{|}", name)
+        time_stamp = name_split[0]
+        model_desc = name_split[5]
+        key = f"{time_stamp}_{model_desc}"
+        # update
+        existing_history_dict.update({key : name})
 
 # -----------------------------------------------------------------------------------
 
-for prediction_dir in prediction_dir_dict.values():
-    single_pred_parser = SinglePredictionParser(prediction_dir, log=log)
-    parsed_df = single_pred_parser.parse()
-    if db_xlsx is None:
-        db_xlsx = parsed_df
+for name, path in prediction_dir_dict.items():
+    
+    name_split = re.split("{|}", name)
+    time_stamp = name_split[0]
+    model_desc = name_split[5]
+    key = f"{time_stamp}_{model_desc}"
+    
+    single_pred_parser = SinglePredictionParser(path, log=log)
+    
+    if key in existing_history_dict:
+        
+        existing_name = existing_history_dict[key]
+        
+        if name == existing_name: pass
+        else:
+            parsed_df = single_pred_parser.parse()
+            db_xlsx.loc[db_xlsx["History Name"] == existing_name] = parsed_df
+    
     else:
-        db_xlsx = pd.concat([db_xlsx, parsed_df], ignore_index=True)
+    
+        parsed_df = single_pred_parser.parse()
+        
+        if db_xlsx is None:
+            db_xlsx = parsed_df
+        else:
+            db_xlsx = pd.concat([db_xlsx, parsed_df], ignore_index=True)
 
 db_xlsx.to_excel(db_xlsx_path)
