@@ -106,6 +106,12 @@ for key in existing_history_dict.keys():
     log.info(f"{Fore.YELLOW}Delete : {Fore.MAGENTA} {existing_name} {Style.RESET_ALL}\n")
 
 # -----------------------------------------------------------------------------------
+# Sort and reset index
+
+db_xlsx = db_xlsx.sort_values("History Name")
+db_xlsx = db_xlsx.reset_index(drop=True)
+
+# -----------------------------------------------------------------------------------
 # Save `db_xlsx`
 
 if db_xlsx.equals(pd.read_excel(db_xlsx_path, engine="openpyxl", index_col=0)):
