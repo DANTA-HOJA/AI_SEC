@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+from colorama import Fore, Back, Style
 from pathlib import Path
 import toml
 import pandas as pd
@@ -71,11 +72,13 @@ for name, path in prediction_dir_dict.items():
         
         if name == existing_name: pass
         else:
+            log.info(f"{Fore.YELLOW} *** Update *** {Style.RESET_ALL}")
             parsed_df = single_pred_parser.parse()
-            db_xlsx.loc[db_xlsx["History Name"] == existing_name] = parsed_df
+            parsed_df.index = db_xlsx[(db_xlsx["History Name"] == existing_name)].index
+            db_xlsx.loc[parsed_df.index] = parsed_df
     
     else:
-    
+        log.info(f"{Fore.YELLOW} --- New History --- {Style.RESET_ALL}")
         parsed_df = single_pred_parser.parse()
         
         if db_xlsx is None:
