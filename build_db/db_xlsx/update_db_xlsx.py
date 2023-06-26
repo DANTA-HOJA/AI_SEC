@@ -114,8 +114,15 @@ db_xlsx = db_xlsx.reset_index(drop=True)
 # -----------------------------------------------------------------------------------
 # Save `db_xlsx`
 
-if db_xlsx.equals(pd.read_excel(db_xlsx_path, engine="openpyxl", index_col=0)):
-    log.info(f"{Fore.YELLOW} --- No Changed --- {Style.RESET_ALL}")
+if db_xlsx_path.exists():
+    
+    if db_xlsx.equals(pd.read_excel(db_xlsx_path, engine="openpyxl", index_col=0)):
+        log.info(f"{Fore.YELLOW} --- No Changed --- {Style.RESET_ALL}")
+    else:
+        print("Saving `db_xlsx`... ")
+        db_xlsx.to_excel(db_xlsx_path)
+        print(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
+
 else:
     print("Saving `db_xlsx`... ")
     db_xlsx.to_excel(db_xlsx_path)
