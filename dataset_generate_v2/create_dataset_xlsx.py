@@ -42,7 +42,7 @@ shift_region = config["gen_param"]["shift_region"]
 intensity    = config["gen_param"]["intensity"]
 drop_ratio   = config["gen_param"]["drop_ratio"]
 random_seed  = config["gen_param"]["random_seed"]
-dyn_train    = config["gen_param"]["dynamic_training"]
+dyn_filter   = config["gen_param"]["dynamic_filter"]
 random_state = np.random.RandomState(seed=random_seed)
 
 # -----------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ create_new_dir(dataset_xlsx_dir)
 # dataset_xlsx_path
 param_name_str:str = gen_dataset_param_name(clustered_xlsx_file, crop_size, shift_region, intensity, drop_ratio, 
                                             random_seed, dict_format=False)
-if dyn_train: param_name_str = param_name_str.replace(f"{param_name_dict['intensity']}_{param_name_dict['drop_ratio']}", "DYNTRAIN")
+if dyn_filter: param_name_str = param_name_str.replace(f"{param_name_dict['intensity']}_{param_name_dict['drop_ratio']}", "DYNFILTER")
 dataset_xlsx_path = dataset_xlsx_dir.joinpath(f"{param_name_str}.xlsx")
 print(f"dataset_xlsx ( plan to save @ ) : '{dataset_xlsx_path}'\n")
 assert not dataset_xlsx_path.exists(), f"{Fore.RED}{Back.BLACK} `dataset_xlsx` already exists: '{dataset_xlsx_path}' {Style.RESET_ALL}\n"
@@ -96,7 +96,7 @@ df_clustered_xlsx: pd.DataFrame = pd.read_excel(clustered_xlsx_path, engine = 'o
 # add column: `fish_id`
 df_clustered_xlsx['fish_id'] = df_clustered_xlsx['Anterior (SP8, .tif)'].apply(lambda x: get_fish_id_pos(x)[0])
 
-if dyn_train: 
+if dyn_filter: 
     img_paths = []
     img_paths.extend(sorted(save_dir_Mix_AP.glob(f"train/*/*.tiff"), key=sort_fish_dsname))
     img_paths.extend(sorted(save_dir_Mix_AP.glob(f"test/*/{crop_dir_name}/*.tiff"), key=sort_fish_dsname))
@@ -128,8 +128,8 @@ for img_path in img_paths:
     df_filtered_rows = df_filtered_rows.reset_index(drop=True)
     fish_class = df_filtered_rows.loc[0, "class"]
     
-    # preserve / discard ( if dyn_train == False )
-    if dyn_train:
+    # preserve / discard
+    if dyn_filter:
         state = "preserve"
         darkratio = "---"
     else:
