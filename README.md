@@ -134,3 +134,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 ### 2023/06/15
 
 - v2: 開始製作 dataset 採用標記的版本（使用 dataframe 紀錄資訊，不用一直重切 dataset）
+- v2 new feature:
+
+  1. 加入原始照片部位標記，fish_1_A → fish_1_A_U
+  2. 分 train/test 的時候，若 test 為 U，則 train 強制為 D，反之亦然
