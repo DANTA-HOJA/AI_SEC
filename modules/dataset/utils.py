@@ -107,7 +107,7 @@ def parse_dataset_param_name(dataset_param_name:str) -> dict:
         dataset_param_name (str): \n
             1. `DS_SURF3C_CRPS512_SF14_INT20_DRP100`
             2. `DS_SURF3C_CRPS512_SF14_INT20_DRP100_RS2022`
-            3. `DS_SURF3C_CRPS512_SF14_DYNTRAIN_RS2022`
+            3. `DS_SURF3C_CRPS512_SF14_DYNFILTER_RS2022`
 
     Returns:
         dict: 
@@ -119,7 +119,7 @@ def parse_dataset_param_name(dataset_param_name:str) -> dict:
     temp_dict["crop_size"]    = int(dataset_param_name_split[2].replace("CRPS", ""))
     temp_dict["shift_region"] = dataset_param_name_split[3].replace("SF1", "1/")
     
-    if dataset_param_name_split[4] == "DYNTRAIN": pass
+    if dataset_param_name_split[4] == "DYNFILTER": pass
     else: 
         temp_dict["intensity"]    = int(dataset_param_name_split[4].replace("INT", ""))
         temp_dict["drop_ratio"]   = int(dataset_param_name_split[5].replace("DRP", ""))/100
