@@ -303,6 +303,19 @@ class SinglePredictionParser():
         # -----------------------------------------------------------------------------------
     
     
+    def parse_note(self):
+        key = "(TrainConfig)"
+        target = self.scan_file(key)
+        if target is not None:
+            path, target_name = target
+            with open(path, mode="r") as f_reader: train_config = toml.load(f_reader)
+            try:
+                self.parsed_dict["Note"] = train_config["note"]
+            except KeyError:
+                self.parsed_dict["Note"] = ""
+        # -----------------------------------------------------------------------------------
+    
+    
     def parse_existing_target(self, key:str): # Just add `marker` to dict (No other advanced action)
         target = self.scan_file(key)
         if target is not None:
@@ -354,6 +367,8 @@ class SinglePredictionParser():
         self.parsed_dict["(Cam)"] = ""
         self.parse_existing_target("(Cam) Result_Dir")
         self.parse_existing_target("(Cam) Gallery_Dir")
+        # -----------------------------------------------------------------------------------
+        self.parse_note()
         
         self.parsed_dict2df()
         
