@@ -18,8 +18,8 @@ class TqdmLoggingHandler(Handler):
 
 def init_logger(logger_name:str) -> logging.Logger:
     
-    log: logging.Logger = logging.getLogger(logger_name)
-    log.setLevel(logging.DEBUG)
+    logger: logging.Logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.DEBUG)
     
     # stream_handler = StreamHandler()
     tqdm_handler = TqdmLoggingHandler()
@@ -27,6 +27,6 @@ def init_logger(logger_name:str) -> logging.Logger:
     # formatter: logging.Formatter = logging.Formatter('| %(asctime)s | %(filename)s | %(levelname)s | %(message)s')
     formatter: logging.Formatter = logging.Formatter('| %(asctime)s | %(name)s | %(levelname)s | %(message)s')
     tqdm_handler.setFormatter(formatter)
-    log.addHandler(tqdm_handler)
+    logger.addHandler(tqdm_handler)
     
-    return log
+    return logger
