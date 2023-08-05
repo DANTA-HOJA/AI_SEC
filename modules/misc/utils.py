@@ -13,6 +13,18 @@ from ..assert_fn import *
 
 
 
+def decide_cli_output(logger:Logger=None):
+    """ decide to use `print` or `logger.info` as CLI output
+    """
+    if logger:
+        cli_out = logger.info
+    else:
+        cli_out = print
+    
+    return cli_out
+
+
+
 def create_new_dir(dir:Union[str, Path], end:str="\n", 
                    display_in_CLI:bool=True, logger:Logger=None) -> None:
     """if `path` is not exist then create it.
@@ -23,10 +35,7 @@ def create_new_dir(dir:Union[str, Path], end:str="\n",
         display_in_CLI (bool, optional): whether to print on CLI. Defaults to True.
         use_tqdm (bool, optional): if the script using `tqdm` turn this on. Defaults to False.
     """
-    if logger:
-        cli_out = logger.info
-    else:
-        cli_out = print
+    cli_out = decide_cli_output(logger)
     
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -66,15 +75,12 @@ def get_repo_root() -> Path:
 def load_config(config_name:str, reserve_comment:bool=False, logger:Logger=None) -> Union[dict, TOMLDocument]:
     """ TODO
     """
+    cli_out = decide_cli_output(logger)
+    
     if reserve_comment:
         load_fn = tomlkit.load
     else:
-        load_fn = toml.load
-        
-    if logger:
-        cli_out = logger.info
-    else:
-        cli_out = print
+        load_fn = toml.load    
     
     repo_root = get_repo_root()
     found_list = list(repo_root.glob(f"**/{config_name}"))
