@@ -13,8 +13,8 @@ from ..assert_fn import *
 
 
 
-def create_new_dir(path:Union[str, Path], end:str="\n", 
-                   display_in_CLI:bool=True, use_tqdm:bool=False) -> None:
+def create_new_dir(dir:Union[str, Path], end:str="\n", 
+                   display_in_CLI:bool=True, logger:Logger=None) -> None:
     """if `path` is not exist then create it.
 
     Args:
@@ -23,15 +23,15 @@ def create_new_dir(path:Union[str, Path], end:str="\n",
         display_in_CLI (bool, optional): whether to print on CLI. Defaults to True.
         use_tqdm (bool, optional): if the script using `tqdm` turn this on. Defaults to False.
     """
-    if use_tqdm:
-        cli_out = tqdm.write
+    if logger:
+        cli_out = logger.info
     else:
         cli_out = print
     
-    if not os.path.exists(path):
-        os.makedirs(path)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
         if display_in_CLI:
-            cli_out(f"path: '{path}' is created!{end}")
+            cli_out(f"Directory: '{dir}' is created!{end}")
 
 
 
