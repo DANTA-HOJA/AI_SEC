@@ -63,8 +63,7 @@ def get_repo_root() -> Path:
 
 
 
-def load_config(root:Path, config_name:str,
-                reserve_comment:bool=False, logger:Logger=None) -> Union[dict, TOMLDocument]:
+def load_config(config_name:str, reserve_comment:bool=False, logger:Logger=None) -> Union[dict, TOMLDocument]:
     """ TODO
     """
     if reserve_comment:
@@ -77,7 +76,8 @@ def load_config(root:Path, config_name:str,
     else:
         cli_out = print
     
-    found_list = list(root.glob(f"**/{config_name}"))
+    repo_root = get_repo_root()
+    found_list = list(repo_root.glob(f"**/{config_name}"))
     assert_only_1_config(found_list, config_name)
     cli_out(f"Config Path: '{found_list[0]}'")
     
