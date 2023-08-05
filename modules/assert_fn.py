@@ -2,7 +2,7 @@ import os
 import sys
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 
 __all__ = ["assert_is_pathobj", "assert_dir_exists"]
@@ -19,7 +19,7 @@ def assert_only_1_config(found_list:List[Path], config_name:str):
     assert len(found_list) == 1, f"Multiple config files, {found_list}"
 
 
-def assert_run_under_repo_root(target_idx):
+def assert_run_under_repo_root(target_idx:Union[int, None]):
     """ This assertion is for `get_repo_root()` only.
 
     Args:
