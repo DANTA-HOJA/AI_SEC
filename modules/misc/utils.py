@@ -60,15 +60,20 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
 
 
 
-def get_repo_root() -> Path:
+def get_repo_root(logger:Logger=None) -> Path:
     """ TODO
     """
+    cli_out = decide_cli_output(logger)
+    
     path_split = os.path.abspath(".").split(os.sep)
     target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
     assert_run_under_repo_root(target_idx)
-    repo_root = os.sep.join(path_split[:target_idx+1])
     
-    return Path(repo_root)
+    """ generate path """
+    repo_root = Path(os.sep.join(path_split[:target_idx+1]))
+    cli_out(f"Repository: '{repo_root}'")
+    
+    return repo_root
 
 
 
