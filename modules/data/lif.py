@@ -254,7 +254,7 @@ class LIFNameChecker():
 def scan_lifs_under_dir(dir:Path, batches:list, logger:Logger=None) -> list:
     """ Scan Leica LIF file
     """
-    assert_is_pathobj(dir)
+    assert_dir_exists(dir)
     cli_out = decide_cli_output(logger)
     lif_path_list = []
     

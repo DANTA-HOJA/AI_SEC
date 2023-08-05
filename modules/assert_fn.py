@@ -18,3 +18,8 @@ def assert_run_under_repo_root(target_idx):
 def assert_is_pathobj(dir:Path):
     assert isinstance(dir, Path), ("The given path should be a `Path` object, "
                                    "please using `from pathlib import Path`")
+
+
+def assert_dir_exists(dir:Path):
+    assert_is_pathobj(dir)
+    assert dir.exists(), f"Can't find directory: '{dir.resolve()}'"
