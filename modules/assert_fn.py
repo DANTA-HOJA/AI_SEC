@@ -42,3 +42,8 @@ def assert_dir_exists(dir:Path):
     """
     assert_is_pathobj(dir)
     assert dir.exists(), f"Can't find directory: '{dir.resolve()}'"
+
+
+def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
+    assert len(name_split) == 4, (f"file_name format error, current : '{lif_name}', "
+                                  f"expect like : '20221125_AI005_palmskin_10dpf.lif'")
