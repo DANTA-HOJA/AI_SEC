@@ -9,6 +9,8 @@ import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
+from get_path import get_repo_root
+
 from ..assert_fn import *
 from ..assert_fn import assert_only_1_config, assert_run_under_repo_root
 
@@ -58,21 +60,6 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
                 raise ValueError(f"Too many '{target_str}' in list")
     
     return target_idx
-
-
-
-def get_repo_root() -> Path:
-    """ TODO
-    """
-    
-    path_split = os.path.abspath(".").split(os.sep)
-    target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
-    assert_run_under_repo_root(target_idx)
-    
-    """ generate path """
-    repo_root = os.sep.join(path_split[:target_idx+1])
-    
-    return Path(repo_root)
 
 
 

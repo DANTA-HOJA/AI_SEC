@@ -6,10 +6,26 @@ from typing import List, Dict, Tuple, Union
 from logging import Logger
 from tomlkit.toml_document import TOMLDocument
 
-from utils import decide_cli_output
+from utils import decide_cli_output, get_target_str_idx_in_list
 
 from ..assert_fn import *
-from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
+from ..assert_fn import assert_run_under_repo_root, assert_0_or_1_instance_root, \
+                        assert_0_or_1_palmskin_preprocess_dir
+
+
+def get_repo_root() -> Path:
+    """ TODO
+    """
+    
+    path_split = os.path.abspath(".").split(os.sep)
+    target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
+    assert_run_under_repo_root(target_idx)
+    
+    """ generate path """
+    repo_root = os.sep.join(path_split[:target_idx+1])
+    
+    return Path(repo_root)
+
 
 
 def get_fiji_local_path(dbpp_config:Union[dict, TOMLDocument], logger:Logger=None) -> str:
