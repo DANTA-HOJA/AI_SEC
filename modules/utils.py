@@ -9,8 +9,8 @@ import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from ..assert_fn import *
-from ..assert_fn import assert_only_1_config, assert_run_under_repo_root
+from assert_fn import *
+from assert_fn import assert_only_1_config, assert_run_under_repo_root
 
 
 
@@ -98,7 +98,7 @@ def load_config(config_name:str, reserve_comment:bool=False, logger:Logger=None)
 
 
 
-def get_maxlength_of_dictkeys(eval_dict:dict) -> int:
+def get_maxlength_in_dictkeys(eval_dict:dict) -> int:
     """ TODO
     """
     max_length = 0
@@ -126,7 +126,7 @@ def get_attr_formatstring(object:object, attr:str) -> Union[str, TypeError]:
         if isinstance(obj, dict):
             """ An align dict for pretty CLI output """
             align_dict = {}
-            maxlen = get_maxlength_of_dictkeys(obj)
+            maxlen = get_maxlength_in_dictkeys(obj)
             for key, value in obj.items():
                 align_dict[f"{key:^{maxlen+2}}"] = value
             """ json format """
