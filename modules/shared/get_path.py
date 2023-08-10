@@ -8,8 +8,8 @@ from tomlkit.toml_document import TOMLDocument
 
 from utils import decide_cli_output
 
-from assert_fn import *
-from assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
+from ..assert_fn import *
+from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
 
 
 def get_fiji_local_path(dbpp_config:Union[dict, TOMLDocument], logger:Logger=None) -> str:
