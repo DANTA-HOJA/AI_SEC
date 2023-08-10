@@ -3,6 +3,7 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Union
+import json
 
 
 __all__ = ["assert_is_pathobj", "assert_dir_exists"]
@@ -16,7 +17,7 @@ def assert_only_1_config(found_list:List[Path], config_name:str):
         config_name (str): The name of config to find
     """
     assert len(found_list) > 0, f"Can't find any '{config_name}' ."
-    assert len(found_list) == 1, f"Multiple config files, {found_list}"
+    assert len(found_list) == 1, f"Multiple config files, {json.dumps([str(path) for path in found_list], indent=2)}"
 
 
 def assert_run_under_repo_root(target_idx:Union[int, None]):
@@ -58,5 +59,16 @@ def assert_0_or_1_instance_root(found_list:List[Path], instance_desc:str):
         found_list (List[Path]): A result after running `Path.glob()`
         instance_desc (str): The description of data instance to find
     """
-    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, {found_list} "
+    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, "
+                                  f"{json.dumps([str(path) for path in found_list], indent=2)} "
                                   f"{instance_desc} in `0.2.preprocess_palmskin.toml` is not unique")
+
+
+def assert_0_or_1_palmskin_preprocess_dir(found_list:List[Path]):
+    """ This assertion is for `get_palmskin_preprocess_dir()` only
+
+    Args:
+        found_list (List[Path]): A result after running `Path.glob()`
+    """
+    assert len(found_list) <= 1, (f"{len(found_list)} directories are found, only one `PalmSkin_preprocess` is accepted. "
+                                  f"Found: {json.dumps([str(path) for path in found_list], indent=2)}")

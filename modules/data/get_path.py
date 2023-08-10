@@ -9,7 +9,7 @@ from tomlkit.toml_document import TOMLDocument
 from ..misc.utils import decide_cli_output, load_config
 
 from ..assert_fn import *
-from ..assert_fn import assert_0_or_1_instance_root
+from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
 
 
 def get_fiji_local_path(dbpp_config:Union[dict, TOMLDocument], logger:Logger=None) -> str:
@@ -83,3 +83,34 @@ def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
     cli_out(f"Instance Root: '{instance_root}'")
     
     return instance_root
+
+
+
+def get_palmskin_preprocess_dir(dbpp_config:Union[dict, TOMLDocument],
+                                config:Union[dict, TOMLDocument], logger:Logger=None) -> Path:
+    """
+    """
+    cli_out = decide_cli_output(logger)
+    
+    """ `dbpp_config` keywords """
+    db_root = Path(dbpp_config["root"])
+    assert_dir_exists(db_root)
+    
+    """ config keywords """
+    palmskin_reminder = config["data_processed"]["palmskin_reminder"]
+    
+    """ Scan path """
+    instance_root = get_instance_root(dbpp_config, config, logger)
+    found_list = list(instance_root.glob(f"*PalmSkin_preprocess*"))
+    assert_0_or_1_palmskin_preprocess_dir(found_list)
+    
+    """ Assign path """
+    if found_list:
+        palmskin_preprocess_dir = found_list[0]
+    else:
+        palmskin_preprocess_dir = instance_root.joinpath(f"{{{palmskin_reminder}}}_PalmSkin_preprocess")
+    
+    """ CLI output """
+    cli_out(f"Palmskin Preprocess Dir: '{palmskin_preprocess_dir}'")
+    
+    return palmskin_preprocess_dir
