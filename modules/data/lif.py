@@ -251,7 +251,7 @@ class LIFNameChecker():
 
 
 
-def scan_lifs_under_dir(dir:Path, batches:list, logger:Logger=None) -> list:
+def scan_lifs_under_dir(dir:Path, batches:list, logger:Logger=None) -> List[str]:
     """ Scan Leica LIF file
     """
     assert_dir_exists(dir)
@@ -265,7 +265,7 @@ def scan_lifs_under_dir(dir:Path, batches:list, logger:Logger=None) -> list:
     else:
         lif_path_list = list(dir.glob("**/*.lif"))
     
-    lif_path_list = [f"{lif_path}" for lif_path in lif_path_list]
+    lif_path_list = [str(lif_path) for lif_path in lif_path_list]
     lif_path_list.sort(key=lambda x: x.split(os.sep)[-1])
     
     formatted = json.dumps(lif_path_list, indent=4)
