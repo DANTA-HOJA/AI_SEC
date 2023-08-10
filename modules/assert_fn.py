@@ -45,5 +45,18 @@ def assert_dir_exists(dir:Path):
 
 
 def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
+    """
+    """
     assert len(name_split) == 4, (f"file_name format error, current : '{lif_name}', "
                                   f"expect like : '20221125_AI005_palmskin_10dpf.lif'")
+
+
+def assert_0_or_1_instance_root(found_list:List[Path], instance_desc:str):
+    """ This assertion is for `get_instance_root()` only
+
+    Args:
+        found_list (List[Path]): A result after running `Path.glob()`
+        instance_desc (str): The description of data instance to find
+    """
+    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, {found_list} "
+                                  f"{instance_desc} in `0.2.preprocess_palmskin.toml` is not unique")
