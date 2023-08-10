@@ -21,7 +21,7 @@ def get_repo_root() -> Path:
     target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
     assert_run_under_repo_root(target_idx)
     
-    """ generate path """
+    """ Generate path """
     repo_root = os.sep.join(path_split[:target_idx+1])
     
     return Path(repo_root)
