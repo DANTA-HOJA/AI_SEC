@@ -9,7 +9,7 @@ from jpype.types import *  # Pull in types
 import scyjava as sj       # scyjava : Supercharged Java access from Python, see https://github.com/scijava/scyjava
 import imagej              # pyimagej
 
-from ..get_path import get_fiji_local_path
+from ...shared.get_path import get_fiji_local_path
 
 
 class ZFIJ():
