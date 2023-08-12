@@ -42,7 +42,7 @@ class ZFIJ():
         
         """ Get path of Fiji(ImageJ) """
         dbpp_config = load_config("db_path_plan.toml")
-        self.fiji_local = get_fiji_local_dir(dbpp_config)
+        self.fiji_local = get_fiji_local_dir(dbpp_config, display_on_CLI=True)
         
         """ Different methods to start ImageJ """
         # ij = imagej.init(fiji_local) # Same as "ij = imagej.init(fiji_local, mode='headless')", PyImageJ’s default mode is headless
