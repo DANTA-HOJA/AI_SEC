@@ -6,7 +6,7 @@ from typing import List, Dict, Tuple
 from logging import Logger
 import json
 
-from ..misc.utils import decide_cli_output, get_attr_formatstring
+from ..shared.utils import decide_cli_output, get_attr_formatstring
 from ..assert_fn import *
 
 
