@@ -9,11 +9,8 @@ import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from get_path import get_repo_root
-
 from ..assert_fn import *
-from ..assert_fn import assert_only_1_config, assert_run_under_repo_root
-
+from ..assert_fn import assert_run_under_repo_root, assert_only_1_config 
 
 
 def decide_cli_output(logger:Logger=None):
@@ -30,13 +27,13 @@ def decide_cli_output(logger:Logger=None):
 
 def create_new_dir(dir:Union[str, Path], end:str="\n", 
                    display_in_CLI:bool=True, logger:Logger=None) -> None:
-    """if `path` is not exist then create it.
+    """ if `path` is not exist then create it.
 
     Args:
-        path (Union[str, Path]): a path
-        end (str, optional): control the end of string show on CLI. Defaults to "\n".
-        display_in_CLI (bool, optional): whether to print on CLI. Defaults to True.
-        use_tqdm (bool, optional): if the script using `tqdm` turn this on. Defaults to False.
+        dir (Union[str, Path]): a path
+        end (str, optional): control the end of message show on CLI. Defaults to [NewLine].
+        display_in_CLI (bool, optional): show message on CLI. Defaults to True.
+        logger (Logger, optional): if logger is given, use it to show message. Defaults to None.
     """
     cli_out = decide_cli_output(logger)
     
@@ -60,6 +57,21 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
                 raise ValueError(f"Too many '{target_str}' in list")
     
     return target_idx
+
+
+
+def get_repo_root() -> Path:
+    """ TODO
+    """
+    
+    path_split = os.path.abspath(".").split(os.sep)
+    target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
+    assert_run_under_repo_root(target_idx)
+    
+    """ Generate path """
+    repo_root = os.sep.join(path_split[:target_idx+1])
+    
+    return Path(repo_root)
 
 
 
