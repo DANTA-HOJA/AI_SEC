@@ -25,21 +25,21 @@ def decide_cli_output(logger:Logger=None):
 
 
 
-def create_new_dir(dir:Union[str, Path], end:str="\n", 
-                   display_in_CLI:bool=True, logger:Logger=None) -> None:
+def create_new_dir(dir:Union[str, Path], end:str="\n",
+                   display_on_CLI:bool=True, logger:Logger=None) -> None:
     """ if `path` is not exist then create it.
 
     Args:
         dir (Union[str, Path]): a path
         end (str, optional): control the end of message show on CLI. Defaults to [NewLine].
-        display_in_CLI (bool, optional): show message on CLI. Defaults to True.
+        display_on_CLI (bool, optional): show message on CLI. Defaults to True.
         logger (Logger, optional): if logger is given, use it to show message. Defaults to None.
     """
     cli_out = decide_cli_output(logger)
     
     if not os.path.exists(dir):
         os.makedirs(dir)
-        if display_in_CLI:
+        if display_on_CLI:
             cli_out(f"Directory: '{dir}' is created!{end}")
 
 
@@ -60,10 +60,12 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
 
 
 
-def get_repo_root() -> Path:
+def get_repo_root(display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """ TODO
     """
+    cli_out = decide_cli_output(logger)
     
+    """ Analyze """ 
     path_split = os.path.abspath(".").split(os.sep)
     target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
     assert_run_under_repo_root(target_idx)
@@ -71,11 +73,16 @@ def get_repo_root() -> Path:
     """ Generate path """
     repo_root = os.sep.join(path_split[:target_idx+1])
     
+    """ CLI output """
+    if display_on_CLI:
+        cli_out(f"Repository: '{repo_root}'")
+    
     return Path(repo_root)
 
 
 
-def load_config(config_name:str, reserve_comment:bool=False, logger:Logger=None) -> Union[dict, TOMLDocument]:
+def load_config(config_name:str, reserve_comment:bool=False,
+                display_on_CLI:bool=False, logger:Logger=None) -> Union[dict, TOMLDocument]:
     """ TODO
     """
     cli_out = decide_cli_output(logger)
@@ -83,12 +90,14 @@ def load_config(config_name:str, reserve_comment:bool=False, logger:Logger=None)
     if reserve_comment:
         load_fn = tomlkit.load
     else:
-        load_fn = toml.load    
+        load_fn = toml.load
     
     repo_root = get_repo_root()
     found_list = list(repo_root.glob(f"**/{config_name}"))
     assert_only_1_config(found_list, config_name)
-    cli_out(f"Config Path: '{found_list[0]}'")
+    
+    if display_on_CLI:
+        cli_out(f"Config Path: '{found_list[0]}'")
     
     with open(found_list[0], mode="r") as f_reader:
         config = load_fn(f_reader)
