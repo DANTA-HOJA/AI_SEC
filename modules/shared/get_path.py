@@ -58,9 +58,8 @@ def get_lif_scan_root(dbpp_config:Union[dict, TOMLDocument],
 
 
 
-def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
-                      config:Union[dict, TOMLDocument],
-                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
+def get_data_processed_root(dbpp_config:Union[dict, TOMLDocument],
+                            display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
     cli_out = decide_cli_output(logger)
@@ -68,13 +67,29 @@ def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
     """ `dbpp_config` keywords """
     db_root = Path(dbpp_config["root"])
     assert_dir_exists(db_root)
+    data_processed_root = db_root.joinpath(dbpp_config["data_processed"])
+    assert_dir_exists(data_processed_root)
+    
+    """ CLI output """
+    if display_on_CLI:
+        cli_out(f"Data Processed Root: '{data_processed_root}'")
+        
+    return data_processed_root
+
+
+
+def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
+                      config:Union[dict, TOMLDocument],
+                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
+    """
+    """
+    cli_out = decide_cli_output(logger)
     
     """ config keywords """
     instance_desc = config["data_processed"]["instance_desc"]
     
     """ Scan path """
-    data_processed_root = db_root.joinpath(dbpp_config["data_processed"])
-    assert_dir_exists(data_processed_root)
+    data_processed_root = get_data_processed_root(dbpp_config)
     found_list = list(data_processed_root.glob(f"{{{instance_desc}}}*"))
     assert_0_or_1_instance_root(found_list, instance_desc)
     
