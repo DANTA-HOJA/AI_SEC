@@ -6,17 +6,19 @@ from typing import List, Dict, Tuple, Union
 from logging import Logger
 from tomlkit.toml_document import TOMLDocument
 
-from .utils import decide_cli_output
+from .utils import decide_cli_output, load_config
 
 from ..assert_fn import *
 from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
 
 
-def get_fiji_local_dir(dbpp_config:Union[dict, TOMLDocument],
-                       display_on_CLI:bool=False, logger:Logger=None) -> str:
+def get_fiji_local_dir(display_on_CLI:bool=False, logger:Logger=None) -> str:
     """
     """
     cli_out = decide_cli_output(logger)
+    
+    """ Load `dbpp_config` """
+    dbpp_config = load_config("db_path_plan.toml")
     
     """ `dbpp_config` keywords """
     fiji_local = Path(dbpp_config["fiji_local"])
@@ -30,24 +32,46 @@ def get_fiji_local_dir(dbpp_config:Union[dict, TOMLDocument],
 
 
 
-def get_lif_scan_root(dbpp_config:Union[dict, TOMLDocument],
-                      config:Union[dict, TOMLDocument],
-                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
+def get_one_of_dbpp_roots(dbpp_key:str, display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
     cli_out = decide_cli_output(logger)
     
+    """ Load `dbpp_config` """
+    dbpp_config = load_config("db_path_plan.toml")
+    
     """ `dbpp_config` keywords """
     db_root = Path(dbpp_config["root"])
     assert_dir_exists(db_root)
-    data_nasdl = dbpp_config["data_nasdl"]
+    chosen_root = db_root.joinpath(dbpp_config[dbpp_key])
+    assert_dir_exists(chosen_root)
+    
+    """ CLI output """
+    if display_on_CLI:
+        str_split = dbpp_key.split("_")
+        abbr_list = ["nasdl", "cmd"]
+        for word in str_split:
+            if word in abbr_list: abbr_list.append(word.upper())
+            else: word = abbr_list.append(word.capitalize())
+        cli_out(f"{' '.join(abbr_list[2:])} Root: '{chosen_root}'")
+        
+    return chosen_root
+
+
+
+def get_lif_scan_root(config:Union[dict, TOMLDocument],
+                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
+    """
+    """
+    cli_out = decide_cli_output(logger)
     
     """ config keywords """
     nasdl_dir = config["data_nasdl"]["dir"]
     nasdl_type = config["data_nasdl"]["type"]
     
     """ Generate path """
-    lif_scan_root = db_root.joinpath(data_nasdl, nasdl_dir, nasdl_type)
+    data_nasdl_root = get_one_of_dbpp_roots("data_nasdl")
+    lif_scan_root = data_nasdl_root.joinpath(nasdl_dir, nasdl_type)
     assert_dir_exists(lif_scan_root)
     
     """ CLI output """
@@ -58,28 +82,7 @@ def get_lif_scan_root(dbpp_config:Union[dict, TOMLDocument],
 
 
 
-def get_data_processed_root(dbpp_config:Union[dict, TOMLDocument],
-                            display_on_CLI:bool=False, logger:Logger=None) -> Path:
-    """
-    """
-    cli_out = decide_cli_output(logger)
-    
-    """ `dbpp_config` keywords """
-    db_root = Path(dbpp_config["root"])
-    assert_dir_exists(db_root)
-    data_processed_root = db_root.joinpath(dbpp_config["data_processed"])
-    assert_dir_exists(data_processed_root)
-    
-    """ CLI output """
-    if display_on_CLI:
-        cli_out(f"Data Processed Root: '{data_processed_root}'")
-        
-    return data_processed_root
-
-
-
-def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
-                      config:Union[dict, TOMLDocument],
+def get_instance_root(config:Union[dict, TOMLDocument],
                       display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
@@ -89,7 +92,7 @@ def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
     instance_desc = config["data_processed"]["instance_desc"]
     
     """ Scan path """
-    data_processed_root = get_data_processed_root(dbpp_config)
+    data_processed_root = get_one_of_dbpp_roots("data_processed")
     found_list = list(data_processed_root.glob(f"{{{instance_desc}}}*"))
     assert_0_or_1_instance_root(found_list, instance_desc)
     
@@ -107,8 +110,7 @@ def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
 
 
 
-def get_palmskin_preprocess_dir(dbpp_config:Union[dict, TOMLDocument],
-                                config:Union[dict, TOMLDocument],
+def get_palmskin_preprocess_dir(config:Union[dict, TOMLDocument],
                                 display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
@@ -118,7 +120,7 @@ def get_palmskin_preprocess_dir(dbpp_config:Union[dict, TOMLDocument],
     palmskin_reminder = config["data_processed"]["palmskin_reminder"]
     
     """ Scan path """
-    instance_root = get_instance_root(dbpp_config, config)
+    instance_root = get_instance_root(config)
     found_list = list(instance_root.glob(f"*PalmSkin_preprocess*"))
     assert_0_or_1_palmskin_preprocess_dir(found_list)
     
