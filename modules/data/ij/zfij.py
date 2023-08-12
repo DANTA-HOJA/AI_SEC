@@ -9,8 +9,8 @@ from jpype.types import *  # Pull in types
 import scyjava as sj       # scyjava : Supercharged Java access from Python, see https://github.com/scijava/scyjava
 import imagej              # pyimagej
 
+from ...shared.logger import init_logger
 from ...shared.get_path import get_fiji_local_dir
-from ...shared.utils import load_config
 
 
 class ZFIJ():
@@ -18,6 +18,11 @@ class ZFIJ():
     def __init__(self) -> None:
         """ Initialize `ImageJ` and the necessary components used in `ZebraFish_AP_POS`
         """
+        self._logger = init_logger(r"Zebrafish IJ")
+        self._display_kwargs = {
+            "display_on_CLI": True,
+            "logger": self._logger
+        }
         
         """ Store `Current Working Directory(cwd)` and `sys.stdout` """
         orig_wd = os.getcwd()
@@ -33,7 +38,8 @@ class ZFIJ():
     
     
     def _init_imagej(self):
-        
+        """
+        """
         """ JVM Configurations """
         # NOTE: The ImageJ2 gateway is initialized through a Java Virtual Machine (JVM). 
         #       If you want to configure the JVM, it must be done before initializing an ImageJ2 gateway.
@@ -41,8 +47,7 @@ class ZFIJ():
         sj.config.endpoints.append('ome:formats-gpl:6.11.1')
         
         """ Get path of Fiji(ImageJ) """
-        dbpp_config = load_config("db_path_plan.toml")
-        self.fiji_local = get_fiji_local_dir(dbpp_config, display_on_CLI=True)
+        self.fiji_local = get_fiji_local_dir(**self._display_kwargs)
         
         """ Different methods to start ImageJ """
         # ij = imagej.init(fiji_local) # Same as "ij = imagej.init(fiji_local, mode='headless')", PyImageJ’s default mode is headless
@@ -55,7 +60,8 @@ class ZFIJ():
     
     
     def _init_other_components(self):
-        
+        """
+        """
         # Bio-Format Reader
         loci = jpype.JPackage("loci")
         loci.common.DebugTools.setRootLevel("ERROR")
@@ -78,5 +84,16 @@ class ZFIJ():
     
     
     def _redirect_fn(self):
-        
+        """
+        """
         self.run = self.ij.IJ.run
+    
+    
+    def reset_all(self):
+        """
+        """
+        if int(self.roiManager.getCount()) > 0:
+            self.roiManager.runCommand("Deselect")
+            self.roiManager.runCommand("Delete")
+            self.run("Clear Results", "")
+        self.run("Close All", "")
