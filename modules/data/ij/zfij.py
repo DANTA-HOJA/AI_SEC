@@ -9,7 +9,8 @@ from jpype.types import *  # Pull in types
 import scyjava as sj       # scyjava : Supercharged Java access from Python, see https://github.com/scijava/scyjava
 import imagej              # pyimagej
 
-from ...shared.get_path import get_fiji_local_path
+from ...shared.get_path import get_fiji_local_dir
+from ...shared.utils import load_config
 
 
 class ZFIJ():
@@ -40,7 +41,8 @@ class ZFIJ():
         sj.config.endpoints.append('ome:formats-gpl:6.11.1')
         
         """ Get path of Fiji(ImageJ) """
-        self.fiji_local = get_fiji_local_path()
+        dbpp_config = load_config("db_path_plan.toml")
+        self.fiji_local = get_fiji_local_dir(dbpp_config)
         
         """ Different methods to start ImageJ """
         # ij = imagej.init(fiji_local) # Same as "ij = imagej.init(fiji_local, mode='headless')", PyImageJ’s default mode is headless
