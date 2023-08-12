@@ -89,7 +89,7 @@ class ZFIJ():
         self.run = self.ij.IJ.run
     
     
-    def reset_all(self):
+    def reset_all_window(self):
         """
         """
         if int(self.roiManager.getCount()) > 0:
