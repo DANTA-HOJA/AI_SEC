@@ -12,7 +12,8 @@ from ..assert_fn import *
 from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
 
 
-def get_fiji_local_path(dbpp_config:Union[dict, TOMLDocument], logger:Logger=None) -> str:
+def get_fiji_local_dir(dbpp_config:Union[dict, TOMLDocument],
+                       display_on_CLI:bool=False, logger:Logger=None) -> str:
     """
     """
     cli_out = decide_cli_output(logger)
@@ -22,14 +23,16 @@ def get_fiji_local_path(dbpp_config:Union[dict, TOMLDocument], logger:Logger=Non
     assert_dir_exists(fiji_local)
     
     """ CLI output """
-    cli_out(f"Fiji Local: '{fiji_local}'")
+    if display_on_CLI:
+        cli_out(f"Fiji Local: '{fiji_local}'")
     
     return str(fiji_local)
 
 
 
 def get_lif_scan_root(dbpp_config:Union[dict, TOMLDocument],
-                      config:Union[dict, TOMLDocument], logger:Logger=None) -> Path:
+                      config:Union[dict, TOMLDocument],
+                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
     cli_out = decide_cli_output(logger)
@@ -48,14 +51,16 @@ def get_lif_scan_root(dbpp_config:Union[dict, TOMLDocument],
     assert_dir_exists(lif_scan_root)
     
     """ CLI output """
-    cli_out(f"LIF Scan Root: '{lif_scan_root}'")
+    if display_on_CLI:
+        cli_out(f"LIF Scan Root: '{lif_scan_root}'")
     
     return lif_scan_root
 
 
 
 def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
-                      config:Union[dict, TOMLDocument], logger:Logger=None) -> Path:
+                      config:Union[dict, TOMLDocument],
+                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
     cli_out = decide_cli_output(logger)
@@ -80,14 +85,16 @@ def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
         instance_root = data_processed_root.joinpath(f"{{{instance_desc}}}_Academia_Sinica_iTBA")
     
     """ CLI output """
-    cli_out(f"Instance Root: '{instance_root}'")
+    if display_on_CLI:
+        cli_out(f"Instance Root: '{instance_root}'")
     
     return instance_root
 
 
 
 def get_palmskin_preprocess_dir(dbpp_config:Union[dict, TOMLDocument],
-                                config:Union[dict, TOMLDocument], logger:Logger=None) -> Path:
+                                config:Union[dict, TOMLDocument],
+                                display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
     cli_out = decide_cli_output(logger)
@@ -111,6 +118,7 @@ def get_palmskin_preprocess_dir(dbpp_config:Union[dict, TOMLDocument],
         palmskin_preprocess_dir = instance_root.joinpath(f"{{{palmskin_reminder}}}_PalmSkin_preprocess")
     
     """ CLI output """
-    cli_out(f"Palmskin Preprocess Dir: '{palmskin_preprocess_dir}'")
+    if display_on_CLI:
+        cli_out(f"Palmskin Preprocess Dir: '{palmskin_preprocess_dir}'")
     
     return palmskin_preprocess_dir
