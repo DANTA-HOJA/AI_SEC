@@ -75,7 +75,7 @@ def get_instance_root(dbpp_config:Union[dict, TOMLDocument],
     """ Scan path """
     data_processed_root = db_root.joinpath(dbpp_config["data_processed"])
     assert_dir_exists(data_processed_root)
-    found_list = list(data_processed_root.glob(f"*{instance_desc}*"))
+    found_list = list(data_processed_root.glob(f"{{{instance_desc}}}*"))
     assert_0_or_1_instance_root(found_list, instance_desc)
     
     """ Assign path """
@@ -99,15 +99,11 @@ def get_palmskin_preprocess_dir(dbpp_config:Union[dict, TOMLDocument],
     """
     cli_out = decide_cli_output(logger)
     
-    """ `dbpp_config` keywords """
-    db_root = Path(dbpp_config["root"])
-    assert_dir_exists(db_root)
-    
     """ config keywords """
     palmskin_reminder = config["data_processed"]["palmskin_reminder"]
     
     """ Scan path """
-    instance_root = get_instance_root(dbpp_config, config, logger)
+    instance_root = get_instance_root(dbpp_config, config)
     found_list = list(instance_root.glob(f"*PalmSkin_preprocess*"))
     assert_0_or_1_palmskin_preprocess_dir(found_list)
     
