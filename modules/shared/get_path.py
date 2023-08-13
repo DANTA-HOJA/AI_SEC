@@ -9,7 +9,7 @@ from tomlkit.toml_document import TOMLDocument
 from .utils import decide_cli_output, load_config
 
 from ..assert_fn import *
-from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_palmskin_preprocess_dir
+from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_processed_dir
 
 
 def get_fiji_local_dir(display_on_CLI:bool=False, logger:Logger=None) -> str:
@@ -82,7 +82,7 @@ def get_lif_scan_root(config:Union[dict, TOMLDocument],
 
 
 
-def get_instance_root(config:Union[dict, TOMLDocument],
+def get_data_instance_root(config:Union[dict, TOMLDocument],
                       display_on_CLI:bool=False, logger:Logger=None) -> Path:
     """
     """
@@ -110,28 +110,39 @@ def get_instance_root(config:Union[dict, TOMLDocument],
 
 
 
-def get_palmskin_preprocess_dir(config:Union[dict, TOMLDocument],
-                                display_on_CLI:bool=False, logger:Logger=None) -> Path:
-    """
+def get_processed_dir(image_type:str, config:Union[dict, TOMLDocument],
+                      display_on_CLI:bool=False, logger:Logger=None) -> Path:
+    """ Get one of processed directories,
+    
+    1. `{[palmskin_reminder]}_PalmSkin_preprocess` or
+    2. `{[brightfield_reminder]}_BrightField_analyze`
+    
+    Args:
+        image_type (str): `palmskin` or `brightfield`
     """
     cli_out = decide_cli_output(logger)
     
-    """ config keywords """
-    palmskin_reminder = config["data_processed"]["palmskin_reminder"]
+    """ Assign `target_text` """
+    if image_type == "palmskin":
+        target_text = "PalmSkin_preprocess"
+    elif image_type == "brightfield":
+        target_text = "BrightField_analyze"
+    else: raise ValueError(f"Can't recognize arg: '{image_type}'")
     
     """ Scan path """
-    instance_root = get_instance_root(config)
-    found_list = list(instance_root.glob(f"*PalmSkin_preprocess*"))
-    assert_0_or_1_palmskin_preprocess_dir(found_list)
+    instance_root = get_data_instance_root(config)
+    found_list = list(instance_root.glob(f"*{target_text}*"))
+    assert_0_or_1_processed_dir(found_list, target_text)
     
     """ Assign path """
     if found_list:
-        palmskin_preprocess_dir = found_list[0]
+        processed_dir = found_list[0]
     else:
-        palmskin_preprocess_dir = instance_root.joinpath(f"{{{palmskin_reminder}}}_PalmSkin_preprocess")
+        reminder = config["data_processed"][f"{image_type}_reminder"]
+        processed_dir = instance_root.joinpath(f"{{{reminder}}}_{target_text}")
     
     """ CLI output """
     if display_on_CLI:
-        cli_out(f"Palmskin Preprocess Dir: '{palmskin_preprocess_dir}'")
+        cli_out(f"{image_type.capitalize()} Processed Dir: '{processed_dir}'")
     
-    return palmskin_preprocess_dir
+    return processed_dir
