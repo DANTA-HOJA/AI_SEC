@@ -61,14 +61,14 @@ def assert_0_or_1_instance_root(found_list:List[Path], instance_desc:str):
     """
     assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, "
                                   f"{json.dumps([str(path) for path in found_list], indent=2)} "
-                                  f"{instance_desc} in `0.2.preprocess_palmskin.toml` is not unique")
+                                  f"{instance_desc} in `toml_config` is not unique")
 
 
-def assert_0_or_1_palmskin_preprocess_dir(found_list:List[Path]):
-    """ This assertion is for `get_palmskin_preprocess_dir()` only
+def assert_0_or_1_processed_dir(found_list:List[Path], target_text:str):
+    """ This assertion is for `get_processed_dir()` only
 
     Args:
         found_list (List[Path]): A result after running `Path.glob()`
     """
-    assert len(found_list) <= 1, (f"{len(found_list)} directories are found, only one `PalmSkin_preprocess` is accepted. "
+    assert len(found_list) <= 1, (f"{len(found_list)} directories are found, only one `{target_text}` is accepted. "
                                   f"Found: {json.dumps([str(path) for path in found_list], indent=2)}")
