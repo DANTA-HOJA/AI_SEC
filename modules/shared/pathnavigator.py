@@ -83,7 +83,7 @@ class _RAWDataPathNavigator():
         """
         self.dbpp = _DBPPNavigator()
     
-
+    
     def get_lif_scan_root(self, config:Union[dict, TOMLDocument],
                           display_on_CLI:bool=False, logger:Logger=None) -> Path:
         """
