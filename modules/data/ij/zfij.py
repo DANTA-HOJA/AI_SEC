@@ -10,7 +10,7 @@ import scyjava as sj       # scyjava : Supercharged Java access from Python, see
 import imagej              # pyimagej
 
 from ...shared.logger import init_logger
-from ...shared.get_path import get_fiji_local_dir
+from ...shared.pathnavigator import PathNavigator
 
 
 class ZFIJ():
@@ -23,6 +23,7 @@ class ZFIJ():
             "display_on_CLI": True,
             "logger": self._logger
         }
+        self._path_navigator = PathNavigator()
         
         """ Store `Current Working Directory(cwd)` and `sys.stdout` """
         orig_wd = os.getcwd()
@@ -47,7 +48,7 @@ class ZFIJ():
         sj.config.endpoints.append('ome:formats-gpl:6.11.1')
         
         """ Get path of Fiji(ImageJ) """
-        self.fiji_local = get_fiji_local_dir(**self._display_kwargs)
+        self.fiji_local = self._path_navigator.dbpp.get_fiji_local_dir(**self._display_kwargs)
         
         """ Different methods to start ImageJ """
         # ij = imagej.init(fiji_local) # Same as "ij = imagej.init(fiji_local, mode='headless')", PyImageJ’s default mode is headless
