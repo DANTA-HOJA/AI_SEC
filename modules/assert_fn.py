@@ -26,7 +26,7 @@ def assert_run_under_repo_root(target_idx:Union[int, None]):
     Args:
         target_idx (_type_): A result after running `get_target_str_idx_in_list()`
     """
-    assert target_idx is not None, ("Please switch your shell under this repository before run, "
+    assert target_idx is not None, ("Please switch your `WORKING_DIR` under this repository before run, "
                                     "and don't modify the name of this repository")
 
 
