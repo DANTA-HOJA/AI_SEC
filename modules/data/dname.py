@@ -4,20 +4,26 @@ import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
-abs_module_path = Path("./../../modules/").resolve()
-if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
-    sys.path.append(str(abs_module_path)) # add path to scan customized module
-
-from misc.utils import get_target_str_idx_in_list
+from ..shared.utils import get_target_str_idx_in_list
 
 
-def get_fish_id_pos(string_with_fish_dname:Union[str, Path]) -> Tuple[int, str]:
-    """
-    string_with_fish_dname:
-    
-        - bf:  .../`20220610_CE001_palmskin_8dpf - Series001_fish_1_BF`/[file_with_extension]
-        - rgb: .../`20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB`/[file_with_extension]
-    
+def get_dname_sortinfo(string_with_fish_dname:Union[str, Path]) -> Tuple[int, str]:
+    """ To extract `ID` and `Pos` from a provided string containing the (fish) dname, \
+        where `ID` is a number and `Pos` is either 'A' or 'P'.
+        
+        dname example :
+        - brightfield  : `20220610_CE001_palmskin_8dpf - Series001_fish_1_BF`
+        - palmskin dname example : `20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB`
+
+    Args:
+        string_with_fish_dname (Union[str, Path]): a string or a path including (fish) dname
+
+    Raises:
+        ValueError: Can't not match a proper directory name.
+        TypeError: Input is not `str` or `Path` object.
+
+    Returns:
+        Tuple[int, str]: (ID, Position)
     """
     if isinstance(string_with_fish_dname, Path):
         
@@ -50,12 +56,12 @@ def get_fish_id_pos(string_with_fish_dname:Union[str, Path]) -> Tuple[int, str]:
 
 
 
-def create_dict_by_fishid(path_list:List[Path]) -> Dict[int, Path]:
-    return {get_fish_id_pos(path)[0] : path for path in path_list}
+def create_dict_by_id(path_list:List[Path]) -> Dict[int, Path]:
+    return {get_dname_sortinfo(path)[0] : path for path in path_list}
 
 
 
-def merge_bf_analysis(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Dict[int, Path]):
+def merge_dict_by_id(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Dict[int, Path]):
     for key, value in manual_analysis_dict.items():
         auto_analysis_dict.pop(key, None)
         auto_analysis_dict[key] = manual_analysis_dict[key]
