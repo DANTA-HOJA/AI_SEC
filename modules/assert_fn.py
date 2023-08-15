@@ -6,7 +6,7 @@ from typing import List, Union
 import json
 
 
-__all__ = ["assert_is_pathobj", "assert_dir_exists"]
+__all__ = ["assert_is_pathobj", "assert_dir_exists", "assert_file_exists"]
 
 
 def assert_only_1_config(found_list:List[Path], config_name:str):
@@ -38,11 +38,19 @@ def assert_is_pathobj(path:Path):
 
 
 def assert_dir_exists(dir:Path):
-    """ 1. Check if `dir` is a `Path` object 
+    """ 1. Check if `dir` is a `Path` object
         2. Check if `dir` exists
     """
     assert_is_pathobj(dir)
     assert dir.exists(), f"Can't find directory: '{dir.resolve()}'"
+
+
+def assert_file_exists(file:Path):
+    """ 1. Check if `file` is a `Path` object
+        2. Check if `file` exists
+    """
+    assert_is_pathobj(file)
+    assert file.exists(), f"Can't find file: '{file.resolve()}'"
 
 
 def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
