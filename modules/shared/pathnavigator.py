@@ -215,3 +215,22 @@ class _ProcessedDataPath():
             recollect_dir = None
         
         return recollect_dir
+    
+    
+    def get_data_xlsx_path(self, config:Union[dict, TOMLDocument],
+                           display_on_CLI:bool=False, logger:Logger=None):
+        """
+        """
+        cli_out = decide_cli_output(logger)
+        
+        instance_root = self.get_instance_root(config)
+        data_xlsx_path = instance_root.joinpath("data.xlsx")
+        
+        if data_xlsx_path.exists():
+            """ CLI output """
+            if display_on_CLI:
+                cli_out(f"data.xlsx : '{data_xlsx_path}'")
+        else:
+            data_xlsx_path = None
+        
+        return data_xlsx_path
