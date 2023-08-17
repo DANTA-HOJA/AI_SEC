@@ -33,8 +33,9 @@ def assert_run_under_repo_root(target_idx:Union[int, None]):
 def assert_is_pathobj(path:Path):
     """ Check if `path` is a `Path` object 
     """
-    assert isinstance(path, Path), ("The given path should be a `Path` object, "
-                                    "please using `from pathlib import Path`")
+    if not isinstance(path, Path):
+        raise TypeError("The given path should be a `Path` object, "
+                        "please using `from pathlib import Path`")
 
 
 def assert_dir_exists(dir:Path):
@@ -42,7 +43,8 @@ def assert_dir_exists(dir:Path):
         2. Check if `dir` exists
     """
     assert_is_pathobj(dir)
-    assert dir.exists(), f"Can't find directory: '{dir.resolve()}'"
+    if not dir.exists():
+        raise FileNotFoundError(f"Can't find directory: '{dir.resolve()}'")
 
 
 def assert_file_exists(file:Path):
@@ -50,7 +52,8 @@ def assert_file_exists(file:Path):
         2. Check if `file` exists
     """
     assert_is_pathobj(file)
-    assert file.exists(), f"Can't find file: '{file.resolve()}'"
+    if not file.exists():
+        raise FileNotFoundError(f"Can't find file: '{file.resolve()}'")
 
 
 def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
