@@ -9,7 +9,8 @@ from tomlkit.toml_document import TOMLDocument
 from .utils import decide_cli_output, load_config
 
 from ..assert_fn import *
-from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_processed_dir
+from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_processed_dir, \
+                        assert_0_or_1_recollect_dir
 
 
 __all__ = ["PathNavigator"]
@@ -163,7 +164,7 @@ class _ProcessedDataPath():
         
         """ Scan path """
         instance_root = self.get_instance_root(config)
-        found_list = list(instance_root.glob(f"*{target_text}*"))
+        found_list = list(instance_root.glob(f"{{*}}_{target_text}"))
         assert_0_or_1_processed_dir(found_list, target_text)
         
         """ Assign path """
@@ -178,3 +179,39 @@ class _ProcessedDataPath():
             cli_out(f"{image_type.capitalize()} Processed Dir: '{processed_dir}'")
         
         return processed_dir
+    
+    
+    def get_recollect_dir(self, image_type:str, config:Union[dict, TOMLDocument],
+                          display_on_CLI:bool=False, logger:Logger=None) -> Path:
+        """ Get one of recollect directories,
+        
+        1. `{[palmskin_reminder]}_PalmSkin_reCollection` or
+        2. `{[brightfield_reminder]}_BrightField_reCollection`
+        
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+        """
+        cli_out = decide_cli_output(logger)
+        
+        """ Assign `target_text` """
+        if image_type == "palmskin":
+            target_text = "PalmSkin_reCollection"
+        elif image_type == "brightfield":
+            target_text = "BrightField_reCollection"
+        else: raise ValueError(f"Can't recognize arg: '{image_type}'")
+        
+        """ Scan path """
+        instance_root = self.get_instance_root(config)
+        found_list = list(instance_root.glob(f"{{*}}_{target_text}"))
+        assert_0_or_1_recollect_dir(found_list, target_text)
+        
+        """ Assign path """
+        if found_list:
+            recollect_dir = found_list[0]
+            """ CLI output """
+            if display_on_CLI:
+                cli_out(f"{image_type.capitalize()} Recollect Dir: '{recollect_dir}'")
+        else:
+            recollect_dir = None
+        
+        return recollect_dir

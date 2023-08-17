@@ -67,9 +67,8 @@ def assert_0_or_1_instance_root(found_list:List[Path], instance_desc:str):
         found_list (List[Path]): A result after running `Path.glob()`
         instance_desc (str): The description of data instance to find
     """
-    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, "
-                                  f"{json.dumps([str(path) for path in found_list], indent=2)} "
-                                  f"{instance_desc} in `toml_config` is not unique")
+    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, `{instance_desc}` in config is not unique. "
+                                  f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")
 
 
 def assert_0_or_1_processed_dir(found_list:List[Path], target_text:str):
@@ -78,5 +77,15 @@ def assert_0_or_1_processed_dir(found_list:List[Path], target_text:str):
     Args:
         found_list (List[Path]): A result after running `Path.glob()`
     """
-    assert len(found_list) <= 1, (f"{len(found_list)} directories are found, only one `{target_text}` is accepted. "
-                                  f"Found: {json.dumps([str(path) for path in found_list], indent=2)}")
+    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, only one `{target_text}` is accepted. "
+                                  f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")
+
+
+def assert_0_or_1_recollect_dir(found_list:List[Path], target_text:str):
+    """ This assertion is for `get_recollect_dir()` only
+
+    Args:
+        found_list (List[Path]): A result after running `Path.glob()`
+    """
+    assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, only one `{target_text}` is accepted. "
+                                  f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")    
