@@ -234,3 +234,22 @@ class _ProcessedDataPath():
             data_xlsx_path = None
         
         return data_xlsx_path
+    
+    
+    def get_clustered_xlsx_dir(self, config:Union[dict, TOMLDocument],
+                               display_on_CLI:bool=False, logger:Logger=None):
+        """
+        """
+        cli_out = decide_cli_output(logger)
+        
+        instance_root = self.get_instance_root(config)
+        clustered_xlsx_dir = instance_root.joinpath("Clustered_xlsx")
+        
+        if clustered_xlsx_dir.exists():
+            """ CLI output """
+            if display_on_CLI:
+                cli_out(f"Clustered XLSX Dir: '{clustered_xlsx_dir}'")
+        else:
+            clustered_xlsx_dir = None
+        
+        return clustered_xlsx_dir
