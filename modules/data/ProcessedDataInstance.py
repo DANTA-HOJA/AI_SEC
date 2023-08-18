@@ -48,30 +48,30 @@ class ProcessedDataInstance():
         
         self.instance_desc:str = None
         self.instance_root:Union[None, Path] = None
-        self.instance_name:Union[None, str]  = None
+        self.instance_name:Union[None, str] = None
         
-        self.palmskin_processed_dir:Union[None, Path]                        = None
-        self.palmskin_processed_reminder:Union[None, str]                    = None
+        self.palmskin_processed_dir:Union[None, Path] = None
+        self.palmskin_processed_reminder:Union[None, str] = None
         self.palmskin_processed_config:Union[None, dict]                     = None
         self.palmskin_processed_alias_map:Union[None, Dict[str, str]]        = None
-        self.palmskin_processed_dname_dirs_dict:Union[None, Dict[str, Path]] = None
+        self.palmskin_processed_dname_dirs_dict:Dict[str, Path] = {}
         
-        self.brightfield_processed_dir:Union[None, Path]                        = None
-        self.brightfield_processed_reminder:Union[None, str]                    = None
+        self.brightfield_processed_dir:Union[None, Path] = None
+        self.brightfield_processed_reminder:Union[None, str] = None
         self.brightfield_processed_config:Union[None, dict]                     = None
         self.brightfield_processed_alias_map:Union[None, Dict[str, str]]        = None
-        self.brightfield_processed_dname_dirs_dict:Union[None, Dict[str, Path]] = None
+        self.brightfield_processed_dname_dirs_dict:Dict[str, Path] = {}
         
-        self.palmskin_recollect_dir:Union[None, Path]                    = None
-        self.palmskin_recollected_dirs_dict:Union[None, Dict[str, Path]] = None
+        self.palmskin_recollect_dir:Union[None, Path] = None
+        self.palmskin_recollected_dirs_dict:Dict[str, Path] = {}
         
-        self.brightfield_recollect_dir:Union[None, Path]                    = None
-        self.brightfield_recollected_dirs_dict:Union[None, Dict[str, Path]] = None
+        self.brightfield_recollect_dir:Union[None, Path] = None
+        self.brightfield_recollected_dirs_dict:Dict[str, Path] = {}
         
         self.data_xlsx_path:Union[None, Path] = None
         
         self.clustered_xlsx_dir:Union[None, Path] = None
-        self.clustered_xlsx_files_dict:Union[None, Dict[str, Path]] = None
+        self.clustered_xlsx_files_dict:Dict[str, Path] = {}
         
         # End section -----------------------------------------------------------------------------------
     
@@ -161,7 +161,8 @@ class ProcessedDataInstance():
     
     
     def _update_instance_postfixnum(self):
-        
+        """
+        """
         old_name = self.instance_name
         new_name = f"{{{self.instance_desc}}}_Academia_Sinica_i{len(self.palmskin_processed_dname_dirs_dict)}"
         
@@ -189,20 +190,26 @@ class ProcessedDataInstance():
     
     
     def _set_recollect_dirs(self):
-        """ Set below attributes, run functions : 
+        """ Set below attributes 
             1. `self.palmskin_recollect_dir`
             2. `self.palmskin_recollected_dirs_dict`
             3. `self.brightfield_recollect_dir`
             4. `self.brightfield_recollected_dirs_dict`
         """
         """ palmskin """
-        self.palmskin_recollect_dir = self._path_navigator.processed_data.get_recollect_dir("palmskin", self.config, **self._display_kwargs)
-        if self.palmskin_recollect_dir is not None:
+        path = self._path_navigator.processed_data.get_recollect_dir("palmskin", self.config, **self._display_kwargs)
+        if self.palmskin_recollect_dir != path:
+            self.palmskin_recollect_dir = path
+            self._update_recollected_dirs_dict("palmskin")
+        else:
             self._update_recollected_dirs_dict("palmskin")
         
         """ brightfield """
-        self.brightfield_recollect_dir = self._path_navigator.processed_data.get_recollect_dir("brightfield", self.config, **self._display_kwargs)
-        if self.brightfield_recollect_dir is not None:
+        path = self._path_navigator.processed_data.get_recollect_dir("brightfield", self.config, **self._display_kwargs)
+        if self.brightfield_recollect_dir != path:
+            self.brightfield_recollect_dir = path
+            self._update_recollected_dirs_dict("brightfield")
+        else:
             self._update_recollected_dirs_dict("brightfield")
     
     
@@ -216,45 +223,51 @@ class ProcessedDataInstance():
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
         
-        if getattr(self, f"{image_type}_recollected_dirs_dict") is None:
-            setattr(self, f"{image_type}_recollected_dirs_dict", {})
+        setattr(self, f"{image_type}_recollected_dirs_dict", {}) # reset variable
         recollected_dict = getattr(self, f"{image_type}_recollected_dirs_dict")
         
-        recollect_dir = getattr(self, f"{image_type}_recollect_dir")
-        found_list = sorted(list(recollect_dir.glob("*")))
-        for recollected_dir in found_list:
-            recollected_name = str(recollected_dir).split(os.sep)[-1]
-            try:
-                recollected_dict[recollected_name]
-            except KeyError:
+        recollect_dir:Union[None, Path] = getattr(self, f"{image_type}_recollect_dir")
+        if recollect_dir is not None:
+            """ Scan directories """
+            found_list = sorted(list(recollect_dir.glob("*")), key=lambda x: str(x))
+            for recollected_dir in found_list:
+                recollected_name = str(recollected_dir).split(os.sep)[-1]
                 recollected_dict[recollected_name] = recollected_dir
     
     
     
     def _set_data_xlsx_path(self):
+        """
+        """
         self.data_xlsx_path = self._path_navigator.processed_data.get_data_xlsx_path(self.config, **self._display_kwargs)
     
     
     
     def _set_clustered_xlsx_dir(self):
-        self.clustered_xlsx_dir = self._path_navigator.processed_data.get_clustered_xlsx_dir(self.config, **self._display_kwargs)
-        if self.clustered_xlsx_dir is not None:
+        """ Set below attributes
+            1. `self.clustered_xlsx_dir`
+            2. `self.clustered_xlsx_files_dict`
+        """
+        path = self._path_navigator.processed_data.get_clustered_xlsx_dir(self.config, **self._display_kwargs)
+        if self.clustered_xlsx_dir != path:
+            self.clustered_xlsx_dir = path
+            self._update_clustered_xlsx_files_dict()
+        else:
             self._update_clustered_xlsx_files_dict()
     
     
     
     def _update_clustered_xlsx_files_dict(self):
+        """
+        """
+        self.clustered_xlsx_files_dict = {} # reset variable
         
-        if self.clustered_xlsx_files_dict is None:
-            self.clustered_xlsx_files_dict = {}
-        
-        found_list = list(self.clustered_xlsx_dir.glob(r"{*}_data.xlsx"))
-        for xlsx_file in found_list:
-            xlsx_name = str(xlsx_file).split(os.sep)[-1]
-            cluster_desc = re.split("{|}", xlsx_name)[1]
-            try:
-                self.clustered_xlsx_files_dict[cluster_desc]
-            except KeyError:
+        if self.clustered_xlsx_dir is not None:
+            """ Scan files """
+            found_list = sorted(list(self.clustered_xlsx_dir.glob(r"{*}_data.xlsx")), key=lambda x: str(x))
+            for xlsx_file in found_list:
+                xlsx_name = str(xlsx_file).split(os.sep)[-1]
+                cluster_desc = re.split("{|}", xlsx_name)[1]
                 self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
     
     
