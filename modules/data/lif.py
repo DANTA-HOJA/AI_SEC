@@ -268,6 +268,7 @@ def scan_lifs_under_dir(dir:Path, batches:list, logger:Logger=None) -> List[str]
     lif_path_list = [str(lif_path) for lif_path in lif_path_list]
     lif_path_list.sort(key=lambda x: x.split(os.sep)[-1])
     
+    """ CLI output """
     formatted = json.dumps(lif_path_list, indent=4)
     cli_out(f'lif_path_list {type(lif_path_list)}: {formatted}')
     cli_out(f"[ found {len(lif_path_list)} lif files ]")
