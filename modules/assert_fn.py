@@ -6,7 +6,8 @@ from typing import List, Union
 import json
 
 
-__all__ = ["assert_is_pathobj", "assert_dir_exists", "assert_file_exists"]
+__all__ = ["assert_is_pathobj", "assert_dir_exists", "assert_file_exists", 
+           "assert_dir_not_exists", "assert_file_not_exists"]
 
 
 def assert_only_1_config(found_list:List[Path], config_name:str):
@@ -54,6 +55,24 @@ def assert_file_exists(file:Path):
     assert_is_pathobj(file)
     if not file.exists():
         raise FileNotFoundError(f"Can't find file: '{file.resolve()}'")
+
+
+def assert_dir_not_exists(dir:Path):
+    """ 1. Check if `dir` is a `Path` object
+        2. Check if `dir` not exists
+    """
+    assert_is_pathobj(dir)
+    if dir.exists():
+        raise FileExistsError(f"Directory already exists: '{dir.resolve()}'")
+
+
+def assert_file_not_exists(file:Path):
+    """ 1. Check if `file` is a `Path` object
+        2. Check if `file` not exists
+    """
+    assert_is_pathobj(file)
+    if file.exists():
+        raise FileNotFoundError(f"File already exists: '{file.resolve()}'")
 
 
 def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
