@@ -2,16 +2,15 @@ import os
 import sys
 import re
 from pathlib import Path
-from typing import List, Dict, Union, TextIO
+from typing import List, Dict, Tuple, Union, TextIO
 from datetime import datetime
-from logging import Logger
 
 import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
 from .ij.zfij import ZFIJ
-from .lif import scan_lifs_under_dir
+from .lif.utils import scan_lifs_under_dir
 from ..shared.logger import init_logger
 from ..shared.utils import load_config, create_new_dir
 from ..shared.pathnavigator import PathNavigator
@@ -303,7 +302,7 @@ class PalmskinPreprocesser():
     
     
     
-    def kuwahara_filter(self, img, sampling, save_name:str, alias_name:str):
+    def kuwahara_filter(self, img, sampling:int, save_name:str, alias_name:str):
         """
         """
         kuwahara = img.duplicate()
@@ -341,7 +340,7 @@ class PalmskinPreprocesser():
     
     
     
-    def channel_preprocess(self, ch_img, ch_name):
+    def channel_preprocess(self, ch_img, ch_name:str):
         """
         """
         kuwahara_sampling = self.preprocess_param_dict["kuwahara_sampling"]
