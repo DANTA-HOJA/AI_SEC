@@ -134,7 +134,7 @@ class PalmskinPreprocesser():
         """ STEP 6. Save `alias_map` """
         alias_map_path = self.palmskin_processed_dir.joinpath(f"palmskin_result_alias_map.toml")
         with open(alias_map_path, mode="w") as f_writer:
-            toml.dump(config, f_writer)
+            toml.dump(self.alias_map, f_writer)
     
 
 
