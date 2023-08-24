@@ -57,7 +57,7 @@ class ZFIJ():
         self.ij.ui().showUI() # display the Fiji GUI
         
         """ Print Fiji version """
-        print(self.ij.getApp().getInfo(True)) # ImageJ2 2.9.0/1.54b
+        self._logger.info(self.ij.getApp().getInfo(True)) # ImageJ2 2.9.0/1.54b
     
     
     def _init_other_components(self):
