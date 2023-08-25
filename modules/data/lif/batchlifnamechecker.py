@@ -114,7 +114,10 @@ class BatchLIFNameChecker():
                     self._logger.info(f"       ##### {self._lif_name_checker.check_dict['failed message']}")
                 except KeyError:
                     pass
+                
+                """ Close opened image """
+                self._zfij.reset_all_window()
             
-            self._logger.info("\n")
-
+            self._logger.info("\n") # make CLI output prettier
+        
         self._logger.info(" -- finished -- ")
