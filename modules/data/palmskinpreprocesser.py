@@ -118,7 +118,7 @@ class PalmskinPreprocesser():
             self.lif_enum = i+1
             self._single_lif_preprocess(lif_path)
         
-        self.log_writer.write(f"\n\n\n{'-'*40}  finished  {'-'*40} \n")
+        self.log_writer.write(f"{'-'*40}  finished  {'-'*40} \n")
         self._logger.info(" -- finished -- ")
         
         """ STEP 5. Close `LOG_FILE` """
@@ -148,7 +148,6 @@ class PalmskinPreprocesser():
         self._logger.info(f'LIF_FILE : {lif_path}')
         
         """ Write `LOG_FILE` """
-        self.log_writer.write("\n\n\n")
         self.log_writer.write(f"|{'-'*40}  Processing ... {self.lif_enum}/{self.total_lif_file}  {'-'*40} \n")
         self.log_writer.write(f"| \n")
         self.log_writer.write(f"|         LIF_FILE : {lif_path.split(os.sep)[-1]} \n")
@@ -237,8 +236,10 @@ class PalmskinPreprocesser():
             
             """ Close opened image """
             self._zfij.reset_all_window()
+            self.log_writer.write(f"| \n") # make Log file looks better.
         
         self._logger.info("\n") # make CLI output prettier
+        self.log_writer.write("\n\n\n")
     
     
     
