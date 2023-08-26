@@ -217,29 +217,23 @@ class PalmskinPreprocesser():
             self._zfij.run(img, "Set Scale...", "distance=2.2 known=1 unit=micron")
             ch_list = self._zfij.channelSplitter.split(img)
             
-            """ `preprocess_param_dict` """
-            kuwahara_sampling = self.preprocess_param_dict["kuwahara_sampling"]
-            
-            RGB_direct_max_zproj = self.direct_max_zproj(ch_list, "RGB_direct_max_zproj", "RGB_direct_max_zproj")
+            RGB_direct_max_zproj = self.direct_max_zproj(ch_list, "RGB_direct_max_zproj", self.save_root)
             
             ch_B_img_dict = self.channel_preprocess(ch_list[0], "B")
             ch_G_img_dict = self.channel_preprocess(ch_list[1], "G")
             ch_R_img_dict = self.channel_preprocess(ch_list[2], "R")
             
-            RGB_processed = self.merge_to_RGBstack(ch_R_img_dict["ch_R"], ch_G_img_dict["ch_G"], ch_B_img_dict["ch_B"])
-            self._save_tif_with_SN(RGB_processed, "RGB_processed", self.metaimg_dir, "RGB")
+            RGB_m3d = self.merge_to_RGBstack(ch_R_img_dict["m3d"], ch_G_img_dict["m3d"], ch_B_img_dict["m3d"], "RGB_m3d", self.metaimg_dir)
+            RGB_mm3d = self.merge_to_RGBstack(ch_R_img_dict["mm3d"], ch_G_img_dict["mm3d"], ch_B_img_dict["mm3d"], "RGB_mm3d", self.metaimg_dir)
+            RGB_mm3d_kuwahara = self.merge_to_RGBstack(ch_R_img_dict["mm3d_kuwahara"], ch_G_img_dict["mm3d_kuwahara"], ch_B_img_dict["mm3d_kuwahara"], "RGB_mm3d_kuwahara", self.metaimg_dir)
+            RGB_fusion = self.average_fusion(RGB_mm3d, RGB_mm3d_kuwahara, "RGB_fusion", self.save_root)
+            RGB_fusion2Gray = self.RGB_to_Gray(RGB_fusion, "RGB_fusion2Gray", self.save_root)
             
-            RGB_processed_kuwahara = self.merge_to_RGBstack(ch_R_img_dict["ch_R_kuwahara"], ch_G_img_dict["ch_G_kuwahara"], ch_B_img_dict["ch_B_kuwahara"])
-            self._save_tif_with_SN(RGB_processed_kuwahara, f"RGB_processed_kuwahara{kuwahara_sampling}", self.metaimg_dir, "RGB_kuwahara")
-            
-            RGB_processed_HE = self.histogram_equalization(RGB_processed, "RGB_processed_HE", "RGB_HE")
-            RGB_processed_kuwahara_HE = self.histogram_equalization(RGB_processed_kuwahara, f"RGB_processed_kuwahara{kuwahara_sampling}_HE", "RGB_kuwahara_HE")
-
-            RGB_processed_fusion = self.average_fusion(RGB_processed, RGB_processed_kuwahara, "RGB_processed_fusion", "RGB_fusion")
-            RGB_processed_fusion2Gray = self.RGB_to_Gray(RGB_processed_fusion, "RGB_processed_fusion2Gray", "RGB_fusion2Gray")
-            
-            RGB_processed_HE_fusion = self.average_fusion(RGB_processed_HE, RGB_processed_kuwahara_HE, "RGB_processed_HE_fusion", "RGB_HE_fusion")
-            RGB_processed_HE_fusion2Gray = self.RGB_to_Gray(RGB_processed_HE_fusion, "RGB_processed_HE_fusion2Gray", "RGB_HE_fusion2Gray")
+            RGB_m3d_HE = self.histogram_equalization(RGB_m3d, "RGB_m3d_HE", self.metaimg_dir)
+            RGB_mm3d_HE = self.histogram_equalization(RGB_mm3d, "RGB_mm3d_HE", self.metaimg_dir)
+            RGB_mm3d_kuwahara_HE = self.histogram_equalization(RGB_mm3d_kuwahara, f"RGB_mm3d_kuwahara_HE", self.metaimg_dir)
+            RGB_HE_fusion = self.average_fusion(RGB_mm3d_HE, RGB_mm3d_kuwahara_HE, "RGB_HE_fusion", self.save_root)
+            RGB_HE_fusion2Gray = self.RGB_to_Gray(RGB_HE_fusion, "RGB_HE_fusion2Gray", self.save_root)
             
             """ Close opened image """
             self._zfij.reset_all_window()
@@ -248,101 +242,122 @@ class PalmskinPreprocesser():
     
     
     
-    def _save_tif_with_SN(self, img, save_name:str, save_dir:Path, alias_name:str) -> None:
+    def _save_tif_with_SN(self, img, save_name:str, save_dir:Path) -> None:
         """
         """
         full_name = f"{self.result_sn:{self._sn_digits}}_{save_name}.tif"
         save_path = save_dir.joinpath(full_name)
         self._zfij.save_as_tiff(img, str(save_path))
         
-        self.alias_map[f"{alias_name}"] = str(save_path.relative_to(self.save_root))
+        self.alias_map[f"{save_name}"] = str(save_path.relative_to(self.save_root))
         self.result_sn += 1
 
 
 
-    def merge_to_RGBstack(self, ch_R, ch_G, ch_B):
+    def merge_to_RGBstack(self, ch_R, ch_G, ch_B, save_name:str, save_dir:Path):
         """
         """
         RGBstack = self._zfij.rgbStackMerge.mergeChannels([ch_R, ch_G, ch_B], True)
         self._zfij.rgbStackConverter.convertToRGB(RGBstack)
         
+        """ Save as TIFF """
+        self._save_tif_with_SN(RGBstack, save_name, save_dir)
+        
         return RGBstack
 
 
 
-    def direct_max_zproj(self, img_list, save_name:str, alias_name:str):
+    def z_projection(self, img, method:str, save_name:str, save_dir:Path):
+        """ 
+
+        Args:
+            method (_type_): "avg", "min", "max", "sum", "sd" or "median".
+        """
+        z_proj = self._zfij.zProjector.run(img, method)
+        
+        """ Save as TIFF """
+        self._save_tif_with_SN(z_proj, save_name, save_dir)
+        
+        return z_proj
+
+
+
+    def direct_max_zproj(self, img_list, save_name:str, save_dir:Path):
         """
         """
         ch_B = img_list[0]
         ch_G = img_list[1]
         ch_R = img_list[2]
         
-        max_zproj_ch_B = self._zfij.zProjector.run(ch_B, "max")
-        max_zproj_ch_G = self._zfij.zProjector.run(ch_G, "max")
-        max_zproj_ch_R = self._zfij.zProjector.run(ch_R, "max")
+        ch_B_direct = self.z_projection(ch_B, "max", "ch_B_direct", self.metaimg_dir)
+        ch_G_direct = self.z_projection(ch_G, "max", "ch_G_direct", self.metaimg_dir)
+        ch_R_direct = self.z_projection(ch_R, "max", "ch_R_direct", self.metaimg_dir)
         
-        RGBstack = self.merge_to_RGBstack(max_zproj_ch_R, max_zproj_ch_G, max_zproj_ch_B)
-        
-        self._save_tif_with_SN(RGBstack, save_name, self.save_root, alias_name)
+        RGBstack = self.merge_to_RGBstack(ch_R_direct, ch_G_direct, ch_B_direct, save_name, save_dir)
         
         return RGBstack
 
 
 
-    def median3D_R1_and_mean3D_R2(self, img, save_name:str, alias_name:str):
+    def median3D(self, img):
         """
         """
-        """ Median Filter 3D """
-        median_r1 = img.duplicate()
-        self._zfij.run(median_r1, "Median 3D...", "x=3 y=3 z=3")
+        radius_xyz = self.preprocess_param_dict["median3d_xyz"]
         
-        """ Mean Filter 3D """
-        median_r1_mean3D_r2 = median_r1.duplicate()
-        self._zfij.run(median_r1_mean3D_r2, "Mean 3D...", "x=2 y=2 z=2")
+        median3D = img.duplicate()
+        self._zfij.run(median3D, "Median 3D...", f"x={radius_xyz[0]} y={radius_xyz[1]} z={radius_xyz[2]}")
         
-        """ Maximum Projection """
-        median_r1_mean3D_r2_Zproj_max = self._zfij.zProjector.run(median_r1_mean3D_r2, "max") # 'method' is "avg", "min", "max", "sum", "sd" or "median".
+        return median3D
+
+
+
+    def mean3D(self, img):
+        """
+        """
+        radius_xyz = self.preprocess_param_dict["mean3d_xyz"]
         
-        """ Save as TIFF """
-        self._save_tif_with_SN(median_r1_mean3D_r2_Zproj_max, save_name, self.metaimg_dir, alias_name)
+        mean3D = img.duplicate()
+        self._zfij.run(mean3D, "Mean 3D...", f"x={radius_xyz[0]} y={radius_xyz[1]} z={radius_xyz[2]}")
         
-        return median_r1_mean3D_r2_Zproj_max
+        return mean3D
     
     
     
-    def kuwahara_filter(self, img, sampling:int, save_name:str, alias_name:str):
+    def kuwahara_filter(self, img, save_name:str, save_dir:Path):
         """
         """
+        sampling = self.preprocess_param_dict["kuwahara_sampling"]
+        
         kuwahara = img.duplicate()
         self._zfij.run(kuwahara, "Kuwahara Filter", f"sampling={sampling}")
         
         """ Save as TIFF """
-        self._save_tif_with_SN(kuwahara, save_name, self.metaimg_dir, alias_name)
+        self._save_tif_with_SN(kuwahara, save_name, save_dir)
         
         return kuwahara
     
     
     
-    def histogram_equalization(self, img, save_name:str, alias_name:str):
+    def histogram_equalization(self, img, save_name:str, save_dir:Path):
         """
         """
         he = img.duplicate()
         self._zfij.run(he, "Enhance Contrast...", "saturated=0.35 equalize")
         
         """ Save as TIFF """
-        self._save_tif_with_SN(he, save_name, self.metaimg_dir, alias_name)
+        self._save_tif_with_SN(he, save_name, save_dir)
         
         return he
     
     
     
-    def average_fusion(self, image_1, image_2, save_name:str, alias_name:str):
+    def average_fusion(self, image_1, image_2, save_name:str, save_dir:Path):
         """
         """
         avg_fusion = self._zfij.imageCalculator.run(image_1, image_2, "Average create")
         
         """ Save as TIFF """
-        self._save_tif_with_SN(avg_fusion, save_name, self.save_root, alias_name)
+        self._save_tif_with_SN(avg_fusion, save_name, save_dir)
         
         return avg_fusion
     
@@ -351,30 +366,32 @@ class PalmskinPreprocesser():
     def channel_preprocess(self, ch_img, ch_name:str):
         """
         """
-        kuwahara_sampling = self.preprocess_param_dict["kuwahara_sampling"]
         img_dict = {}
         
-        processed             = self.median3D_R1_and_mean3D_R2(ch_img, f"{ch_name}_processed", f"ch_{ch_name}")
-        processed_HE          = self.histogram_equalization(processed, f"{ch_name}_processed_HE", f"ch_{ch_name}_HE")
+        m3d           = self.z_projection(self.median3D(ch_img), "max", f"ch_{ch_name}_m3d", self.metaimg_dir)
+        mm3d          = self.z_projection(self.mean3D(m3d), "max", f"ch_{ch_name}_mm3d", self.metaimg_dir)
+        mm3d_kuwahara = self.kuwahara_filter(mm3d, f"ch_{ch_name}_mm3d_kuwahara", self.metaimg_dir)
+        fusion        = self.average_fusion(mm3d, mm3d_kuwahara, f"ch_{ch_name}_fusion", self.save_root)
         
-        processed_kuwahara    = self.kuwahara_filter(processed, kuwahara_sampling, f"{ch_name}_processed_kuwahara{kuwahara_sampling}", f"ch_{ch_name}_kuwahara")
-        processed_kuwahara_HE = self.histogram_equalization(processed_kuwahara, f"{ch_name}_processed_kuwahara{kuwahara_sampling}_HE", f"ch_{ch_name}_kuwahara_HE")
+        m3d_HE           = self.histogram_equalization(m3d, f"ch_{ch_name}_m3d_HE", self.metaimg_dir)
+        mm3d_HE          = self.histogram_equalization(mm3d, f"ch_{ch_name}_mm3d_HE", self.metaimg_dir)
+        mm3d_kuwahara_HE = self.histogram_equalization(mm3d_kuwahara, f"ch_{ch_name}_mm3d_kuwahara_HE", self.metaimg_dir)
+        HE_fusion        = self.average_fusion(mm3d_HE, mm3d_kuwahara_HE, f"ch_{ch_name}_HE_fusion", self.save_root)
         
-        processed_fusion      = self.average_fusion(processed, processed_kuwahara, f"{ch_name}_processed_fusion", f"ch_{ch_name}_fusion")
-        processed_HE_fusion   = self.average_fusion(processed_HE, processed_kuwahara_HE, f"{ch_name}_processed_HE_fusion", f"ch_{ch_name}_HE_fusion")
-        
-        img_dict[f"ch_{ch_name}"] = processed
-        img_dict[f"ch_{ch_name}_HE"] = processed_HE
-        img_dict[f"ch_{ch_name}_kuwahara"] = processed_kuwahara
-        img_dict[f"ch_{ch_name}_kuwahara_HE"] = processed_kuwahara_HE
-        img_dict[f"ch_{ch_name}_fusion"] = processed_fusion
-        img_dict[f"ch_{ch_name}_HE_fusion"] = processed_HE_fusion
+        img_dict["m3d"] = m3d
+        img_dict["mm3d"] = mm3d
+        img_dict["mm3d_kuwahara"] = mm3d_kuwahara
+        img_dict["fusion"] = fusion
+        img_dict["m3d_HE"] = m3d_HE
+        img_dict["mm3d_HE"] = mm3d_HE
+        img_dict["mm3d_kuwahara_HE"] = mm3d_kuwahara_HE
+        img_dict["HE_fusion"] = HE_fusion
         
         return img_dict
     
     
     
-    def RGB_to_Gray(self, rgb_img, save_name:str, alias_name:str):
+    def RGB_to_Gray(self, rgb_img, save_name:str, save_dir:Path):
         """
         """
         gray_img = rgb_img.duplicate()
@@ -382,7 +399,7 @@ class PalmskinPreprocesser():
         self._zfij.run(gray_img, "8-bit", "")
         
         """ Save as TIFF """
-        self._save_tif_with_SN(gray_img, save_name, self.save_root, alias_name)
+        self._save_tif_with_SN(gray_img, save_name, save_dir)
         
         return gray_img
         
