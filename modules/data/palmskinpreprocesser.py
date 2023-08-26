@@ -50,8 +50,9 @@ class PalmskinPreprocesser():
         """
         """
         self.total_lif_file = 0
+        self.lif_enum = 0
         self.palmskin_processed_dir = None
-        self.mode = "new"
+        self.mode = "NEW"
         self.preprocess_param_dict = None
         self.log_writer = None
         self.alias_map = {}
@@ -67,8 +68,8 @@ class PalmskinPreprocesser():
         3. Destination:
             1. Get `palmskin_processed_dir`
             2. Decide which ["param"] will be used
-                - if mode="new" -> Save the config to `palmskin_processed_dir`
-                - if mode="update" -> Load the ["param"] from existing config
+                - if mode="NEW" -> Save the config to `palmskin_processed_dir`
+                - if mode="UPDATE" -> Load the ["param"] from existing config
             3. Open a `LOG_FILE`
         4. Preprocess palmskin images
         5. Close `LOG_FILE` (3.2)
@@ -90,13 +91,14 @@ class PalmskinPreprocesser():
         try:
             self.palmskin_processed_dir = self._path_navigator.processed_data.get_processed_dir("palmskin", config, **self._display_kwargs)
             assert_dir_exists(self.palmskin_processed_dir)
-            self.mode = "update"
+            self.mode = "UPDATE"
         except FileNotFoundError:
             create_new_dir(self.palmskin_processed_dir, display_on_CLI=False)
+        self._logger.info(f"Process Mode : {self.mode}")
         
         """ 3.2. """
         cp_config_path = self.palmskin_processed_dir.joinpath("palmskin_preprocess_config.toml")
-        if self.mode == "update":
+        if self.mode == "UPDATE":
             assert_file_exists(cp_config_path)
             with open(cp_config_path, mode="r") as f_reader:
                 self.preprocess_param_dict = toml.load(f_reader)["param"]
@@ -112,21 +114,12 @@ class PalmskinPreprocesser():
         
         """ STEP 4. Preprocess palmskin images """
         for i, lif_path in enumerate(lif_path_list):
-    
-            self._logger.info(f"Processing ... {i+1}/{len(lif_path_list)}")
-            
-            self.log_writer.write("\n\n\n")
-            self.log_writer.write(f"|{'-'*40}  Processing ... {i+1}/{len(lif_path_list)}  {'-'*40} \n")
-            self.log_writer.write(f"| \n")
-            self.log_writer.write(f"|         LIF_FILE : {lif_path.split(os.sep)[-1]} \n")
-            self.log_writer.write(f"| \n")
-            
-            # process current LIF_FILE
+            # process single LIF file
+            self.lif_enum = i+1
             self._single_lif_preprocess(lif_path)
-            self._logger.info("\n") # make CLI output looks better.
-
+        
         self.log_writer.write(f"\n\n\n{'-'*40}  finished  {'-'*40} \n")
-        self._logger.info(" -- finished --")
+        self._logger.info(" -- finished -- ")
         
         """ STEP 5. Close `LOG_FILE` """
         self.log_writer.close()
@@ -150,7 +143,17 @@ class PalmskinPreprocesser():
     def _single_lif_preprocess(self, lif_path:str):
         """
         """
+        """ Display info """
+        self._logger.info(f"Processing ... {self.lif_enum}/{self.total_lif_file}")
         self._logger.info(f'LIF_FILE : {lif_path}')
+        
+        """ Write `LOG_FILE` """
+        self.log_writer.write("\n\n\n")
+        self.log_writer.write(f"|{'-'*40}  Processing ... {self.lif_enum}/{self.total_lif_file}  {'-'*40} \n")
+        self.log_writer.write(f"| \n")
+        self.log_writer.write(f"|         LIF_FILE : {lif_path.split(os.sep)[-1]} \n")
+        self.log_writer.write(f"| \n")
+        
         
         """ Normalize LIF name """
         lif_name = lif_path.split(os.sep)[-1].split(".")[0]
@@ -168,7 +171,7 @@ class PalmskinPreprocesser():
             series_num = idx+1
             
             self._zfij.run("Bio-Formats Importer", f"open='{lif_path}' color_mode=Default rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT series_{series_num}")
-            img =  self._zfij.ij.WindowManager.getCurrentImage() # get image, <java class 'ij.ImagePlus'>
+            img = self._zfij.ij.WindowManager.getCurrentImage() # get image, <java class 'ij.ImagePlus'>
             img.hide()
             
             """ Get image name """
@@ -195,7 +198,7 @@ class PalmskinPreprocesser():
                               f"Voxel_Z : {voxel_z:.4f} micron")
             
             """ Write `LOG_FILE` """
-            self.log_writer.write(f"|-- processing ...  series {series_num:{len(str(series_cnt))}}/{series_cnt} in {series_num}/{self.total_lif_file} \n")
+            self.log_writer.write(f"|-- processing ...  series {series_num:{len(str(series_cnt))}}/{series_cnt} in {self.lif_enum}/{self.total_lif_file} \n")
             self.log_writer.write(f"|         {comb_name} \n")
             self.log_writer.write(f"|         Dimensions : {img_dimensions} ( width, height, channels, slices, frames ), Voxel_Z : {voxel_z:.4f} micron \n")
             
@@ -237,6 +240,11 @@ class PalmskinPreprocesser():
             
             RGB_processed_HE_fusion = self.average_fusion(RGB_processed_HE, RGB_processed_kuwahara_HE, "RGB_processed_HE_fusion", "RGB_HE_fusion")
             RGB_processed_HE_fusion2Gray = self.RGB_to_Gray(RGB_processed_HE_fusion, "RGB_processed_HE_fusion2Gray", "RGB_HE_fusion2Gray")
+            
+            """ Close opened image """
+            self._zfij.reset_all_window()
+        
+        self._logger.info("\n") # make CLI output prettier
     
     
     
@@ -281,12 +289,12 @@ class PalmskinPreprocesser():
 
 
 
-    def median_R1_and_mean3D_R2(self, img, save_name:str, alias_name:str):
+    def median3D_R1_and_mean3D_R2(self, img, save_name:str, alias_name:str):
         """
         """
-        """ Median Filter """
+        """ Median Filter 3D """
         median_r1 = img.duplicate()
-        self._zfij.run(median_r1, "Median...", "radius=1 stack")
+        self._zfij.run(median_r1, "Median 3D...", "x=3 y=3 z=3")
         
         """ Mean Filter 3D """
         median_r1_mean3D_r2 = median_r1.duplicate()
@@ -346,7 +354,7 @@ class PalmskinPreprocesser():
         kuwahara_sampling = self.preprocess_param_dict["kuwahara_sampling"]
         img_dict = {}
         
-        processed             = self.median_R1_and_mean3D_R2(ch_img, f"{ch_name}_processed", f"ch_{ch_name}")
+        processed             = self.median3D_R1_and_mean3D_R2(ch_img, f"{ch_name}_processed", f"ch_{ch_name}")
         processed_HE          = self.histogram_equalization(processed, f"{ch_name}_processed_HE", f"ch_{ch_name}_HE")
         
         processed_kuwahara    = self.kuwahara_filter(processed, kuwahara_sampling, f"{ch_name}_processed_kuwahara{kuwahara_sampling}", f"ch_{ch_name}_kuwahara")
