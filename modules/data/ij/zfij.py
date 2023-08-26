@@ -25,17 +25,17 @@ class ZFIJ():
         }
         self._path_navigator = PathNavigator()
         
-        """ Store `Current Working Directory(cwd)` and `sys.stdout` """
+        """ Store 'Working Directory' and `sys.stdout` """
         orig_wd = os.getcwd()
-        orig_stdout = sys.stdout # store original 'sys.stdout'
+        # orig_stdout = sys.stdout
         
         self._init_imagej()
         self._init_other_components()
         self._redirect_fn()
 
-        """ Recover `Working Directory` and `sys.stdout` """
+        """ Recover 'Working Directory' and `sys.stdout` """
         os.chdir(orig_wd)
-        sys.stdout = orig_stdout
+        # sys.stdout = orig_stdout
     
     
     def _init_imagej(self):
@@ -63,25 +63,20 @@ class ZFIJ():
     def _init_other_components(self):
         """
         """
-        # Bio-Format Reader
+        """ Set `loci`( Bio-Formats ) Warning Level """
         loci = jpype.JPackage("loci")
         loci.common.DebugTools.setRootLevel("ERROR")
-        self.imageReader = loci.formats.ImageReader()
         
-        # [IMPORTANT] some ImageJ plugins need to be new before use
-        from ij.plugin.frame import RoiManager
-        from ij.plugin import ImageCalculator
-        from ij.plugin import ChannelSplitter
-        from ij.plugin import ZProjector
-        from ij.plugin import RGBStackMerge
-        from ij.plugin import RGBStackConverter
+        """ Bio-Formats Reader """
+        self.imageReader = jpype.JClass("loci.formats.ImageReader")()
 
-        self.roiManager = RoiManager()
-        self.imageCalculator = ImageCalculator()
-        self.channelSplitter = ChannelSplitter()
-        self.zProjector = ZProjector()
-        self.rgbStackMerge = RGBStackMerge()
-        self.rgbStackConverter = RGBStackConverter()
+        """  [IMPORTANT] Create/new plugins instance before use """ 
+        self.roiManager = jpype.JClass("ij.plugin.frame.RoiManager")()
+        self.imageCalculator = jpype.JClass("ij.plugin.ImageCalculator")()
+        self.channelSplitter = jpype.JClass("ij.plugin.ChannelSplitter")()
+        self.zProjector = jpype.JClass("ij.plugin.ZProjector")()
+        self.rgbStackMerge = jpype.JClass("ij.plugin.RGBStackMerge")()
+        self.rgbStackConverter = jpype.JClass("ij.plugin.RGBStackConverter")()
     
     
     def _redirect_fn(self):
@@ -97,5 +92,5 @@ class ZFIJ():
         if int(self.roiManager.getCount()) > 0:
             self.roiManager.runCommand("Deselect")
             self.roiManager.runCommand("Delete")
-            self.run("Clear Results", "")
+        self.run("Clear Results", "")
         self.run("Close All", "")
