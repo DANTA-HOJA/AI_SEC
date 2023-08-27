@@ -61,7 +61,7 @@ class ZFIJ():
     
     
     def _init_other_components(self):
-        """
+        """ Create/new the plugin instances
         """
         """ Set `loci`( Bio-Formats ) Warning Level """
         loci = jpype.JPackage("loci")
@@ -69,9 +69,11 @@ class ZFIJ():
         
         """ Bio-Formats Reader """
         self.imageReader = jpype.JClass("loci.formats.ImageReader")()
-
-        """  [IMPORTANT] Create/new plugins instance before use """ 
+        
+        """ GUI object """
         self.roiManager = jpype.JClass("ij.plugin.frame.RoiManager")()
+        
+        """ Image operator """
         self.imageCalculator = jpype.JClass("ij.plugin.ImageCalculator")()
         self.channelSplitter = jpype.JClass("ij.plugin.ChannelSplitter")()
         self.zProjector = jpype.JClass("ij.plugin.ZProjector")()
@@ -90,7 +92,6 @@ class ZFIJ():
         """
         """
         if int(self.roiManager.getCount()) > 0:
-            self.roiManager.runCommand("Deselect")
-            self.roiManager.runCommand("Delete")
+            self.roiManager.reset()
         self.run("Clear Results", "")
         self.run("Close All", "")
