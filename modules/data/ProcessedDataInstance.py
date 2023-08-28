@@ -52,14 +52,14 @@ class ProcessedDataInstance():
         
         self.palmskin_processed_dir:Union[None, Path] = None
         self.palmskin_processed_reminder:Union[None, str] = None
-        self.palmskin_processed_config:Union[None, dict]                     = None
-        self.palmskin_processed_alias_map:Union[None, Dict[str, str]]        = None
+        self.palmskin_processed_config:dict = {}
+        self.palmskin_processed_alias_map:Dict[str, str] = {}
         self.palmskin_processed_dname_dirs_dict:Dict[str, Path] = {}
         
         self.brightfield_processed_dir:Union[None, Path] = None
         self.brightfield_processed_reminder:Union[None, str] = None
-        self.brightfield_processed_config:Union[None, dict]                     = None
-        self.brightfield_processed_alias_map:Union[None, Dict[str, str]]        = None
+        self.brightfield_processed_config:dict = {}
+        self.brightfield_processed_alias_map:Dict[str, str] = {}
         self.brightfield_processed_dname_dirs_dict:Dict[str, Path] = {}
         
         self.palmskin_recollect_dir:Union[None, Path] = None
@@ -83,6 +83,8 @@ class ProcessedDataInstance():
         self.config = load_config(config_name, **self._display_kwargs)
         self._set_instance_root()
         self._set_processed_dirs()
+        self._set_processed_configs()
+        self._set_processed_alias_maps()
         self._set_processed_dname_dirs_dicts()
         self._set_recollect_dirs()
         self._set_data_xlsx_path()
@@ -106,7 +108,7 @@ class ProcessedDataInstance():
     
     
     def _set_processed_dirs(self):
-        """ Set below attributes, run functions : 
+        """ Set below attributes
             1. `self.palmskin_processed_dir`
             2. `self.palmskin_processed_reminder`
             3. `self.brightfield_processed_dir`
@@ -128,7 +130,7 @@ class ProcessedDataInstance():
             assert_dir_exists(path)
         except (KeyError, FileNotFoundError):
             raise FileNotFoundError("Can't find any 'BrightField_analyze' directory, "
-                                    "please run `0.3.analyze_brightfield` to analyze your brightfield images first.")
+                                    "please run `0.2.analyze_brightfield` to analyze your brightfield images first.")
         self.brightfield_processed_dir = path
         self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
     
@@ -237,7 +239,8 @@ class ProcessedDataInstance():
     
     
     def _set_data_xlsx_path(self):
-        """
+        """ Set below attributes
+            1. `self.data_xlsx_path`
         """
         self.data_xlsx_path = self._path_navigator.processed_data.get_data_xlsx_path(self.config, **self._display_kwargs)
     
@@ -272,62 +275,62 @@ class ProcessedDataInstance():
     
     
     
-    # def _init_palmskin_preprocess_alias_map(self):
+    def _load_processed_config(self, image_type:str):
+        """
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
         
-    #     with open(self.palmskin_processed_dir.joinpath("palmskin_preprocess_config.toml"), mode="r") as f_reader:
-    #         self.palmskin_processed_config = toml.load(f_reader)
+        if image_type == "palmskin":
+            target_text = "palmskin_preprocess"
+        elif image_type == "brightfield":
+            target_text = "brightfield_analyze"
         
-    #     preprocess_kwargs = self.palmskin_processed_config["param"]
-    #     Kuwahara = f"Kuwahara{preprocess_kwargs['Kuwahara_sampleing']}"
-    #     bf_zproj_type = f"BF_Zproj_{preprocess_kwargs['bf_zproj_type']}"
-    #     bf_threshold = f"0_{preprocess_kwargs['bf_treshold_value']}"
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        config_path = processed_dir.joinpath(f"{target_text}_config.toml")
+        assert_file_exists(config_path)
         
-    #     self.palmskin_processed_alias_map = {
-    #         "RGB_direct_max_zproj":          "*_RGB_direct_max_zproj.tif", # CHECK_PT 
-    #         # -----------------------------------------------------------------------------------
-    #         "ch_B":                          "MetaImage/*_B_processed.tif",
-    #         "ch_B_Kuwahara":                 f"MetaImage/*_B_processed_{Kuwahara}.tif",
-    #         "ch_B_fusion":                   "*_B_processed_fusion.tif", # CHECK_PT 
-    #         "ch_B_HE":                       "MetaImage/*_B_processed_HE.tif",
-    #         "ch_B_Kuwahara_HE":              f"MetaImage/*_B_processed_{Kuwahara}_HE.tif",
-    #         "ch_B_HE_fusion":                "*_B_processed_HE_fusion.tif", # CHECK_PT 
-    #         # -----------------------------------------------------------------------------------
-    #         "ch_G":                          "MetaImage/*_G_processed.tif",
-    #         "ch_G_Kuwahara":                 f"MetaImage/*_G_processed_{Kuwahara}.tif",
-    #         "ch_G_fusion":                   "*_G_processed_fusion.tif", # CHECK_PT 
-    #         "ch_G_HE":                       "MetaImage/*_G_processed_HE.tif",
-    #         "ch_G_Kuwahara_HE":              f"MetaImage/*_G_processed_{Kuwahara}_HE.tif",
-    #         "ch_G_HE_fusion":                "*_G_processed_HE_fusion.tif", # CHECK_PT 
-    #         # -----------------------------------------------------------------------------------
-    #         "ch_R":                          "MetaImage/*_R_processed.tif",
-    #         "ch_R_Kuwahara":                 f"MetaImage/*_R_processed_{Kuwahara}.tif",
-    #         "ch_R_fusion":                   "*_R_processed_fusion.tif", # CHECK_PT 
-    #         "ch_R_HE":                       "MetaImage/*_R_processed_HE.tif",
-    #         "ch_R_Kuwahara_HE":              f"MetaImage/*_R_processed_{Kuwahara}_HE.tif",
-    #         "ch_R_HE_fusion":                "*_R_processed_HE_fusion.tif", # CHECK_PT 
-    #         # -----------------------------------------------------------------------------------
-    #         "RGB":                           "MetaImage/*_RGB_processed.tif",
-    #         "RGB_Kuwahara":                  f"MetaImage/*_RGB_processed_{Kuwahara}.tif",
-    #         "RGB_fusion":                    "*_RGB_processed_fusion.tif", # CHECK_PT  => Average(RGB_processed, RGB_processed_Kuwahara)
-    #         "RGB_fusion2Gray":               "*_RGB_processed_fusion2Gray.tif", # CHECK_PT 
-    #         "RGB_HE" :                       "MetaImage/*_RGB_processed_HE.tif",
-    #         "RGB_Kuwahara_HE" :              f"MetaImage/*_RGB_processed_{Kuwahara}_HE.tif",
-    #         "RGB_HE_fusion" :                "*_RGB_processed_HE_fusion.tif", # CHECK_PT  => Average(RGB_processed_HE, RGB_processed_Kuwahara_HE)
-    #         "RGB_HE_fusion2Gray":            "*_RGB_processed_HE_fusion2Gray.tif", # CHECK_PT 
-    #         # -----------------------------------------------------------------------------------
-    #         "BF_Zproj":                      f"MetaImage/*_{bf_zproj_type}.tif",
-    #         "BF_Zproj_HE":                   f"MetaImage/*_{bf_zproj_type}_HE.tif",
-    #         "Threshold":                     f"MetaImage/*_Threshold_{bf_threshold}.tif",
-    #         "outer_rect":                    "MetaImage/*_outer_rect.tif",
-    #         "inner_rect":                    "MetaImage/*_inner_rect.tif",
-    #         "RoiSet" :                       "MetaImage/RoiSet_AutoRect.roi",
-    #         # -----------------------------------------------------------------------------------
-    #         "RGB_fusion--AutoRect":          "*_RGB_processed_fusion--AutoRect.tif", # CHECK_PT 
-    #         "RGB_HE_fusion--AutoRect":       "*_RGB_processed_HE_fusion--AutoRect.tif", # CHECK_PT 
-    #         # -----------------------------------------------------------------------------------
-    #         "autocropped_RGB_fusion" :       "*_autocropped_RGB_processed_fusion.tif", # CHECK_PT 
-    #         "autocropped_RGB_HE_fusion" :    "*_autocropped_RGB_processed_HE_fusion.tif", # CHECK_PT 
-    #     }
+        with open(config_path, mode="r") as f_reader:
+            config = toml.load(f_reader)
+        
+        setattr(self, f"{image_type}_processed_config", config)
+    
+    
+    
+    def _load_processed_alias_map(self, image_type:str):
+        """
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+        
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        map_path = processed_dir.joinpath(f"{image_type}_result_alias_map.toml")
+        assert_file_exists(map_path)
+        
+        with open(map_path, mode="r") as f_reader:
+            alias_map = toml.load(f_reader)
+        
+        setattr(self, f"{image_type}_processed_alias_map", alias_map)
+    
+    
+    
+    def _set_processed_configs(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_config`
+            2. `self.brightfield_processed_config`
+        """
+        self._load_processed_config("palmskin")
+        self._load_processed_config("brightfield")
+    
+    
+    
+    def _set_processed_alias_maps(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_alias_map`
+            2. `self.brightfield_processed_alias_map`
+        """
+        self._load_processed_alias_map("palmskin")
+        self._load_processed_alias_map("brightfield")
     
     
     
