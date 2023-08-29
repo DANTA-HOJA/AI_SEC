@@ -42,9 +42,6 @@ class ProcessedDataInstance():
         
         # -----------------------------------------------------------------------------------
         # variables
-        self.dir_exists_dict:Dict[str, bool] = {"instance_root": False,
-                                                "palmskin_processed_dir": False,
-                                                "brightfield_processed_dir" : False}
         
         self.instance_desc:str = None
         self.instance_root:Union[None, Path] = None
@@ -277,6 +274,9 @@ class ProcessedDataInstance():
     
     def _load_processed_config(self, image_type:str):
         """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
         """
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
@@ -299,6 +299,9 @@ class ProcessedDataInstance():
     
     def _load_processed_alias_map(self, image_type:str):
         """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
         """
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
