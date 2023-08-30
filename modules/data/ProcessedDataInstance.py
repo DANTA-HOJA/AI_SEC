@@ -127,7 +127,7 @@ class ProcessedDataInstance():
             assert_dir_exists(path)
         except (KeyError, FileNotFoundError):
             raise FileNotFoundError("Can't find any 'BrightField_analyze' directory, "
-                                    "please run `0.2.analyze_brightfield` to analyze your brightfield images first.")
+                                    "please run `0.3.analyze_brightfield` to analyze your brightfield images first.")
         self.brightfield_processed_dir = path
         self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
     
