@@ -86,6 +86,7 @@ class ZFIJ():
         """
         self.run = self.ij.IJ.run
         self.save_as_tiff = self.ij.IJ.saveAsTiff
+        self.save_as = self.ij.IJ.saveAs
     
     
     def reset_all_window(self):
