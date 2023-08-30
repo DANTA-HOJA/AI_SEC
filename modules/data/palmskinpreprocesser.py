@@ -145,7 +145,7 @@ class PalmskinPreprocesser():
         """
         """ Display info """
         self._logger.info(f"Processing ... {self.lif_enum}/{self.total_lif_file}")
-        self._logger.info(f'LIF_FILE : {lif_path}')
+        self._logger.info(f"LIF_FILE : {lif_path}")
         
         """ Write `LOG_FILE` """
         self.log_writer.write(f"|{'-'*40}  Processing ... {self.lif_enum}/{self.total_lif_file}  {'-'*40} \n")
