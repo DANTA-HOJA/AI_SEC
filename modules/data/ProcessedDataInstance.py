@@ -335,65 +335,28 @@ class ProcessedDataInstance():
     
     
     
-    # def _init_brightfield_analyze_alias_map(self):
-        
-    #     with open(self.brightfield_processed_dir.joinpath("brightfield_analyze_config.toml"), mode="r") as f_reader:
-    #         self.brightfield_processed_config = toml.load(f_reader)
-        
-    #     analyze_kwargs = self.brightfield_processed_config["param"]
-    #     autothreshold_algo = analyze_kwargs['auto_threshold']
-        
-    #     self.brightfield_processed_alias_map = {
-    #         "original_16bit" :          "MetaImage/*_original_16bit.tif",
-    #         "cropped_BF" :              "*_cropped_BF.tif", # CHECK_PT 
-    #         "AutoThreshold" :           f"MetaImage/*_AutoThreshold_{autothreshold_algo}.tif",
-    #         "measured_mask" :           "MetaImage/*_measured_mask.tif",
-    #         "cropped_BF--MIX" :         "*_cropped_BF--MIX.tif", # CHECK_PT 
-    #         "RoiSet" :                  "MetaImage/RoiSet.zip",
-    #         "AutoAnalysis" :            "AutoAnalysis.csv",
-    #         "ManualAnalysis" :          "ManualAnalysis.csv",
-    #         "Manual_measured_mask" :    "Manual_measured_mask.tif", # CHECK_PT 
-    #         "Manual_cropped_BF--MIX" :  "Manual_cropped_BF--MIX.tif", # CHECK_PT 
-    #     }
-    
-    
-    
-    # def get_existing_processed_results(self, processed_name:str, result_alias:str) -> Tuple[str, List[Path]]:
-    #     """
+    def get_existing_processed_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
+        """
 
-    #     Args:
-    #         processed_name (str): `'BrightField_analyze'` or `'PalmSkin_preprocess'`
-    #         result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+            result_alias (str): please refer to `'result_alias_map.toml'` \
+                                under `PalmSkin_preprocess` or `BrightField_analyze` directory
 
-    #     Returns:
-    #         Tuple[str, List[Path]]: `(relative_path_in_fish_dir, sorted_results)`
-    #     """
-    #     assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
-    #         f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
-    #     processed_name_lower = processed_name.lower()
+        Returns:
+            Tuple[str, List[Path]]: `(relative_path_unfder_dname_dir, sorted_results)`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
         
-    #     processed_dir:Path = getattr(self, f"{processed_name_lower}_dir")
-    #     alias_map = getattr(self, f"{processed_name_lower}_alias_map")
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        alias_map = getattr(self, f"{image_type}_processed_alias_map")
         
-    #     assert alias_map[result_alias]
-    #     rel_path_in_fish_dir = alias_map[result_alias]
+        assert alias_map[result_alias]
+        rel_path:str = alias_map[result_alias]
+        sorted_results = sorted(processed_dir.glob(f"*/{rel_path}"), key=dname.get_dname_sortinfo)
         
-    #     # regex filter
-    #     results = sorted(processed_dir.glob(f"*/{alias_map[result_alias]}"), key=get_fish_id_pos)
-    #     pattern = rel_path_in_fish_dir.split("/")[-1]
-    #     pattern = pattern.replace("*", r"[0-9]*")
-    #     num = 0
-    #     actual_name = None
-    #     for _ in range(len(results)):
-    #         result_name = str(results[num]).split(os.sep)[-1]
-    #         if not re.fullmatch(pattern, result_name):
-    #             results.pop(num)
-    #         else:
-    #             num += 1
-    #             if actual_name is None: actual_name = result_name
-        
-    #     if rel_path_in_fish_dir.split("/")[0] == "MetaImage": return f"MetaImage/{actual_name}", results
-    #     else: return actual_name, results
+        return rel_path, sorted_results
     
     
     
