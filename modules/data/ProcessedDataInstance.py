@@ -43,21 +43,21 @@ class ProcessedDataInstance():
         # -----------------------------------------------------------------------------------
         # variables
         
-        self.instance_desc:str = None
         self.instance_root:Union[None, Path] = None
+        self.instance_desc:Union[None, str] = None
         self.instance_name:Union[None, str] = None
         
         self.palmskin_processed_dir:Union[None, Path] = None
         self.palmskin_processed_reminder:Union[None, str] = None
+        self.palmskin_processed_dname_dirs_dict:Dict[str, Path] = {}
         self.palmskin_processed_config:dict = {}
         self.palmskin_processed_alias_map:Dict[str, str] = {}
-        self.palmskin_processed_dname_dirs_dict:Dict[str, Path] = {}
         
         self.brightfield_processed_dir:Union[None, Path] = None
         self.brightfield_processed_reminder:Union[None, str] = None
+        self.brightfield_processed_dname_dirs_dict:Dict[str, Path] = {}
         self.brightfield_processed_config:dict = {}
         self.brightfield_processed_alias_map:Dict[str, str] = {}
-        self.brightfield_processed_dname_dirs_dict:Dict[str, Path] = {}
         
         self.palmskin_recollect_dir:Union[None, Path] = None
         self.palmskin_recollected_dirs_dict:Dict[str, Path] = {}
@@ -80,9 +80,9 @@ class ProcessedDataInstance():
         self.config = load_config(config_name, **self._display_kwargs)
         self._set_instance_root()
         self._set_processed_dirs()
+        self._set_processed_dname_dirs_dicts()
         self._set_processed_configs()
         self._set_processed_alias_maps()
-        self._set_processed_dname_dirs_dicts()
         self._set_recollect_dirs()
         self._set_data_xlsx_path()
         self._set_clustered_xlsx_dir()
