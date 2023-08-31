@@ -88,11 +88,13 @@ class PalmskinPreprocesser():
         
         """ STEP 3. Destination """
         """ 3.1. """
-        try:
-            self.palmskin_processed_dir = self._path_navigator.processed_data.get_processed_dir("palmskin", config, **self._display_kwargs)
-            assert_dir_exists(self.palmskin_processed_dir)
+        self.palmskin_processed_dir = self._path_navigator.processed_data.get_processed_dir("palmskin", config, **self._display_kwargs)
+        if self.palmskin_processed_dir:
             self.mode = "UPDATE"
-        except FileNotFoundError:
+        else:
+            instance_root = self._path_navigator.processed_data.get_instance_root(config, **self._display_kwargs)
+            reminder = config["data_processed"]["palmskin_reminder"]
+            self.palmskin_processed_dir = instance_root.joinpath(f"{{{reminder}}}_PalmSkin_preprocess")
             create_new_dir(self.palmskin_processed_dir, display_on_CLI=False)
         self._logger.info(f"Process Mode : {self.mode}")
         
