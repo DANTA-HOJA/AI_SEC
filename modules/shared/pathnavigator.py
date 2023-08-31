@@ -144,7 +144,7 @@ class _ProcessedDataPath():
     
     
     def get_processed_dir(self, image_type:str, config:Union[dict, TOMLDocument],
-                          display_on_CLI:bool=False, logger:Logger=None) -> Path:
+                          display_on_CLI:bool=False, logger:Logger=None):
         """ Get one of processed directories,
         
         1. `{[palmskin_reminder]}_PalmSkin_preprocess` or
@@ -170,19 +170,17 @@ class _ProcessedDataPath():
         """ Assign path """
         if found_list:
             processed_dir = found_list[0]
+            """ CLI output """
+            if display_on_CLI:
+                cli_out(f"{image_type.capitalize()} Processed Dir: '{processed_dir}'")
         else:
-            reminder = config["data_processed"][f"{image_type}_reminder"]
-            processed_dir = instance_root.joinpath(f"{{{reminder}}}_{target_text}")
-        
-        """ CLI output """
-        if display_on_CLI:
-            cli_out(f"{image_type.capitalize()} Processed Dir: '{processed_dir}'")
+            processed_dir = None
         
         return processed_dir
     
     
     def get_recollect_dir(self, image_type:str, config:Union[dict, TOMLDocument],
-                          display_on_CLI:bool=False, logger:Logger=None) -> Path:
+                          display_on_CLI:bool=False, logger:Logger=None):
         """ Get one of recollect directories,
         
         1. `{[palmskin_reminder]}_PalmSkin_reCollection` or
