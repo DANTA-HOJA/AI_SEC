@@ -18,7 +18,7 @@ class TqdmLoggingHandler(Handler):
 
 def init_logger(logger_name:str) -> logging.Logger:
     
-    logger: logging.Logger = logging.getLogger(logger_name)
+    logger = logging.Logger(logger_name)
     logger.setLevel(logging.DEBUG)
     
     # stream_handler = StreamHandler()
