@@ -112,24 +112,22 @@ class ProcessedDataInstance():
             4. `self.brightfield_processed_reminder`
         """
         """ palmskin """
-        try:
-            path = self._path_navigator.processed_data.get_processed_dir("palmskin", self.config, **self._display_kwargs)
-            assert_dir_exists(path)
-        except (KeyError, FileNotFoundError):
+        path = self._path_navigator.processed_data.get_processed_dir("palmskin", self.config, **self._display_kwargs)
+        if path:
+            self.palmskin_processed_dir = path
+            self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+        else:
             raise FileNotFoundError("Can't find any 'PalmSkin_preprocess' directory, "
-                                    "please run `0.2.preprocess_palmskin` to preprocess your palmskin images first.")
-        self.palmskin_processed_dir = path
-        self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+                                    "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.")
         
         """ brightfield """
-        try:
-            path = self._path_navigator.processed_data.get_processed_dir("brightfield", self.config, **self._display_kwargs)
-            assert_dir_exists(path)
-        except (KeyError, FileNotFoundError):
+        path = self._path_navigator.processed_data.get_processed_dir("brightfield", self.config, **self._display_kwargs)
+        if path:
+            self.brightfield_processed_dir = path
+            self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+        else:
             raise FileNotFoundError("Can't find any 'BrightField_analyze' directory, "
-                                    "please run `0.3.analyze_brightfield` to analyze your brightfield images first.")
-        self.brightfield_processed_dir = path
-        self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+                                    "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.")
     
     
     
