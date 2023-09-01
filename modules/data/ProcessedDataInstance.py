@@ -566,30 +566,30 @@ class ProcessedDataInstance():
     def __repr__(self):
         
         repr_string = "{\n"
-        repr_string += f"self.data_processed_root {type(self.data_processed_root)}: '{self.data_processed_root}'\n\n"
-                
-        repr_string += f"self.instance_desc : '{self.instance_desc}'\n"
+        repr_string += f"self.data_processed_root : '{self.data_processed_root}'\n\n"
+
         repr_string += f"self.instance_root : '{self.instance_root}'\n"
+        repr_string += f"self.instance_desc : '{self.instance_desc}'\n"
         repr_string += f"self.instance_name : '{self.instance_name}'\n\n"
+
+        repr_string += f"self.palmskin_processed_dir : '{self.palmskin_processed_dir}'\n"
+        repr_string += f"self.palmskin_processed_reminder : '{self.palmskin_processed_reminder}'\n"
+        repr_string += f"self.palmskin_processed_config.param : {json.dumps(self.palmskin_processed_config['param'], indent=4)}\n\n"
                 
-        repr_string += f"self.palmskin_preprocess_dir : '{self.palmskin_processed_dir}'\n"
-        repr_string += f"self.palmskin_preprocess_reminder : '{self.palmskin_processed_reminder}'\n\n"
-        # repr_string += f"self.palmskin_preprocess_config.param : {json.dumps(self.palmskin_processed_config["param"], indent=4)}\n\n"
-                
-        repr_string += f"self.brightfield_analyze_dir : '{self.brightfield_processed_dir}'\n"
-        repr_string += f"self.brightfield_analyze_reminder : '{self.brightfield_processed_reminder}'\n\n"
-        # repr_string += f"self.brightfield_analyze_config.param : {json.dumps(self.brightfield_processed_config["param"], indent=4)}\n\n"
+        repr_string += f"self.brightfield_processed_dir : '{self.brightfield_processed_dir}'\n"
+        repr_string += f"self.brightfield_processed_reminder : '{self.brightfield_processed_reminder}'\n"
+        repr_string += f"self.brightfield_processed_config.param : {json.dumps(self.brightfield_processed_config['param'], indent=4)}\n\n"
                 
         repr_string += f"self.palmskin_recollect_dir : '{self.palmskin_recollect_dir}'\n"
-        # repr_string += f"self.palmskin_recollected_dirs_dict : {json.dumps(list(self.palmskin_recollected_dirs_dict.keys()), indent=4)}\n\n"
+        repr_string += f"self.palmskin_recollected_dirs_dict : {json.dumps(list(self.palmskin_recollected_dirs_dict.keys()), indent=4)}\n\n"
                 
-        repr_string += f"self.brightfield_recollect_dir : '{self.brightfield_recollect_dir}'\n\n"
-        # repr_string += f"self.brightfield_recollected_dirs_dict : {json.dumps(list(self.brightfield_recollected_dirs_dict.keys()), indent=4)}\n\n"
+        repr_string += f"self.brightfield_recollect_dir : '{self.brightfield_recollect_dir}'\n"
+        repr_string += f"self.brightfield_recollected_dirs_dict : {json.dumps(list(self.brightfield_recollected_dirs_dict.keys()), indent=4)}\n\n"
                 
         repr_string += f"self.data_xlsx_path : '{self.data_xlsx_path}'\n"
                 
         repr_string += f"self.clustered_xlsx_dir : '{self.clustered_xlsx_dir}'\n"
-        # repr_string += f"self.clustered_xlsx_paths_dict : {json.dumps(list(self.clustered_xlsx_paths_dict.keys()), indent=4)}\n\n"
+        repr_string += f"self.clustered_xlsx_files_dict : {json.dumps(list(self.clustered_xlsx_files_dict.keys()), indent=4)}\n\n"
         repr_string += "}\n"
         
         return repr_string
