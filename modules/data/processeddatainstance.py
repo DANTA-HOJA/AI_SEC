@@ -385,7 +385,7 @@ class ProcessedDataInstance():
         if recollect_dir.exists():
             raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.")
         else:
-            create_new_dir(recollect_dir)
+            create_new_dir(recollect_dir, display_on_CLI=False)
         
         """ Main process """
         summary = {}
