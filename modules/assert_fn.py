@@ -32,7 +32,7 @@ def assert_run_under_repo_root(target_idx:Union[int, None]):
 
 
 def assert_is_pathobj(path:Path):
-    """ Check if `path` is a `Path` object 
+    """ Check `path` is a `Path` object 
     """
     if not isinstance(path, Path):
         raise TypeError("The given path should be a `Path` object, "
@@ -40,8 +40,8 @@ def assert_is_pathobj(path:Path):
 
 
 def assert_dir_exists(dir:Path):
-    """ 1. Check if `dir` is a `Path` object
-        2. Check if `dir` exists
+    """ 1. Check `dir` is a `Path` object
+        2. Check `dir` exists
     """
     assert_is_pathobj(dir)
     if not dir.exists():
@@ -49,8 +49,8 @@ def assert_dir_exists(dir:Path):
 
 
 def assert_file_exists(file:Path):
-    """ 1. Check if `file` is a `Path` object
-        2. Check if `file` exists
+    """ 1. Check `file` is a `Path` object
+        2. Check `file` exists
     """
     assert_is_pathobj(file)
     if not file.exists():
@@ -58,8 +58,8 @@ def assert_file_exists(file:Path):
 
 
 def assert_dir_not_exists(dir:Path):
-    """ 1. Check if `dir` is a `Path` object
-        2. Check if `dir` not exists
+    """ 1. Check `dir` is a `Path` object
+        2. Check `dir` not exists
     """
     assert_is_pathobj(dir)
     if dir.exists():
@@ -67,8 +67,8 @@ def assert_dir_not_exists(dir:Path):
 
 
 def assert_file_not_exists(file:Path):
-    """ 1. Check if `file` is a `Path` object
-        2. Check if `file` not exists
+    """ 1. Check `file` is a `Path` object
+        2. Check `file` not exists
     """
     assert_is_pathobj(file)
     if file.exists():
