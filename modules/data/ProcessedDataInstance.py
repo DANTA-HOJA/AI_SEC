@@ -441,125 +441,98 @@ class ProcessedDataInstance():
     
     
     
-    # def create_data_xlsx(self, logger:Logger):
-    #     """To generate data information in XLSX ( XLSX file will used to compute the classes in classification task ):
-
-    #         All fish will process with the following step : 
-            
-    #             1. Run ImageJ Macro : Use bright field (BF) images to compute the surface area (SA) and surface length (SL), and store their results in CSV format.
-    #             2. Collect all generated CSV files using pandas.DataFrame().
-    #             3. Use `fish_id` to find and add their `palmskin_RGB` images into the DataFrame.
-    #             4. Save results in XLSX format.
-
-    #     Args:
-    #         logger (Logger): external logger created using package `logging`
-    #     """
+    def create_data_xlsx(self):
+        """ Create a XLSX file contains `dname` and `brightfield analyze` informations \
+            ( used to compute the classes of classification )
+        """
+        # -----------------------------------------------------------------------------------
+        # brightfield
         
-    #     # -----------------------------------------------------------------------------------
-    #     # BrightField
+        """ Scan `AutoAnalysis`, `ManualAnalysis` results """
+        bf_auto_results_list = self.get_sorted_results("brightfield", "AutoAnalysis")[1]
+        bf_manual_results_list = self.get_sorted_results("brightfield", "ManualAnalysis")[1]
+        self._logger.info((f"brightfield: found "
+                           f"{len(bf_auto_results_list)} AutoAnalysis.csv, "
+                           f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
+                           f"Total: {len(bf_auto_results_list) + len(bf_manual_results_list)} files"))
+
+        """ Merge `AutoAnalysis`, `ManualAnalysis` results """
+        bf_auto_results_dict = dname.create_dict_by_id(bf_auto_results_list)
+        bf_manual_results_dict = dname.create_dict_by_id(bf_manual_results_list)
+        bf_merge_results_dict = dname.merge_dict_by_id(bf_auto_results_dict, bf_manual_results_dict)
+        bf_merge_results_list = sorted(list(bf_merge_results_dict.values()), key=dname.get_dname_sortinfo)
+        self._logger.info(f"--> After Merging , Total: {len(bf_merge_results_list)} files\n")
         
-    #     # Scan `AutoAnalysis` results, and sort ( Due to OS scanning strategy 10 may listed before 8 )
-    #     bf_recollect_auto_list = self.get_existing_processed_results("BrightField_analyze", "AutoAnalysis")[1]
-    #     bf_recollect_auto_list = sorted(bf_recollect_auto_list, key=get_fish_id_pos)
+        # -----------------------------------------------------------------------------------
+        # palmskin
 
-    #     # Scan `ManualAnalysis` results, and sort ( Due to OS scanning strategy 10 may listed before 8 )
-    #     bf_recollect_manual_list = self.get_existing_processed_results("BrightField_analyze", "ManualAnalysis")[1]
-    #     bf_recollect_manual_list = sorted(bf_recollect_manual_list, key=get_fish_id_pos)
-
-    #     # show info
-    #     logger.info((f"BrightField: Found {len(bf_recollect_auto_list)} AutoAnalysis.csv, "
-    #             f"{len(bf_recollect_manual_list)} ManualAnalysis.csv, "
-    #             f"Total: {len(bf_recollect_auto_list) + len(bf_recollect_manual_list)} files"))
-
-    #     # Merge `AutoAnalysis` and `ManualAnalysis` list
-    #     bf_recollect_auto_dict = create_dict_by_fishid(bf_recollect_auto_list)
-    #     bf_recollect_manual_dict = create_dict_by_fishid(bf_recollect_manual_list)
-    #     bf_recollect_merge_dict = merge_bf_analysis(bf_recollect_auto_dict, bf_recollect_manual_dict)
-    #     bf_recollect_merge_list = sorted(list(bf_recollect_merge_dict.values()), key=get_fish_id_pos)
-    #     logger.info(f"--> After Merging , Total: {len(bf_recollect_merge_list)} files")
+        palmskin_processed_dname_dirs = list(self.palmskin_processed_dname_dirs_dict.keys())
+        self._logger.info(f"palmskin: found {len(palmskin_processed_dname_dirs)} dname directories\n")
         
-    #     # -----------------------------------------------------------------------------------
-    #     # PalmSkin
+        # -----------------------------------------------------------------------------------
+        # Main process
 
-    #     palmskin_preprocess_fish_dirs = list(self.palmskin_processed_dname_dirs_dict.keys())
-    #     logger.info(f"PalmSkin: Found {len(palmskin_preprocess_fish_dirs)} tif files")
+        xlsx_path = self.instance_root.joinpath("data.xlsx")
+        df_xlsx = pd.DataFrame(columns=["BrightField name with Analysis statement (CSV)",
+                                        "Anterior (SP8, .tif)", 
+                                        "Posterior (SP8, .tif)",
+                                        "Trunk surface area, SA (um2)",
+                                        "Standard Length, SL (um)"])
+        delete_uncomplete_row = True
+        max_probable_num = dname.get_dname_sortinfo(bf_merge_results_list[-1])[0]
         
-    #     # -----------------------------------------------------------------------------------
-    #     # Processing
-
-    #     delete_uncomplete_row = True
-    #     output = os.path.join(self.instance_root, r"data.xlsx")
-
-    #     # Creating "data.xlsx"
-    #     data = pd.DataFrame(columns=["BrightField name with Analysis statement (CSV)",
-    #                                 "Anterior (SP8, .tif)", 
-    #                                 "Posterior (SP8, .tif)",
-    #                                 "Trunk surface area, SA (um2)",
-    #                                 "Standard Length, SL (um)"])
-
-
-    #     print("\n\nprocessing...\n")
-
-    #     # Variable
-    #     max_probable_num = get_fish_id_pos(bf_recollect_merge_list[-1])[0]
-    #     logger.info(f'max_probable_num {type(max_probable_num)}: {max_probable_num}\n')
-
-
-    #     # Starting...
-    #     for i in range(max_probable_num):
+        for i in range(max_probable_num):
             
-    #         # *** Print CMD section divider ***
-    #         print("="*100, "\n")
+            one_base_iter_num = i+1 # Make iteration starting number start from 1
+            self._logger.info(f"one_base_iter_num : {one_base_iter_num}")
             
-    #         one_base_iter_num = i+1 # Make iteration starting number start from 1
-    #         logger.info(f'one_base_iter_num {type(one_base_iter_num)}: {one_base_iter_num}\n')
-            
-            
-    #         if  one_base_iter_num == get_fish_id_pos(bf_recollect_merge_list[0])[0] :
+            if  one_base_iter_num == dname.get_dname_sortinfo(bf_merge_results_list[0])[0]:
                 
-    #             # Get info strings
-    #             bf_result_path = bf_recollect_merge_list.pop(0)
-    #             bf_result_path_split = str(bf_result_path).split(os.sep)
-    #             bf_result_name = bf_result_path_split[-2] # `AutoAnalysis` or `ManualAnalysis`
-    #             bf_result_analysis_type = bf_result_path_split[-1].split(".")[0] # Get name_noExtension
-    #             logger.info(f'bf_result_name {type(bf_result_name)}: {bf_result_name}')
-    #             logger.info(f'analysis_type {type(bf_result_analysis_type)}: {bf_result_analysis_type}')
-    #             # Read CSV
-    #             analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
-    #             assert len(analysis_csv) == 1, f"More than 1 measure data in csv file, file:{bf_result_path}"
-    #             # Get surface area from analysis file
-    #             surface_area = analysis_csv.loc[1, "Area"]
-    #             logger.info(f'surface_area {type(surface_area)}: {surface_area}')
-    #             # Get standard length from analysis file
-    #             standard_length = analysis_csv.loc[1, "Feret"]
-    #             logger.info(f'standard_length {type(standard_length)}: {standard_length}')
+                """ Get informations """
+                bf_result_path = bf_merge_results_list.pop(0)
+                bf_result_path_split = str(bf_result_path).split(os.sep)
+                bf_result_dname = bf_result_path_split[-2]
+                bf_result_analysis_type = bf_result_path_split[-1].split(".")[0] # `AutoAnalysis` or `ManualAnalysis`
+                self._logger.info(f"bf_result_dname : '{bf_result_dname}'")
+                self._logger.info(f"analysis_type : '{bf_result_analysis_type}'")
                 
-    #             data.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = f"{bf_result_name}_{bf_result_analysis_type}"
-    #             data.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
-    #             data.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
+                """ Read CSV """
+                analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
+                assert len(analysis_csv) == 1, f"More than 1 measurement in csv file, file: '{bf_result_path}'"
+                
+                """ Get surface area """
+                surface_area = analysis_csv.loc[1, "Area"]
+                self._logger.info(f"surface_area : {surface_area}")
+                
+                """ Get standard length """
+                standard_length = analysis_csv.loc[1, "Feret"]
+                self._logger.info(f"standard_length : {standard_length}")
+                
+                """ Assign value to Dataframe """
+                df_xlsx.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = f"{bf_result_dname}_{bf_result_analysis_type}"
+                df_xlsx.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
+                df_xlsx.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
 
-    #         else: data.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
+            else: df_xlsx.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
             
             
-    #         if f"{one_base_iter_num}_A" in palmskin_preprocess_fish_dirs[0]:
-    #             palmskin_RGB_A_name = palmskin_preprocess_fish_dirs.pop(0)
-    #             logger.info(f'palmskin_RGB_A_name {type(palmskin_RGB_A_name)}: {palmskin_RGB_A_name}')
-    #             data.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_RGB_A_name
+            if f"{one_base_iter_num}_A" in palmskin_processed_dname_dirs[0]:
+                palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
+                self._logger.info(f"palmskin_A_name : '{palmskin_A_name}'")
+                df_xlsx.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_A_name
             
             
-    #         if f"{one_base_iter_num}_P" in palmskin_preprocess_fish_dirs[0]:
-    #             palmskin_RGB_P_name = palmskin_preprocess_fish_dirs.pop(0)
-    #             logger.info(f'palmskin_RGB_P_name {type(palmskin_RGB_P_name)}: {palmskin_RGB_P_name}')
-    #             data.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_RGB_P_name
-            
-            
-    #         print("\n\n\n")
+            if f"{one_base_iter_num}_P" in palmskin_processed_dname_dirs[0]:
+                palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
+                self._logger.info(f"palmskin_P_name : '{palmskin_P_name}'")
+                df_xlsx.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_P_name
 
+            self._logger.info("\n")
 
-    #     if delete_uncomplete_row: data.dropna(inplace=True)
-    #     data.to_excel(output, engine="openpyxl")
-
-    #     self._check_data_xlsx_path()
+        
+        if delete_uncomplete_row: df_xlsx.dropna(inplace=True)
+        df_xlsx.to_excel(xlsx_path, engine="openpyxl")
+        self._set_data_xlsx_path()
     
     
     
