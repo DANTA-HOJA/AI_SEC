@@ -334,7 +334,7 @@ class ProcessedDataInstance():
     
     
     
-    def get_sorted_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
+    def _get_sorted_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
         """
 
         Args:
@@ -375,7 +375,7 @@ class ProcessedDataInstance():
             raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only")
         
         """ Scan results """
-        rel_path, results = self.get_sorted_results(image_type, result_alias)
+        rel_path, results = self._get_sorted_results(image_type, result_alias)
         
         """ Get `recollect_dir` """
         if image_type == "palmskin": target_text = "PalmSkin"
@@ -449,8 +449,8 @@ class ProcessedDataInstance():
         # brightfield
         
         """ Scan `AutoAnalysis`, `ManualAnalysis` results """
-        bf_auto_results_list = self.get_sorted_results("brightfield", "AutoAnalysis")[1]
-        bf_manual_results_list = self.get_sorted_results("brightfield", "ManualAnalysis")[1]
+        bf_auto_results_list = self._get_sorted_results("brightfield", "AutoAnalysis")[1]
+        bf_manual_results_list = self._get_sorted_results("brightfield", "ManualAnalysis")[1]
         self._logger.info((f"brightfield: found "
                            f"{len(bf_auto_results_list)} AutoAnalysis.csv, "
                            f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
@@ -586,7 +586,7 @@ class ProcessedDataInstance():
         
         #  TODO:  xlsx_name is not None, use given xlsx under `Modified_xlsx/`
         
-        rel_path, result_path_list = self.get_sorted_results("palmskin", palmskin_result_alias)
+        rel_path, result_path_list = self._get_sorted_results("palmskin", palmskin_result_alias)
         if rel_path.split(os.sep)[0] == "MetaImage": target_idx = -3
         else: target_idx = -2
         result_path_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in result_path_list}
