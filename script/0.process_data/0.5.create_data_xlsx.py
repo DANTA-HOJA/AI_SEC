@@ -1,29 +1,17 @@
-import os
 import sys
 from pathlib import Path
-import toml
 
-abs_module_path = Path("./../modules/").resolve()
+abs_module_path = Path("./../../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
-from logger import init_logger
-from data.ProcessedDataInstance import ProcessedDataInstance
+from modules.shared.utils import get_repo_root, load_config
+from modules.data.processeddatainstance import ProcessedDataInstance
 
-config_dir = Path( "./../Config/" ).resolve()
+""" Detect Repository """
+repo_root = get_repo_root(display_on_CLI=True)
 
-log = init_logger(r"Create Data Xlsx")
 
-# -----------------------------------------------------------------------------------
-config_name = "(CreateXlsx)_data.toml"
-
-with open(config_dir.joinpath(config_name), mode="r") as f_reader:
-    config = toml.load(f_reader)
-    
-processed_inst_desc = config["data_processed"]["desc"]
-
-# -----------------------------------------------------------------------------------
-# Create `data.xlsx`
-
-processed_data_instance = ProcessedDataInstance(config_dir, processed_inst_desc)
-processed_data_instance.create_data_xlsx(log)
+processed_data_instance = ProcessedDataInstance()
+processed_data_instance.load_config("0.5.create_data_xlsx.toml")
+processed_data_instance.create_data_xlsx()
