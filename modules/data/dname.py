@@ -3,6 +3,8 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
+import shutil
+import filecmp
 
 from ..shared.utils import get_target_str_idx_in_list
 
@@ -66,3 +68,21 @@ def merge_dict_by_id(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Di
         auto_analysis_dict.pop(key, None)
         auto_analysis_dict[key] = manual_analysis_dict[key]
     return auto_analysis_dict
+
+
+
+def resave_result(original_path:Path, resave_dir:Path):
+    
+    if isinstance(original_path, Path): original_path = str(original_path)
+    else: raise TypeError("'original_path' should be a 'Path' object, please using `from pathlib import Path`")
+    
+    if not isinstance(resave_dir, Path):
+        raise TypeError("'resave_dir' should be a 'Path' object, please using `from pathlib import Path`")
+    
+    if "MetaImage" in original_path: fish_dname = original_path.split(os.sep)[-3]
+    else: fish_dname = original_path.split(os.sep)[-2]
+    
+    file_ext = original_path.split(".")[-1]
+    resave_path = resave_dir.joinpath(f"{fish_dname}.{file_ext}")
+    shutil.copy(original_path, resave_path)
+    filecmp.cmp(original_path, resave_path)
