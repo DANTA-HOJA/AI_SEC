@@ -11,13 +11,13 @@ from modules.data.processeddatainstance import ProcessedDataInstance
 """ Detect Repository """
 repo_root = get_repo_root(display_on_CLI=True)
 
-""" Get variable """
-config = load_config("0.4.collect_results.toml")
-image_type = config["collection"]["image_type"]
-result_alias = config["collection"]["result_alias"]
-log_mode = config["collection"]["log_mode"]
-
 
 processed_data_instance = ProcessedDataInstance()
 processed_data_instance.load_config("0.4.collect_results.toml")
+
+""" Get variables """
+image_type   = processed_data_instance.config["collection"]["image_type"]
+result_alias = processed_data_instance.config["collection"]["result_alias"]
+log_mode     = processed_data_instance.config["collection"]["log_mode"]
+
 processed_data_instance.collect_results(image_type, result_alias, log_mode)
