@@ -573,7 +573,8 @@ class ProcessedDataInstance():
         """ Check the existence and readability of the palmskin images recorded in the XLSX file.
 
         Args:
-            palmskin_result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository.
+            palmskin_result_alias (str): please refer to `result_alias_map.toml` \
+                                         under `PalmSkin_preprocess` directory
             xlsx_name (str, optional): If `None`, use `self.data_xlsx_path`
 
         Returns:
