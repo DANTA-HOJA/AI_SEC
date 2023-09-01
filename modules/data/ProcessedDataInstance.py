@@ -17,7 +17,6 @@ import pandas as pd
 import cv2
 
 from . import dname
-from .collect_data import resave_result
 from ..shared.logger import init_logger
 from ..shared.pathnavigator import PathNavigator
 from ..shared.utils import create_new_dir, load_config
@@ -220,7 +219,7 @@ class ProcessedDataInstance():
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
         
-        setattr(self, f"{image_type}_recollected_dirs_dict", {}) # reset variable
+        setattr(self, f"{image_type}_recollected_dirs_dict", {}) # reset dict
         recollected_dict = getattr(self, f"{image_type}_recollected_dirs_dict")
         
         recollect_dir:Union[None, Path] = getattr(self, f"{image_type}_recollect_dir")
@@ -335,12 +334,12 @@ class ProcessedDataInstance():
     
     
     
-    def get_existing_processed_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
+    def get_sorted_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
         """
 
         Args:
             image_type (str): `palmskin` or `brightfield`
-            result_alias (str): please refer to `'result_alias_map.toml'` \
+            result_alias (str): please refer to `result_alias_map.toml` \
                                 under `PalmSkin_preprocess` or `BrightField_analyze` directory
 
         Returns:
@@ -360,91 +359,85 @@ class ProcessedDataInstance():
     
     
     
-    # def collect_results(self, processed_name:str, result_alias:str, log_mode:str="missing"):
-    #     """
+    def collect_results(self, image_type:str, result_alias:str, log_mode:str="missing"):
+        """ 
 
-    #     Args:
-    #         processed_name (str): `'BrightField_analyze'` or `'PalmSkin_preprocess'`
-    #         result_alias (str): please refer to `'Documents/{NamingRule}_ResultAlias.md'` in this repository
-    #         log_mode (str, optional): `'missing'` or `'finding'`. Defaults to "missing".
-    #     """
-    #     assert (processed_name == "BrightField_analyze") or (processed_name == "PalmSkin_preprocess"), \
-    #         f"processed_name = '{processed_name}', accept 'BrightField_analyze' or 'PalmSkin_preprocess' only"
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+            result_alias (str): please refer to `result_alias_map.toml` \
+                                under `PalmSkin_preprocess` or `BrightField_analyze` directory
+            log_mode (str, optional): `missing` or `finding`. Defaults to "missing".
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
             
-    #     assert (log_mode == "missing") or (log_mode == "finding"), \
-    #         f"log_mode = '{log_mode}', accept 'missing' or 'finding' only"
+        if log_mode not in ["missing", "finding"]:
+            raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only")
         
-    #     processed_name_lower = processed_name.lower()
-    #     source_name = processed_name.split("_")[0]
-    #     source_name_lower = source_name.lower()
+        """ Scan results """
+        rel_path, results = self.get_sorted_results(image_type , result_alias)
         
-    #     # get attributes
-    #     processed_reminder = getattr(self, f"{processed_name_lower}_reminder")
-    #     alias_map = getattr(self, f"{processed_name_lower}_alias_map")
-    #     recollect_dir:Path = getattr(self, f"{source_name_lower}_recollect_dir")
-    #     assert alias_map[result_alias]
+        """ Get `recollect_dir` """
+        if image_type == "palmskin": target_text = "PalmSkin"
+        elif image_type == "brightfield": target_text = "BrightField"
+        reminder = getattr(self, f"{image_type}_processed_reminder")
+        recollect_dir = self.instance_root.joinpath(f"{{{reminder}}}_{target_text}_reCollection", result_alias)
+        if recollect_dir.exists():
+            raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.")
+        else:
+            create_new_dir(recollect_dir)
         
-    #     # output
-    #     output_dir = self.instance_root.joinpath(f"{{{processed_reminder}}}_{source_name}_reCollection", result_alias)
-    #     assert not output_dir.exists(), f"Directory: '{output_dir}' already exists, please delete it before collecting results."
-    #     create_new_dir(output_dir)
+        """ Main process """
+        summary = {}
+        summary["result_alias"] = result_alias
+        summary["file_name"] = rel_path.split(os.sep)[-1]
+        summary["max_probable_num"] = dname.get_dname_sortinfo(results[-1])[0]
+        summary["total files"] = len(results)
+        summary[log_mode] = []
         
-    #     relative_path_in_fish_dir, results = self.get_existing_processed_results(processed_name, result_alias)
-        
-    #     summary = {}
-    #     summary["result_alias"] = result_alias
-    #     summary["actual_name"] = relative_path_in_fish_dir.split("/")[-1]
-    #     summary["max_probable_num"] = get_fish_id_pos(results[-1])[0]
-    #     summary["total files"] = len(results)
-    #     summary[log_mode] = []
-        
-    #     previous_fish = ""
-    #     for i in range(summary["max_probable_num"]):
+        previous_name = ""
+        for i in range(summary["max_probable_num"]):
             
-    #         one_base_iter_num = i+1
+            one_base_iter_num = i+1
             
-    #         if source_name == "PalmSkin": pos_list = ["A", "P"]
-    #         else: pos_list = [""]
+            """ pos option """
+            if image_type == "palmskin": pos_list = ["A", "P"]
+            else: pos_list = [""] # brightfield
             
-            
-    #         for pos in pos_list:
+            for pos in pos_list:
                 
-    #             # expect_name
-    #             if source_name == "PalmSkin": expect_name = f"{one_base_iter_num}_{pos}"
-    #             else: expect_name = f"{one_base_iter_num}" # BrightField
+                """ expect_name """
+                if image_type == "palmskin": expect_name = f"{one_base_iter_num}_{pos}"
+                else: expect_name = f"{one_base_iter_num}" # brightfield
                 
-    #             try: # current_name
-                    
-    #                 fish_ID, fish_pos = get_fish_id_pos(results[0])
-    #                 if source_name == "PalmSkin": current_name = f"{fish_ID}_{fish_pos}"
-    #                 else: current_name = f"{fish_ID}" # BrightField
-    #                 assert current_name != previous_fish, f"fish_dir repeated!, check '{previous_fish}' "
+                """ current_name """
+                fish_id, fish_pos = dname.get_dname_sortinfo(results[0])
+                if image_type == "palmskin": current_name = f"{fish_id}_{fish_pos}"
+                else: current_name = f"{fish_id}" # brightfield
                 
-    #             except: pass
+                assert current_name != previous_name, f"Fish repeated!, check '{current_name}' "
                 
-    #             # comparing
-    #             if current_name == expect_name:
-                    
-    #                 path = results.pop(0)
-    #                 resave_result(path, output_dir, alias_map[result_alias])
-    #                 previous_fish = current_name
-    #                 if log_mode == "finding": summary[log_mode].append(f"{expect_name}")
-                    
-    #             else: 
-    #                 if log_mode == "missing": summary[log_mode].append(f"{expect_name}")
+                """ comparing """
+                if current_name == expect_name:
+                    """ True """
+                    path = results.pop(0)
+                    dname.resave_result(path, recollect_dir)
+                    previous_name = current_name
+                    if log_mode == "finding": summary[log_mode].append(f"{expect_name}")
+                else:
+                    """ False """
+                    if log_mode == "missing": summary[log_mode].append(f"{expect_name}")
 
+        summary[f"len({log_mode})"] = len(summary[log_mode])        
         
-    #     summary[f"len({log_mode})"] = len(summary[log_mode])
-    #     print(json.dumps(summary, indent=4))
+        """ Dump `summary` dict """
+        log_path = recollect_dir.joinpath(f"{{Logs}}_collect_{image_type}_results.log")
+        with open(log_path, mode="w") as f_writer:
+            json.dump(summary, f_writer, indent=4)
+        self._logger.info(json.dumps(summary, indent=4))
         
-    #     # write log
-    #     log_path = output_dir.joinpath(f"{{Logs}}_collect_{processed_name_lower}_results.log")
-    #     with open(log_path, mode="w") as f_writer:
-    #         json.dump(summary, f_writer, indent=4)
-        
-    #     # update `recollect_dir`
-    #     if recollect_dir is None: self._check_recollect_dir(source_name)
-    #     else: self._update_recollected_dirs_dict(source_name)
+        """ Update `recollect_dir` """
+        self._set_recollect_dirs()
     
     
     
