@@ -473,7 +473,7 @@ class ProcessedDataInstance():
         # Main process
 
         xlsx_path = self.instance_root.joinpath("data.xlsx")
-        df_xlsx = pd.DataFrame(columns=["BrightField name with Analysis statement (CSV)",
+        xlsx_df = pd.DataFrame(columns=["BrightField name with Analysis statement (CSV)",
                                         "Anterior (SP8, .tif)", 
                                         "Posterior (SP8, .tif)",
                                         "Trunk surface area, SA (um2)",
@@ -509,29 +509,29 @@ class ProcessedDataInstance():
                 self._logger.info(f"standard_length : {standard_length}")
                 
                 """ Assign value to Dataframe """
-                df_xlsx.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = f"{bf_result_dname}_{bf_result_analysis_type}"
-                df_xlsx.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
-                df_xlsx.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
+                xlsx_df.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = f"{bf_result_dname}_{bf_result_analysis_type}"
+                xlsx_df.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
+                xlsx_df.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
 
-            else: df_xlsx.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
+            else: xlsx_df.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
             
             
             if f"{one_base_iter_num}_A" in palmskin_processed_dname_dirs[0]:
                 palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
                 self._logger.info(f"palmskin_A_name : '{palmskin_A_name}'")
-                df_xlsx.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_A_name
+                xlsx_df.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_A_name
             
             
             if f"{one_base_iter_num}_P" in palmskin_processed_dname_dirs[0]:
                 palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
                 self._logger.info(f"palmskin_P_name : '{palmskin_P_name}'")
-                df_xlsx.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_P_name
+                xlsx_df.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_P_name
 
             self._logger.info("\n")
 
         
-        if delete_uncomplete_row: df_xlsx.dropna(inplace=True)
-        df_xlsx.to_excel(xlsx_path, engine="openpyxl")
+        if delete_uncomplete_row: xlsx_df.dropna(inplace=True)
+        xlsx_df.to_excel(xlsx_path, engine="openpyxl")
         self._set_data_xlsx_path()
     
     
@@ -592,8 +592,8 @@ class ProcessedDataInstance():
         else: target_idx = -2
         result_path_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in result_path_list}
         
-        df_xlsx: pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
-        palmskin_dnames = list(pd.concat([df_xlsx["Anterior (SP8, .tif)"], df_xlsx["Posterior (SP8, .tif)"]]))
+        xlsx_df: pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
+        palmskin_dnames = list(pd.concat([xlsx_df["Anterior (SP8, .tif)"], xlsx_df["Posterior (SP8, .tif)"]]))
         file_name = rel_path.split(os.sep)[-1]
         
         """ Main Process """
