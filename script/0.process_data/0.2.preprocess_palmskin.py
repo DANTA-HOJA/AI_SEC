@@ -1,6 +1,4 @@
-import os
 import sys
-import re
 from pathlib import Path
 
 abs_module_path = Path("./../../").resolve()
