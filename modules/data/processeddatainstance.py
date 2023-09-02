@@ -77,6 +77,21 @@ class ProcessedDataInstance():
         """
         """
         self.config = load_config(config_name, **self._display_kwargs)
+        self._refresh()
+    
+    
+    
+    def set_config(self, config:Union[dict, TOMLDocument]):
+        """
+        """
+        self.config = config
+        self._refresh()
+    
+    
+    
+    def _refresh(self):
+        """
+        """
         self._set_instance_root()
         self._set_processed_dirs()
         self._set_processed_dname_dirs_dicts()
