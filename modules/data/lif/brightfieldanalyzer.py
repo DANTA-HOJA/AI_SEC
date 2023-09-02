@@ -9,13 +9,13 @@ import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from .ij.zfij import ZFIJ
-from .lif.utils import scan_lifs_under_dir
-from ..shared.logger import init_logger
-from ..shared.utils import load_config, create_new_dir
-from ..shared.pathnavigator import PathNavigator
+from ..ij.zfij import ZFIJ
+from .utils import scan_lifs_under_dir
+from ...shared.logger import init_logger
+from ...shared.utils import load_config, create_new_dir
+from ...shared.pathnavigator import PathNavigator
 
-from ..assert_fn import *
+from ...assert_fn import *
 
 
 
