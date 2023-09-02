@@ -473,9 +473,10 @@ class ProcessedDataInstance():
         # Main process
 
         xlsx_path = self.instance_root.joinpath("data.xlsx")
-        xlsx_df = pd.DataFrame(columns=["BrightField name with Analysis statement (CSV)",
-                                        "Anterior (SP8, .tif)", 
-                                        "Posterior (SP8, .tif)",
+        xlsx_df = pd.DataFrame(columns=["Brightfield",
+                                        "Analysis Mode",
+                                        "Palmskin Anterior (SP8)", 
+                                        "Palmskin Posterior (SP8)",
                                         "Trunk surface area, SA (um2)",
                                         "Standard Length, SL (um)"])
         delete_uncomplete_row = True
@@ -492,9 +493,9 @@ class ProcessedDataInstance():
                 bf_result_path = bf_merge_results_list.pop(0)
                 bf_result_path_split = str(bf_result_path).split(os.sep)
                 bf_result_dname = bf_result_path_split[-2]
-                bf_result_analysis_type = bf_result_path_split[-1].split(".")[0] # `AutoAnalysis` or `ManualAnalysis`
+                bf_result_analysis_mode = bf_result_path_split[-1].split(".")[0] # `AutoAnalysis` or `ManualAnalysis`
                 self._logger.info(f"bf_result_dname : '{bf_result_dname}'")
-                self._logger.info(f"analysis_type : '{bf_result_analysis_type}'")
+                self._logger.info(f"analysis_mode : '{bf_result_analysis_mode}'")
                 
                 """ Read CSV """
                 analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
@@ -509,7 +510,8 @@ class ProcessedDataInstance():
                 self._logger.info(f"standard_length : {standard_length}")
                 
                 """ Assign value to Dataframe """
-                xlsx_df.loc[one_base_iter_num, "BrightField name with Analysis statement (CSV)"] = f"{bf_result_dname}_{bf_result_analysis_type}"
+                xlsx_df.loc[one_base_iter_num, "Brightfield"] = bf_result_dname
+                xlsx_df.loc[one_base_iter_num, "Analysis Mode"] = bf_result_analysis_mode
                 xlsx_df.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
                 xlsx_df.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
 
@@ -519,13 +521,13 @@ class ProcessedDataInstance():
             if f"{one_base_iter_num}_A" in palmskin_processed_dname_dirs[0]:
                 palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
                 self._logger.info(f"palmskin_A_name : '{palmskin_A_name}'")
-                xlsx_df.loc[one_base_iter_num, "Anterior (SP8, .tif)" ] =  palmskin_A_name
+                xlsx_df.loc[one_base_iter_num, "Palmskin Anterior (SP8)" ] =  palmskin_A_name
             
             
             if f"{one_base_iter_num}_P" in palmskin_processed_dname_dirs[0]:
                 palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
                 self._logger.info(f"palmskin_P_name : '{palmskin_P_name}'")
-                xlsx_df.loc[one_base_iter_num, "Posterior (SP8, .tif)" ] =  palmskin_P_name
+                xlsx_df.loc[one_base_iter_num, "Palmskin Posterior (SP8)" ] =  palmskin_P_name
 
             self._logger.info("\n")
 
@@ -593,7 +595,7 @@ class ProcessedDataInstance():
         result_path_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in result_path_list}
         
         xlsx_df: pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
-        palmskin_dnames = list(pd.concat([xlsx_df["Anterior (SP8, .tif)"], xlsx_df["Posterior (SP8, .tif)"]]))
+        palmskin_dnames = list(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]))
         file_name = rel_path.split(os.sep)[-1]
         
         """ Main Process """
