@@ -67,9 +67,9 @@ class PalmskinPreprocesser():
             2. Scan `LIF` files
         3. Destination:
             1. Get `palmskin_processed_dir`
-            2. Decide which ["param"] will be used
-                - if mode="NEW" -> Save the config to `palmskin_processed_dir`
-                - if mode="UPDATE" -> Load the ["param"] from existing config
+            2. Decide which `[param]` will be used
+                - if mode == `NEW` -> Save the config to `palmskin_processed_dir`
+                - if mode == `UPDATE` -> Load the `[param]` from existing config
             3. Open a `LOG_FILE`
         4. Preprocess palmskin images
         5. Close `LOG_FILE` (3.2)
