@@ -34,7 +34,7 @@ class BatchLIFNameChecker():
     
     
     
-    def run(self, config_file:str="0.1.check_lif_name.toml"):
+    def run(self, config_file:Union[str, Path]="0.1.check_lif_name.toml"):
         """ Actions
         1. Load config
         2. Source: 
@@ -43,7 +43,7 @@ class BatchLIFNameChecker():
         3. Check LIF name
 
         Args:
-            config_file (str, optional): Defaults to `0.1.check_lif_name.toml`.
+            config_file (Union[str, Path], optional): Defaults to `0.1.check_lif_name.toml`.
         """
         """ STEP 1. Load config """
         config = load_config(config_file, self._cli_out)
