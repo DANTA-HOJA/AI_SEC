@@ -17,7 +17,7 @@ from ...assert_fn import assert_lifname_split_in_4_part
 
 class BatchLIFNameChecker():
     
-    def __init__(self, zfij_instance:ZFIJ=None) -> None:
+    def __init__(self, zfij_instance:ZFIJ=None, display_on_CLI=True) -> None:
         """
         """
         # Initialize `Fiji` ( This will change the working directory to where the `JVM` exists. )
@@ -29,7 +29,7 @@ class BatchLIFNameChecker():
         """ Logger """
         self._logger = init_logger(r"Check Lif Name")
         self._display_kwargs = {
-            "display_on_CLI": True,
+            "display_on_CLI": display_on_CLI,
             "logger": self._logger
         }
         
@@ -38,16 +38,19 @@ class BatchLIFNameChecker():
         
     
     
-    def run(self):
+    def run(self, config_name:str="0.1.check_lif_name.toml"):
         """ Actions
-        1. Load config: `0.1.check_lif_name.toml`
+        1. Load config
         2. Source: 
             1. Get `lif_scan_root`
             2. Scan `LIF` files
         3. Check LIF name
+
+        Args:
+            config_name (str, optional): Defaults to `0.1.check_lif_name.toml`.
         """
         """ STEP 1. Load config """
-        config = load_config("0.1.check_lif_name.toml", **self._display_kwargs)
+        config = load_config(config_name, **self._display_kwargs)
         nasdl_type    = config["data_nasdl"]["type"]
         nasdl_batches = config["data_nasdl"]["batches"]
         
