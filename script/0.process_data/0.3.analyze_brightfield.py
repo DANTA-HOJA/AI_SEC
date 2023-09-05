@@ -9,7 +9,7 @@ from modules.data.lif.brightfieldanalyzer import BrightfieldAnalyzer
 from modules.shared.utils import get_repo_root
 
 """ Detect Repository """
-repo_root = get_repo_root(display_on_CLI=True)
+print(f"Repository: '{get_repo_root()}'")
 
 
 brightfield_analyzer = BrightfieldAnalyzer()
