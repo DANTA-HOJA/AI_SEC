@@ -3,7 +3,9 @@ from logging import Handler, StreamHandler
 from tqdm.auto import tqdm
 
 
+
 class TqdmLoggingHandler(Handler):
+    
     def __init__(self, level=logging.NOTSET):
         super().__init__(level)
 
@@ -14,6 +16,7 @@ class TqdmLoggingHandler(Handler):
             self.flush()
         except Exception:
             self.handleError(record)
+
 
 
 def init_logger(logger_name:str) -> logging.Logger:
