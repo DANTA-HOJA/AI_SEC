@@ -9,7 +9,7 @@ from modules.data.lif.batchlifnamechecker import BatchLIFNameChecker
 from modules.shared.utils import get_repo_root
 
 """ Detect Repository """
-print(f"Repository: '{get_repo_root()}'") 
+print(f"Repository: '{get_repo_root()}'")
 
 
 batch_lif_name_checker = BatchLIFNameChecker()
