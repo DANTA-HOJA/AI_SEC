@@ -71,12 +71,12 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
 
 
 
-def load_config(config_name:str, reserve_comment:bool=False,
+def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
                 cli_out:CLIOutput=None) -> Union[dict, TOMLDocument]:
     """ Scan and load the specific config under repo root
 
     Args:
-        config_name (str): full name, like `abc.toml`
+        config_file (str): full file name, like `abc.toml`
         reserve_comment (bool, optional): Defaults to False.
         cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
 
@@ -88,14 +88,21 @@ def load_config(config_name:str, reserve_comment:bool=False,
     else:
         load_fn = toml.load
     
-    repo_root = get_repo_root()
-    found_list = list(repo_root.glob(f"**/{config_name}"))
-    assert_only_1_config(found_list, config_name)
+    path = None
+    if isinstance(config_file, Path):
+        path = config_file
+    elif isinstance(config_file, str):
+        repo_root = get_repo_root()
+        found_list = list(repo_root.glob(f"**/{config_file}"))
+        assert_only_1_config(found_list, config_file)
+        path = found_list[0]
+    else:
+        raise NotImplementedError("Argument `config_file` should be `str` or `Path` object.")
     
     """ CLI output """
-    if cli_out: cli_out.write(f"Config Path: '{found_list[0]}'")
+    if cli_out: cli_out.write(f"Config Path: '{path}'")
     
-    with open(found_list[0], mode="r") as f_reader:
+    with open(path, mode="r") as f_reader:
         config = load_fn(f_reader)
     
     return config
