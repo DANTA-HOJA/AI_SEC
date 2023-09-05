@@ -9,21 +9,19 @@ from jpype.types import *  # Pull in types
 import scyjava as sj       # scyjava : Supercharged Java access from Python, see https://github.com/scijava/scyjava
 import imagej              # pyimagej
 
-from ...shared.logger import init_logger
+from ...shared.clioutput import CLIOutput
 from ...shared.pathnavigator import PathNavigator
 
 
 class ZFIJ():
     
-    def __init__(self) -> None:
+    def __init__(self, display_on_CLI=True) -> None:
         """ Initialize `ImageJ` and the necessary components used in `ZebraFish_AP_POS`
         """
-        self._logger = init_logger(r"Zebrafish IJ")
-        self._display_kwargs = {
-            "display_on_CLI": True,
-            "logger": self._logger
-        }
         self._path_navigator = PathNavigator()
+        
+        """ CLI output """
+        self._cli_out = CLIOutput(display_on_CLI, logger_name="Zebrafish IJ")
         
         """ Store 'Working Directory' and `sys.stdout` """
         orig_wd = os.getcwd()
@@ -48,7 +46,7 @@ class ZFIJ():
         sj.config.endpoints.append('ome:formats-gpl:6.11.1')
         
         """ Get path of Fiji(ImageJ) """
-        self.fiji_local = self._path_navigator.dbpp.get_fiji_local_dir(**self._display_kwargs)
+        self.fiji_local = self._path_navigator.dbpp.get_fiji_local_dir(self._cli_out)
         
         """ Different methods to start ImageJ """
         # ij = imagej.init(fiji_local) # Same as "ij = imagej.init(fiji_local, mode='headless')", PyImageJ’s default mode is headless
@@ -57,7 +55,7 @@ class ZFIJ():
         self.ij.ui().showUI() # display the Fiji GUI
         
         """ Print Fiji version """
-        self._logger.info(self.ij.getApp().getInfo(True)) # ImageJ2 2.9.0/1.54b
+        self._cli_out.write(self.ij.getApp().getInfo(True)) # ImageJ2 2.9.0/1.54b
     
     
     def _init_other_components(self):
