@@ -13,11 +13,11 @@ class CLIOutput():
         self._display_on_CLI = display_on_CLI
         self._logger = None
         
-        self.set_logger(logger_name)
+        self._set_logger(logger_name)
     
     
     
-    def set_logger(self, logger_name:str):
+    def _set_logger(self, logger_name:str):
         """ 
         """
         if logger_name == "":
