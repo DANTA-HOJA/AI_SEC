@@ -7,9 +7,14 @@ from tqdm.auto import tqdm
 class TqdmLoggingHandler(Handler):
     
     def __init__(self, level=logging.NOTSET):
+        """
+        """
         super().__init__(level)
-
+    
+    
     def emit(self, record):
+        """
+        """
         try:
             msg = self.format(record)
             tqdm.write(msg)
@@ -20,7 +25,8 @@ class TqdmLoggingHandler(Handler):
 
 
 def init_logger(logger_name:str) -> logging.Logger:
-    
+    """
+    """
     logger = logging.Logger(logger_name)
     logger.setLevel(logging.DEBUG)
     
