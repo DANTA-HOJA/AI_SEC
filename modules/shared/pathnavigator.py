@@ -3,10 +3,10 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
-from logging import Logger
 from tomlkit.toml_document import TOMLDocument
 
-from .utils import decide_cli_output, load_config
+from .clioutput import CLIOutput
+from .utils import load_config
 
 from ..assert_fn import *
 from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_processed_dir, \
@@ -37,27 +37,22 @@ class _DBPPNavigator():
         self.dbpp_config = load_config("db_path_plan.toml")
     
     
-    def get_fiji_local_dir(self, display_on_CLI:bool=False, logger:Logger=None) -> str:
+    def get_fiji_local_dir(self, cli_out:CLIOutput=None) -> str:
         """
         """
-        cli_out = decide_cli_output(logger)
-        
         """ `dbpp_config` keywords """
         fiji_local = Path(self.dbpp_config["fiji_local"])
         assert_dir_exists(fiji_local)
         
         """ CLI output """
-        if display_on_CLI:
-            cli_out(f"Fiji Local: '{fiji_local}'")
+        if cli_out: cli_out.write(f"Fiji Local: '{fiji_local}'")
         
         return str(fiji_local)
     
     
-    def get_one_of_dbpp_roots(self, dbpp_key:str, display_on_CLI:bool=False, logger:Logger=None) -> Path:
+    def get_one_of_dbpp_roots(self, dbpp_key:str, cli_out:CLIOutput=None) -> Path:
         """
         """
-        cli_out = decide_cli_output(logger)
-        
         """ `dbpp_config` keywords """
         db_root = Path(self.dbpp_config["root"])
         assert_dir_exists(db_root)
@@ -65,13 +60,13 @@ class _DBPPNavigator():
         assert_dir_exists(chosen_root)
         
         """ CLI output """
-        if display_on_CLI:
+        if cli_out:
             str_split = dbpp_key.split("_")
             abbr_list = ["nasdl", "cmd"]
             for word in str_split:
                 if word in abbr_list: abbr_list.append(word.upper())
                 else: word = abbr_list.append(word.capitalize())
-            cli_out(f"{' '.join(abbr_list[2:])} Root: '{chosen_root}'")
+            cli_out.write(f"{' '.join(abbr_list[2:])} Root: '{chosen_root}'")
             
         return chosen_root
 
@@ -86,11 +81,9 @@ class _RAWDataPathNavigator():
     
     
     def get_lif_scan_root(self, config:Union[dict, TOMLDocument],
-                          display_on_CLI:bool=False, logger:Logger=None) -> Path:
+                          cli_out:CLIOutput=None) -> Path:
         """
         """
-        cli_out = decide_cli_output(logger)
-        
         """ config keywords """
         nasdl_dir = config["data_nasdl"]["dir"]
         nasdl_type = config["data_nasdl"]["type"]
@@ -101,8 +94,7 @@ class _RAWDataPathNavigator():
         assert_dir_exists(lif_scan_root)
         
         """ CLI output """
-        if display_on_CLI:
-            cli_out(f"LIF Scan Root: '{lif_scan_root}'")
+        if cli_out: cli_out.write(f"LIF Scan Root: '{lif_scan_root}'")
         
         return lif_scan_root
 
@@ -117,11 +109,9 @@ class _ProcessedDataPath():
     
     
     def get_instance_root(self, config:Union[dict, TOMLDocument],
-                          display_on_CLI:bool=False, logger:Logger=None) -> Path:
+                          cli_out:CLIOutput=None) -> Path:
         """
         """
-        cli_out = decide_cli_output(logger)
-        
         """ config keywords """
         instance_desc = config["data_processed"]["instance_desc"]
         
@@ -137,14 +127,13 @@ class _ProcessedDataPath():
             instance_root = data_processed_root.joinpath(f"{{{instance_desc}}}_Academia_Sinica_iTBA")
         
         """ CLI output """
-        if display_on_CLI:
-            cli_out(f"Instance Root: '{instance_root}'")
+        if cli_out: cli_out.write(f"Instance Root: '{instance_root}'")
         
         return instance_root
     
     
     def get_processed_dir(self, image_type:str, config:Union[dict, TOMLDocument],
-                          display_on_CLI:bool=False, logger:Logger=None):
+                          cli_out:CLIOutput=None):
         """ Get one of processed directories,
         
         1. `{[palmskin_reminder]}_PalmSkin_preprocess` or
@@ -153,8 +142,6 @@ class _ProcessedDataPath():
         Args:
             image_type (str): `palmskin` or `brightfield`
         """
-        cli_out = decide_cli_output(logger)
-        
         """ Assign `target_text` """
         if image_type == "palmskin":
             target_text = "PalmSkin_preprocess"
@@ -171,8 +158,7 @@ class _ProcessedDataPath():
         if found_list:
             processed_dir = found_list[0]
             """ CLI output """
-            if display_on_CLI:
-                cli_out(f"{image_type.capitalize()} Processed Dir: '{processed_dir}'")
+            if cli_out: cli_out.write(f"{image_type.capitalize()} Processed Dir: '{processed_dir}'")
         else:
             processed_dir = None
         
@@ -180,7 +166,7 @@ class _ProcessedDataPath():
     
     
     def get_recollect_dir(self, image_type:str, config:Union[dict, TOMLDocument],
-                          display_on_CLI:bool=False, logger:Logger=None):
+                          cli_out:CLIOutput=None):
         """ Get one of recollect directories,
         
         1. `{[palmskin_reminder]}_PalmSkin_reCollection` or
@@ -189,8 +175,6 @@ class _ProcessedDataPath():
         Args:
             image_type (str): `palmskin` or `brightfield`
         """
-        cli_out = decide_cli_output(logger)
-        
         """ Assign `target_text` """
         if image_type == "palmskin":
             target_text = "PalmSkin_reCollection"
@@ -207,46 +191,37 @@ class _ProcessedDataPath():
         if found_list:
             recollect_dir = found_list[0]
             """ CLI output """
-            if display_on_CLI:
-                cli_out(f"{image_type.capitalize()} Recollect Dir: '{recollect_dir}'")
+            if cli_out: cli_out.write(f"{image_type.capitalize()} Recollect Dir: '{recollect_dir}'")
         else:
             recollect_dir = None
         
         return recollect_dir
     
     
-    def get_data_xlsx_path(self, config:Union[dict, TOMLDocument],
-                           display_on_CLI:bool=False, logger:Logger=None):
+    def get_data_xlsx_path(self, config:Union[dict, TOMLDocument], cli_out:CLIOutput=None):
         """
         """
-        cli_out = decide_cli_output(logger)
-        
         instance_root = self.get_instance_root(config)
         data_xlsx_path = instance_root.joinpath("data.xlsx")
         
         if data_xlsx_path.exists():
             """ CLI output """
-            if display_on_CLI:
-                cli_out(f"data.xlsx : '{data_xlsx_path}'")
+            if cli_out: cli_out.write(f"data.xlsx : '{data_xlsx_path}'")
         else:
             data_xlsx_path = None
         
         return data_xlsx_path
     
     
-    def get_clustered_xlsx_dir(self, config:Union[dict, TOMLDocument],
-                               display_on_CLI:bool=False, logger:Logger=None):
+    def get_clustered_xlsx_dir(self, config:Union[dict, TOMLDocument], cli_out:CLIOutput=None):
         """
         """
-        cli_out = decide_cli_output(logger)
-        
         instance_root = self.get_instance_root(config)
         clustered_xlsx_dir = instance_root.joinpath("Clustered_xlsx")
         
         if clustered_xlsx_dir.exists():
             """ CLI output """
-            if display_on_CLI:
-                cli_out(f"Clustered XLSX Dir: '{clustered_xlsx_dir}'")
+            if cli_out: cli_out.write(f"Clustered XLSX Dir: '{clustered_xlsx_dir}'")
         else:
             clustered_xlsx_dir = None
         
