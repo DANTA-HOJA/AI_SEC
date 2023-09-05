@@ -60,7 +60,7 @@ class BatchLIFNameChecker():
         for i, lif_path in enumerate(lif_path_list):
     
             self._cli_out.write(f"Processing ... {i+1}/{len(lif_path_list)}")
-            self._cli_out.write(f'LIF_FILE : {lif_path}')
+            self._cli_out.write(f"LIF_FILE : '{lif_path}'")
             
             
             """ Normalize LIF name """
