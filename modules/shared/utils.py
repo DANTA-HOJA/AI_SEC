@@ -9,38 +9,25 @@ import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
+from .clioutput import CLIOutput
+
 from ..assert_fn import *
-from ..assert_fn import assert_run_under_repo_root, assert_only_1_config 
-
-
-def decide_cli_output(logger:Logger=None):
-    """ decide to use `print` or `logger.info` as CLI output
-    """
-    if logger:
-        cli_out = logger.info
-    else:
-        cli_out = print
-    
-    return cli_out
+from ..assert_fn import assert_run_under_repo_root, assert_only_1_config
 
 
 
-def create_new_dir(dir:Union[str, Path], end:str="\n",
-                   display_on_CLI:bool=True, logger:Logger=None) -> None:
-    """ if `path` is not exist then create it.
+def create_new_dir(dir:Union[str, Path], msg_end:str="\n", cli_out:CLIOutput=None) -> None:
+    """ If `dir` is not exist then create it.
 
     Args:
         dir (Union[str, Path]): a path
-        end (str, optional): control the end of message show on CLI. Defaults to [NewLine].
-        display_on_CLI (bool, optional): show message on CLI. Defaults to True.
-        logger (Logger, optional): if logger is given, use it to show message. Defaults to None.
+        msg_end (str, optional): control the end of message shows on CLI. Defaults to [NewLine].
+        cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
     """
-    cli_out = decide_cli_output(logger)
-    
     if not os.path.exists(dir):
         os.makedirs(dir)
-        if display_on_CLI:
-            cli_out(f"Directory: '{dir}' is created!{end}")
+        """ CLI output """
+        if cli_out: cli_out.write(f"Directory: '{dir}' is created!{msg_end}")
 
 
 
@@ -60,12 +47,16 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
 
 
 
-def get_repo_root(display_on_CLI:bool=False, logger:Logger=None) -> Path:
-    """ TODO
+def get_repo_root(cli_out:CLIOutput=None) -> Path:
+    """ Get repository root path on local machine
+
+    Args:
+        cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
+
+    Returns:
+        Path: repository root
     """
-    cli_out = decide_cli_output(logger)
-    
-    """ Analyze """ 
+    """ Analyze """
     path_split = os.path.abspath(".").split(os.sep)
     target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
     assert_run_under_repo_root(target_idx)
@@ -74,19 +65,24 @@ def get_repo_root(display_on_CLI:bool=False, logger:Logger=None) -> Path:
     repo_root = os.sep.join(path_split[:target_idx+1])
     
     """ CLI output """
-    if display_on_CLI:
-        cli_out(f"Repository: '{repo_root}'")
+    if cli_out: cli_out.write(f"Repository: '{repo_root}'")
     
     return Path(repo_root)
 
 
 
 def load_config(config_name:str, reserve_comment:bool=False,
-                display_on_CLI:bool=False, logger:Logger=None) -> Union[dict, TOMLDocument]:
-    """ TODO
+                cli_out:CLIOutput=None) -> Union[dict, TOMLDocument]:
+    """ Scan and load the specific config under repo root
+
+    Args:
+        config_name (str): full name, like `abc.toml`
+        reserve_comment (bool, optional): Defaults to False.
+        cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
+
+    Returns:
+        Union[dict, TOMLDocument]: a toml config
     """
-    cli_out = decide_cli_output(logger)
-    
     if reserve_comment:
         load_fn = tomlkit.load
     else:
@@ -96,12 +92,12 @@ def load_config(config_name:str, reserve_comment:bool=False,
     found_list = list(repo_root.glob(f"**/{config_name}"))
     assert_only_1_config(found_list, config_name)
     
-    if display_on_CLI:
-        cli_out(f"Config Path: '{found_list[0]}'")
+    """ CLI output """
+    if cli_out: cli_out.write(f"Config Path: '{found_list[0]}'")
     
     with open(found_list[0], mode="r") as f_reader:
         config = load_fn(f_reader)
-        
+    
     return config
 
 
