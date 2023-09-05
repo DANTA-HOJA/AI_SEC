@@ -9,11 +9,11 @@ import toml
 import tomlkit
 from tomlkit.toml_document import TOMLDocument
 
-from ..ij.zfij import ZFIJ
 from .utils import scan_lifs_under_dir
-from ...shared.logger import init_logger
-from ...shared.utils import load_config, create_new_dir
+from ..ij.zfij import ZFIJ
+from ...shared.clioutput import CLIOutput
 from ...shared.pathnavigator import PathNavigator
+from ...shared.utils import load_config, create_new_dir
 
 from ...assert_fn import *
 
@@ -21,25 +21,20 @@ from ...assert_fn import *
 
 class PalmskinPreprocesser():
 
-    def __init__(self, zfij_instance:ZFIJ=None) -> None:
+    def __init__(self, zfij_instance:ZFIJ=None, display_on_CLI=True) -> None:
         """ Palmskin image preprocessing
         """
-        
         # Initialize `Fiji` ( This will change the working directory to where the `JVM` exists. )
         if zfij_instance:
             self._zfij = zfij_instance
         else:
-            self._zfij = ZFIJ()
-        
-        """ Logger """
-        self._logger = init_logger(r"Preprocess Palmskin")
-        self._display_kwargs = {
-            "display_on_CLI": True,
-            "logger": self._logger
-        }
+            self._zfij = ZFIJ(display_on_CLI)
         
         self._path_navigator = PathNavigator()
         self._sn_digits = "02"
+        
+        """ CLI output """
+        self._cli_out = CLIOutput(display_on_CLI, logger_name="Preprocess Palmskin")
         
         self._reset_attrs()
         self._reset_single_img_attrs()
@@ -59,9 +54,9 @@ class PalmskinPreprocesser():
 
 
 
-    def run(self):
+    def run(self, config_file:Union[str, Path]="0.2.preprocess_palmskin.toml"):
         """ Actions
-        1. Load config: `0.2.preprocess_palmskin.toml`
+        1. Load config
         2. Source: 
             1. Get `lif_scan_root`
             2. Scan `LIF` files
@@ -74,29 +69,33 @@ class PalmskinPreprocesser():
         4. Preprocess palmskin images
         5. Close `LOG_FILE` (3.2)
         6. Save `alias_map` as toml file under `palmskin_processed_dir`
+        
+        Args:
+            config_file (Union[str, Path], optional): Defaults to `0.2.preprocess_palmskin.toml`.
         """
         self._reset_attrs()
+        self._cli_out.divide()
         
         """ STEP 1. Load config """
-        config = load_config("0.2.preprocess_palmskin.toml", **self._display_kwargs)
+        config = load_config(config_file, cli_out=self._cli_out)
         nasdl_batches = config["data_nasdl"]["batches"]
         
         """ STEP 2. Source """
-        lif_scan_root = self._path_navigator.raw_data.get_lif_scan_root(config, **self._display_kwargs)
-        lif_path_list = scan_lifs_under_dir(lif_scan_root, nasdl_batches, logger=self._logger)
+        lif_scan_root = self._path_navigator.raw_data.get_lif_scan_root(config, self._cli_out)
+        lif_path_list = scan_lifs_under_dir(lif_scan_root, nasdl_batches, self._cli_out)
         self.total_lif_file = len(lif_path_list)
         
         """ STEP 3. Destination """
         """ 3.1. """
-        self.palmskin_processed_dir = self._path_navigator.processed_data.get_processed_dir("palmskin", config, **self._display_kwargs)
+        self.palmskin_processed_dir = self._path_navigator.processed_data.get_processed_dir("palmskin", config, self._cli_out)
         if self.palmskin_processed_dir:
             self.mode = "UPDATE"
         else:
-            instance_root = self._path_navigator.processed_data.get_instance_root(config, **self._display_kwargs)
+            instance_root = self._path_navigator.processed_data.get_instance_root(config, self._cli_out)
             reminder = config["data_processed"]["palmskin_reminder"]
             self.palmskin_processed_dir = instance_root.joinpath(f"{{{reminder}}}_PalmSkin_preprocess")
-            create_new_dir(self.palmskin_processed_dir, display_on_CLI=False)
-        self._logger.info(f"Process Mode : {self.mode}")
+            create_new_dir(self.palmskin_processed_dir)
+        self._cli_out.write(f"Process Mode : {self.mode}")
         
         """ 3.2. """
         cp_config_path = self.palmskin_processed_dir.joinpath("palmskin_preprocess_config.toml")
@@ -121,7 +120,7 @@ class PalmskinPreprocesser():
             self._single_lif_preprocess(lif_path)
         
         self.log_writer.write(f"{'-'*40}  finished  {'-'*40} \n")
-        self._logger.info(" -- finished -- ")
+        self._cli_out.write(" -- finished -- ")
         
         """ STEP 5. Close `LOG_FILE` """
         self.log_writer.close()
@@ -146,8 +145,8 @@ class PalmskinPreprocesser():
         """
         """
         """ Display info """
-        self._logger.info(f"Processing ... {self.lif_enum}/{self.total_lif_file}")
-        self._logger.info(f"LIF_FILE : {lif_path}")
+        self._cli_out.write(f"Processing ... {self.lif_enum}/{self.total_lif_file}")
+        self._cli_out.write(f"LIF_FILE : '{lif_path}'")
         
         """ Write `LOG_FILE` """
         self.log_writer.write(f"|{'-'*40}  Processing ... {self.lif_enum}/{self.total_lif_file}  {'-'*40} \n")
@@ -194,9 +193,9 @@ class PalmskinPreprocesser():
             z_length = img.getNumericProperty("Image #0|DimensionDescription #6|Length")
             z_slice = img.getNumericProperty("Image #0|DimensionDescription #6|NumberOfElements")
             voxel_z = z_length/(z_slice-1)*(10**6)
-            self._logger.info(f"series {series_num:{len(str(series_cnt))}}/{series_cnt} : '{comb_name}' , "
-                              f"Dimensions : {img_dimensions} ( width, height, channels, slices, frames ), "
-                              f"Voxel_Z : {voxel_z:.4f} micron")
+            self._cli_out.write(f"series {series_num:{len(str(series_cnt))}}/{series_cnt} : '{comb_name}' , "
+                                f"Dimensions : {img_dimensions} ( width, height, channels, slices, frames ), "
+                                f"Voxel_Z : {voxel_z:.4f} micron")
             
             """ Write `LOG_FILE` """
             self.log_writer.write(f"|-- processing ...  series {series_num:{len(str(series_cnt))}}/{series_cnt} in {self.lif_enum}/{self.total_lif_file} \n")
@@ -209,9 +208,9 @@ class PalmskinPreprocesser():
             else:
                 self.save_root = self.palmskin_processed_dir.joinpath(comb_name)
             assert_dir_not_exists(self.save_root)
-            create_new_dir(self.save_root, display_on_CLI=False)
+            create_new_dir(self.save_root)
             self.metaimg_dir = self.save_root.joinpath("MetaImage")
-            create_new_dir(self.metaimg_dir, display_on_CLI=False)
+            create_new_dir(self.metaimg_dir)
             
             
             """ Do preprocess """
@@ -240,7 +239,7 @@ class PalmskinPreprocesser():
             self._zfij.reset_all_window()
             self.log_writer.write(f"| \n") # make Log file looks better.
         
-        self._logger.info("\n") # make CLI output prettier
+        self._cli_out.write("\n") # make CLI output prettier
         self.log_writer.write("\n\n\n")
     
     
@@ -405,4 +404,3 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(gray_img, save_name, save_dir)
         
         return gray_img
-        
