@@ -22,6 +22,7 @@ class ZFIJ():
         
         """ CLI output """
         self._cli_out = CLIOutput(display_on_CLI, logger_name="Zebrafish IJ")
+        self._cli_out.divide()
         
         """ Store 'Working Directory' and `sys.stdout` """
         orig_wd = os.getcwd()

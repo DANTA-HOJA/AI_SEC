@@ -45,8 +45,10 @@ class BatchLIFNameChecker():
         Args:
             config_file (Union[str, Path], optional): Defaults to `0.1.check_lif_name.toml`.
         """
+        self._cli_out.divide()
+        
         """ STEP 1. Load config """
-        config = load_config(config_file, self._cli_out)
+        config = load_config(config_file, cli_out=self._cli_out)
         nasdl_type    = config["data_nasdl"]["type"]
         nasdl_batches = config["data_nasdl"]["batches"]
         
