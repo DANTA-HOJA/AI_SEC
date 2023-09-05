@@ -7,7 +7,7 @@ from typing import List, Dict, Tuple, Union
 from .lifnamechecker import LIFNameChecker
 from .utils import scan_lifs_under_dir
 from ..ij.zfij import ZFIJ
-from ...shared.logger import init_logger
+from ...shared.clioutput import CLIOutput
 from ...shared.pathnavigator import PathNavigator
 from ...shared.utils import load_config
 
@@ -24,18 +24,14 @@ class BatchLIFNameChecker():
         if zfij_instance:
             self._zfij = zfij_instance
         else:
-            self._zfij = ZFIJ()
-        
-        """ Logger """
-        self._logger = init_logger(r"Check Lif Name")
-        self._display_kwargs = {
-            "display_on_CLI": display_on_CLI,
-            "logger": self._logger
-        }
+            self._zfij = ZFIJ(display_on_CLI)
         
         self._path_navigator = PathNavigator()
         self._lif_name_checker = LIFNameChecker()
         
+        """ CLI output """
+        self._cli_out = CLIOutput(display_on_CLI, logger_name="Check Lif Name")
+    
     
     
     def run(self, config_name:str="0.1.check_lif_name.toml"):
@@ -50,19 +46,19 @@ class BatchLIFNameChecker():
             config_name (str, optional): Defaults to `0.1.check_lif_name.toml`.
         """
         """ STEP 1. Load config """
-        config = load_config(config_name, **self._display_kwargs)
+        config = load_config(config_name, self._cli_out)
         nasdl_type    = config["data_nasdl"]["type"]
         nasdl_batches = config["data_nasdl"]["batches"]
         
         """ STEP 2. Source """
-        lif_scan_root = self._path_navigator.raw_data.get_lif_scan_root(config, **self._display_kwargs)
-        lif_path_list = scan_lifs_under_dir(lif_scan_root, nasdl_batches, logger=self._logger)
+        lif_scan_root = self._path_navigator.raw_data.get_lif_scan_root(config, self._cli_out)
+        lif_path_list = scan_lifs_under_dir(lif_scan_root, nasdl_batches, self._cli_out)
         
         """ STEP 3. Check LIF name """
         for i, lif_path in enumerate(lif_path_list):
     
-            self._logger.info(f"Processing ... {i+1}/{len(lif_path_list)}")
-            self._logger.info(f'LIF_FILE : {lif_path}')
+            self._cli_out.write(f"Processing ... {i+1}/{len(lif_path_list)}")
+            self._cli_out.write(f'LIF_FILE : {lif_path}')
             
             
             """ Normalize LIF name """
@@ -109,18 +105,18 @@ class BatchLIFNameChecker():
                 
                 """ Get image dimension """
                 img_dimensions = img.getDimensions()
-                self._logger.info(f"series {series_num:{len(str(series_cnt))}}/{series_cnt} : '{comb_name}' , "
-                            f"Dimensions : {img_dimensions} ( width, height, channels, slices, frames )")
+                self._cli_out.write(f"series {series_num:{len(str(series_cnt))}}/{series_cnt} : '{comb_name}' , "
+                                    f"Dimensions : {img_dimensions} ( width, height, channels, slices, frames )")
                 
                 """ Print ERRORs after checking 'image name' """
                 try:
-                    self._logger.info(f"       ##### {self._lif_name_checker.check_dict['failed message']}")
+                    self._cli_out.write(f"       ##### {self._lif_name_checker.check_dict['failed message']}")
                 except KeyError:
                     pass
                 
                 """ Close opened image """
                 self._zfij.reset_all_window()
             
-            self._logger.info("\n") # make CLI output prettier
+            self._cli_out.write("\n") # make CLI output prettier
         
-        self._logger.info(" -- finished -- ")
+        self._cli_out.write(" -- finished -- ")
