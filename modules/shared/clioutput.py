@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple, Union
+from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
 from .logger import init_logger
@@ -35,3 +36,11 @@ class CLIOutput():
                 self._logger.info(message)
             else:
                 tqdm.write(message)
+    
+    
+    
+    def divide(self):
+        """
+        """
+        if self._display_on_CLI:
+            tqdm.write(f"\n{Fore.GREEN}{'='*100}{Style.RESET_ALL}\n")
