@@ -76,9 +76,12 @@ def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
     """ Scan and load the specific config under repo root
 
     Args:
-        config_file (str): full file name, like `abc.toml`
+        config_file (Union[str, Path]): full file name, like `abc.toml`
         reserve_comment (bool, optional): Defaults to False.
         cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
+
+    Raises:
+        NotImplementedError: argument `config_file` should be `str` or `Path` object.
 
     Returns:
         Union[dict, TOMLDocument]: a toml config
