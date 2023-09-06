@@ -81,7 +81,7 @@ def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
         cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
 
     Raises:
-        NotImplementedError: argument `config_file` should be `str` or `Path` object.
+        NotImplementedError: `config_file` accept `str` or `Path` only.
 
     Returns:
         Union[dict, TOMLDocument]: a toml config
