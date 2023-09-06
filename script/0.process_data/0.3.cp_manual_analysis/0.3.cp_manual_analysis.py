@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from colorama import Fore, Back, Style
 import shutil
 
 abs_module_path = Path("./../../../").resolve()
@@ -42,4 +43,4 @@ for key, value in new_dict.items():
         
         if not new_path.exists():
             shutil.copy(old_path, new_path)
-            print(f"'{old_path}' -> '{new_path}'")
+            print(f"{Fore.BLUE}'{old_path}'\n -> {Fore.YELLOW}'{new_path}'{Style.RESET_ALL}\n")
