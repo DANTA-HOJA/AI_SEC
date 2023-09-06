@@ -1,46 +1,45 @@
 import os
 import sys
 import re
-import traceback
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
-from colorama import Fore, Back, Style
 from collections import OrderedDict
 import json
-import toml
-from logging import Logger
-from tomlkit.toml_document import TOMLDocument
 
-from tqdm.auto import tqdm
+import cv2
 import numpy as np
 import pandas as pd
-import cv2
+import toml
+from tomlkit.toml_document import TOMLDocument
+from colorama import Fore, Back, Style
+from tqdm.auto import tqdm
 
 from . import dname
-from ..shared.logger import init_logger
+from ..shared.clioutput import CLIOutput
 from ..shared.pathnavigator import PathNavigator
 from ..shared.utils import create_new_dir, load_config
+
 from ..assert_fn import *
+
 
 
 class ProcessedDataInstance():
     
-    def __init__(self) -> None:
+    def __init__(self, display_on_CLI=True) -> None:
         """
         """
-        self._logger = init_logger(r"Processed Data Instance")
-        self._display_kwargs = {
-            "display_on_CLI": True,
-            "logger": self._logger
-        }
         self._path_navigator = PathNavigator()
+        
+        """ CLI output """
+        self._cli_out = CLIOutput(display_on_CLI, logger_name="Processed Data Instance")
         
         # -----------------------------------------------------------------------------------
         self.data_processed_root:Union[None, Path] = \
-            self._path_navigator.dbpp.get_one_of_dbpp_roots("data_processed", **self._display_kwargs)
+            self._path_navigator.dbpp.get_one_of_dbpp_roots("data_processed")
         
         # -----------------------------------------------------------------------------------
         # variables
+        self.config:Union[dict, TOMLDocument] = {}
         
         self.instance_root:Union[None, Path] = None
         self.instance_desc:Union[None, str] = None
@@ -73,10 +72,10 @@ class ProcessedDataInstance():
     
     
     
-    def load_config(self, config_name:str):
+    def load_config(self, config_file:Union[str, Path]):
         """
         """
-        self.config = load_config(config_name, **self._display_kwargs)
+        self.config = load_config(config_file, cli_out=self._cli_out)
         self._refresh()
     
     
@@ -109,7 +108,7 @@ class ProcessedDataInstance():
             2. `self.instance_desc`
             3. `self.instance_name`
         """
-        path = self._path_navigator.processed_data.get_instance_root(self.config, **self._display_kwargs)
+        path = self._path_navigator.processed_data.get_instance_root(self.config, self._cli_out)
         assert_dir_exists(path)
         
         self.instance_root = path
@@ -126,7 +125,7 @@ class ProcessedDataInstance():
             4. `self.brightfield_processed_reminder`
         """
         """ palmskin """
-        path = self._path_navigator.processed_data.get_processed_dir("palmskin", self.config, **self._display_kwargs)
+        path = self._path_navigator.processed_data.get_processed_dir("palmskin", self.config, self._cli_out)
         if path:
             self.palmskin_processed_dir = path
             self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
@@ -135,7 +134,7 @@ class ProcessedDataInstance():
                                     "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.")
         
         """ brightfield """
-        path = self._path_navigator.processed_data.get_processed_dir("brightfield", self.config, **self._display_kwargs)
+        path = self._path_navigator.processed_data.get_processed_dir("brightfield", self.config, self._cli_out)
         if path:
             self.brightfield_processed_dir = path
             self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
@@ -178,7 +177,7 @@ class ProcessedDataInstance():
         new_name = f"{{{self.instance_desc}}}_Academia_Sinica_i{len(self.palmskin_processed_dname_dirs_dict)}"
         
         if new_name != old_name:
-            self._logger.info("Update Instance Postfix Number ...")
+            self._cli_out.write("Update Instance Postfix Number ...")
             os.rename(self.instance_root, self.data_processed_root.joinpath(new_name))
             self._set_instance_root()
             self._set_processed_dirs()
@@ -208,7 +207,7 @@ class ProcessedDataInstance():
             4. `self.brightfield_recollected_dirs_dict`
         """
         """ palmskin """
-        path = self._path_navigator.processed_data.get_recollect_dir("palmskin", self.config, **self._display_kwargs)
+        path = self._path_navigator.processed_data.get_recollect_dir("palmskin", self.config, self._cli_out)
         if self.palmskin_recollect_dir != path:
             self.palmskin_recollect_dir = path
             self._update_recollected_dirs_dict("palmskin")
@@ -216,7 +215,7 @@ class ProcessedDataInstance():
             self._update_recollected_dirs_dict("palmskin")
         
         """ brightfield """
-        path = self._path_navigator.processed_data.get_recollect_dir("brightfield", self.config, **self._display_kwargs)
+        path = self._path_navigator.processed_data.get_recollect_dir("brightfield", self.config, self._cli_out)
         if self.brightfield_recollect_dir != path:
             self.brightfield_recollect_dir = path
             self._update_recollected_dirs_dict("brightfield")
@@ -251,7 +250,7 @@ class ProcessedDataInstance():
         """ Set below attributes
             1. `self.data_xlsx_path`
         """
-        self.data_xlsx_path = self._path_navigator.processed_data.get_data_xlsx_path(self.config, **self._display_kwargs)
+        self.data_xlsx_path = self._path_navigator.processed_data.get_data_xlsx_path(self.config, self._cli_out)
     
     
     
@@ -260,7 +259,7 @@ class ProcessedDataInstance():
             1. `self.clustered_xlsx_dir`
             2. `self.clustered_xlsx_files_dict`
         """
-        path = self._path_navigator.processed_data.get_clustered_xlsx_dir(self.config, **self._display_kwargs)
+        path = self._path_navigator.processed_data.get_clustered_xlsx_dir(self.config, self._cli_out)
         if self.clustered_xlsx_dir != path:
             self.clustered_xlsx_dir = path
             self._update_clustered_xlsx_files_dict()
@@ -374,15 +373,26 @@ class ProcessedDataInstance():
     
     
     
-    def collect_results(self, image_type:str, result_alias:str, log_mode:str="missing"):
+    def collect_results(self, config_file:Union[str, Path]="0.4.collect_results.toml"):
         """ 
 
         Args:
-            image_type (str): `palmskin` or `brightfield`
-            result_alias (str): please refer to `result_alias_map.toml` \
-                                under `PalmSkin_preprocess` or `BrightField_analyze` directory
-            log_mode (str, optional): `missing` or `finding`. Defaults to "missing".
-        """
+            config_file (Union[str, Path], optional): Defaults to `0.4.collect_results.toml`.
+
+        Raises:
+            ValueError: (config key) `image_type` accept 'palmskin' or 'brightfield' only
+            ValueError: (config key) `log_mode` accept 'missing' or 'finding' only
+            FileExistsError: If target `recollect_dir` exists.
+        """        
+        self._cli_out.divide()
+        self.load_config(config_file)
+        
+        """ Get variable """
+        image_type = self.config["collection"]["image_type"]
+        result_alias = self.config["collection"]["result_alias"]
+        log_mode = self.config["collection"]["log_mode"]
+        
+        """ Check variable """
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
             
@@ -400,7 +410,7 @@ class ProcessedDataInstance():
         if recollect_dir.exists():
             raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.")
         else:
-            create_new_dir(recollect_dir, display_on_CLI=False)
+            create_new_dir(recollect_dir)
         
         """ Main process """
         summary = {}
@@ -449,40 +459,46 @@ class ProcessedDataInstance():
         log_path = recollect_dir.joinpath(f"{{Logs}}_collect_{image_type}_results.log")
         with open(log_path, mode="w") as f_writer:
             json.dump(summary, f_writer, indent=4)
-        self._logger.info(json.dumps(summary, indent=4))
+        self._cli_out.write(json.dumps(summary, indent=4))
         
         """ Update `recollect_dir` """
         self._set_recollect_dirs()
     
     
     
-    def create_data_xlsx(self):
+    def create_data_xlsx(self, config_file:Union[str, Path]="0.5.create_data_xlsx.toml"):
         """ Create a XLSX file contains `dname` and `brightfield analyze` informations \
             ( used to compute the classes of classification )
+
+        Args:
+            config_file (Union[str, Path], optional): Defaults to `0.5.create_data_xlsx.toml`.
         """
+        self._cli_out.divide()
+        self.load_config(config_file)
+        
         # -----------------------------------------------------------------------------------
         # brightfield
         
         """ Scan `AutoAnalysis`, `ManualAnalysis` results """
         bf_auto_results_list = self._get_sorted_results("brightfield", "AutoAnalysis")[1]
         bf_manual_results_list = self._get_sorted_results("brightfield", "ManualAnalysis")[1]
-        self._logger.info((f"brightfield: found "
-                           f"{len(bf_auto_results_list)} AutoAnalysis.csv, "
-                           f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
-                           f"Total: {len(bf_auto_results_list) + len(bf_manual_results_list)} files"))
+        self._cli_out.write((f"brightfield: found "
+                             f"{len(bf_auto_results_list)} AutoAnalysis.csv, "
+                             f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
+                             f"Total: {len(bf_auto_results_list) + len(bf_manual_results_list)} files"))
 
         """ Merge `AutoAnalysis`, `ManualAnalysis` results """
         bf_auto_results_dict = dname.create_dict_by_id(bf_auto_results_list)
         bf_manual_results_dict = dname.create_dict_by_id(bf_manual_results_list)
         bf_merge_results_dict = dname.merge_dict_by_id(bf_auto_results_dict, bf_manual_results_dict)
         bf_merge_results_list = sorted(list(bf_merge_results_dict.values()), key=dname.get_dname_sortinfo)
-        self._logger.info(f"--> After Merging , Total: {len(bf_merge_results_list)} files\n")
+        self._cli_out.write(f"--> After Merging , Total: {len(bf_merge_results_list)} files\n")
         
         # -----------------------------------------------------------------------------------
         # palmskin
 
         palmskin_processed_dname_dirs = list(self.palmskin_processed_dname_dirs_dict.keys())
-        self._logger.info(f"palmskin: found {len(palmskin_processed_dname_dirs)} dname directories\n")
+        self._cli_out.write(f"palmskin: found {len(palmskin_processed_dname_dirs)} dname directories\n")
         
         # -----------------------------------------------------------------------------------
         # Main process
@@ -500,7 +516,7 @@ class ProcessedDataInstance():
         for i in range(max_probable_num):
             
             one_base_iter_num = i+1 # Make iteration starting number start from 1
-            self._logger.info(f"one_base_iter_num : {one_base_iter_num}")
+            self._cli_out.write(f"one_base_iter_num : {one_base_iter_num}")
             
             if  one_base_iter_num == dname.get_dname_sortinfo(bf_merge_results_list[0])[0]:
                 
@@ -509,8 +525,8 @@ class ProcessedDataInstance():
                 bf_result_path_split = str(bf_result_path).split(os.sep)
                 bf_result_dname = bf_result_path_split[-2]
                 bf_result_analysis_mode = bf_result_path_split[-1].split(".")[0] # `AutoAnalysis` or `ManualAnalysis`
-                self._logger.info(f"bf_result_dname : '{bf_result_dname}'")
-                self._logger.info(f"analysis_mode : '{bf_result_analysis_mode}'")
+                self._cli_out.write(f"bf_result_dname : '{bf_result_dname}'")
+                self._cli_out.write(f"analysis_mode : '{bf_result_analysis_mode}'")
                 
                 """ Read CSV """
                 analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
@@ -518,11 +534,11 @@ class ProcessedDataInstance():
                 
                 """ Get surface area """
                 surface_area = analysis_csv.loc[1, "Area"]
-                self._logger.info(f"surface_area : {surface_area}")
+                self._cli_out.write(f"surface_area : {surface_area}")
                 
                 """ Get standard length """
                 standard_length = analysis_csv.loc[1, "Feret"]
-                self._logger.info(f"standard_length : {standard_length}")
+                self._cli_out.write(f"standard_length : {standard_length}")
                 
                 """ Assign value to Dataframe """
                 xlsx_df.loc[one_base_iter_num, "Brightfield"] = bf_result_dname
@@ -535,16 +551,16 @@ class ProcessedDataInstance():
             
             if f"{one_base_iter_num}_A" in palmskin_processed_dname_dirs[0]:
                 palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
-                self._logger.info(f"palmskin_A_name : '{palmskin_A_name}'")
+                self._cli_out.write(f"palmskin_A_name : '{palmskin_A_name}'")
                 xlsx_df.loc[one_base_iter_num, "Palmskin Anterior (SP8)" ] =  palmskin_A_name
             
             
             if f"{one_base_iter_num}_P" in palmskin_processed_dname_dirs[0]:
                 palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
-                self._logger.info(f"palmskin_P_name : '{palmskin_P_name}'")
+                self._cli_out.write(f"palmskin_P_name : '{palmskin_P_name}'")
                 xlsx_df.loc[one_base_iter_num, "Palmskin Posterior (SP8)" ] =  palmskin_P_name
 
-            self._logger.info("\n")
+            self._cli_out.write("\n")
 
         
         if delete_uncomplete_row: xlsx_df.dropna(inplace=True)
@@ -623,13 +639,13 @@ class ProcessedDataInstance():
                 result_path = result_path_dict.pop(dname)
                 if cv2.imread(str(result_path)) is None: 
                     read_failed += 1
-                    self._logger.info(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{dname}'{Style.RESET_ALL}")
+                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{dname}'{Style.RESET_ALL}")
             except KeyError:
-                self._logger.info(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{dname}'{Style.RESET_ALL}")
+                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{dname}'{Style.RESET_ALL}")
                 read_failed += 1
             pbar.update(1)
             pbar.refresh()
         pbar.close()
         
-        if read_failed == 0: self._logger.info(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}\n")
+        if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}\n")
         else: raise RuntimeError(f"{Fore.RED} Due to broken/non-existing images, the process has been halted. {Style.RESET_ALL}\n")
