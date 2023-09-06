@@ -20,13 +20,13 @@ cli_out = CLIOutput()
 """ Old Instance ( with manual analysis results ) """
 cli_out.divide()
 old_instance = ProcessedDataInstance()
-old_instance.load_config(Path("old_instance.toml"))
+old_instance.set_attrs(Path("old_instance.toml").resolve())
 old_dict = old_instance.brightfield_processed_dname_dirs_dict
 
 """ New Instance """
 cli_out.divide()
 new_instance = ProcessedDataInstance()
-new_instance.load_config(Path("new_instance.toml"))
+new_instance.set_attrs(Path("new_instance.toml").resolve())
 new_dict = new_instance.brightfield_processed_dname_dirs_dict
 
 
