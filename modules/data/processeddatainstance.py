@@ -72,25 +72,10 @@ class ProcessedDataInstance():
     
     
     
-    def load_config(self, config_file:Union[str, Path]):
+    def set_attrs(self, config_file:Union[str, Path]):
         """
         """
         self.config = load_config(config_file, cli_out=self._cli_out)
-        self._refresh()
-    
-    
-    
-    def set_config(self, config:Union[dict, TOMLDocument]):
-        """
-        """
-        self.config = config
-        self._refresh()
-    
-    
-    
-    def _refresh(self):
-        """
-        """
         self._set_instance_root()
         self._set_processed_dirs()
         self._set_processed_dname_dirs_dicts()
@@ -385,12 +370,13 @@ class ProcessedDataInstance():
             FileExistsError: If target `recollect_dir` exists.
         """        
         self._cli_out.divide()
-        self.load_config(config_file)
+        self.set_attrs(config_file)
         
         """ Get variable """
-        image_type = self.config["collection"]["image_type"]
-        result_alias = self.config["collection"]["result_alias"]
-        log_mode = self.config["collection"]["log_mode"]
+        config = load_config(config_file)
+        image_type = config["collection"]["image_type"]
+        result_alias = config["collection"]["result_alias"]
+        log_mode = config["collection"]["log_mode"]
         
         """ Check variable """
         if image_type not in ["palmskin", "brightfield"]:
@@ -474,7 +460,7 @@ class ProcessedDataInstance():
             config_file (Union[str, Path], optional): Defaults to `0.5.create_data_xlsx.toml`.
         """
         self._cli_out.divide()
-        self.load_config(config_file)
+        self.set_attrs(config_file)
         
         # -----------------------------------------------------------------------------------
         # brightfield
