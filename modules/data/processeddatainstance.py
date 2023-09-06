@@ -380,8 +380,8 @@ class ProcessedDataInstance():
             config_file (Union[str, Path], optional): Defaults to `0.4.collect_results.toml`.
 
         Raises:
-            ValueError: (config key) `image_type` accept 'palmskin' or 'brightfield' only
-            ValueError: (config key) `log_mode` accept 'missing' or 'finding' only
+            ValueError: If (config key) `image_type` != 'palmskin' or 'brightfield'.
+            ValueError: If (config key) `log_mode` != 'missing' or 'finding'.
             FileExistsError: If target `recollect_dir` exists.
         """        
         self._cli_out.divide()
