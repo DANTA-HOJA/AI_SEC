@@ -2,12 +2,11 @@ import os
 import sys
 import re
 from pathlib import Path
-from typing import List, Dict, Tuple, Union, TextIO
+from typing import List, Dict, Tuple, Union
 from datetime import datetime
 
 import toml
 import tomlkit
-from tomlkit.toml_document import TOMLDocument
 
 from .utils import scan_lifs_under_dir
 from ..ij.zfij import ZFIJ
