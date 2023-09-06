@@ -28,17 +28,20 @@ class ProcessedDataInstance():
     def __init__(self, display_on_CLI=True) -> None:
         """
         """
+        # -----------------------------------------------------------------------------------
+        # === components ===
+        
         self._path_navigator = PathNavigator()
         
         """ CLI output """
         self._cli_out = CLIOutput(display_on_CLI, logger_name="Processed Data Instance")
         
         # -----------------------------------------------------------------------------------
+        # === attributes ===
+        
         self.data_processed_root:Union[None, Path] = \
             self._path_navigator.dbpp.get_one_of_dbpp_roots("data_processed")
         
-        # -----------------------------------------------------------------------------------
-        # variables
         self.config:Union[dict, TOMLDocument] = {}
         
         self.instance_root:Union[None, Path] = None
