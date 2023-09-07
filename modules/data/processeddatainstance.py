@@ -16,8 +16,9 @@ from tqdm.auto import tqdm
 
 from . import dname
 from ..shared.clioutput import CLIOutput
+from ..shared.config import load_config
 from ..shared.pathnavigator import PathNavigator
-from ..shared.utils import create_new_dir, load_config
+from ..shared.utils import create_new_dir
 
 from ..assert_fn import *
 
