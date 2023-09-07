@@ -6,7 +6,7 @@ from typing import List, Dict, Tuple, Union
 from tomlkit.toml_document import TOMLDocument
 
 from .clioutput import CLIOutput
-from .utils import load_config
+from .config import load_config
 
 from ..assert_fn import *
 from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_processed_dir, \

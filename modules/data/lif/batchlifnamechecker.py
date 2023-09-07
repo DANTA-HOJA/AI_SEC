@@ -8,8 +8,8 @@ from .lifnamechecker import LIFNameChecker
 from .utils import scan_lifs_under_dir
 from ..ij.zfij import ZFIJ
 from ...shared.clioutput import CLIOutput
+from ...shared.config import load_config
 from ...shared.pathnavigator import PathNavigator
-from ...shared.utils import load_config
 
 from ...assert_fn import assert_lifname_split_in_4_part
 
