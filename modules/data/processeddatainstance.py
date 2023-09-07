@@ -539,13 +539,15 @@ class ProcessedDataInstance():
             else: xlsx_df.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
             
             
-            if f"{one_base_iter_num}_A" in palmskin_processed_dname_dirs[0]:
+            sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
+            if f"{one_base_iter_num}_A" == f"{sortinfo[0]}_{sortinfo[1]}":
                 palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
                 self._cli_out.write(f"palmskin_A_name : '{palmskin_A_name}'")
                 xlsx_df.loc[one_base_iter_num, "Palmskin Anterior (SP8)" ] =  palmskin_A_name
             
             
-            if f"{one_base_iter_num}_P" in palmskin_processed_dname_dirs[0]:
+            sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
+            if f"{one_base_iter_num}_P" == f"{sortinfo[0]}_{sortinfo[1]}":
                 palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
                 self._cli_out.write(f"palmskin_P_name : '{palmskin_P_name}'")
                 xlsx_df.loc[one_base_iter_num, "Palmskin Posterior (SP8)" ] =  palmskin_P_name
