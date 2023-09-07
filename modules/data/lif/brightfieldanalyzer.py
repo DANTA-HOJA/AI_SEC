@@ -5,14 +5,12 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Union
 from datetime import datetime
 
-import toml
-import tomlkit
-
 from .utils import scan_lifs_under_dir
 from ..ij.zfij import ZFIJ
 from ...shared.clioutput import CLIOutput
+from ...shared.config import load_config, dump_config
 from ...shared.pathnavigator import PathNavigator
-from ...shared.utils import load_config, create_new_dir
+from ...shared.utils import create_new_dir
 
 from ...assert_fn import *
 
@@ -100,12 +98,11 @@ class BrightfieldAnalyzer():
         cp_config_path = self.brightfield_processed_dir.joinpath("brightfield_analyze_config.toml")
         if self.mode == "UPDATE":
             assert_file_exists(cp_config_path)
-            with open(cp_config_path, mode="r") as f_reader:
-                self.analyze_param_dict = toml.load(f_reader)["param"]
+            self.analyze_param_dict = load_config(cp_config_path)["param"]
+            self._cli_out.write(f"Parameters (load from): '{cp_config_path}'")
         else:
             self.analyze_param_dict = config["param"]
-            with open(cp_config_path, mode="w") as f_writer:
-                tomlkit.dump(config, f_writer)
+            dump_config(cp_config_path, config)
         
         """ 3.3. """
         time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
@@ -126,8 +123,7 @@ class BrightfieldAnalyzer():
         
         """ STEP 6. Save `alias_map` """
         alias_map_path = self.brightfield_processed_dir.joinpath(f"brightfield_result_alias_map.toml")
-        with open(alias_map_path, mode="w") as f_writer:
-            toml.dump(self.alias_map, f_writer)
+        dump_config(alias_map_path, self.alias_map)
     
     
     
