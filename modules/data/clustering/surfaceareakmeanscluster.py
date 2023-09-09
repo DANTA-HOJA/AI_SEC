@@ -115,9 +115,9 @@ class SurfaceAreaKMeansCluster():
         """
         def set_attr1() -> str:
             if self.cluster_with_log_scale:
-                name = f"{self.n_class}CLS_SURF_KMeansLOG{self.log_base}_RND{self.random_seed}"
+                name = f"SURF{self.n_class}C_KMeansLOG{self.log_base}_RND{self.random_seed}"
             else:
-                name = f"{self.n_class}CLS_SURF_KMeansORIG_RND{self.random_seed}"
+                name = f"SURF{self.n_class}C_KMeansORIG_RND{self.random_seed}"
             return name
         
         def set_attr2() -> Path:
