@@ -92,6 +92,7 @@ class SurfaceAreaKMeansCluster():
             - `self.orig_xlsx_path_split`: List[str]
         """
         def set_attr1() -> Path:
+            """ `self.orig_xlsx_path` """
             if self.processed_data_instance.data_xlsx_path:
                 return self.processed_data_instance.data_xlsx_path
             else:
@@ -112,6 +113,7 @@ class SurfaceAreaKMeansCluster():
             - `self.clustered_xlsx_df` # assigned after `gen_clustered_xlsx_df()`
         """
         def set_attr1() -> str:
+            """ `self.clustered_xlsx_name` """
             if self.cluster_with_log_scale:
                 name = f"SURF{self.n_class}C_KMeansLOG{self.log_base}_RND{self.random_seed}"
             else:
@@ -119,11 +121,12 @@ class SurfaceAreaKMeansCluster():
             return name
         
         def set_attr2() -> Path:
+            """ `self.clustered_xlsx_dir` """
             if self.processed_data_instance.clustered_xlsx_dir:
                 path = self.processed_data_instance.clustered_xlsx_dir.joinpath(self.clustered_xlsx_name)
             else:
                 path = self.processed_data_instance.instance_root.joinpath("Clustered_xlsx", self.clustered_xlsx_name)
-                create_new_dir(path)
+            create_new_dir(path)
             return path
             
         self.clustered_xlsx_name: str = set_attr1()
@@ -252,6 +255,7 @@ class SurfaceAreaKMeansCluster():
             - `self.clustered_xlsx_df`
         """
         self.clustered_xlsx_df.to_excel(self.clustered_xlsx_path, engine="openpyxl", index=False)
+        self._cli_out.write(f"Clustered XLSX : {self.clustered_xlsx_path.resolve()}")
         # -------------------------------------------------------------------------------------
     
     
@@ -267,6 +271,7 @@ class SurfaceAreaKMeansCluster():
         
         path = self.clustered_xlsx_dir.joinpath("kmeans_centers.toml")
         dump_config(path, save_dict)
+        # -------------------------------------------------------------------------------------
     
     
     
