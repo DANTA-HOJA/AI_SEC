@@ -2,7 +2,7 @@ import os
 import sys
 import re
 from pathlib import Path
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Tuple, Union
 from collections import OrderedDict
 from copy import deepcopy
 import json
