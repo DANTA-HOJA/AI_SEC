@@ -65,7 +65,6 @@ class SurfaceAreaKMeansCluster():
             - `self.labels`: List[str]
             - `self.cluster_with_log_scale`: bool
             - `self.log_base`: int
-            - `self.x_axis_log_scale`: bool
         """
         config = load_config(config_file, cli_out=self._cli_out)
         self.config = config
@@ -82,7 +81,6 @@ class SurfaceAreaKMeansCluster():
         
         """ [log_scale] """
         self.log_base: int = config["log_scale"]["base"]
-        self.x_axis_log_scale: bool = config["log_scale"]["x_axis_log_scale"]
         # -------------------------------------------------------------------------------------
     
     
