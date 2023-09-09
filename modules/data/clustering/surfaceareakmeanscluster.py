@@ -16,7 +16,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.neighbors import KernelDensity
 from sklearn.cluster import KMeans
 
-from fileop import create_new_dir
+from ...shared.utils import create_new_dir
 
 
 
@@ -37,7 +37,7 @@ class SurfaceAreaKMeansCluster():
         self.find_sinica_dir_in_path()
         self.dataset_id = self.orig_xlsx_path_split[self.sinica_dir_idx].split("_")[-1] # e.g. i409, i505
         
-        self.fish_dname = list(self.orig_xlsx_df["Posterior (SP8, .tif)"])
+        self.fish_dname = list(self.orig_xlsx_df["Brightfield"])
         self.fish_batch_divnum = [0, 116, 164, 207, 255] # n1 < x <= n2
         self.fish_batch_mark2str = {0: "i162", 1:"i242", 2:"i409", 3: "i505"}
         self.fish_batch_mark = None # 建立一個 list 標記 data 對應的 batch
