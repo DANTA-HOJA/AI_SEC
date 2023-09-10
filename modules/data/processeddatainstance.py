@@ -264,11 +264,14 @@ class ProcessedDataInstance():
         
         if self.clustered_xlsx_dir is not None:
             """ Scan files """
-            found_list = sorted(list(self.clustered_xlsx_dir.glob(r"{*}_data.xlsx")), key=lambda x: str(x))
+            found_list = sorted(list(self.clustered_xlsx_dir.glob("**/{*}_data.xlsx")), key=lambda x: str(x))
             for xlsx_file in found_list:
                 xlsx_name = str(xlsx_file).split(os.sep)[-1]
                 cluster_desc = re.split("{|}", xlsx_name)[1]
-                self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
+                if cluster_desc in self.clustered_xlsx_files_dict:
+                    raise ValueError(f"mutlple '{{{cluster_desc}}}_data.xlsx' are found, please check file uniqueness under: '{self.clustered_xlsx_dir}")
+                else:
+                    self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
     
     
     
