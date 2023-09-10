@@ -266,10 +266,13 @@ class ProcessedDataInstance():
             """ Scan files """
             found_list = sorted(list(self.clustered_xlsx_dir.glob("**/{*}_data.xlsx")), key=lambda x: str(x))
             for xlsx_file in found_list:
+                if "temp" in str(xlsx_file): # skip files in 'temp' directory
+                    continue
                 xlsx_name = str(xlsx_file).split(os.sep)[-1]
                 cluster_desc = re.split("{|}", xlsx_name)[1]
                 if cluster_desc in self.clustered_xlsx_files_dict:
-                    raise ValueError(f"mutlple '{{{cluster_desc}}}_data.xlsx' are found, please check file uniqueness under: '{self.clustered_xlsx_dir}")
+                    raise ValueError(f"Mutlple '{{{cluster_desc}}}_data.xlsx' are found, "
+                                     f"please check file uniqueness under: '{self.clustered_xlsx_dir}'")
                 else:
                     self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
     
