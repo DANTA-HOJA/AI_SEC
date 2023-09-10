@@ -78,7 +78,7 @@ def assert_file_not_exists(file:Path):
 def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
     """
     """
-    assert len(name_split) == 4, (f"file_name format error, current : '{lif_name}', "
+    assert len(name_split) == 4, (f"File name format error, current : '{lif_name}', "
                                   f"expect like : '20221125_AI005_palmskin_10dpf.lif'")
 
 
