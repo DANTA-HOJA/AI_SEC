@@ -352,7 +352,7 @@ class ProcessedDataInstance():
                                 under `PalmSkin_preprocess` or `BrightField_analyze` directory
 
         Returns:
-            Tuple[str, List[Path]]: `(relative_path_unfder_dname_dir, sorted_results)`
+            Tuple[str, List[Path]]: `(relative_path_under_dname_dir, sorted_results)`
         """
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
