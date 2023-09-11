@@ -75,7 +75,6 @@ class SurfaceAreaKMeansCluster():
             - `self.log_base`: int
         """
         config = load_config(config_file, cli_out=self._cli_out)
-        self.config = config
         
         """ [batch_info] """
         self.batch_id_interval: List[int] = config["batch_info"]["id_interval"]
