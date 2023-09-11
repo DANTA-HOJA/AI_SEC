@@ -621,7 +621,7 @@ class ProcessedDataInstance():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx`, "
                                     f"please use `self.create_data_xlsx()` to create it. {Style.RESET_ALL}\n")
         xlsx_df: pd.DataFrame = pd.read_excel(self.data_xlsx_path, engine = 'openpyxl')
-        palmskin_dnames = list(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]))
+        palmskin_dnames = sorted(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
         
         """ Get specific results exist in 'PalmSkin_preprocess' directory """
         rel_path, sorted_results = self._get_sorted_results("palmskin", palmskin_result_alias)
@@ -633,17 +633,17 @@ class ProcessedDataInstance():
         """ Main Process """
         pbar = tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ")
         read_failed = 0
-        for dname in palmskin_dnames:
-            pbar.desc = f"Check Image Condition ( {dname} ) : "
+        for palmskin_dname in palmskin_dnames:
+            pbar.desc = f"Check Image Condition ( {palmskin_dname} ) : "
             pbar.refresh()
             try:
-                result_path = sorted_results_dict.pop(dname)
+                result_path = sorted_results_dict.pop(palmskin_dname)
                 if cv2.imread(str(result_path)) is None:
                     read_failed += 1
-                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{dname}'{Style.RESET_ALL}")
+                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
             except KeyError:
                 read_failed += 1
-                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{dname}'{Style.RESET_ALL}")
+                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
             pbar.update(1)
             pbar.refresh()
         pbar.close()
