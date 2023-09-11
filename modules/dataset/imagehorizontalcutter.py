@@ -38,7 +38,14 @@ class ImageHorizontalCutter():
         
         # ---------------------------------------------------------------------
         # """ attributes """
-        # TODO
+        
+        self.random_seed = None # int, self._set_config_attrs()
+        self.random_state = None # np.random.RandomState(), self._set_config_attrs()
+        self.palmskin_result_alias = None # str, self._set_config_attrs()
+        
+        self.save_dir_root = None # Path, self._set_save_dirs()
+        self.save_dir_train = None # Path, self._set_save_dirs()
+        self.save_dir_test = None # Path, self._set_save_dirs()
         # ---------------------------------------------------------------------/
 
 
@@ -48,11 +55,10 @@ class ImageHorizontalCutter():
         """
         self.processed_data_instance.set_attrs(config_file)
         self._set_config_attrs(config_file)
+        self._set_save_dirs()
         
         """ Check images are existing and readable """
         self.processed_data_instance.check_palmskin_images_condition(config_file)
-        
-        self._set_save_dirs()
         # ---------------------------------------------------------------------/
 
 
@@ -60,7 +66,7 @@ class ImageHorizontalCutter():
     def _set_config_attrs(self, config_file:Union[str, Path]):
         """ Set below attributes
             - `self.random_seed`: int
-            - `self.random_state`
+            - `self.random_state`: np.random.RandomState()
             - `self.palmskin_result_alias`: str
         """
         config = load_config(config_file, cli_out=self._cli_out)
