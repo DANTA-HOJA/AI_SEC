@@ -610,7 +610,9 @@ class ProcessedDataInstance():
             RuntimeError: If detect a broken/non-existing image.
         """
         self._cli_out.divide()
+        self._cli_out._display_on_CLI = False
         self.set_attrs(config_file)
+        self._cli_out._display_on_CLI = True
         
         """ Get variable """
         config = load_config(config_file)
