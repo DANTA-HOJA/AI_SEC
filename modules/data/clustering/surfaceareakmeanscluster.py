@@ -17,21 +17,29 @@ from ..processeddatainstance import ProcessedDataInstance
 from ...shared.clioutput import CLIOutput
 from ...shared.config import load_config, dump_config
 from ...shared.utils import create_new_dir
-
+# -----------------------------------------------------------------------------/
 
 
 class SurfaceAreaKMeansCluster():
-    
+
+
     def __init__(self, display_on_CLI=True) -> None:
         """
         """
-        self.processed_data_instance = ProcessedDataInstance()
+        # ---------------------------------------------------------------------
+        # """ components """
         
-        """ CLI output """
-        self._cli_out = CLIOutput(display_on_CLI, logger_name="SurfaceArea KMeans Cluster")
-    
-    
-    
+        self.processed_data_instance = ProcessedDataInstance()
+        self._cli_out = CLIOutput(display_on_CLI, 
+                                  logger_name="SurfaceArea KMeans Cluster")
+        
+        # ---------------------------------------------------------------------
+        # """ attributes """
+        # TODO
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_attrs(self, config_file:Union[str, Path]):
         """
         """
@@ -52,10 +60,10 @@ class SurfaceAreaKMeansCluster():
         self.cidx2clabel = None # assigned after `_set_cidx2clabel()`
         
         self._set_clustered_xlsx_attrs()
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_config_attrs(self, config_file:Union[str, Path]):
         """ Set below attributes
             - `self.batch_id_interval`: List[int]
@@ -81,10 +89,10 @@ class SurfaceAreaKMeansCluster():
         
         """ [log_scale] """
         self.log_base: int = config["log_scale"]["base"]
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_orig_xlsx_attrs(self):
         """ Set below attributes
             - `self.orig_xlsx_path`: Path
@@ -101,10 +109,10 @@ class SurfaceAreaKMeansCluster():
         self.orig_xlsx_path: Path = set_attr1()
         self.orig_xlsx_df: pd.DataFrame = pd.read_excel(self.orig_xlsx_path, engine = 'openpyxl')
         self.orig_xlsx_path_split: List[str] = str(self.orig_xlsx_path).split(os.sep)
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_clustered_xlsx_attrs(self):
         """ Set below attributes
             - `self.clustered_xlsx_dir`: Path
@@ -133,10 +141,10 @@ class SurfaceAreaKMeansCluster():
         self.clustered_xlsx_dir: Path = set_attr2()
         self.clustered_xlsx_path: Path = self.clustered_xlsx_dir.joinpath(f"{{{self.clustered_xlsx_name}}}_data.xlsx")
         self.clustered_xlsx_df = None # assigned after `gen_clustered_xlsx_df()`
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_batch_idx_list(self):
         """
         """
@@ -150,10 +158,10 @@ class SurfaceAreaKMeansCluster():
                     break
         
         return batch_idx_list
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_day_list(self):
         """
         """
@@ -164,18 +172,18 @@ class SurfaceAreaKMeansCluster():
             day_list[i] = fish_day
         
         return day_list
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def log(self, base, x):
         """
         """
         return np.log(x) / np.log(base)
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def run_kmeans(self):
         """
         """
@@ -191,10 +199,10 @@ class SurfaceAreaKMeansCluster():
             self.kmeans_centers = self.log_base ** self.kmeans_centers
         
         self._cli_out.write(f'kmeans_centers {type(self.kmeans_centers)}: \n{self.kmeans_centers}')
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_cidx_max_area_dict(self):
         """ execution dependency:
             - `self.n_class`
@@ -209,20 +217,20 @@ class SurfaceAreaKMeansCluster():
         self.cidx_max_area_dict = {i: max_area for i, max_area in enumerate(cidx_max_area_list)}
         self.cidx_max_area_dict = OrderedDict(sorted(list(self.cidx_max_area_dict.items()), key=lambda x: x[1]))
         self._cli_out.write(f"self.cidx_max_area_dict : {self.cidx_max_area_dict}")
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def _set_cidx2clabel(self):
         """ execution dependency:
             - `self.cidx_max_area_dict`
         """
         self.cidx2clabel = {cidx: clabel for cidx, clabel in zip(self.cidx_max_area_dict.keys(), self.labels) }
         self._cli_out.write(f"self.cidx2clabel : {self.cidx2clabel}")
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def gen_clustered_xlsx_df(self):
         """ execution dependency:
             - `self.orig_xlsx_df`
@@ -245,10 +253,10 @@ class SurfaceAreaKMeansCluster():
         """ Add day column """
         new_col = pd.Series(self.day_list, name="day")
         self.clustered_xlsx_df = pd.concat([self.clustered_xlsx_df, new_col], axis=1)
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def save_clustered_xlsx_df(self):
         """ execution dependency:
             - `self.clustered_xlsx_path`
@@ -256,10 +264,10 @@ class SurfaceAreaKMeansCluster():
         """
         self.clustered_xlsx_df.to_excel(self.clustered_xlsx_path, engine="openpyxl", index=False)
         self._cli_out.write(f"Clustered XLSX : {self.clustered_xlsx_path.resolve()}")
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def save_kmeans_centers(self):
         """
         """
@@ -271,10 +279,10 @@ class SurfaceAreaKMeansCluster():
         
         path = self.clustered_xlsx_dir.joinpath("kmeans_centers.toml")
         dump_config(path, save_dict)
-        # -------------------------------------------------------------------------------------
-    
-    
-    
+    # -------------------------------------------------------------------------/
+
+
+
     def run(self, config_file:Union[str, Path]="0.6.cluster_data.toml"):
         """
         """
@@ -287,4 +295,4 @@ class SurfaceAreaKMeansCluster():
         self.gen_clustered_xlsx_df()
         self.save_clustered_xlsx_df()
         self.save_kmeans_centers()
-        # -------------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------/
