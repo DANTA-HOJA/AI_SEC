@@ -640,7 +640,7 @@ class ProcessedDataInstance():
         if self.data_xlsx_path is None:
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx`, "
                                     f"please use `self.create_data_xlsx()` to create it. {Style.RESET_ALL}\n")
-        xlsx_df: pd.DataFrame = pd.read_excel(self.data_xlsx_path, engine = 'openpyxl')
+        xlsx_df: pd.DataFrame = pd.read_excel(self.data_xlsx_path, engine='openpyxl')
         palmskin_dnames = sorted(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
         
         """ Get specific results exist in 'PalmSkin_preprocess' directory """
