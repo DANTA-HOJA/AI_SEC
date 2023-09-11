@@ -600,32 +600,35 @@ class ProcessedDataInstance():
     
     
     
-    def check_palmskin_images_condition(self, palmskin_result_alias:str, xlsx_name:str=None):
+    def check_palmskin_images_condition(self, config_file:Union[str, Path]="1.make_dataset.toml"):
         """ Check the existence and readability of the palmskin images recorded in the XLSX file.
 
         Args:
-            palmskin_result_alias (str): please refer to `result_alias_map.toml` \
-                                         under `PalmSkin_preprocess` directory
-            xlsx_name (str, optional): If `None`, use `self.data_xlsx_path`
+            config_file (Union[str, Path]): Defaults to `1.make_dataset.toml`.
 
-        Returns:
-            Tuple[bool, Union[str, None]]: if the check is passed, return the `relative_path_in_fish_dir` of `self.get_existing_processed_results()`.
+        Raises:
+            RuntimeError: If detect a broken/non-existing image.
         """
-        if xlsx_name is None:
-            assert self.data_xlsx_path is not None, \
-                f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx` please use `self.create_data_xlsx()` to create it. {Style.RESET_ALL}\n"
-            xlsx_path = self.data_xlsx_path
+        self._cli_out.divide()
+        self.set_attrs(config_file)
         
-        #  TODO:  xlsx_name is not None, use given xlsx under `Modified_xlsx/`
+        """ Get variable """
+        config = load_config(config_file)
+        palmskin_result_alias = config["horizontal_cut"]["palmskin_result_alias"]
         
-        rel_path, result_path_list = self._get_sorted_results("palmskin", palmskin_result_alias)
+        """ Get dnames record in XLSX  """
+        if self.data_xlsx_path is None:
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx`, "
+                                    f"please use `self.create_data_xlsx()` to create it. {Style.RESET_ALL}\n")
+        xlsx_df: pd.DataFrame = pd.read_excel(self.data_xlsx_path, engine = 'openpyxl')
+        palmskin_dnames = list(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]))
+        
+        """ Get specific results exist in 'PalmSkin_preprocess' directory """
+        rel_path, sorted_results = self._get_sorted_results("palmskin", palmskin_result_alias)
+        file_name = rel_path.split(os.sep)[-1]
         if rel_path.split(os.sep)[0] == "MetaImage": target_idx = -3
         else: target_idx = -2
-        result_path_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in result_path_list}
-        
-        xlsx_df: pd.DataFrame = pd.read_excel(xlsx_path, engine = 'openpyxl')
-        palmskin_dnames = list(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]))
-        file_name = rel_path.split(os.sep)[-1]
+        sorted_results_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in sorted_results}
         
         """ Main Process """
         pbar = tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ")
@@ -634,13 +637,13 @@ class ProcessedDataInstance():
             pbar.desc = f"Check Image Condition ( {dname} ) : "
             pbar.refresh()
             try:
-                result_path = result_path_dict.pop(dname)
-                if cv2.imread(str(result_path)) is None: 
+                result_path = sorted_results_dict.pop(dname)
+                if cv2.imread(str(result_path)) is None:
                     read_failed += 1
                     self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{dname}'{Style.RESET_ALL}")
             except KeyError:
-                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{dname}'{Style.RESET_ALL}")
                 read_failed += 1
+                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{dname}'{Style.RESET_ALL}")
             pbar.update(1)
             pbar.refresh()
         pbar.close()
