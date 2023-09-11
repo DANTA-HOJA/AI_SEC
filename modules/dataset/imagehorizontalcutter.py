@@ -82,7 +82,7 @@ class ImageHorizontalCutter():
         dataset_cropped_v2: Path = \
             self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v2")
         
-        self.save_dir_root: Path = dataset_cropped_v2.joinpath(f"Seed_{self.random_seed}",
+        self.save_dir_root: Path = dataset_cropped_v2.joinpath(f"SEED_{self.random_seed}",
                                                                self.processed_data_instance.instance_name,
                                                                self.palmskin_result_alias)
         self.save_dir_train: Path = self.save_dir_root.joinpath("train")
@@ -160,13 +160,13 @@ class ImageHorizontalCutter():
                 """ Up -> train """
                 save_name = f"{palmskin_dsname}_U"
                 dir = self.save_dir_train.joinpath(save_name)
-                create_new_dir(dir, display_in_CLI=False)
+                create_new_dir(dir)
                 cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_up)
                 
                 """ Down -> test """
                 save_name = f"{palmskin_dsname}_D"
                 dir = self.save_dir_test.joinpath(save_name)
-                create_new_dir(dir, display_in_CLI=False)
+                create_new_dir(dir)
                 cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_down)
                 
                 rand_choice_result["up : train, down: test"] += 1
