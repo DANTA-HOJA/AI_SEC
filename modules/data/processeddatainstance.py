@@ -21,24 +21,24 @@ from ..shared.pathnavigator import PathNavigator
 from ..shared.utils import create_new_dir
 
 from ..assert_fn import *
-
+# -----------------------------------------------------------------------------/
 
 
 class ProcessedDataInstance():
-    
+
+
     def __init__(self, display_on_CLI=True) -> None:
         """
         """
-        # -----------------------------------------------------------------------------------
-        # === components ===
+        # ---------------------------------------------------------------------
+        # """ components """
         
         self._path_navigator = PathNavigator()
+        self._cli_out = CLIOutput(display_on_CLI, 
+                                  logger_name="Processed Data Instance")
         
-        """ CLI output """
-        self._cli_out = CLIOutput(display_on_CLI, logger_name="Processed Data Instance")
-        
-        # -----------------------------------------------------------------------------------
-        # === attributes ===
+        # ---------------------------------------------------------------------
+        # """ attributes """
         
         self.data_processed_root:Union[None, Path] = \
             self._path_navigator.dbpp.get_one_of_dbpp_roots("data_processed")
@@ -71,11 +71,10 @@ class ProcessedDataInstance():
         
         self.clustered_xlsx_dir:Union[None, Path] = None
         self.clustered_xlsx_files_dict:Dict[str, Path] = {}
-        
-        # End section -----------------------------------------------------------------------------------
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def set_attrs(self, config_file:Union[str, Path]):
         """
         """
@@ -88,9 +87,10 @@ class ProcessedDataInstance():
         self._set_recollect_dirs()
         self._set_data_xlsx_path()
         self._set_clustered_xlsx_dir()
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_instance_root(self):
         """ Set below attributes
             1. `self.instance_root`
@@ -103,9 +103,10 @@ class ProcessedDataInstance():
         self.instance_root = path
         self.instance_desc = self.config["data_processed"]["instance_desc"]
         self.instance_name = str(self.instance_root).split(os.sep)[-1]
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_processed_dirs(self):
         """ Set below attributes
             1. `self.palmskin_processed_dir`
@@ -130,9 +131,10 @@ class ProcessedDataInstance():
         else:
             raise FileNotFoundError("Can't find any 'BrightField_analyze' directory, "
                                     "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.")
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _scan_processed_dname_dirs(self, image_type:str):
         """
 
@@ -156,9 +158,10 @@ class ProcessedDataInstance():
         dname_dirs_dict = OrderedDict(sorted(list(dname_dirs_dict.items()), key=lambda x: dname.get_dname_sortinfo(x[0])))
         
         return dname_dirs_dict
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _update_instance_postfixnum(self):
         """
         """
@@ -170,9 +173,10 @@ class ProcessedDataInstance():
             os.rename(self.instance_root, self.data_processed_root.joinpath(new_name))
             self._set_instance_root()
             self._set_processed_dirs()
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_processed_dname_dirs_dicts(self):
         """ Set below attributes, run functions : 
             1. `self.palmskin_processed_dname_dirs_dict`
@@ -185,9 +189,10 @@ class ProcessedDataInstance():
         
         """ brightfield """
         self.brightfield_processed_dname_dirs_dict = self._scan_processed_dname_dirs("brightfield")
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_recollect_dirs(self):
         """ Set below attributes 
             1. `self.palmskin_recollect_dir`
@@ -210,9 +215,10 @@ class ProcessedDataInstance():
             self._update_recollected_dirs_dict("brightfield")
         else:
             self._update_recollected_dirs_dict("brightfield")
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _update_recollected_dirs_dict(self, image_type:str):
         """
 
@@ -232,17 +238,19 @@ class ProcessedDataInstance():
             for recollected_dir in found_list:
                 recollected_name = str(recollected_dir).split(os.sep)[-1]
                 recollected_dict[recollected_name] = recollected_dir
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_data_xlsx_path(self):
         """ Set below attributes
             1. `self.data_xlsx_path`
         """
         self.data_xlsx_path = self._path_navigator.processed_data.get_data_xlsx_path(self.config, self._cli_out)
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_clustered_xlsx_dir(self):
         """ Set below attributes
             1. `self.clustered_xlsx_dir`
@@ -254,9 +262,10 @@ class ProcessedDataInstance():
             self._update_clustered_xlsx_files_dict()
         else:
             self._update_clustered_xlsx_files_dict()
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _update_clustered_xlsx_files_dict(self):
         """
         """
@@ -275,9 +284,10 @@ class ProcessedDataInstance():
                                      f"please check file uniqueness under: '{self.clustered_xlsx_dir}'")
                 else:
                     self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _load_processed_config(self, image_type:str):
         """
 
@@ -300,9 +310,10 @@ class ProcessedDataInstance():
             config = toml.load(f_reader)
         
         setattr(self, f"{image_type}_processed_config", config)
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _load_processed_alias_map(self, image_type:str):
         """
 
@@ -320,9 +331,10 @@ class ProcessedDataInstance():
             alias_map = toml.load(f_reader)
         
         setattr(self, f"{image_type}_processed_alias_map", alias_map)
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_processed_configs(self):
         """ Set below attributes
             1. `self.palmskin_processed_config`
@@ -330,9 +342,10 @@ class ProcessedDataInstance():
         """
         self._load_processed_config("palmskin")
         self._load_processed_config("brightfield")
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_processed_alias_maps(self):
         """ Set below attributes
             1. `self.palmskin_processed_alias_map`
@@ -340,9 +353,10 @@ class ProcessedDataInstance():
         """
         self._load_processed_alias_map("palmskin")
         self._load_processed_alias_map("brightfield")
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _get_sorted_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
         """
 
@@ -365,9 +379,10 @@ class ProcessedDataInstance():
         sorted_results = sorted(processed_dir.glob(f"*/{rel_path}"), key=dname.get_dname_sortinfo)
         
         return rel_path, sorted_results
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def collect_results(self, config_file:Union[str, Path]="0.4.collect_results.toml"):
         """ 
 
@@ -459,9 +474,10 @@ class ProcessedDataInstance():
         
         """ Update `recollect_dir` """
         self._set_recollect_dirs()
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def create_data_xlsx(self, config_file:Union[str, Path]="0.5.create_data_xlsx.toml"):
         """ Create a XLSX file contains `dname` and `brightfield analyze` informations \
             ( used to compute the classes of classification )
@@ -472,7 +488,7 @@ class ProcessedDataInstance():
         self._cli_out.divide()
         self.set_attrs(config_file)
         
-        # -----------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # brightfield
         
         """ Scan `AutoAnalysis`, `ManualAnalysis` results """
@@ -490,13 +506,13 @@ class ProcessedDataInstance():
         bf_merge_results_list = sorted(list(bf_merge_results_dict.values()), key=dname.get_dname_sortinfo)
         self._cli_out.write(f"--> After Merging , Total: {len(bf_merge_results_list)} files\n")
         
-        # -----------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # palmskin
 
         palmskin_processed_dname_dirs = list(self.palmskin_processed_dname_dirs_dict.keys())
         self._cli_out.write(f"palmskin: found {len(palmskin_processed_dname_dirs)} dname directories\n")
         
-        # -----------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Main process
 
         xlsx_path = self.instance_root.joinpath("data.xlsx")
@@ -564,9 +580,10 @@ class ProcessedDataInstance():
         if delete_uncomplete_row: xlsx_df.dropna(inplace=True)
         xlsx_df.to_excel(xlsx_path, engine="openpyxl")
         self._set_data_xlsx_path()
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def __repr__(self):
         
         repr_string = "{\n"
@@ -597,9 +614,10 @@ class ProcessedDataInstance():
         repr_string += "}\n"
         
         return repr_string
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def check_palmskin_images_condition(self, config_file:Union[str, Path]="1.make_dataset.toml"):
         """ Check the existence and readability of the palmskin images recorded in the XLSX file.
 
@@ -652,3 +670,4 @@ class ProcessedDataInstance():
         
         if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}\n")
         else: raise RuntimeError(f"{Fore.RED} Due to broken/non-existing images, the process has been halted. {Style.RESET_ALL}\n")
+        # ---------------------------------------------------------------------/        
