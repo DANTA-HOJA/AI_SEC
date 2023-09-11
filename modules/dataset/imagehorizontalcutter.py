@@ -39,13 +39,13 @@ class ImageHorizontalCutter():
         # ---------------------------------------------------------------------
         # """ attributes """
         
-        self.random_seed = None # int, self._set_config_attrs()
-        self.random_state = None # np.random.RandomState(), self._set_config_attrs()
-        self.palmskin_result_alias = None # str, self._set_config_attrs()
+        self.random_seed: int # self._set_config_attrs()
+        self.random_state: np.random.RandomState # self._set_config_attrs()
+        self.palmskin_result_alias: str # self._set_config_attrs()
         
-        self.save_dir_root = None # Path, self._set_save_dirs()
-        self.save_dir_train = None # Path, self._set_save_dirs()
-        self.save_dir_test = None # Path, self._set_save_dirs()
+        self.save_dir_root: Path # self._set_save_dirs()
+        self.save_dir_train: Path # self._set_save_dirs()
+        self.save_dir_test: Path # self._set_save_dirs()
         # ---------------------------------------------------------------------/
 
 
