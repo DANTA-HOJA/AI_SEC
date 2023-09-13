@@ -634,7 +634,7 @@ class ProcessedDataInstance():
         
         """ Get variable """
         config = load_config(config_file)
-        palmskin_result_alias = config["horizontal_cut"]["palmskin_result_alias"]
+        palmskin_result_alias = config["data_processed"]["palmskin_result_alias"]
         
         """ Get dnames record in XLSX  """
         if self.data_xlsx_path is None:

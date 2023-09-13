@@ -71,9 +71,9 @@ class ImageHorizontalCutter():
         config = load_config(config_file, cli_out=self._cli_out)
         
         """ [horizontal_cut] """
-        self.random_seed: int = config["horizontal_cut"]["random_seed"]
+        self.random_seed: int = config["param"]["random_seed"]
         self.random_state = np.random.RandomState(seed=self.random_seed)
-        self.palmskin_result_alias: str = config["horizontal_cut"]["palmskin_result_alias"]
+        self.palmskin_result_alias: str = config["data_processed"]["palmskin_result_alias"]
         # ---------------------------------------------------------------------/
 
 
