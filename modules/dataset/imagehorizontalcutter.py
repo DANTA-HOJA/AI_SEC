@@ -38,9 +38,9 @@ class ImageHorizontalCutter():
         # ---------------------------------------------------------------------
         # """ attributes """
         
+        self.palmskin_result_alias: str # self._set_config_attrs()
         self.random_seed: int # self._set_config_attrs()
         self.random_state: np.random.RandomState # self._set_config_attrs()
-        self.palmskin_result_alias: str # self._set_config_attrs()
         
         self.save_dir_root: Path # self._set_save_dirs()
         self.save_dir_train: Path # self._set_save_dirs()
@@ -71,9 +71,9 @@ class ImageHorizontalCutter():
         config = load_config(config_file, cli_out=self._cli_out)
         
         """ [horizontal_cut] """
+        self.palmskin_result_alias: str = config["data_processed"]["palmskin_result_alias"]
         self.random_seed: int = config["param"]["random_seed"]
         self.random_state = np.random.RandomState(seed=self.random_seed)
-        self.palmskin_result_alias: str = config["data_processed"]["palmskin_result_alias"]
         # ---------------------------------------------------------------------/
 
 
