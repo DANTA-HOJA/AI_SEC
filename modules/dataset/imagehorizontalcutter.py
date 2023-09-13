@@ -64,9 +64,9 @@ class ImageHorizontalCutter():
 
     def _set_config_attrs(self, config_file:Union[str, Path]):
         """ Set below attributes
+            - `self.palmskin_result_alias`: str
             - `self.random_seed`: int
             - `self.random_state`: np.random.RandomState()
-            - `self.palmskin_result_alias`: str
         """
         config = load_config(config_file, cli_out=self._cli_out)
         
