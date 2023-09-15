@@ -36,7 +36,7 @@ class ImageCropper():
         
         # ---------------------------------------------------------------------
         # """ attributes """
-        self.config: Union[str, Path] # self._set_config_attrs()
+        self.config: Union[str, Path] # self._set_attrs()
         self.palmskin_result_alias: str # self._set_config_attrs()
         self.random_seed: int # self._set_config_attrs()
         self.crop_size: int # self._set_config_attrs()
