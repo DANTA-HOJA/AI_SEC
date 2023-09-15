@@ -59,5 +59,5 @@ class CLIOutput():
         """
         """
         if self._display_on_CLI:
-            tqdm.write("\n")
+            tqdm.write("") # empty new line
         # ---------------------------------------------------------------------/
