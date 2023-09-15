@@ -121,7 +121,7 @@ class ProcessedDataInstance():
             self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
         else:
             raise FileNotFoundError("Can't find any 'PalmSkin_preprocess' directory, "
-                                    "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.")
+                                    "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.\n")
         
         """ brightfield """
         path = self._path_navigator.processed_data.get_processed_dir("brightfield", self.config, self._cli_out)
@@ -130,7 +130,7 @@ class ProcessedDataInstance():
             self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
         else:
             raise FileNotFoundError("Can't find any 'BrightField_analyze' directory, "
-                                    "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.")
+                                    "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.\n")
         # ---------------------------------------------------------------------/
 
 
@@ -142,7 +142,7 @@ class ProcessedDataInstance():
             image_type (str): `palmskin` or `brightfield`
         """
         if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
         dname_dirs = processed_dir.glob("*")
@@ -226,7 +226,7 @@ class ProcessedDataInstance():
             image_type (str): `palmskin` or `brightfield`
         """
         if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
         setattr(self, f"{image_type}_recollected_dirs_dict", {}) # reset dict
         recollected_dict = getattr(self, f"{image_type}_recollected_dirs_dict")
@@ -281,7 +281,7 @@ class ProcessedDataInstance():
                 cluster_desc = re.split("{|}", xlsx_name)[1]
                 if cluster_desc in self.clustered_xlsx_files_dict:
                     raise ValueError(f"Mutlple '{{{cluster_desc}}}_data.xlsx' are found, "
-                                     f"please check file uniqueness under: '{self.clustered_xlsx_dir}'")
+                                     f"please check file uniqueness under: '{self.clustered_xlsx_dir}'\n")
                 else:
                     self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
         # ---------------------------------------------------------------------/
@@ -295,7 +295,7 @@ class ProcessedDataInstance():
             image_type (str): `palmskin` or `brightfield`
         """
         if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
         if image_type == "palmskin":
             target_text = "palmskin_preprocess"
@@ -321,7 +321,7 @@ class ProcessedDataInstance():
             image_type (str): `palmskin` or `brightfield`
         """
         if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
         map_path = processed_dir.joinpath(f"{image_type}_result_alias_map.toml")
@@ -369,7 +369,7 @@ class ProcessedDataInstance():
             Tuple[str, List[Path]]: `(relative_path_under_dname_dir, sorted_results)`
         """
         if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
         alias_map = getattr(self, f"{image_type}_processed_alias_map")
@@ -405,10 +405,10 @@ class ProcessedDataInstance():
         
         """ Check variable """
         if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only")
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
             
         if log_mode not in ["missing", "finding"]:
-            raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only")
+            raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only\n")
         
         """ Scan results """
         rel_path, results = self._get_sorted_results(image_type, result_alias)
@@ -419,7 +419,7 @@ class ProcessedDataInstance():
         reminder = getattr(self, f"{image_type}_processed_reminder")
         recollect_dir = self.instance_root.joinpath(f"{{{reminder}}}_{target_text}_reCollection", result_alias)
         if recollect_dir.exists():
-            raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.")
+            raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.\n")
         else:
             create_new_dir(recollect_dir)
         
@@ -627,8 +627,7 @@ class ProcessedDataInstance():
         Raises:
             RuntimeError: If detect a broken/non-existing image.
         """
-        self._cli_out.divide()
-        self._cli_out._display_on_CLI = False
+        self._cli_out._display_on_CLI = False # close CLI output temporarily
         self.set_attrs(config_file)
         self._cli_out._display_on_CLI = True
         
@@ -651,23 +650,25 @@ class ProcessedDataInstance():
         sorted_results_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in sorted_results}
         
         """ Main Process """
-        pbar = tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ")
-        read_failed = 0
-        for palmskin_dname in palmskin_dnames:
-            pbar.desc = f"Check Image Condition ( {palmskin_dname} ) : "
-            pbar.refresh()
-            try:
-                result_path = sorted_results_dict.pop(palmskin_dname)
-                if cv2.imread(str(result_path)) is None:
+        self._cli_out.divide()
+        with tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ") as pbar:
+            
+            read_failed = 0
+            for palmskin_dname in palmskin_dnames:
+                pbar.desc = f"Check Image Condition ( {palmskin_dname} ) : "
+                pbar.refresh()
+                try:
+                    result_path = sorted_results_dict.pop(palmskin_dname)
+                    if cv2.imread(str(result_path)) is None:
+                        read_failed += 1
+                        self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
+                except KeyError:
                     read_failed += 1
-                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
-            except KeyError:
-                read_failed += 1
-                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
-            pbar.update(1)
-            pbar.refresh()
-        pbar.close()
+                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
+                pbar.update(1)
+                pbar.refresh()
         
-        if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}\n")
+        self._cli_out.new_line()
+        if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}")
         else: raise RuntimeError(f"{Fore.RED} Due to broken/non-existing images, the process has been halted. {Style.RESET_ALL}\n")
-        # ---------------------------------------------------------------------/        
+        # ---------------------------------------------------------------------/
