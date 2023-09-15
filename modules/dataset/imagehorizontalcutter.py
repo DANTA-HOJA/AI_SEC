@@ -8,7 +8,6 @@ import json
 import cv2
 import numpy as np
 import pandas as pd
-import toml
 from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
@@ -37,7 +36,7 @@ class ImageHorizontalCutter():
         
         # ---------------------------------------------------------------------
         # """ attributes """
-        
+        self.config: Union[str, Path] # self._set_attrs()
         self.palmskin_result_alias: str # self._set_config_attrs()
         self.random_seed: int # self._set_config_attrs()
         self.random_state: np.random.RandomState # self._set_config_attrs()
@@ -52,6 +51,7 @@ class ImageHorizontalCutter():
     def _set_attrs(self, config_file:Union[str, Path]):
         """
         """
+        self.config = load_config(config_file, cli_out=self._cli_out)
         self.processed_data_instance.set_attrs(config_file)
         self._set_config_attrs(config_file)
         self._set_save_dirs()
@@ -68,13 +68,11 @@ class ImageHorizontalCutter():
             - `self.random_seed`: int
             - `self.random_state`: np.random.RandomState()
         """
-        config = load_config(config_file, cli_out=self._cli_out)
-        
         """ [data_processed] """
-        self.palmskin_result_alias: str = config["data_processed"]["palmskin_result_alias"]
+        self.palmskin_result_alias: str = self.config["data_processed"]["palmskin_result_alias"]
         
         """ [param] """
-        self.random_seed: int = config["param"]["random_seed"]
+        self.random_seed: int = self.config["param"]["random_seed"]
         self.random_state = np.random.RandomState(seed=self.random_seed)
         # ---------------------------------------------------------------------/
 
@@ -115,72 +113,74 @@ class ImageHorizontalCutter():
         """ Check alias and get relative path """
         rel_path = self.processed_data_instance.palmskin_processed_alias_map[self.palmskin_result_alias]
         
-        pbar = tqdm(total=len(palmskin_dnames), desc=f"[ Horizontal Cut ] : ")
-        for i, palmskin_dname in enumerate(palmskin_dnames):
+        self._cli_out.divide()
+        with tqdm(total=len(palmskin_dnames), desc=f"[ {self._cli_out.logger_name} ] : ") as pbar:
             
-            path = self.processed_data_instance.palmskin_processed_dir.joinpath(palmskin_dname, rel_path)
-            img = cv2.imread(str(path))
-            assert img.shape[0] == img.shape[1], "Please pad the image to make it a square image."
-            assert img.shape[0]%2 == 0, "Image height is not a even number"
-            
-            """ Horizontal cut ( image -> up, down ) """
-            half_position = int(img.shape[0]/2)
-            img_up = img[0:half_position, :, :]
-            img_down = img[half_position:half_position*2, :, :]
-            
-            """ Generate `palmskin_dsname` """
-            fish_id, fish_pos = dname.get_dname_sortinfo(palmskin_dname)
-            palmskin_dsname = f"fish_{fish_id}_{fish_pos}"
-            pbar.desc = f"[ Horizontal Cut ] {palmskin_dsname} : "
-            pbar.refresh()
-            
-            """ Control A and P must choose its opposite part as dataset """
-            if i%2 == 0: action = self.random_state.choice([True, False], size=1, replace=False)[0]
-            else: action = not action
-            
-            if action:
-                """ up : test, down: train
-                """
-                # if i%2 == 0: tqdm.write("")
-                # tqdm.write(f"palmskin_dsname: '{palmskin_dsname}' --> up : test, down: train")
+            for i, palmskin_dname in enumerate(palmskin_dnames):
                 
-                """ Up -> test """
-                save_name = f"{palmskin_dsname}_U"
-                dir = self.save_dir_test.joinpath(save_name)
-                create_new_dir(dir)
-                cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_up)
+                path = self.processed_data_instance.palmskin_processed_dir.joinpath(palmskin_dname, rel_path)
+                img = cv2.imread(str(path))
+                assert img.shape[0] == img.shape[1], "Please pad the image to make it a square image."
+                assert img.shape[0]%2 == 0, "Image height is not a even number"
                 
-                """ Down -> train """
-                save_name = f"{palmskin_dsname}_D"
-                dir = self.save_dir_train.joinpath(save_name)
-                create_new_dir(dir)
-                cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_down)
+                """ Horizontal cut ( image -> up, down ) """
+                half_position = int(img.shape[0]/2)
+                img_up = img[0:half_position, :, :]
+                img_down = img[half_position:half_position*2, :, :]
                 
-                rand_choice_result["up : test, down: train"] += 1
+                """ Generate `palmskin_dsname` """
+                fish_id, fish_pos = dname.get_dname_sortinfo(palmskin_dname)
+                palmskin_dsname = f"fish_{fish_id}_{fish_pos}"
+                pbar.desc = f"[ {self._cli_out.logger_name} ] {palmskin_dsname} : "
+                pbar.refresh()
                 
-            else:
-                """ up : train, down: test
-                """
-                # if i%2 == 0: tqdm.write("")
-                # tqdm.write(f"palmskin_dsname: '{palmskin_dsname}' --> up : train, down: test")
+                """ Control A and P must choose its opposite part as dataset """
+                if i%2 == 0: action = self.random_state.choice([True, False], size=1, replace=False)[0]
+                else: action = not action
                 
-                """ Up -> train """
-                save_name = f"{palmskin_dsname}_U"
-                dir = self.save_dir_train.joinpath(save_name)
-                create_new_dir(dir)
-                cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_up)
+                if action:
+                    """ Up : test, Down: train """
+                    
+                    # if i%2 == 0: tqdm.write("")
+                    # tqdm.write(f"palmskin_dsname: '{palmskin_dsname}' --> up : test, down: train")
+                    
+                    """ Up -> test """
+                    save_name = f"{palmskin_dsname}_U"
+                    dir = self.save_dir_test.joinpath(save_name)
+                    create_new_dir(dir)
+                    cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_up)
+                    
+                    """ Down -> train """
+                    save_name = f"{palmskin_dsname}_D"
+                    dir = self.save_dir_train.joinpath(save_name)
+                    create_new_dir(dir)
+                    cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_down)
+                    
+                    rand_choice_result["up : test, down: train"] += 1
+                    
+                else:
+                    """ Up : train, Down: test """
+                    
+                    # if i%2 == 0: tqdm.write("")
+                    # tqdm.write(f"palmskin_dsname: '{palmskin_dsname}' --> up : train, down: test")
+                    
+                    """ Up -> train """
+                    save_name = f"{palmskin_dsname}_U"
+                    dir = self.save_dir_train.joinpath(save_name)
+                    create_new_dir(dir)
+                    cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_up)
+                    
+                    """ Down -> test """
+                    save_name = f"{palmskin_dsname}_D"
+                    dir = self.save_dir_test.joinpath(save_name)
+                    create_new_dir(dir)
+                    cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_down)
+                    
+                    rand_choice_result["up : train, down: test"] += 1
                 
-                """ Down -> test """
-                save_name = f"{palmskin_dsname}_D"
-                dir = self.save_dir_test.joinpath(save_name)
-                create_new_dir(dir)
-                cv2.imwrite(str(dir.joinpath(f"{save_name}.tiff")), img_down)
-                
-                rand_choice_result["up : train, down: test"] += 1
-            
-            pbar.update(1)
-            pbar.refresh()
-
-        pbar.close()
+                pbar.update(1)
+                pbar.refresh()
+        
+        self._cli_out.new_line()
         self._cli_out.write(f"rand_choice_result = {json.dumps(rand_choice_result, indent=4)}")
         # ---------------------------------------------------------------------/
