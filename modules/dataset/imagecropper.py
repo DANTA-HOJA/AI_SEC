@@ -6,7 +6,6 @@ from typing import List, Dict, Tuple, Union
 import shutil
 
 import cv2
-import numpy as np
 from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
