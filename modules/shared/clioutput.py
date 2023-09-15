@@ -14,6 +14,7 @@ class CLIOutput():
         """
         self._display_on_CLI = display_on_CLI
         self._logger = None
+        self.logger_name = None
         
         self._set_logger(logger_name)
         # ---------------------------------------------------------------------/
@@ -24,8 +25,10 @@ class CLIOutput():
         """ 
         """
         if logger_name == "":
+            self.logger_name = None
             self._logger = None
         else:
+            self.logger_name = logger_name
             self._logger = init_logger(logger_name)
         # ---------------------------------------------------------------------/
 
