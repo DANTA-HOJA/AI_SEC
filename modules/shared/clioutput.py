@@ -3,11 +3,12 @@ from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
 from .logger import init_logger
-
+# -----------------------------------------------------------------------------/
 
 
 class CLIOutput():
-    
+
+
     def __init__(self, display_on_CLI:bool=True, logger_name:str="") -> None:
         """ 
         """
@@ -15,9 +16,10 @@ class CLIOutput():
         self._logger = None
         
         self._set_logger(logger_name)
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_logger(self, logger_name:str):
         """ 
         """
@@ -25,9 +27,10 @@ class CLIOutput():
             self._logger = None
         else:
             self._logger = init_logger(logger_name)
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def write(self, message:str):
         """ 
         """
@@ -36,11 +39,22 @@ class CLIOutput():
                 self._logger.info(message)
             else:
                 tqdm.write(message)
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
+
     def divide(self):
         """
         """
         if self._display_on_CLI:
             tqdm.write(f"\n{Fore.GREEN}{'='*100}{Style.RESET_ALL}\n")
+        # ---------------------------------------------------------------------/
+
+
+
+    def new_line(self):
+        """
+        """
+        if self._display_on_CLI:
+            tqdm.write("\n")
+        # ---------------------------------------------------------------------/
