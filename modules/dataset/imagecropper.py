@@ -86,8 +86,8 @@ class ImageCropper():
             self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v2")
         
         self.save_dir_root: Path = dataset_cropped.joinpath(f"SEED_{self.random_seed}",
-                                                               self.processed_data_instance.instance_name,
-                                                               self.palmskin_result_alias)
+                                                            self.processed_data_instance.instance_name,
+                                                            self.palmskin_result_alias)
         self.save_dir_train: Path = self.save_dir_root.joinpath("train")
         self.save_dir_test: Path = self.save_dir_root.joinpath("test")
         
