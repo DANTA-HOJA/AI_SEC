@@ -8,6 +8,7 @@ import json
 import cv2
 import numpy as np
 import pandas as pd
+from tomlkit.toml_document import TOMLDocument
 from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
@@ -36,7 +37,8 @@ class ImageHorizontalCutter():
         
         # ---------------------------------------------------------------------
         # """ attributes """
-        self.config: Union[str, Path] # self._set_attrs()
+        self.config: Union[dict, TOMLDocument] # self._set_attrs()
+        
         self.palmskin_result_alias: str # self._set_config_attrs()
         self.random_seed: int # self._set_config_attrs()
         self.random_state: np.random.RandomState # self._set_config_attrs()
@@ -51,9 +53,9 @@ class ImageHorizontalCutter():
     def _set_attrs(self, config_file:Union[str, Path]):
         """
         """
-        self.config = load_config(config_file, cli_out=self._cli_out)
+        self.config: Union[dict, TOMLDocument] = load_config(config_file, cli_out=self._cli_out)
         self.processed_data_instance.set_attrs(config_file)
-        self._set_config_attrs(config_file)
+        self._set_config_attrs()
         self._set_save_dirs()
         
         """ Check images are existing and readable """
@@ -62,7 +64,7 @@ class ImageHorizontalCutter():
 
 
 
-    def _set_config_attrs(self, config_file:Union[str, Path]):
+    def _set_config_attrs(self):
         """ Set below attributes
             - `self.palmskin_result_alias`: str
             - `self.random_seed`: int
