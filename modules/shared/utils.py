@@ -11,7 +11,7 @@ from .clioutput import CLIOutput
 
 from ..assert_fn import *
 from ..assert_fn import assert_run_under_repo_root, assert_only_1_config
-
+# -----------------------------------------------------------------------------/
 
 
 def create_new_dir(dir:Union[str, Path], msg_end:str="\n", cli_out:CLIOutput=None) -> None:
@@ -26,6 +26,7 @@ def create_new_dir(dir:Union[str, Path], msg_end:str="\n", cli_out:CLIOutput=Non
         os.makedirs(dir)
         """ CLI output """
         if cli_out: cli_out.write(f"Directory: '{dir}' is created!{msg_end}")
+    # -------------------------------------------------------------------------/
 
 
 
@@ -42,6 +43,7 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
                 raise ValueError(f"Too many '{target_str}' in list")
     
     return target_idx
+    # -------------------------------------------------------------------------/
 
 
 
@@ -66,6 +68,7 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
     if cli_out: cli_out.write(f"Repository: '{repo_root}'")
     
     return Path(repo_root)
+    # -------------------------------------------------------------------------/
 
 
 
@@ -107,6 +110,7 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
 #         config = load_fn(f_reader)
     
 #     return config
+    # -------------------------------------------------------------------------/
 
 
 
@@ -119,6 +123,7 @@ def get_maxlength_in_dictkeys(eval_dict:dict) -> int:
             max_length = len(key)
 
     return max_length
+    # -------------------------------------------------------------------------/
 
 
 
@@ -148,6 +153,7 @@ def get_attr_formatstring(object:object, attr:str) -> Union[str, TypeError]:
             return f"self.{attr} : {obj}"
     else:
         return TypeError("Attribute is a function (callable).")
+    # -------------------------------------------------------------------------/
 
 
 
@@ -167,3 +173,18 @@ def print_sorted_attrs(object:object, filter_magic_fn:bool=True):
             print(string)
     
     print("="*80)
+    # -------------------------------------------------------------------------/
+
+
+
+def formatter_padr0(obj) -> str:
+    """ A string formatter, padding 0 at right ( depence on the maximum digit of len(obj) )
+        - example: len(obj) = 100, return '03'
+    """
+    # n_items: int = len(obj)
+    # n_digit: str = str(n_items)
+    # max_digit: int = len(n_digit)
+    # formatter = f'0{max_digit}'
+    
+    return f'0{len(str(len(obj)))}'
+    # -------------------------------------------------------------------------/
