@@ -160,7 +160,7 @@ class ImageCropper():
                             f"train: {len(train_img_paths)}, "
                             f"test: {len(test_img_paths)}")
         
-        self._cli_out.new_line()
+        self._cli_out.divide()
         with tqdm(total=len(img_paths), desc=f"[ {self._cli_out.logger_name} ] : ") as pbar:
             
             for path in img_paths:
