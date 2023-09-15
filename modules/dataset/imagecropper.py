@@ -6,6 +6,7 @@ from typing import List, Dict, Tuple, Union
 import shutil
 
 import cv2
+from tomlkit.toml_document import TOMLDocument
 from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
@@ -35,11 +36,10 @@ class ImageCropper():
         
         # ---------------------------------------------------------------------
         # """ attributes """
-        self.config: Union[str, Path] # self._set_attrs()
+        self.config: Union[dict, TOMLDocument] # self._set_attrs()
+        
         self.palmskin_result_alias: str # self._set_config_attrs()
         self.random_seed: int # self._set_config_attrs()
-        self.crop_size: int # self._set_config_attrs()
-        self.shift_region: str # self._set_config_attrs()
         
         self.save_dir_root: Path # self._set_save_dirs()
         self.save_dir_train: Path # self._set_save_dirs()
@@ -53,7 +53,7 @@ class ImageCropper():
     def _set_attrs(self, config_file:Union[str, Path]):
         """
         """
-        self.config = load_config(config_file, cli_out=self._cli_out)
+        self.config: Union[dict, TOMLDocument] = load_config(config_file, cli_out=self._cli_out)
         self.processed_data_instance.set_attrs(config_file)
         self._set_config_attrs()
         self._set_save_dirs()
@@ -66,16 +66,12 @@ class ImageCropper():
         """ Set below attributes
             - `self.palmskin_result_alias`: str
             - `self.random_seed`: int
-            - `self.crop_size`: int
-            - `self.shift_region`: str
         """
         """ [data_processed] """
         self.palmskin_result_alias: str = self.config["data_processed"]["palmskin_result_alias"]
         
         """ [param] """
         self.random_seed: int = self.config["param"]["random_seed"]
-        self.crop_size: int = self.config["param"]["crop_size"]
-        self.shift_region: str = self.config["param"]["shift_region"]
         # ---------------------------------------------------------------------/
 
 
