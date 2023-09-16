@@ -64,10 +64,10 @@ def gen_dataset_xlsx_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, st
     temp_dict["shift_region"]  = f"SF{fraction}"
     
     if dynamic_select:
+        temp_dict["dynamic_select"] = "DYNSELECT"
+    else:
         temp_dict["intensity"]     = f"INT{intensity}"
         temp_dict["drop_ratio"]    = f"DRP{ratio}"
-    else:
-        temp_dict["dynamic_select"] = "DYNSELECT"
     
     return temp_dict
     # -------------------------------------------------------------------------/
