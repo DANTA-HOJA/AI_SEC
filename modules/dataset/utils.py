@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
 import cv2
+import numpy as np
 from tomlkit.toml_document import TOMLDocument
 # -----------------------------------------------------------------------------/
 
@@ -90,8 +91,8 @@ def gen_crop_img(img:cv2.Mat, config:Union[dict, TOMLDocument]) -> List[cv2.Mat]
     img_size = img.shape
     
     """ Get config variables """
-    crop_size = config["param"]["crop_size"]
-    shift_region = config["param"]["shift_region"]
+    crop_size: int = config["param"]["crop_size"]
+    shift_region: str = config["param"]["shift_region"]
     
     fraction = shift_region.split("/")
     assert (len(fraction) == 2) and (int(fraction[0]) == 1), ("Invalid format, `shift_region` expect '1/[denominator]', "
@@ -126,4 +127,44 @@ def gen_crop_img(img:cv2.Mat, config:Union[dict, TOMLDocument]) -> List[cv2.Mat]
             crop_img_list.append(img[h_crop_idxs[i]:h_crop_idxs[i+DIV_PIECES], w_crop_idxs[j]:w_crop_idxs[j+DIV_PIECES], :])
     
     return crop_img_list
+    # -------------------------------------------------------------------------/
+
+
+
+def drop_too_dark(crop_img_list:List[cv2.Mat], config:Union[dict, TOMLDocument]) -> Tuple[List[Tuple], List[Tuple]]:
+    """ Drop the image which too many dark pixels
+
+    Args:
+        crop_img_list (List[cv2.Mat]): a list contains `BGR` images
+    
+    config:
+        intensity (int): a threshold (grayscale image) to define too dark or not 
+        drop_ratio (float): a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop, if drop_ratio < 0.5, keeps the crop image.
+
+    Returns:
+        Tuple[List[cv2.Mat], List[cv2.Mat]]: ('select_crop_img_list', 'drop_crop_img_list')
+    """
+    """ Get config variables """
+    intensity: int = config["param"]["intensity"]
+    drop_ratio: float = config["param"]["drop_ratio"]
+    
+    select_crop_img_list: list = []
+    drop_crop_img_list: list = []
+    
+    for i in range(len(crop_img_list)):
+        
+        """ Change to HSV/HSB and get V_channel (Brightness) """
+        brightness = cv2.cvtColor(crop_img_list[i], cv2.COLOR_BGR2HSV_FULL)[:,:,2]
+        """ Count pixels which are too dark """
+        pixel_too_dark = np.sum(brightness <= intensity)
+        
+        """ Calculate `dark_ratio` """
+        img_size = crop_img_list[i].shape
+        dark_ratio = pixel_too_dark/(img_size[0]*img_size[1])
+        if dark_ratio >= drop_ratio: # 減少 model 學習沒有表皮資訊的位置的可能性
+            drop_crop_img_list.append((i, crop_img_list[i], dark_ratio)) # 生成的 Tuple 只剩 `dark_ratio` 有被使用
+        else:
+            select_crop_img_list.append((i, crop_img_list[i], dark_ratio))
+
+    return select_crop_img_list, drop_crop_img_list
     # -------------------------------------------------------------------------/
