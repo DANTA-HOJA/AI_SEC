@@ -9,7 +9,7 @@ from tomlkit.toml_document import TOMLDocument
 # -----------------------------------------------------------------------------/
 
 
-def gen_dataset_xlsx_name(config:Union[dict, TOMLDocument], dict_format:bool=False) -> Union[dict, str]:
+def gen_dataset_xlsx_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, str]:
     """ To generate dataset xlsx name corresponing to the parameters.
     
     config:
@@ -26,11 +26,11 @@ def gen_dataset_xlsx_name(config:Union[dict, TOMLDocument], dict_format:bool=Fal
         str: e.g. `DS_SURF4C_CRPS512_SF14_INT20_DRP30`
     
     """
-    cluster_desc = config["data_processed"]["cluster_desc"]
-    crop_size = config["param"]["crop_size"]
-    shift_region = config["param"]["shift_region"]
-    intensity = config["param"]["intensity"]
-    drop_ratio = config["param"]["drop_ratio"]
+    cluster_desc: str = config["data_processed"]["cluster_desc"]
+    crop_size: int = config["param"]["crop_size"]
+    shift_region: str = config["param"]["shift_region"]
+    intensity: int = config["param"]["intensity"]
+    drop_ratio: float = config["param"]["drop_ratio"]
     
     """ Converting... `cluster_desc`  """
     cluster_desc_split = re.split("{|_|}", cluster_desc)
@@ -63,8 +63,7 @@ def gen_dataset_xlsx_name(config:Union[dict, TOMLDocument], dict_format:bool=Fal
     temp_dict["intensity"]     = f"INT{intensity}"
     temp_dict["drop_ratio"]    = f"DRP{ratio}"
     
-    if dict_format == True: return temp_dict
-    else: return "_".join(list(temp_dict.values()))
+    return temp_dict
     # -------------------------------------------------------------------------/
 
 

@@ -11,7 +11,7 @@ from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
 from . import dsname
-from .utils import gen_dataset_xlsx_name, gen_crop_img
+from .utils import gen_dataset_xlsx_name_dict, gen_crop_img
 from ..data.processeddatainstance import ProcessedDataInstance
 from ..shared.clioutput import CLIOutput
 from ..shared.config import load_config
@@ -110,7 +110,7 @@ class ImageCropper():
     def _set_crop_dir_name(self):
         """
         """
-        temp_dict = gen_dataset_xlsx_name(self.config, dict_format=True)
+        temp_dict = gen_dataset_xlsx_name_dict(self.config)
         
         self.crop_dir_name: str = f"{temp_dict['crop_size']}_{temp_dict['shift_region']}"
         # ---------------------------------------------------------------------/
