@@ -12,12 +12,12 @@ from tomlkit.toml_document import TOMLDocument
 from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
-from ..data import dname
-from ..data.processeddatainstance import ProcessedDataInstance
-from ..shared.clioutput import CLIOutput
-from ..shared.config import load_config
-from ..shared.pathnavigator import PathNavigator
-from ..shared.utils import create_new_dir
+from .. import dname
+from ..processeddatainstance import ProcessedDataInstance
+from ...shared.clioutput import CLIOutput
+from ...shared.config import load_config
+from ...shared.pathnavigator import PathNavigator
+from ...shared.utils import create_new_dir
 # -----------------------------------------------------------------------------/
 
 

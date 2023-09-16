@@ -12,12 +12,12 @@ from tqdm.auto import tqdm
 
 from . import dsname
 from .utils import gen_dataset_xlsx_name_dict, drop_too_dark
-from ..data import dname
-from ..data.processeddatainstance import ProcessedDataInstance
-from ..shared.clioutput import CLIOutput
-from ..shared.config import load_config
-from ..shared.pathnavigator import PathNavigator
-from ..shared.utils import create_new_dir, get_target_str_idx_in_list
+from .. import dname
+from ..processeddatainstance import ProcessedDataInstance
+from ...shared.clioutput import CLIOutput
+from ...shared.config import load_config
+from ...shared.pathnavigator import PathNavigator
+from ...shared.utils import create_new_dir, get_target_str_idx_in_list
 # -----------------------------------------------------------------------------/
 
 
