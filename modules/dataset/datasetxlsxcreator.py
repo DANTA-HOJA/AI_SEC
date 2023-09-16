@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
 import cv2
-import numpy as np
 import pandas as pd
 from tomlkit.toml_document import TOMLDocument
 from colorama import Fore, Back, Style
