@@ -1,4 +1,5 @@
 import torch
+from typing import List, Dict, Tuple, Union
 
 from ..shared.clioutput import CLIOutput
 # -----------------------------------------------------------------------------/
@@ -20,4 +21,12 @@ def set_gpu(cuda_idx:int, cli_out:CLIOutput=None):
     if cli_out: cli_out.write(f"Using '{device}', device_name = '{device_name}'")
     
     return device
+    # -------------------------------------------------------------------------/
+
+
+
+def gen_class2num_dict(num2class_list:List[str]):
+    """
+    """
+    return {cls:i for i, cls in enumerate(num2class_list)}
     # -------------------------------------------------------------------------/
