@@ -1,5 +1,8 @@
-import torch
+from pathlib import Path
 from typing import List, Dict, Tuple, Union
+
+import pandas as pd
+import torch
 
 from ..shared.clioutput import CLIOutput
 # -----------------------------------------------------------------------------/
@@ -29,4 +32,14 @@ def gen_class2num_dict(num2class_list:List[str]):
     """
     """
     return {cls:i for i, cls in enumerate(num2class_list)}
+    # -------------------------------------------------------------------------/
+
+
+
+def get_fish_path(image_name:str, df_dataset_xlsx:pd.DataFrame):
+    
+    df_filtered_rows = df_dataset_xlsx[(df_dataset_xlsx['image_name'] == image_name)]
+    fish_path = list(df_filtered_rows["path"])[0]
+    
+    return Path(fish_path)
     # -------------------------------------------------------------------------/
