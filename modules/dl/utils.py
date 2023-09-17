@@ -37,9 +37,21 @@ def gen_class2num_dict(num2class_list:List[str]):
 
 
 def get_fish_path(image_name:str, df_dataset_xlsx:pd.DataFrame):
-    
+    """
+    """
     df_filtered_rows = df_dataset_xlsx[(df_dataset_xlsx['image_name'] == image_name)]
     fish_path = list(df_filtered_rows["path"])[0]
     
     return Path(fish_path)
+    # -------------------------------------------------------------------------/
+
+
+
+def get_fish_class(image_name:str, df_dataset_xlsx:pd.DataFrame):
+    """
+    """
+    df_filtered_rows = df_dataset_xlsx[(df_dataset_xlsx['image_name'] == image_name)]
+    fish_class = list(df_filtered_rows["class"])[0]
+    
+    return fish_class
     # -------------------------------------------------------------------------/
