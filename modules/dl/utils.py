@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple, Union
 
 import pandas as pd
 import torch
+from sklearn.metrics import f1_score
 
 from ..shared.clioutput import CLIOutput
 # -----------------------------------------------------------------------------/
@@ -67,7 +68,7 @@ def calculate_class_weight(class_count_dict:Dict[str, int]) -> torch.Tensor:
     Args:
         class_count_dict (Dict[str, int]): A `dict` contains the statistic information for each class, 
         e.g. `{ "L": 450, "M": 740, "S": 800 }`
-    
+
     Returns:
         torch.tensor: `class_weight` in `torch.Tensor` format
     """
@@ -78,4 +79,29 @@ def calculate_class_weight(class_count_dict:Dict[str, int]) -> torch.Tensor:
         class_weights_list.append((1 - (value/total_samples)))
 
     return torch.tensor(class_weights_list, dtype=torch.float)
+    # -------------------------------------------------------------------------/
+
+
+
+def calculate_metrics(log:Dict, average_loss:float,
+                      predict_list:List[int], groundtruth_list:List[int],
+                      class2num_dict:Dict[str, int]):
+    
+    """ Calculate different f1-score """
+    class_f1 = f1_score(groundtruth_list, predict_list, average=None) # by class
+    micro_f1 = f1_score(groundtruth_list, predict_list, average='micro')
+    macro_f1 = f1_score(groundtruth_list, predict_list, average='macro')
+    weighted_f1 = f1_score(groundtruth_list, predict_list, average='weighted')
+    maweavg_f1 = (macro_f1 + weighted_f1)/2
+    
+    """ Update `average_loss` """
+    if average_loss is not None: log["average_loss"] = round(average_loss, 5)
+    else: log["average_loss"] = None
+    
+    """ Update `f1-score` """
+    for key, value in class2num_dict.items(): log[f"{key}_f1"] = round(class_f1[value], 5)
+    log["micro_f1"] = round(micro_f1, 5)
+    log["macro_f1"] = round(macro_f1, 5)
+    log["weighted_f1"] = round(weighted_f1, 5)
+    log["maweavg_f1"] = round(maweavg_f1, 5)
     # -------------------------------------------------------------------------/
