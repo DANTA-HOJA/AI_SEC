@@ -77,15 +77,15 @@ def save_training_logs(save_dir:Path, train_logs:List[dict],
     """
     """
     """ train_logs """
-    df_train_logs = pd.DataFrame(train_logs)
-    df_train_logs.set_index("epoch", inplace=True)
+    train_logs_df = pd.DataFrame(train_logs)
+    train_logs_df.set_index("epoch", inplace=True)
 
     """ valid_logs """
-    df_valid_logs = pd.DataFrame(valid_logs)
-    df_valid_logs.set_index("epoch", inplace=True)
+    valid_logs_df = pd.DataFrame(valid_logs)
+    valid_logs_df.set_index("epoch", inplace=True)
     
     """ Concat two logs """
-    concat_df = pd.concat([df_train_logs, df_valid_logs], axis=1)
+    concat_df = pd.concat([train_logs_df, valid_logs_df], axis=1)
     
     """ Save log """
     path = save_dir.joinpath(r"{Logs}_training_log.xlsx")
