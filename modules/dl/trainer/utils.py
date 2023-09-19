@@ -102,15 +102,14 @@ def save_model(desc:str, save_dir:Path, model_state_dict:dict, optimizer_state_d
     """
     WARNING:
     
-    If you only plan to keep the best performing model (according to the acquired validation loss),
-        don't forget that best_model_state = model.state_dict() returns a reference to the state and not its copy!
+    - If you only plan to keep the best performing model (according to the acquired validation loss),
+        don't forget that `best_model_state = model.state_dict()` returns a reference to the state and not its copy!
     
-    You must serialize best_model_state or use best_model_state = deepcopy(model.state_dict()) 
+    - You must serialize best_model_state or use `best_model_state = deepcopy(model.state_dict())`,
         otherwise your best best_model_state will keep getting updated by the subsequent training iterations.
-        
-    As a result, the final model state will be the state of the overfitted model.
+        As a result, the final model state will be the state of the overfitted model.
     
-    ref: https://pytorch.org/tutorials/beginner/saving_loading_models.html
+    - ref: https://pytorch.org/tutorials/beginner/saving_loading_models.html
     
     """
     """ Composite dicts """
