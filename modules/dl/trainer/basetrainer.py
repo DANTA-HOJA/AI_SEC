@@ -67,7 +67,7 @@ class BaseTrainer:
         
         """ Seeds """
         # np.random.seed(self.rand_seed)
-        # torch.manual_seed(self.rand_seed) # Dataloader shuffle consistency
+        torch.manual_seed(self.rand_seed) # Dataloader shuffle consistency
         ia.seed(self.rand_seed)
         # ---------------------------------------------------------------------/
 
@@ -240,8 +240,8 @@ class BaseTrainer:
         for cls in self.num2class_list:
 
             df: pd.DataFrame = self.training_df[(self.training_df["class"] == cls)]
-            train: pd.DataFrame = df.sample(frac=self.train_ratio, replace=False, 
-                                  random_state=self.rand_seed)
+            train: pd.DataFrame = df.sample(frac=self.train_ratio, replace=False,
+                                            random_state=self.rand_seed)
             valid: pd.DataFrame = df[~df.index.isin(train.index)]
             self.train_name_list.extend(list(train["image_name"]))
             self.valid_name_list.extend(list(valid["image_name"]))
