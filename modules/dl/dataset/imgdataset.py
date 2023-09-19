@@ -38,8 +38,8 @@ class ImgDataset(Dataset):
         self.use_hsv: bool = use_hsv
         self.transform: Union[None, iaa.Sequential] = transform
         
-        if self.use_hsv is True: self._cli_out.write("※ : using 'HSV' when getting images from the dataset")
-        if self.transform is not None: self._cli_out.write("※ : applying augmentation on the fly")
+        if self.use_hsv is True: self._cli_out.write("※　: using 'HSV' when getting images from the dataset")
+        if self.transform is not None: self._cli_out.write("※　: applying augmentation on the fly")
         # ---------------------------------------------------------------------/
 
 
