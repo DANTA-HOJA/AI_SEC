@@ -3,6 +3,7 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
+import json
 
 import pandas as pd
 import torch
@@ -113,7 +114,7 @@ def calculate_metrics(log:Dict, average_loss:float,
 
 
 def plot_training_trend(save_dir:Path, loss_key:str, score_key:str,
-                        train_logs:pd.DataFrame, valid_logs:pd.DataFrame):
+                        train_logs:List[dict], valid_logs:List[dict]):
     """
         figsize (resolution) = w*dpi, h*dpi
         
@@ -123,6 +124,9 @@ def plot_training_trend(save_dir:Path, loss_key:str, score_key:str,
             - figsize=( 8,4)  , dpi=150
             - figsize=( 6,3)  , dpi=200 etc.
     """
+    train_logs = pd.DataFrame(train_logs)
+    valid_logs = pd.DataFrame(valid_logs)
+    
     """ Create figure set """
     fig, axs = plt.subplots(1, 2, figsize=(14,6), dpi=100)
     fig.suptitle('Training')
@@ -144,4 +148,31 @@ def plot_training_trend(save_dir:Path, loss_key:str, score_key:str,
     fig_path = save_dir.joinpath(f"training_trend_{score_key}.png")
     fig.savefig(fig_path)
     plt.close(fig) # Close figure
+    # -------------------------------------------------------------------------/
+
+
+
+def save_training_logs(save_dir:Path, train_logs:List[dict],
+                       valid_logs:List[dict], best_val_log:dict):
+    """
+    """
+    """ train_logs """
+    df_train_logs = pd.DataFrame(train_logs)
+    df_train_logs.set_index("epoch", inplace=True)
+
+    """ valid_logs """
+    df_valid_logs = pd.DataFrame(valid_logs)
+    df_valid_logs.set_index("epoch", inplace=True)
+    
+    """ Concat two logs """
+    concat_df = pd.concat([df_train_logs, df_valid_logs], axis=1)
+    
+    """ Save log """
+    path = save_dir.joinpath(r"{Logs}_training_log.xlsx")
+    concat_df.to_excel(path, engine="openpyxl")
+    
+    """ best_val_log """
+    path = save_dir.joinpath(r"{Logs}_best_valid.log")
+    with open(path, mode="w") as f_writer:
+        json.dump(best_val_log, f_writer, indent=4)
     # -------------------------------------------------------------------------/
