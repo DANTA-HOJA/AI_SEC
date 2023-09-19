@@ -30,13 +30,13 @@ class ImgDataset(Dataset):
         
         # ---------------------------------------------------------------------
         # """ attributes """
-        self.mode = mode
-        self.name_list = name_list
-        self.name_dict = name_dict
-        self.class2num_dict = class2num_dict
-        self.resize = resize # (W, H), square image, W == H
-        self.use_hsv = use_hsv
-        self.transform = transform
+        self.mode: str = mode
+        self.name_list: List[str] = name_list
+        self.name_dict: dict = name_dict
+        self.class2num_dict: Dict[str, int] = class2num_dict
+        self.resize: Tuple[int, int] = (resize, resize) # (W, H), square image, W == H
+        self.use_hsv: bool = use_hsv
+        self.transform: Union[None, iaa.Sequential] = transform
         
         if self.use_hsv is True: self._cli_out.write("※ : using 'HSV' when getting images from the dataset")
         if self.transform is not None: self._cli_out.write("※ : applying augmentation on the fly")
