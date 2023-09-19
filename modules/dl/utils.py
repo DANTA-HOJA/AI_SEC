@@ -1,8 +1,12 @@
+import os
+import sys
+import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
 import pandas as pd
 import torch
+import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
 
 from ..shared.clioutput import CLIOutput
@@ -104,4 +108,40 @@ def calculate_metrics(log:Dict, average_loss:float,
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
     log["maweavg_f1"] = round(maweavg_f1, 5)
+    # -------------------------------------------------------------------------/
+
+
+
+def plot_training_trend(save_dir:Path, loss_key:str, score_key:str,
+                        train_logs:pd.DataFrame, valid_logs:pd.DataFrame):
+    """
+        figsize (resolution) = w*dpi, h*dpi
+        
+        e.g. (1200,600) pixels can be
+            - figsize=(15,7.5), dpi= 80
+            - figsize=(12,6)  , dpi=100
+            - figsize=( 8,4)  , dpi=150
+            - figsize=( 6,3)  , dpi=200 etc.
+    """
+    """ Create figure set """
+    fig, axs = plt.subplots(1, 2, figsize=(14,6), dpi=100)
+    fig.suptitle('Training')
+    
+    """ Loss figure """
+    axs[0].plot(list(train_logs["epoch"]), list(train_logs[loss_key]), label="train")
+    axs[0].plot(list(valid_logs["epoch"]), list(valid_logs[loss_key]), label="validate")
+    axs[0].legend() # turn legend on
+    axs[0].set_title(loss_key)
+
+    """ Score figure """
+    axs[1].plot(list(train_logs["epoch"]), list(train_logs[score_key]), label="train")
+    axs[1].plot(list(valid_logs["epoch"]), list(valid_logs[score_key]), label="validate")
+    axs[1].set_ylim(0.0, 1.1)
+    axs[1].legend() # turn legend on
+    axs[1].set_title(score_key)
+
+    """ Save figure """
+    fig_path = save_dir.joinpath(f"training_trend_{score_key}.png")
+    fig.savefig(fig_path)
+    plt.close(fig) # Close figure
     # -------------------------------------------------------------------------/
