@@ -106,7 +106,7 @@ class SurfaceAreaKMeansCluster():
                 raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx` please run `0.5.create_data_xlsx.py` to create it. {Style.RESET_ALL}\n")
         
         self.orig_xlsx_path: Path = set_attr1()
-        self.orig_xlsx_df: pd.DataFrame = pd.read_excel(self.orig_xlsx_path, engine = 'openpyxl')
+        self.orig_xlsx_df: pd.DataFrame = pd.read_excel(self.orig_xlsx_path, engine='openpyxl')
         self.orig_xlsx_path_split: List[str] = str(self.orig_xlsx_path).split(os.sep)
         # ---------------------------------------------------------------------/
 

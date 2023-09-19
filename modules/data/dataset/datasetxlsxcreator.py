@@ -254,6 +254,6 @@ class DatasetXLSXCreator():
         """ Save `dataset_xlsx` """
         self._cli_out.new_line()
         self._cli_out.write("Saving `dataset_xlsx`... ")
-        dataset_df.to_excel(self.dataset_xlsx_path)
+        dataset_df.to_excel(self.dataset_xlsx_path, engine="openpyxl")
         self._cli_out.write(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
         # ---------------------------------------------------------------------/
