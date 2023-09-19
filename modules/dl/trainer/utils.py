@@ -1,9 +1,8 @@
-import os
-import sys
-import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
+import json
 
+import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 # -----------------------------------------------------------------------------/
@@ -95,4 +94,29 @@ def save_training_logs(save_dir:Path, train_logs:List[dict],
     path = save_dir.joinpath(r"{Logs}_best_valid.log")
     with open(path, mode="w") as f_writer:
         json.dump(best_val_log, f_writer, indent=4)
+    # -------------------------------------------------------------------------/
+
+
+
+def save_model(desc:str, save_dir:Path, model_state_dict:dict, optimizer_state_dict:dict):
+    """
+    WARNING:
+    
+    If you only plan to keep the best performing model (according to the acquired validation loss),
+        don't forget that best_model_state = model.state_dict() returns a reference to the state and not its copy!
+    
+    You must serialize best_model_state or use best_model_state = deepcopy(model.state_dict()) 
+        otherwise your best best_model_state will keep getting updated by the subsequent training iterations.
+        
+    As a result, the final model state will be the state of the overfitted model.
+    
+    ref: https://pytorch.org/tutorials/beginner/saving_loading_models.html
+    
+    """
+    """ Composite dicts """
+    temp_dict: dict = {}
+    temp_dict["model_state_dict"] = model_state_dict
+    temp_dict["optimizer_state_dict"] = optimizer_state_dict
+    
+    torch.save(temp_dict, save_dir.joinpath(f"{desc}_model.pth"))
     # -------------------------------------------------------------------------/
