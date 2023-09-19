@@ -1,13 +1,8 @@
-import os
-import sys
-import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
-import json
 
 import pandas as pd
 import torch
-import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
 
 from ..shared.clioutput import CLIOutput
