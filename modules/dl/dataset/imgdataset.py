@@ -16,9 +16,9 @@ class ImgDataset(Dataset):
         
         P.S. Old vesion is using `image_path` directly
     """
-    def __init__(self, mode:str, name_list:List[str], 
+    def __init__(self, mode:str, name_list:List[str],
                  name_dict:dict, class2num_dict:Dict[str, int],
-                 resize:int, use_hsv:bool, transform:iaa.Sequential=None, 
+                 resize:int, use_hsv:bool, transform:Union[None, iaa.Sequential],
                  display_on_CLI=True) -> None:
         """
         """
