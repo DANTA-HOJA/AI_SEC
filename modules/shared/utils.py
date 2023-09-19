@@ -180,11 +180,22 @@ def print_sorted_attrs(object:object, filter_magic_fn:bool=True):
 def formatter_padr0(obj) -> str:
     """ A string formatter, padding 0 at right ( depence on the maximum digit of len(obj) )
         - example: len(obj) = 100, return '03'
+        - example: int(50), return '02' 
     """
-    # n_items: int = len(obj)
-    # n_digit: str = str(n_items)
-    # max_digit: int = len(n_digit)
-    # formatter = f'0{max_digit}'
+    if hasattr(obj, "__len__"):
+        # n_items: int = len(obj)
+        # n_digit: str = str(n_items)
+        # max_digit: int = len(n_digit)
+        # formatter = f'0{max_digit}'
+        return f"0{len(str(len(obj)))}"
     
-    return f'0{len(str(len(obj)))}'
+    elif isinstance(obj, int):
+        # assume `obj` = 50 (an integer)
+        # str(50) = "50"
+        # len("50") = 2
+        # >>> 02
+        return f"0{len(str(obj))}"
+    
+    else:
+        raise NotImplementedError("Unrecognized type of given object")
     # -------------------------------------------------------------------------/
