@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
 import json
@@ -118,4 +119,22 @@ def save_model(desc:str, save_dir:Path, model_state_dict:dict, optimizer_state_d
     temp_dict["optimizer_state_dict"] = optimizer_state_dict
     
     torch.save(temp_dict, save_dir.joinpath(f"{desc}_model.pth"))
+    # -------------------------------------------------------------------------/
+
+
+
+def rename_training_dir(orig_dir:Path, time_stamp:str, state:str,
+                        epochs:int, aug_on_fly:bool, use_hsv:bool):
+    """
+    """
+    temp_str = f"{epochs}_epochs"
+    if aug_on_fly: temp_str += "_AugOnFly"
+    if use_hsv: temp_str += "_HSV"
+    new_name = f"{time_stamp}_{{{state}}}_{{{temp_str}}}"
+    
+    orig_dir_split = str(orig_dir).split(os.sep)
+    orig_dir_split[-1] = new_name
+    new_dir = os.sep.join(orig_dir_split)
+    
+    os.rename(orig_dir, new_dir)
     # -------------------------------------------------------------------------/
