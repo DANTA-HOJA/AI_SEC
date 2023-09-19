@@ -548,10 +548,10 @@ class BaseTrainer:
             self.best_optimizer_state_dict = deepcopy(self.optimizer.state_dict())
             self.best_val_log["epoch"] = epoch
             
-            self._cli_out.write((f"Epoch: {epoch:{formatter_padr0(str(self.epochs))}}, "
+            self._cli_out.write(f"Epoch: {epoch:{formatter_padr0(self.epochs)}}, "
                                 f"☆★☆ BEST_VALIDATION ☆★☆, "
                                 f"best_val_avg_loss = {self.best_val_log['average_loss']}, "
-                                f"best_val_{self.score_key} = {self.best_val_log[self.score_key]}"))
+                                f"best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
         
         
         """ Check 'EarlyStop' """
@@ -563,7 +563,7 @@ class BaseTrainer:
             else:
                 log["valid_improve"] = "◎㊣◎ NO_IMPROVED ◎㊣◎"
                 self.accum_no_improved += 1
-                self._cli_out.write(f"Epoch: {epoch:{formatter_padr0(str(self.epochs))}}, "
+                self._cli_out.write(f"Epoch: {epoch:{formatter_padr0(self.epochs)}}, "
                                     f"◎㊣◎ NO_IMPROVED ◎㊣◎, "
                                     f"accum_no_improved = {self.accum_no_improved}")
                 if self.accum_no_improved == self.max_no_improved:
@@ -644,7 +644,7 @@ class BaseTrainer:
             timer.start()
             for epoch in range(1, self.epochs+1):
                 # Update progress bar description
-                self.pbar_n_epoch.desc = f"Epoch {epoch:{formatter_padr0(str(self.epochs))}} "
+                self.pbar_n_epoch.desc = f"Epoch {epoch:{formatter_padr0(self.epochs)}} "
                 self.pbar_n_epoch.refresh()
                 
                 self._one_epoch_training(epoch)
