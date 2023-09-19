@@ -503,6 +503,7 @@ class BaseTrainer:
         pred_list: list = []
         gt_list: list = []
         accum_loss = 0.0
+        output_string = f"Epoch: {epoch:{formatter_padr0(self.epochs)}}"
         self.pbar_n_valid.n = 0
         self.pbar_n_valid.refresh()
         
@@ -548,10 +549,9 @@ class BaseTrainer:
             self.best_optimizer_state_dict = deepcopy(self.optimizer.state_dict())
             self.best_val_log["epoch"] = epoch
             
-            self._cli_out.write(f"Epoch: {epoch:{formatter_padr0(self.epochs)}}, "
-                                f"☆★☆ BEST_VALIDATION ☆★☆, "
-                                f"best_val_avg_loss = {self.best_val_log['average_loss']}, "
-                                f"best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
+            output_string += (f", ☆★☆ BEST_VALIDATION ☆★☆"
+                              f", best_val_avg_loss = {self.best_val_log['average_loss']}"
+                              f", best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
         
         
         """ Check 'EarlyStop' """
@@ -561,11 +561,10 @@ class BaseTrainer:
                 self.best_val_avg_loss = log["average_loss"]
                 self.accum_no_improved = 0
             else:
-                log["valid_improve"] = "◎㊣◎ NO_IMPROVED ◎㊣◎"
+                log["valid_improve"] = "◎㊣◎ LOSS_NO_IMPROVED ◎㊣◎"
                 self.accum_no_improved += 1
-                self._cli_out.write(f"Epoch: {epoch:{formatter_padr0(self.epochs)}}, "
-                                    f"◎㊣◎ NO_IMPROVED ◎㊣◎, "
-                                    f"accum_no_improved = {self.accum_no_improved}")
+                output_string += (f", ◎㊣◎ LOSS_NO_IMPROVED ◎㊣◎"
+                                  f", accum_no_improved = {self.accum_no_improved}")
                 if self.accum_no_improved == self.max_no_improved:
                     sys.exit() # raise SystemExit
         
@@ -578,6 +577,10 @@ class BaseTrainer:
         temp_str += f"{self.score_key}: {log[self.score_key]} {'}'} "
         self.pbar_n_valid.postfix = temp_str
         self.pbar_n_valid.refresh()
+        
+        """ Print `output_string` """
+        if ("◎㊣◎" in output_string) or ("☆★☆" in output_string):
+            self._cli_out.write(output_string)
         # ---------------------------------------------------------------------/
 
 
