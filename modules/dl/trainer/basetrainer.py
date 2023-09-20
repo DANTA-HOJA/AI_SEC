@@ -63,12 +63,7 @@ class BaseTrainer:
         self._set_dataset_xlsx_path()
         
         """ Training reproducibility """
-        self._set_dataloader_seedgen()
-        
-        """ Seeds """
-        # np.random.seed(self.rand_seed)
-        torch.manual_seed(self.rand_seed) # Dataloader shuffle consistency
-        ia.seed(self.rand_seed)
+        self._set_training_reproducibility()
         # ---------------------------------------------------------------------/
 
 
@@ -156,10 +151,16 @@ class BaseTrainer:
 
 
 
-    def _set_dataloader_seedgen(self):
-        """ DataLoader reproducibility
+    def _set_training_reproducibility(self):
+        """ Pytorch reproducibility
             - ref: https://pytorch.org/docs/stable/notes/randomness.html
         """
+        """ Seeds """
+        # np.random.seed(self.rand_seed)
+        torch.manual_seed(self.rand_seed)
+        ia.seed(self.rand_seed)
+        
+        """ DataLoader """
         self.g: torch.Generator = torch.Generator()
         self.g.manual_seed(0)
         # ---------------------------------------------------------------------/
