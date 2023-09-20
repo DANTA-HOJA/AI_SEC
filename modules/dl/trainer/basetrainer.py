@@ -540,7 +540,6 @@ class BaseTrainer:
         calculate_metrics(log, (accum_loss/len(self.valid_dataloader)),
                           pred_list, gt_list, self.class2num_dict)
         
-        
         """ Update best record """
         log["valid_state"] = ""
         if log[self.score_key] > self.best_val_f1:
@@ -560,7 +559,6 @@ class BaseTrainer:
                               f", best_val_avg_loss = {self.best_val_log['average_loss']}"
                               f", best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
         
-        
         """ Check 'EarlyStop' """
         log["valid_improve"] = ""
         if self.enable_earlystop:
@@ -572,9 +570,6 @@ class BaseTrainer:
                 self.accum_no_improved += 1
                 output_string += (f", ◎㊣◎ LOSS_NO_IMPROVED ◎㊣◎"
                                   f", accum_no_improved = {self.accum_no_improved}")
-                if self.accum_no_improved == self.max_no_improved:
-                    sys.exit() # raise SystemExit
-        
         
         """ Update `self.valid_logs` """
         self.valid_logs.append(log)
@@ -588,6 +583,10 @@ class BaseTrainer:
         """ Print `output_string` """
         if ("◎㊣◎" in output_string) or ("☆★☆" in output_string):
             self._cli_out.write(output_string)
+        
+        """ SystemExit condition """
+        if self.accum_no_improved == self.max_no_improved:
+            sys.exit() # raise SystemExit
         # ---------------------------------------------------------------------/
 
 
