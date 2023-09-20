@@ -153,11 +153,17 @@ class BaseTrainer:
 
     def _set_training_reproducibility(self):
         """ Pytorch reproducibility
+            - ref: https://clay-atlas.com/us/blog/2021/08/24/pytorch-en-set-seed-reproduce/?amp=1
             - ref: https://pytorch.org/docs/stable/notes/randomness.html
         """
         """ Seeds """
-        # np.random.seed(self.rand_seed)
+        random.seed(self.rand_seed)
+        np.random.seed(self.rand_seed)
         torch.manual_seed(self.rand_seed)
+        torch.cuda.manual_seed(self.rand_seed) # current GPU
+        torch.cuda.manual_seed_all(self.rand_seed) # all GPUs
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
         ia.seed(self.rand_seed)
         
         """ DataLoader """
