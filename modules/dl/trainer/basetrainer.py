@@ -402,7 +402,7 @@ class BaseTrainer:
 
 
     def _set_amp_scaler(self):
-        """
+        """ A scaler for 'Automatic Mixed Precision (AMP)'
         """
         self.scaler = GradScaler()
         # ---------------------------------------------------------------------/
