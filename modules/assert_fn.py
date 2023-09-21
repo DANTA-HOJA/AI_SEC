@@ -140,9 +140,12 @@ def assert_0_or_1_recollect_dir(found_list:List[Path], target_text:str):
 
 
 
-def assert_0_or_1_history_dir(found_list:List[Path], time_stamp:str, state:str):
+def assert_0_or_1_history_dir(found_list:List[Path], time_stamp:str, state:str=None):
     """ This assertion is for `BaseImageTester._set_history_dir()` only
     """
+    if state is None: temp_str = f"`{time_stamp}`"
+    else: temp_str = f"`{time_stamp}` and `{state}`"
+    
     assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, "
-                                  f"'dirname' combine with `{time_stamp}` and `{state}` in config is not unique. "
+                                  f"'dirname' combine with {temp_str} in config is not unique. "
                                   f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")
