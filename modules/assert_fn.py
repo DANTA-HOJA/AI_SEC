@@ -8,6 +8,7 @@ import json
 
 __all__ = ["assert_is_pathobj", "assert_dir_exists", "assert_file_exists", 
            "assert_dir_not_exists", "assert_file_not_exists"]
+# -----------------------------------------------------------------------------/
 
 
 def assert_only_1_config(found_list:List[Path], config_name:str):
@@ -18,7 +19,10 @@ def assert_only_1_config(found_list:List[Path], config_name:str):
         config_name (str): The name of config to find
     """
     assert len(found_list) > 0, f"Can't find any '{config_name}' ."
-    assert len(found_list) == 1, f"Multiple config files, {json.dumps([str(path) for path in found_list], indent=2)}"
+    assert len(found_list) == 1, (f"Multiple config files, "
+                                 f"{json.dumps([str(path) for path in found_list], indent=2)}")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_run_under_repo_root(target_idx:Union[int, None]):
@@ -29,6 +33,8 @@ def assert_run_under_repo_root(target_idx:Union[int, None]):
     """
     assert target_idx is not None, ("Please switch your `WORKING_DIR` under this repository before run, "
                                     "and don't modify the name of this repository")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_is_pathobj(path:Path):
@@ -37,6 +43,8 @@ def assert_is_pathobj(path:Path):
     if not isinstance(path, Path):
         raise TypeError("The given path should be a `Path` object, "
                         "please using `from pathlib import Path`")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_dir_exists(dir:Path):
@@ -46,6 +54,8 @@ def assert_dir_exists(dir:Path):
     assert_is_pathobj(dir)
     if not dir.exists():
         raise FileNotFoundError(f"Can't find directory: '{dir.resolve()}'")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_file_exists(file:Path):
@@ -55,6 +65,8 @@ def assert_file_exists(file:Path):
     assert_is_pathobj(file)
     if not file.exists():
         raise FileNotFoundError(f"Can't find file: '{file.resolve()}'")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_dir_not_exists(dir:Path):
@@ -64,6 +76,8 @@ def assert_dir_not_exists(dir:Path):
     assert_is_pathobj(dir)
     if dir.exists():
         raise FileExistsError(f"Directory already exists: '{dir.resolve()}'")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_file_not_exists(file:Path):
@@ -73,6 +87,8 @@ def assert_file_not_exists(file:Path):
     assert_is_pathobj(file)
     if file.exists():
         raise FileNotFoundError(f"File already exists: '{file.resolve()}'")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
@@ -80,6 +96,8 @@ def assert_lifname_split_in_4_part(name_split:List[str], lif_name:str):
     """
     assert len(name_split) == 4, (f"File name format error, current : '{lif_name}', "
                                   f"expect like : '20221125_AI005_palmskin_10dpf.lif'")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_0_or_1_instance_root(found_list:List[Path], instance_desc:str):
@@ -91,6 +109,8 @@ def assert_0_or_1_instance_root(found_list:List[Path], instance_desc:str):
     """
     assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, `{instance_desc}` in config is not unique. "
                                   f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_0_or_1_processed_dir(found_list:List[Path], target_text:str):
@@ -101,6 +121,8 @@ def assert_0_or_1_processed_dir(found_list:List[Path], target_text:str):
     """
     assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, only one `{target_text}` is accepted. "
                                   f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")
+    # -------------------------------------------------------------------------/
+
 
 
 def assert_0_or_1_recollect_dir(found_list:List[Path], target_text:str):
@@ -110,4 +132,5 @@ def assert_0_or_1_recollect_dir(found_list:List[Path], target_text:str):
         found_list (List[Path]): A result after running `Path.glob()`
     """
     assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, only one `{target_text}` is accepted. "
-                                  f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")    
+                                  f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}") 
+    # -------------------------------------------------------------------------/
