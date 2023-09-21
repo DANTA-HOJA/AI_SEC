@@ -622,7 +622,7 @@ class BaseTrainer:
         create_new_dir(self.save_dir)
         dump_config(self.save_dir.joinpath("train_config.toml"), self.config) # save file
         
-        """ Set components necessary variables """
+        """ Set components' necessary variables """
         self._set_mapping_attrs()
         self._set_name_lists()
         self._set_class_counts_dict()
