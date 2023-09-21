@@ -72,8 +72,8 @@ class BaseTrainer:
         """
         """
         """ [dataset] """
-        self.dataset_name: str = self.config["dataset"]["name"]
         self.dataset_seed_dir: str = self.config["dataset"]["seed_dir"]
+        self.dataset_name: str = self.config["dataset"]["name"]
         self.dataset_result_alias: str = self.config["dataset"]["result_alias"]
         self.dataset_classif_strategy: str = self.config["dataset"]["classif_strategy"]
         self.dataset_xlsx_name: str = self.config["dataset"]["xlsx_name"]
@@ -108,7 +108,7 @@ class BaseTrainer:
         self.forcing_sample_amount:int = self.config["train_opts"]["data"]["forcing_sample_amount"]
         
         """ [train_opts.debug_mode] """
-        self.debug_mode:bool = self.config["train_opts"]["debug_mode"]["enable"]
+        self.debug_mode: bool = self.config["train_opts"]["debug_mode"]["enable"]
         self.debug_rand_select:int = self.config["train_opts"]["debug_mode"]["rand_select"]
         
         """ [train_opts.cuda] """
