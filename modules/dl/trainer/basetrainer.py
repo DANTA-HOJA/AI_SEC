@@ -23,9 +23,8 @@ import imgaug as ia
 
 from .utils import plot_training_trend, save_training_logs, \
                    save_model, rename_training_dir
-from ..utils import set_gpu, gen_class2num_dict, \
-                    get_fish_path, get_fish_class, \
-                    calculate_metrics
+from ..utils import set_gpu, get_fish_path, get_fish_class, \
+                    gen_class2num_dict, calculate_metrics
 from ...plot.plt_show import plot_in_rgb
 from ...shared.clioutput import CLIOutput
 from ...shared.config import load_config, dump_config
