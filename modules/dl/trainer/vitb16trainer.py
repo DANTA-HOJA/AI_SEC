@@ -42,8 +42,7 @@ class VitB16Trainer(BaseTrainer):
             transform = None
 
         self.train_set: ImgDataset = \
-            ImgDataset("train", self.train_name_list, 
-                       self.training_name_dict, self.class2num_dict, 
+            ImgDataset("train", self.train_df, self.class2num_dict, 
                        resize, self.use_hsv, transform=transform, 
                        display_on_CLI=True)
         # ---------------------------------------------------------------------/
@@ -56,8 +55,7 @@ class VitB16Trainer(BaseTrainer):
         resize: int = 224
         
         self.valid_set: ImgDataset = \
-            ImgDataset("valid", self.valid_name_list, 
-                       self.training_name_dict, self.class2num_dict, 
+            ImgDataset("valid", self.valid_df, self.class2num_dict, 
                        resize, self.use_hsv, transform=None, 
                        display_on_CLI=True)
         # ---------------------------------------------------------------------/

@@ -16,8 +16,7 @@ class ImgDataset(Dataset):
         
         P.S. Old vesion is using `image_path` directly
     """
-    def __init__(self, mode:str, name_list:List[str],
-                 name_dict:dict, class2num_dict:Dict[str, int],
+    def __init__(self, mode:str, dataset_df:pd.DataFrame, class2num_dict:Dict[str, int],
                  resize:int, use_hsv:bool, transform:Union[None, iaa.Sequential],
                  display_on_CLI=True) -> None:
         """
@@ -31,8 +30,7 @@ class ImgDataset(Dataset):
         # ---------------------------------------------------------------------
         # """ attributes """
         self.mode: str = mode
-        self.name_list: List[str] = name_list
-        self.name_dict: dict = name_dict
+        self.dataset_df: pd.DataFrame = dataset_df
         self.class2num_dict: Dict[str, int] = class2num_dict
         self.resize: Tuple[int, int] = (resize, resize) # (W, H), square image, W == H
         self.use_hsv: bool = use_hsv
@@ -47,7 +45,7 @@ class ImgDataset(Dataset):
     def __len__(self):
         """
         """
-        return len(self.name_list)
+        return len(self.dataset_df)
         # ---------------------------------------------------------------------/
 
 
@@ -56,10 +54,10 @@ class ImgDataset(Dataset):
         """
         """
         """ Get name """
-        name = self.name_list[index]
+        name = self.dataset_df.iloc[index]["image_name"]
         
         """ Read image """
-        fish_path = self.name_dict[name]["path"]
+        fish_path = self.dataset_df.iloc[index]["path"]
         img = cv2.imread(str(fish_path))
         
         """ Augmentation on the fly """
@@ -76,7 +74,7 @@ class ImgDataset(Dataset):
         img = np.moveaxis(img, -1, 0) # img_dims == 3: (H, W, C) -> (C, H, W)
         
         """ Read class label """
-        fish_class = self.name_dict[name]["class"]
+        fish_class = self.dataset_df.iloc[index]["class"]
         cls_idx = self.class2num_dict[fish_class]
 
         """ To `Tensor` """

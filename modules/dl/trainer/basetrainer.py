@@ -200,26 +200,6 @@ class BaseTrainer:
 
 
 
-    def _set_training_name_dict(self):
-        """ Create a `dict` for quick access rather than touching a `pandas.DataFrame`
-        """
-        self.training_name_dict: dict = {}
-        
-        self._cli_out.divide()
-        with tqdm(total=len(self.training_df)) as pbar:
-            pbar.desc = f"[ {self._cli_out.logger_name} ] Create `training_name_dict` : "
-            
-            for name in list(self.training_df["image_name"]):
-                self.training_name_dict[name] = {"path": get_fish_path(name, self.training_df),
-                                                 "class": get_fish_class(name, self.training_df)}
-                pbar.update(1)
-                pbar.refresh()
-        
-        self._cli_out.new_line()
-        # ---------------------------------------------------------------------/
-
-
-
     def _set_mapping_attrs(self):
         """ Set below attributes
             - `self.num2class_list`: list
@@ -236,13 +216,13 @@ class BaseTrainer:
 
 
 
-    def _set_name_lists(self):
+    def _set_train_valid_df(self):
         """ Set below attributes
-            - `self.train_name_list`: List[str]
-            - `self.valid_name_list`: List[str]
+            - `self.train_df`: pd.DataFrame
+            - `self.valid_df`: pd.DataFrame
         """
-        self.train_name_list: List[str] = []
-        self.valid_name_list: List[str] = []
+        self.train_df: pd.DataFrame = pd.DataFrame(columns=self.training_df.columns)
+        self.valid_df: pd.DataFrame = pd.DataFrame(columns=self.training_df.columns)
         
         for cls in self.num2class_list:
 
@@ -250,8 +230,8 @@ class BaseTrainer:
             train: pd.DataFrame = df.sample(frac=self.train_ratio, replace=False,
                                             random_state=self.rand_seed)
             valid: pd.DataFrame = df[~df.index.isin(train.index)]
-            self.train_name_list.extend(list(train["image_name"]))
-            self.valid_name_list.extend(list(valid["image_name"]))
+            self.train_df = pd.concat([self.train_df, train], ignore_index=True)
+            self.valid_df = pd.concat([self.valid_df, valid], ignore_index=True)
 
             train_d = train[(train["cut_section"] == "D")]
             train_u = train[(train["cut_section"] == "U")]
@@ -262,11 +242,11 @@ class BaseTrainer:
                                 f"train: [ total: {len(train)}, D: {len(train_d)}, U: {len(train_u)} ] "
                                 f"valid: [ total: {len(valid)}, D: {len(valid_d)}, U: {len(valid_u)} ]")
             
-        self._cli_out.write(f"train_data ({len(self.train_name_list)})")
-        [self._cli_out.write(f"{i} : image_name = {self.train_name_list[i]}") for i in range(5)]
+        self._cli_out.write(f"train_data ({len(self.train_df)})")
+        [self._cli_out.write(f"{i} : image_name = {self.train_df.iloc[i]['image_name']}") for i in range(5)]
         
-        self._cli_out.write(f"valid_data ({len(self.valid_name_list)})")
-        [self._cli_out.write(f"{i} : img_path = {self.valid_name_list[i]}") for i in range(5)]
+        self._cli_out.write(f"valid_data ({len(self.valid_df)})")
+        [self._cli_out.write(f"{i} : img_path = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
         # ---------------------------------------------------------------------/
 
 
@@ -287,8 +267,8 @@ class BaseTrainer:
         """ Save an empty file but file name is training amount info
         """
         training_amount = f"{{ dataset_{len(self.training_df)} }}_"
-        training_amount += f"{{ train_{len(self.train_name_list)} }}_"
-        training_amount += f"{{ valid_{len(self.valid_name_list)} }}"
+        training_amount += f"{{ train_{len(self.train_df)} }}_"
+        training_amount += f"{{ valid_{len(self.valid_df)} }}"
         
         save_path = self.save_dir.joinpath(training_amount)
         with open(save_path, mode="w") as f_writer: pass
@@ -351,7 +331,7 @@ class BaseTrainer:
     def _test_read_image(self):
         """
         """
-        img_path = get_fish_path(self.train_name_list[-1], self.training_df)
+        img_path:Path = self.train_df.iloc[-1]["path"]
         self._cli_out.write(f"Read Test: '{img_path}'")
         plot_in_rgb(str(img_path), (512, 512))
         # ---------------------------------------------------------------------/
@@ -618,13 +598,12 @@ class BaseTrainer:
         """ Load `dataset_xlsx` """
         self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
         self._set_training_df()
-        self._set_training_name_dict()
         create_new_dir(self.save_dir)
         dump_config(self.save_dir.joinpath("train_config.toml"), self.config) # save file
         
         """ Set components' necessary variables """
         self._set_mapping_attrs()
-        self._set_name_lists()
+        self._set_train_valid_df()
         self._set_class_counts_dict()
         if self.debug_mode: self._test_read_image()
         self._save_training_amount_file() # save file
