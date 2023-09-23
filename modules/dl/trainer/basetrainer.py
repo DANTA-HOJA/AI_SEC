@@ -63,6 +63,133 @@ class BaseTrainer:
         
         """ Training reproducibility """
         self._set_training_reproducibility()
+        
+        """ Set GPU """
+        self.device: torch.device = set_gpu(self.cuda_idx, self._cli_out)
+        
+        """ Load `dataset_xlsx` """
+        self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
+        self._set_training_df()
+        
+        """ Set components' necessary variables """
+        self._set_mapping_attrs()
+        self._set_class_counts_dict()
+        self._set_train_valid_df()
+        if self.debug_mode: self._test_read_image()
+        
+        """ Save files """
+        create_new_dir(self.save_dir)
+        dump_config(self.save_dir.joinpath("train_config.toml"), self.config) # save file
+        self._save_training_amount_file() # save file
+        
+        """ Preparing DL components """
+        self._set_train_set()
+        self._set_valid_set()
+        self._set_dataloaders()
+        self._set_model()
+        self._set_loss_fn()
+        self._set_optimizer()
+        if self.use_lr_schedular: self._set_lr_scheduler()
+        if self.use_amp: self._set_amp_scaler()
+        # ---------------------------------------------------------------------/
+
+
+
+    def run(self, config_file:Union[str, Path]="2.training.toml"):
+        """
+        """
+        self._cli_out.divide()
+        self._set_attrs(config_file)
+        
+        """ Create Timer """
+        timer = Timer()
+        
+        """ Training """
+        self._set_training_attrs()
+        self._cli_out.divide()
+        self.pbar_n_epoch = tqdm(total=self.epochs, desc=f"Epoch ")
+        self.pbar_n_train = tqdm(total=len(self.train_dataloader), desc="Train ")
+        self.pbar_n_valid = tqdm(total=len(self.valid_dataloader), desc="Valid ")
+        try:
+            
+            timer.start()
+            for epoch in range(1, self.epochs+1):
+                # Update progress bar description
+                self.pbar_n_epoch.desc = f"Epoch {epoch:{formatter_padr0(self.epochs)}} "
+                self.pbar_n_epoch.refresh()
+                
+                self._one_epoch_training(epoch)
+                self._one_epoch_validating(epoch)
+                
+                plot_training_trend_kwargs = {
+                    "save_dir"   : self.save_dir,
+                    "loss_key"   : "average_loss",
+                    "score_key"  : self.score_key,
+                    "train_logs" : self.train_logs,
+                    "valid_logs" : self.valid_logs,
+                }
+                plot_training_trend(**plot_training_trend_kwargs)
+                
+                # Update `pbar_n_epoch`
+                self.pbar_n_epoch.update(1)
+                self.pbar_n_epoch.refresh()
+        
+        except KeyboardInterrupt:
+            self._close_pbars()
+            self.training_state = "KeyboardInterrupt"
+            tqdm.write("KeyboardInterrupt")
+        
+        except SystemExit:
+            self._close_pbars()
+            self.training_state = "EarlyStop"
+            tqdm.write("EarlyStop, exit training")
+        
+        except Exception as e:
+            self._close_pbars()
+            self.training_state = "ExceptionError"
+            tqdm.write(traceback.format_exc())
+            with open(self.save_dir.joinpath(r"{Logs}_ExceptionError.log"), mode="w") as f_writer:
+                f_writer.write(traceback.format_exc())
+
+        else:
+            self._close_pbars()
+            self.training_state = "Completed"
+            tqdm.write("Training Completed")
+        
+        finally:
+            """ Save training consume time """
+            timer.stop()
+            timer.calculate_consume_time()
+            timer.save_consume_time(self.save_dir, desc="training time")
+            
+            if self.best_val_log["epoch"] > 0:
+                """ If `best_val_log["epoch"]` > 0, all of `logs` and `state_dict` are not empty. """
+                
+                """ Save logs (convert to Dataframe) """
+                save_training_logs(self.save_dir, self.train_logs, self.valid_logs, self.best_val_log)
+                
+                """ Save model """
+                save_model("best", self.save_dir, self.best_model_state_dict, self.best_optimizer_state_dict)
+                save_model("final", self.save_dir, self.model.state_dict(), self.optimizer.state_dict())
+
+                """ Rename `save_dir` """
+                # new_name_format = {time_stamp}_{state}_{target_epochs_with_ImgLoadOptions}
+                # state = {EarlyStop, Interrupt, Completed, Tested, etc.}
+                rename_training_dir_kwargs = {
+                    "orig_dir"   : self.save_dir,
+                    "time_stamp" : self.time_stamp,
+                    "state"      : self.training_state,
+                    "epochs"     : self.valid_logs[-1]["epoch"],
+                    "aug_on_fly" : self.aug_on_fly,
+                    "use_hsv"    : self.use_hsv
+                }
+                rename_training_dir(**rename_training_dir_kwargs)
+                
+            else: 
+                """ Delete folder if less than one epoch has been completed. """
+                self._cli_out.write(f"Less than One epoch has been completed, "
+                                    f"remove directory '{self.save_dir}' ")
+                shutil.rmtree(self.save_dir)
         # ---------------------------------------------------------------------/
 
 
@@ -216,6 +343,18 @@ class BaseTrainer:
 
 
 
+    def _set_class_counts_dict(self):
+        """
+        """
+        counter = Counter(self.training_df["class"])
+        self.class_counts_dict: Dict[str, int] = {}
+        
+        for cls in self.num2class_list:
+            self.class_counts_dict[cls] = counter[cls]
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_train_valid_df(self):
         """ Set below attributes
             - `self.train_df`: pd.DataFrame
@@ -251,14 +390,12 @@ class BaseTrainer:
 
 
 
-    def _set_class_counts_dict(self):
+    def _test_read_image(self):
         """
         """
-        counter = Counter(self.training_df["class"])
-        self.class_counts_dict: Dict[str, int] = {}
-        
-        for cls in self.num2class_list:
-            self.class_counts_dict[cls] = counter[cls]
+        img_path: Path = Path(self.train_df.iloc[-1]["path"])
+        self._cli_out.write(f"Read Test: '{img_path}'")
+        plot_in_rgb(str(img_path), (512, 512))
         # ---------------------------------------------------------------------/
 
 
@@ -324,16 +461,6 @@ class BaseTrainer:
         
         self._cli_out.write(f"※　: total train batches: {len(self.train_dataloader)}")
         self._cli_out.write(f"※　: total valid batches: {len(self.valid_dataloader)}")
-        # ---------------------------------------------------------------------/
-
-
-
-    def _test_read_image(self):
-        """
-        """
-        img_path: Path = Path(self.train_df.iloc[-1]["path"])
-        self._cli_out.write(f"Read Test: '{img_path}'")
-        plot_in_rgb(str(img_path), (512, 512))
         # ---------------------------------------------------------------------/
 
 
@@ -410,7 +537,7 @@ class BaseTrainer:
         
         self.score_key: str = "maweavg_f1"
         self._cli_out.write("※　evaluation metric : "
-                               "maweavg_f1 = ( macro_f1 + weighted_f1 ) / 2")
+                                "maweavg_f1 = ( macro_f1 + weighted_f1 ) / 2")
         # ---------------------------------------------------------------------/
 
 
@@ -582,129 +709,4 @@ class BaseTrainer:
         self.pbar_n_valid.close()
         
         self._cli_out.new_line()
-        # ---------------------------------------------------------------------/
-
-
-
-    def run(self, config_file:Union[str, Path]="2.training.toml"):
-        """
-        """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
-        
-        """ Set GPU """
-        self.device: torch.device = set_gpu(self.cuda_idx, self._cli_out)
-        
-        """ Load `dataset_xlsx` """
-        self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
-        self._set_training_df()
-        create_new_dir(self.save_dir)
-        dump_config(self.save_dir.joinpath("train_config.toml"), self.config) # save file
-        
-        """ Set components' necessary variables """
-        self._set_mapping_attrs()
-        self._set_train_valid_df()
-        self._set_class_counts_dict()
-        if self.debug_mode: self._test_read_image()
-        self._save_training_amount_file() # save file
-        
-        """ Preparing DL components """
-        self._set_train_set()
-        self._set_valid_set()
-        self._set_dataloaders()
-        self._set_model()
-        self._set_loss_fn()
-        self._set_optimizer()
-        if self.use_lr_schedular: self._set_lr_scheduler()
-        if self.use_amp: self._set_amp_scaler()
-        
-        """ Create Timer """
-        timer = Timer()
-        
-        """ Training """
-        self._set_training_attrs()
-        self._cli_out.divide()
-        self.pbar_n_epoch = tqdm(total=self.epochs, desc=f"Epoch ")
-        self.pbar_n_train = tqdm(total=len(self.train_dataloader), desc="Train ")
-        self.pbar_n_valid = tqdm(total=len(self.valid_dataloader), desc="Valid ")
-        try:
-            
-            timer.start()
-            for epoch in range(1, self.epochs+1):
-                # Update progress bar description
-                self.pbar_n_epoch.desc = f"Epoch {epoch:{formatter_padr0(self.epochs)}} "
-                self.pbar_n_epoch.refresh()
-                
-                self._one_epoch_training(epoch)
-                self._one_epoch_validating(epoch)
-                
-                plot_training_trend_kwargs = {
-                    "save_dir"   : self.save_dir,
-                    "loss_key"   : "average_loss",
-                    "score_key"  : self.score_key,
-                    "train_logs" : self.train_logs,
-                    "valid_logs" : self.valid_logs,
-                }
-                plot_training_trend(**plot_training_trend_kwargs)
-                
-                # Update `pbar_n_epoch`
-                self.pbar_n_epoch.update(1)
-                self.pbar_n_epoch.refresh()
-        
-        except KeyboardInterrupt:
-            self._close_pbars()
-            self.training_state = "KeyboardInterrupt"
-            tqdm.write("KeyboardInterrupt")
-        
-        except SystemExit:
-            self._close_pbars()
-            self.training_state = "EarlyStop"
-            tqdm.write("EarlyStop, exit training")
-        
-        except Exception as e:
-            self._close_pbars()
-            self.training_state = "ExceptionError"
-            tqdm.write(traceback.format_exc())
-            with open(self.save_dir.joinpath(r"{Logs}_ExceptionError.log"), mode="w") as f_writer:
-                f_writer.write(traceback.format_exc())
-
-        else:
-            self._close_pbars()
-            self.training_state = "Completed"
-            tqdm.write("Training Completed")
-        
-        finally:
-            """ Save training consume time """
-            timer.stop()
-            timer.calculate_consume_time()
-            timer.save_consume_time(self.save_dir, desc="training time")
-            
-            if self.best_val_log["epoch"] > 0:
-                """ If `best_val_log["epoch"]` > 0, all of `logs` and `state_dict` are not empty. """
-                
-                """ Save logs (convert to Dataframe) """
-                save_training_logs(self.save_dir, self.train_logs, self.valid_logs, self.best_val_log)
-                
-                """ Save model """
-                save_model("best", self.save_dir, self.best_model_state_dict, self.best_optimizer_state_dict)
-                save_model("final", self.save_dir, self.model.state_dict(), self.optimizer.state_dict())
-
-                """ Rename `save_dir` """
-                # new_name_format = {time_stamp}_{state}_{target_epochs_with_ImgLoadOptions}
-                # state = {EarlyStop, Interrupt, Completed, Tested, etc.}
-                rename_training_dir_kwargs = {
-                    "orig_dir"   : self.save_dir,
-                    "time_stamp" : self.time_stamp,
-                    "state"      : self.training_state,
-                    "epochs"     : self.valid_logs[-1]["epoch"],
-                    "aug_on_fly" : self.aug_on_fly,
-                    "use_hsv"    : self.use_hsv
-                }
-                rename_training_dir(**rename_training_dir_kwargs)
-                
-            else: 
-                """ Delete folder if less than one epoch has been completed. """
-                self._cli_out.write(f"Less than One epoch has been completed, "
-                                    f"remove directory '{self.save_dir}' ")
-                shutil.rmtree(self.save_dir)
         # ---------------------------------------------------------------------/
