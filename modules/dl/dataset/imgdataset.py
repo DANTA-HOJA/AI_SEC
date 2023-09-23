@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Dict, Tuple, Union
 
 import cv2
@@ -54,11 +55,11 @@ class ImgDataset(Dataset):
         """
         """
         """ Get name """
-        name = self.dataset_df.iloc[index]["image_name"]
+        name: str = self.dataset_df.iloc[index]["image_name"]
         
         """ Read image """
-        fish_path = self.dataset_df.iloc[index]["path"]
-        img = cv2.imread(str(fish_path))
+        fish_path: Path = Path(self.dataset_df.iloc[index]["path"])
+        img: cv2.Mat = cv2.imread(str(fish_path))
         
         """ Augmentation on the fly """
         if self.transform is not None:
@@ -74,8 +75,8 @@ class ImgDataset(Dataset):
         img = np.moveaxis(img, -1, 0) # img_dims == 3: (H, W, C) -> (C, H, W)
         
         """ Read class label """
-        fish_class = self.dataset_df.iloc[index]["class"]
-        cls_idx = self.class2num_dict[fish_class]
+        fish_class: str = self.dataset_df.iloc[index]["class"]
+        cls_idx: int = self.class2num_dict[fish_class]
 
         """ To `Tensor` """
         img = torch.from_numpy(img).float()  # 32-bit float
