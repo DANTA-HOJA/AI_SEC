@@ -331,7 +331,7 @@ class BaseTrainer:
     def _test_read_image(self):
         """
         """
-        img_path:Path = self.train_df.iloc[-1]["path"]
+        img_path: Path = Path(self.train_df.iloc[-1]["path"])
         self._cli_out.write(f"Read Test: '{img_path}'")
         plot_in_rgb(str(img_path), (512, 512))
         # ---------------------------------------------------------------------/
