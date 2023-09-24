@@ -1,5 +1,4 @@
 from imgaug import augmenters as iaa
-import torch
 from torch import nn, optim
 import torchvision
 
