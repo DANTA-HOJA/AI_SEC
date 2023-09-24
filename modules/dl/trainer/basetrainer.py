@@ -23,7 +23,7 @@ import imgaug as ia
 
 from .utils import plot_training_trend, save_training_logs, \
                    save_model, rename_training_dir
-from ..utils import set_gpu, get_fish_path, get_fish_class, \
+from ..utils import set_gpu, test_read_image, \
                     gen_class2num_dict, calculate_metrics
 from ...plot.plt_show import plot_in_rgb
 from ...shared.clioutput import CLIOutput
@@ -75,7 +75,8 @@ class BaseTrainer:
         self._set_training_df()
         self._set_class_counts_dict()
         self._set_train_valid_df()
-        if self.debug_mode: self._test_read_image()
+        if self.debug_mode:
+            test_read_image(Path(self.train_df.iloc[-1]["path"]), self._cli_out)
         
         """ Save files """
         create_new_dir(self.save_dir)
@@ -387,16 +388,6 @@ class BaseTrainer:
         
         self._cli_out.write(f"valid_data ({len(self.valid_df)})")
         [self._cli_out.write(f"{i} : img_path = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
-        # ---------------------------------------------------------------------/
-
-
-
-    def _test_read_image(self):
-        """
-        """
-        img_path: Path = Path(self.train_df.iloc[-1]["path"])
-        self._cli_out.write(f"Read Test: '{img_path}'")
-        plot_in_rgb(str(img_path), (512, 512))
         # ---------------------------------------------------------------------/
 
 
