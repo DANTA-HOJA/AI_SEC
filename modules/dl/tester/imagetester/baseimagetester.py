@@ -17,7 +17,7 @@ from tqdm.auto import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
 import imgaug as ia
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report
 
 from ..utils import confusion_matrix_with_class, rename_history_dir
 from ...utils import set_gpu, test_read_image, \
