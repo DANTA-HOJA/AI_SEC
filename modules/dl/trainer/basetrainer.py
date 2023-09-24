@@ -511,8 +511,8 @@ class BaseTrainer:
     def _set_training_attrs(self):
         """
         """
-        self.train_logs: list = []
-        self.valid_logs: list = []
+        self.train_logs: List[dict] = []
+        self.valid_logs: List[dict] = []
         
         """ best record variables """
         self.best_val_log: dict = { "Best": self.time_stamp, "epoch": 0 }
