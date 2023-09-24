@@ -69,10 +69,10 @@ class BaseTrainer:
         
         """ Load `dataset_xlsx` """
         self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
-        self._set_training_df()
+        self._set_mapping_attrs()
         
         """ Set components' necessary variables """
-        self._set_mapping_attrs()
+        self._set_training_df()
         self._set_class_counts_dict()
         self._set_train_valid_df()
         if self.debug_mode: self._test_read_image()
@@ -311,6 +311,23 @@ class BaseTrainer:
 
 
 
+    def _set_mapping_attrs(self):
+        """ Set below attributes
+            - `self.num2class_list`: list
+            - `self.class2num_dict`: Dict[str, int]
+            
+        example output :
+        >>> num2class_list = ['L', 'M', 'S'], class2num_dict = {'L': 0, 'M': 1, 'S': 2}
+        """
+        self.num2class_list: list = sorted(Counter(self.dataset_xlsx_df["class"]).keys())
+        self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
+        
+        self._cli_out.write(f"num2class_list = {self.num2class_list}, "
+                            f"class2num_dict = {self.class2num_dict}")
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_training_df(self):
         """
         """
@@ -323,22 +340,6 @@ class BaseTrainer:
                                                        replace=False, 
                                                        random_state=self.rand_seed)
             self._cli_out.write(f"Debug mode, reduce to only {len(self.training_df)} images")
-        # ---------------------------------------------------------------------/
-
-
-
-    def _set_mapping_attrs(self):
-        """ Set below attributes
-            - `self.num2class_list`: list
-            - `self.class2num_dict`: Dict[str, int]
-            
-        example output >> num2class_list = ['L', 'M', 'S'], class2num_dict = {'L': 0, 'M': 1, 'S': 2}
-        """
-        self.num2class_list: list = sorted(Counter(self.dataset_xlsx_df["class"]).keys())
-        self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
-        
-        self._cli_out.write(f"num2class_list = {self.num2class_list}, "
-                            f"class2num_dict = {self.class2num_dict}")
         # ---------------------------------------------------------------------/
 
 
