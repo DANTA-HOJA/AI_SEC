@@ -64,7 +64,8 @@ def get_fish_class(image_name:str, df_dataset_xlsx:pd.DataFrame):
 def calculate_metrics(log:Dict, average_loss:float,
                       predict_list:List[int], groundtruth_list:List[int],
                       class2num_dict:Dict[str, int]):
-    
+    """
+    """
     """ Calculate different f1-score """
     class_f1 = f1_score(groundtruth_list, predict_list, average=None) # by class
     micro_f1 = f1_score(groundtruth_list, predict_list, average='micro')
