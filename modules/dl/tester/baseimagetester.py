@@ -99,6 +99,7 @@ class BaseImageTester:
         self._one_epoch_testing()
         
         self.pbar_n_test.close()
+        self._cli_out.new_line()
         
         """ Save files """
         self._save_test_log()
