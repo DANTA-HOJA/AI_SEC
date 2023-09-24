@@ -19,14 +19,14 @@ from torch.utils.data import Dataset, DataLoader
 import imgaug as ia
 from sklearn.metrics import classification_report, confusion_matrix
 
-from .utils import confusion_matrix_with_class, rename_history_dir
-from ..utils import set_gpu, test_read_image, \
-                    gen_class2num_dict, calculate_metrics
-from ...shared.clioutput import CLIOutput
-from ...shared.config import load_config, dump_config
-from ...shared.pathnavigator import PathNavigator
-from ...shared.utils import formatter_padr0
-from ...assert_fn import assert_0_or_1_history_dir
+from ..utils import confusion_matrix_with_class, rename_history_dir
+from ...utils import set_gpu, test_read_image, \
+                     gen_class2num_dict, calculate_metrics
+from ....shared.clioutput import CLIOutput
+from ....shared.config import load_config, dump_config
+from ....shared.pathnavigator import PathNavigator
+from ....shared.utils import formatter_padr0
+from ....assert_fn import assert_0_or_1_history_dir
 # -----------------------------------------------------------------------------/
 
 

@@ -3,8 +3,8 @@ from torch import nn
 import torchvision
 
 from .baseimagetester import BaseImageTester
-from ..dataset.imgdataset import ImgDataset
-from ...shared.clioutput import CLIOutput
+from ...dataset.imgdataset import ImgDataset
+from ....shared.clioutput import CLIOutput
 # -----------------------------------------------------------------------------/
 
 
