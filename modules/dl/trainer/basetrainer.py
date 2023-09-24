@@ -173,8 +173,8 @@ class BaseTrainer:
                 save_model("final", self.save_dir, self.model.state_dict(), self.optimizer.state_dict())
 
                 """ Rename `save_dir` """
-                # new_name_format = {time_stamp}_{state}_{target_epochs_with_ImgLoadOptions}
-                # state = {EarlyStop, Interrupt, Completed, Tested, etc.}
+                # new_name_format : {time_stamp}_{training_state}_{target_epochs_with_ImgLoadOptions}
+                # example : '20230920_13_18_51_{EarlyStop}_{120_epochs_AugOnFly}'
                 rename_training_dir_kwargs = {
                     "orig_dir"   : self.save_dir,
                     "time_stamp" : self.time_stamp,
