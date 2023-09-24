@@ -548,7 +548,7 @@ class BaseTrainer:
         self.model.train() # set model to training mode
         for data in self.train_dataloader:
             
-            images, labels, crop_name_batch = data
+            images, labels, crop_names = data
             images, labels = images.to(self.device), labels.to(self.device) # move to GPU
             
             self.optimizer.zero_grad() # clean gradients before each backpropagation
@@ -618,7 +618,7 @@ class BaseTrainer:
         with torch.no_grad():
             for data in self.valid_dataloader:
                 
-                images, labels, crop_name_batch = data
+                images, labels, crop_names = data
                 images, labels = images.to(self.device), labels.to(self.device) # move to GPU
                 
                 preds = self.model(images)
