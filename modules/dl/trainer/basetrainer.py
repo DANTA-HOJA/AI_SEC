@@ -461,6 +461,7 @@ class BaseTrainer:
         """
         """
         self.model: torch.nn.Module
+        
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
         # ---------------------------------------------------------------------/
