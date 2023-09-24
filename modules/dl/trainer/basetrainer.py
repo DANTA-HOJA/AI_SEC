@@ -25,7 +25,6 @@ from .utils import plot_training_trend, save_training_logs, \
                    save_model, rename_training_dir
 from ..utils import set_gpu, test_read_image, \
                     gen_class2num_dict, calculate_metrics
-from ...plot.plt_show import plot_in_rgb
 from ...shared.clioutput import CLIOutput
 from ...shared.config import load_config, dump_config
 from ...shared.pathnavigator import PathNavigator
