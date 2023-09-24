@@ -609,7 +609,7 @@ class BaseTrainer:
         log: dict = { "Valid": "", "epoch": epoch }
         pred_list: list = []
         gt_list: list = []
-        accum_loss = 0.0
+        accum_loss: float = 0.0
         output_string = f"Epoch: {epoch:{formatter_padr0(self.epochs)}}"
         self.pbar_n_valid.n = 0
         self.pbar_n_valid.refresh()
