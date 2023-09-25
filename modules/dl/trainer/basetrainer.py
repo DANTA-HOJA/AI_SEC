@@ -417,7 +417,7 @@ class BaseTrainer:
 
 
 
-    def _set_train_set(self):
+    def _set_train_set(self): # abstract function
         """
         """
         self.train_set: Dataset
@@ -428,7 +428,7 @@ class BaseTrainer:
 
 
 
-    def _set_valid_set(self):
+    def _set_valid_set(self): # abstract function
         """
         """
         self.valid_set: Dataset
@@ -469,7 +469,7 @@ class BaseTrainer:
 
 
 
-    def _set_model(self):
+    def _set_model(self): # abstract function
         """
         """
         self.model: torch.nn.Module
@@ -480,7 +480,7 @@ class BaseTrainer:
 
 
 
-    def _set_loss_fn(self):
+    def _set_loss_fn(self): # abstract function
         """
         """
         self.loss_fn: torch.nn.modules.loss._Loss
@@ -491,7 +491,7 @@ class BaseTrainer:
 
 
 
-    def _set_optimizer(self):
+    def _set_optimizer(self): # abstract function
         """
         """
         self.optimizer: torch.optim.Optimizer
@@ -502,7 +502,7 @@ class BaseTrainer:
 
 
 
-    def _set_lr_scheduler(self):
+    def _set_lr_scheduler(self): # abstract function
         """
         """
         self.lr_scheduler: torch.optim.lr_scheduler._LRScheduler
