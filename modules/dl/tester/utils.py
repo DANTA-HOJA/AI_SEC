@@ -69,3 +69,24 @@ def rename_history_dir(orig_history_dir:Path, test_desc:str,
     new_history_dir = Path(os.sep.join(history_dir_split)) # reconstruct path
     os.rename(orig_history_dir, new_history_dir)
     # -------------------------------------------------------------------------/
+
+
+
+def reshape_transform(tensor, height=14, width=14):
+    """ Control how many sub-images are needed to be divided.
+        
+        (This function is for `Vit_B_16 CAM Generator` only)
+        
+        - example :
+            `patch_size` is `16` and `input_size` is `224`, 
+            `(14 * 14)` sub-images will be generated.
+    """
+    result = tensor[:, 1:, :].reshape(tensor.size(0),
+                                      height, width, tensor.size(2))
+
+    # Bring the channels to the first dimension,
+    # like in CNNs.
+    result = result.transpose(2, 3).transpose(1, 2)
+    
+    return result
+    # -------------------------------------------------------------------------/
