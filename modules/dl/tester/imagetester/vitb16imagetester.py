@@ -55,6 +55,10 @@ class VitB16ImageTester(BaseImageTester):
         model_path = self.history_dir.joinpath(f"{self.model_state}_model.pth")
         pth_file = torch.load(model_path, map_location=self.device) # unpack to device directly
         self.model.load_state_dict(pth_file["model_state_dict"])
+        
+        self._cli_out.write(f"Load model from `torchvision`, "
+                            f"name: '{self.model_name}', "
+                            f"weights: '{model_path}'")
         # ---------------------------------------------------------------------/
 
 
