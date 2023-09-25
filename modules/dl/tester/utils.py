@@ -49,7 +49,7 @@ def confusion_matrix_with_class(prediction:List[str], ground_truth:List[str]):
 
 
 
-def rename_history_dir(orig_history_dir:Path, test_method:str,
+def rename_history_dir(orig_history_dir:Path, test_desc:str,
                        model_state:str, test_log:dict, score_key:str):
     """
     """
@@ -60,7 +60,7 @@ def rename_history_dir(orig_history_dir:Path, test_method:str,
     
     new_name: str = ""
     new_name += f"{dir_name_split[0]}" # time_stamp
-    new_name += f"{{{test_method}}}_"
+    new_name += f"{{{test_desc}}}_"
     new_name += f"{{{dir_name_split[3]}}}_" # target_epochs_with_ImgLoadOptions
     new_name += f"{{{model_state}}}_"
     new_name += f"{{{score_key}_{test_log[f'{score_key}']}}}"
