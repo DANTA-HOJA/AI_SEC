@@ -21,10 +21,10 @@ from torch.utils.data import Dataset, DataLoader
 from torch.cuda.amp import autocast, GradScaler
 import imgaug as ia
 
-from .utils import plot_training_trend, save_training_logs, \
-                   save_model, rename_training_dir
-from ..utils import set_gpu, test_read_image, \
-                    gen_class2num_dict, calculate_metrics
+from .utils import calculate_class_weight, plot_training_trend, \
+                   save_training_logs, save_model, rename_training_dir
+from ..utils import set_gpu, gen_class2num_dict, gen_class_counts_dict, \
+                    test_read_image, calculate_metrics
 from ...shared.clioutput import CLIOutput
 from ...shared.config import load_config, dump_config
 from ...shared.pathnavigator import PathNavigator
@@ -74,6 +74,7 @@ class BaseTrainer:
         self._set_training_df()
         self._set_class_counts_dict()
         self._set_train_valid_df()
+        self._print_dataset_informations()
         if self.debug_mode:
             test_read_image(Path(self.train_df.iloc[-1]["path"]), self._cli_out)
         
@@ -347,11 +348,8 @@ class BaseTrainer:
     def _set_class_counts_dict(self):
         """
         """
-        counter = Counter(self.training_df["class"])
-        self.class_counts_dict: Dict[str, int] = {}
-        
-        for cls in self.num2class_list:
-            self.class_counts_dict[cls] = counter[cls]
+        self.class_counts_dict: Dict[str, int] = \
+            gen_class_counts_dict(self.training_df, self.num2class_list)
         # ---------------------------------------------------------------------/
 
 
@@ -381,12 +379,27 @@ class BaseTrainer:
             self._cli_out.write(f"{cls}: "
                                 f"train: [ total: {len(train)}, D: {len(train_d)}, U: {len(train_u)} ] "
                                 f"valid: [ total: {len(valid)}, D: {len(valid_d)}, U: {len(valid_u)} ]")
-            
+        # ---------------------------------------------------------------------/
+
+
+
+    def _print_dataset_informations(self):
+        """
+        """
         self._cli_out.write(f"train_data ({len(self.train_df)})")
         [self._cli_out.write(f"{i} : image_name = {self.train_df.iloc[i]['image_name']}") for i in range(5)]
         
         self._cli_out.write(f"valid_data ({len(self.valid_df)})")
         [self._cli_out.write(f"{i} : img_path = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
+        
+        temp_dict: Dict[str, int] = gen_class_counts_dict(self.training_df, self.num2class_list)
+        self._cli_out.write(f"class_weight of `self.training_df` : {calculate_class_weight(temp_dict)}")
+        
+        temp_dict = gen_class_counts_dict(self.train_df, self.num2class_list)
+        self._cli_out.write(f"class_weight of `self.train_df` : {calculate_class_weight(temp_dict)}")
+        
+        temp_dict = gen_class_counts_dict(self.valid_df, self.num2class_list)
+        self._cli_out.write(f"class_weight of `self.valid_df` : {calculate_class_weight(temp_dict)}")
         # ---------------------------------------------------------------------/
 
 
