@@ -49,7 +49,7 @@ def confusion_matrix_with_class(prediction:List[str], ground_truth:List[str]):
 
 
 
-def rename_history_dir(orig_history_dir:Path, model_state:str, test_log:dict):
+def rename_history_dir(orig_history_dir:Path, test_method:str, model_state:str, test_log:dict):
     """
     """
     assert_is_pathobj(orig_history_dir)
@@ -59,7 +59,7 @@ def rename_history_dir(orig_history_dir:Path, model_state:str, test_log:dict):
     
     new_name: str = ""
     new_name += f"{dir_name_split[0]}" # time_stamp
-    new_name += f"{{Tested_PredByImg}}_"
+    new_name += f"{{{test_method}}}_"
     new_name += f"{{{dir_name_split[3]}}}_" # target_epochs_with_ImgLoadOptions
     new_name += f"{{{model_state}}}_"
     new_name += f"{{maweavg_f1_{test_log['maweavg_f1']}}}" 
