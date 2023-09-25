@@ -276,7 +276,7 @@ class BaseImageTester:
     def _save_test_amount_file(self):
         """ Save an empty file but file name is test amount info
         """
-        test_amount = f"{{ dataset_{len(self.test_df)} }}_"
+        test_amount = f"{{ datatest_{len(self.test_df)} }}_"
         test_amount += f"{{ test_{len(self.test_df)} }}"
         
         save_path = self.history_dir.joinpath(test_amount)
