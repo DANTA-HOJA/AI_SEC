@@ -20,8 +20,9 @@ import imgaug as ia
 from sklearn.metrics import classification_report
 
 from ..utils import confusion_matrix_with_class, rename_history_dir
-from ...utils import set_gpu, test_read_image, \
-                     gen_class2num_dict, calculate_metrics
+from ...trainer.utils import calculate_class_weight
+from ...utils import set_gpu, gen_class2num_dict, gen_class_counts_dict, \
+                     test_read_image, calculate_metrics
 from ....shared.clioutput import CLIOutput
 from ....shared.config import load_config, dump_config
 from ....shared.pathnavigator import PathNavigator
@@ -70,6 +71,7 @@ class BaseImageTester:
         
         """ Set components' necessary variables """
         self._set_test_df()
+        self._print_testset_informations()
         if self.debug_mode:
             test_read_image(Path(self.test_df.iloc[-1]["path"]), self._cli_out)
         
@@ -77,10 +79,10 @@ class BaseImageTester:
         self._save_test_amount_file() # save file
         
         """ Preparing DL components """
-        self._set_test_set()
+        self._set_test_set() # abstract function
         self._set_test_dataloader()
-        self._set_model()
-        self._set_loss_fn()
+        self._set_model() # abstract function
+        self._set_loss_fn() # abstract function
         # ---------------------------------------------------------------------/
 
 
@@ -267,9 +269,25 @@ class BaseImageTester:
                                                      replace=False, 
                                                      random_state=self.rand_seed)
             self._cli_out.write(f"Debug mode, reduce to only {len(self.test_df)} images")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _print_testset_informations(self):
+        """
+        """
+        for cls in self.num2class_list:
+            test: pd.DataFrame = self.test_df[(self.test_df["class"] == cls)]
+            test_d = test[(test["cut_section"] == "D")]
+            test_u = test[(test["cut_section"] == "U")]
+            self._cli_out.write(f"{cls}: "
+                                f"test: [ total: {len(test)}, D: {len(test_d)}, U: {len(test_u)} ]")
         
         self._cli_out.write(f"test_data ({len(self.test_df)})")
         [self._cli_out.write(f"{i} : image_name = {self.test_df.iloc[i]['image_name']}") for i in range(5)]
+        
+        temp_dict: Dict[str, int] = gen_class_counts_dict(self.test_df, self.num2class_list)
+        self._cli_out.write(f"class_weight of `self.test_df` : {calculate_class_weight(temp_dict)}")
         # ---------------------------------------------------------------------/
 
 
@@ -286,7 +304,7 @@ class BaseImageTester:
 
 
 
-    def _set_test_set(self):
+    def _set_test_set(self): # abstract function
         """
         """
         self.test_set: Dataset
@@ -309,7 +327,7 @@ class BaseImageTester:
 
 
 
-    def _set_model(self):
+    def _set_model(self): # abstract function
         """
         """
         self.model: torch.nn.Module
@@ -320,7 +338,7 @@ class BaseImageTester:
 
 
 
-    def _set_loss_fn(self):
+    def _set_loss_fn(self): # abstract function
         """
         """
         self.loss_fn: torch.nn.modules.loss._Loss
