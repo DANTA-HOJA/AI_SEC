@@ -40,7 +40,7 @@ class BaseFishTester(BaseImageTester):
 
 
 
-    def _set_attrs(self, config_file:Union[str, Path]):
+    def _set_attrs(self, config_file:Union[str, Path]): # overwrite
         """
         """
         super()._set_attrs(config_file)
@@ -87,7 +87,7 @@ class BaseFishTester(BaseImageTester):
 
 
 
-    def _set_config_attrs(self):
+    def _set_config_attrs(self): # overwrite
         """
         """
         super()._set_config_attrs()
@@ -100,7 +100,7 @@ class BaseFishTester(BaseImageTester):
 
 
 
-    def _set_train_config_attrs(self):
+    def _set_train_config_attrs(self): # overwrite
         """
         """
         super()._set_train_config_attrs()
@@ -122,7 +122,7 @@ class BaseFishTester(BaseImageTester):
 
 
 
-    def _set_cam_generator(self):
+    def _set_cam_generator(self): # abstract function
         """
         """
         self.cam_generator: GradCAM
@@ -133,7 +133,7 @@ class BaseFishTester(BaseImageTester):
 
 
 
-    def _set_testing_attrs(self):
+    def _set_testing_attrs(self): # overwrite
         """
         """
         super()._set_testing_attrs()
@@ -145,7 +145,7 @@ class BaseFishTester(BaseImageTester):
 
 
 
-    def _one_epoch_testing(self):
+    def _one_epoch_testing(self): # overwrite
         """
         """
         accum_loss: float = 0.0
