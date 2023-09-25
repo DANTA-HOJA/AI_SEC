@@ -106,9 +106,7 @@ class BaseImageTester:
         self._save_report()
         
         """ Rename `history_dir` """
-        # new_name_format : {time_stamp}_{test_method}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score}
-        # example : '20230630_04_39_25_{Tested_PredByFish}_{100_epochs_AugOnFly}_{best}_{maweavg_f1_0.90208}'
-        rename_history_dir(self.history_dir, self.model_state, self.test_log)
+        self._rename_history_dir()
         # ---------------------------------------------------------------------/
 
 
@@ -429,4 +427,16 @@ class BaseImageTester:
             _, confusion_matrix = confusion_matrix_with_class(prediction=self.pred_list_to_name,
                                                               ground_truth=self.gt_list_to_name)
             f_writer.write(f"{confusion_matrix}\n")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _rename_history_dir(self):
+        """ new_name_format : `{time_stamp}_{test_method}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score}`
+            - example :
+            
+            >>> r'20230630_04_39_25_{Tested_PredByFish}_{100_epochs_AugOnFly}_{best}_{maweavg_f1_0.90208}'
+        """
+        rename_history_dir(self.history_dir, "Tested_PredByFish", 
+                           self.model_state, self.test_log)
         # ---------------------------------------------------------------------/
