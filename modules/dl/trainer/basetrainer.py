@@ -84,13 +84,13 @@ class BaseTrainer:
         self._save_training_amount_file() # save file
         
         """ Preparing DL components """
-        self._set_train_set()
-        self._set_valid_set()
+        self._set_train_set() # abstract function
+        self._set_valid_set() # abstract function
         self._set_dataloaders()
-        self._set_model()
-        self._set_loss_fn()
-        self._set_optimizer()
-        if self.use_lr_schedular: self._set_lr_scheduler()
+        self._set_model() # abstract function
+        self._set_loss_fn() # abstract function
+        self._set_optimizer() # abstract function
+        if self.use_lr_schedular: self._set_lr_scheduler() # abstract function
         if self.use_amp: self._set_amp_scaler()
         # ---------------------------------------------------------------------/
 
