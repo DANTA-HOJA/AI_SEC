@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
+from collections import Counter
 
 import pandas as pd
 import torch
@@ -35,6 +36,20 @@ def gen_class2num_dict(num2class_list:List[str]):
     """
     """
     return {cls:i for i, cls in enumerate(num2class_list)}
+    # -------------------------------------------------------------------------/
+
+
+
+def gen_class_counts_dict(dataset_df:pd.DataFrame, num2class_list:List[str]):
+    """
+    """
+    counter = Counter(dataset_df["class"])
+        
+    class_counts_dict: Dict[str, int] = {}
+    for cls in num2class_list:
+        class_counts_dict[cls] = counter[cls]
+    
+    return class_counts_dict
     # -------------------------------------------------------------------------/
 
 
