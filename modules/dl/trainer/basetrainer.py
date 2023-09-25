@@ -580,14 +580,14 @@ class BaseTrainer:
                 loss_value.backward() # update model_parameters by backpropagation
                 self.optimizer.step()
             
+            """ Accumulate current batch loss """
+            accum_loss += loss_value.item() # tensor.item() -> get value of a Tensor
+            
             """ Extend `pred_list`, `gt_list` """
             preds_prob = torch.nn.functional.softmax(preds, dim=1)
             _, preds_hcls = torch.max(preds_prob, 1) # get the highest probability class
             pred_list.extend(preds_hcls.cpu().numpy().tolist()) # conversion flow: Tensor --> ndarray --> list
             gt_list.extend(labels.cpu().numpy().tolist())
-            
-            """ Add current batch loss """
-            accum_loss += loss_value.item() # get value of a Tensor
             
             """ Update `pbar_n_train` """
             self.pbar_n_train.update(1)
@@ -635,15 +635,14 @@ class BaseTrainer:
                 
                 preds = self.model(images)
                 loss_value = self.loss_fn(preds, labels)
+                accum_loss += loss_value.item() # accumulate current batch loss
+                                                # tensor.item() -> get value of a Tensor
                 
                 """ Extend `pred_list`, `gt_list` """
                 preds_prob = torch.nn.functional.softmax(preds, dim=1)
                 _, preds_hcls = torch.max(preds_prob, 1) # get the highest probability class
                 pred_list.extend(preds_hcls.cpu().numpy().tolist()) # conversion flow: Tensor --> ndarray --> list
                 gt_list.extend(labels.cpu().numpy().tolist())
-                
-                """ Add current batch loss """
-                accum_loss += loss_value.item() # get value of a Tensor
                 
                 """ Update `pbar_n_valid` """
                 self.pbar_n_valid.update(1)

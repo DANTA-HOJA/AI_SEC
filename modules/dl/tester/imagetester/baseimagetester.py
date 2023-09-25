@@ -375,15 +375,14 @@ class BaseImageTester:
                 
                 preds = self.model(images)
                 loss_value = self.loss_fn(preds, labels)
+                accum_loss += loss_value.item() # accumulate current batch loss
+                                                # tensor.item() -> get value of a Tensor
                 
                 """ Extend `pred_list`, `gt_list` """
                 preds_prob = torch.nn.functional.softmax(preds, dim=1)
                 _, preds_hcls = torch.max(preds_prob, 1) # get the highest probability class
                 pred_list.extend(preds_hcls.cpu().numpy().tolist()) # conversion flow: Tensor --> ndarray --> list
                 gt_list.extend(labels.cpu().numpy().tolist())
-                
-                """ Add current batch loss """
-                accum_loss += loss_value.item() # get value of a Tensor
                 
                 """ Print number of matches in current batch """
                 num_match = (preds_hcls.cpu() == labels.cpu()).sum().item()
