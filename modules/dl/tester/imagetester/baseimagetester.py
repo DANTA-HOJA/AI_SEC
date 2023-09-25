@@ -391,7 +391,7 @@ class BaseImageTester:
                                     f"{num_match:{formatter_padr0(labels)}} / {len(labels)} "
                                     f"( {num_match/len(labels):.2f} )")
                 
-                """ Update `pbar_n_valid` """
+                """ Update `pbar_n_test` """
                 self.pbar_n_test.update(1)
                 self.pbar_n_test.refresh()
 
