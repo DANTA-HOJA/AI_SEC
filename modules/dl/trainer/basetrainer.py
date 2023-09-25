@@ -74,7 +74,7 @@ class BaseTrainer:
         self._set_training_df()
         self._set_class_counts_dict()
         self._set_train_valid_df()
-        self._print_dataset_informations()
+        self._print_trainingset_informations()
         if self.debug_mode:
             test_read_image(Path(self.train_df.iloc[-1]["path"]), self._cli_out)
         
@@ -383,7 +383,7 @@ class BaseTrainer:
 
 
 
-    def _print_dataset_informations(self):
+    def _print_trainingset_informations(self):
         """
         """
         self._cli_out.write(f"train_data ({len(self.train_df)})")
