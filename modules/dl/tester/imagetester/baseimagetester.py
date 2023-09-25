@@ -394,12 +394,12 @@ class BaseImageTester:
                 """ Update `pbar_n_test` """
                 self.pbar_n_test.update(1)
                 self.pbar_n_test.refresh()
-
-        calculate_metrics(self.test_log, (accum_loss/len(self.test_dataloader)),
-                          pred_list, gt_list, self.class2num_dict)
         
         self.pred_list_to_name = [ self.num2class_list[i] for i in pred_list ]
         self.gt_list_to_name = [ self.num2class_list[i] for i in gt_list ]
+        
+        calculate_metrics(self.test_log, (accum_loss/len(self.test_dataloader)),
+                          self.pred_list_to_name, self.gt_list_to_name, self.class2num_dict)
         # ---------------------------------------------------------------------/
 
 
