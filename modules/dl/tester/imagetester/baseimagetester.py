@@ -74,7 +74,7 @@ class BaseImageTester:
             test_read_image(Path(self.test_df.iloc[-1]["path"]), self._cli_out)
         
         """ Save files """
-        self._save_test_amount_file()
+        self._save_test_amount_file() # save file
         
         """ Preparing DL components """
         self._set_test_set()
@@ -102,13 +102,14 @@ class BaseImageTester:
         self._cli_out.new_line()
         
         """ Save files """
-        self._save_test_log()
-        self._save_report()
+        self._save_test_log(test_desc="PredByImg", score_key="maweavg_f1") # save file
+        self._save_report(test_desc="PredByImg") # save file
         
         """ Rename `history_dir` """
-        # new_name_format : {time_stamp}_{test_method}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score}
+        # new_name_format : {time_stamp}_{test_desc}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score_key}
         # example : '20230630_04_39_25_{Tested_PredByImg}_{100_epochs_AugOnFly}_{best}_{maweavg_f1_0.90208}'
-        rename_history_dir(self.history_dir, "Tested_PredByImg", self.model_state, self.test_log)
+        rename_history_dir(self.history_dir, "Tested_PredByImg",
+                           self.model_state, self.test_log, score_key="maweavg_f1")
         # ---------------------------------------------------------------------/
 
 
@@ -386,24 +387,24 @@ class BaseImageTester:
 
 
 
-    def _save_test_log(self):
+    def _save_test_log(self, test_desc:str, score_key:str):
         """
         """
         
-        found_list = list(self.history_dir.glob(f"{{Logs}}_PredByImg_maweavg_f1_*"))
+        found_list = list(self.history_dir.glob(f"{{Logs}}_{test_desc}_{score_key}_*"))
         for path in found_list: os.remove(path)
         
-        file_name = f"{{Logs}}_PredByImg_maweavg_f1_{self.test_log['maweavg_f1']}.toml"
+        file_name = f"{{Logs}}_{test_desc}_{score_key}_{self.test_log[f'{score_key}']}.toml"
         path = self.history_dir.joinpath(file_name)
         dump_config(path, self.test_log)
         # ---------------------------------------------------------------------/
 
 
 
-    def _save_report(self):
+    def _save_report(self, test_desc:str):
         """
         """
-        file_name = r"{Report}_PredByImg.log"
+        file_name = f"{{Report}}_{test_desc}.log"
         path = self.history_dir.joinpath(file_name)
         with open(path, mode="w") as f_writer:
             
