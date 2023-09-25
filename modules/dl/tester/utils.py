@@ -11,7 +11,7 @@ from ...assert_fn import *
 
 def confusion_matrix_with_class(prediction:List[str], ground_truth:List[str]):
     """
-    - confusion_matrix
+    # Confusion Matrix
     
     >>>  *  {0} {1} {2}  ~~> prediction
     >>> {0} [ ] [ ] [ ]  ~~> gt : 0
