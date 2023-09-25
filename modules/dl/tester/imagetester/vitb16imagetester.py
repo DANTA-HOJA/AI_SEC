@@ -42,7 +42,8 @@ class VitB16ImageTester(BaseImageTester):
 
 
     def _set_model(self):
-        """
+        """ Load model from torchvision
+            - ref: https://github.com/pytorch/vision/issues/7397
         """
         model_construct_fn: function = getattr(torchvision.models, self.model_name)
         self.model: nn.Module = model_construct_fn(weights=None)
