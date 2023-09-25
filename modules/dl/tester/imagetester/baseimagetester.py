@@ -353,8 +353,8 @@ class BaseImageTester:
         """
         """
         self.test_log: dict = {}
-        self.gt_list_to_name: List[str] = []
         self.pred_list_to_name: List[str] = []
+        self.gt_list_to_name: List[str] = []
         # ---------------------------------------------------------------------/
 
 
