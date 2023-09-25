@@ -128,7 +128,7 @@ class BaseTrainer:
                     "train_logs" : self.train_logs,
                     "valid_logs" : self.valid_logs,
                 }
-                plot_training_trend(**plot_training_trend_kwargs)
+                plot_training_trend(**plot_training_trend_kwargs) # save file
                 
                 # Update `pbar_n_epoch`
                 self.pbar_n_epoch.update(1)
@@ -160,17 +160,17 @@ class BaseTrainer:
             """ Save training consume time """
             timer.stop()
             timer.calculate_consume_time()
-            timer.save_consume_time(self.save_dir, desc="training time")
+            timer.save_consume_time(self.save_dir, desc="training time") # save file
             
             if self.best_val_log["epoch"] > 0:
                 """ If `best_val_log["epoch"]` > 0, all of `logs` and `state_dict` are not empty. """
                 
                 """ Save logs (convert to Dataframe) """
-                save_training_logs(self.save_dir, self.train_logs, self.valid_logs, self.best_val_log)
+                save_training_logs(self.save_dir, self.train_logs, self.valid_logs, self.best_val_log) # save file*2
                 
                 """ Save model """
-                save_model("best", self.save_dir, self.best_model_state_dict, self.best_optimizer_state_dict)
-                save_model("final", self.save_dir, self.model.state_dict(), self.optimizer.state_dict())
+                save_model("best", self.save_dir, self.best_model_state_dict, self.best_optimizer_state_dict) # save file
+                save_model("final", self.save_dir, self.model.state_dict(), self.optimizer.state_dict()) # save file
 
                 """ Rename `save_dir` """
                 # new_name_format : {time_stamp}_{training_state}_{target_epochs_with_ImgLoadOptions}
