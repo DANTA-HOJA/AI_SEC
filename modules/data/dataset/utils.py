@@ -74,6 +74,37 @@ def gen_dataset_xlsx_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, st
 
 
 
+def parse_dataset_xlsx_name(dataset_xlsx_name:str) -> dict:
+    """
+    
+    Args:
+        dataset_xlsx_name (str): \n
+        - `DS_SURF3C_CRPS512_SF14_INT20_DRP100`
+        - `DS_SURF3C_CRPS512_SF14_DYNSELECT`
+    
+    Returns:
+        dict:
+    """
+    dataset_xlsx_name = dataset_xlsx_name.split(".")[0] # drop 'file_ext'
+    dataset_xlsx_name_split = dataset_xlsx_name.split("_")
+    
+    temp_dict: dict = {}
+    temp_dict["prefix"]        = dataset_xlsx_name_split[0] # DS
+    temp_dict["feature_class"] = dataset_xlsx_name_split[1]
+    temp_dict["crop_size"]     = int(dataset_xlsx_name_split[2].replace("CRPS", ""))
+    temp_dict["shift_region"]  = dataset_xlsx_name_split[3].replace("SF1", "1/")
+    
+    if dataset_xlsx_name_split[-1] == "DYNSELECT":
+        temp_dict["dynamic_select"] = "DYNSELECT"
+    else:
+        temp_dict["intensity"]    = int(dataset_xlsx_name_split[4].replace("INT", ""))
+        temp_dict["drop_ratio"]   = int(dataset_xlsx_name_split[5].replace("DRP", ""))/100
+    
+    return temp_dict
+    # -------------------------------------------------------------------------/
+
+
+
 def gen_crop_img(img:cv2.Mat, config:Union[dict, TOMLDocument]) -> List[cv2.Mat]:
     """ Generate the crop images using `crop_size` and `shift_region`
 
