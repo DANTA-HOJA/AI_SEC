@@ -34,13 +34,18 @@ new_dict = new_instance.brightfield_processed_dname_dirs_dict
 cli_out.divide()
 filenames = ["Manual_cropped_BF--MIX.tif", "Manual_measured_mask.tif", "ManualAnalysis.csv"]
 
-for key, value in new_dict.items():
+for dname, old_dir in old_dict.items():
     
-    for filename in filenames:
+    try:
+        new_dir = new_dict[dname]
+        for filename in filenames:
+            
+            old_path = old_dir.joinpath(filename)
+            new_path = new_dir.joinpath(filename)
+            
+            if old_path.exists():
+                shutil.copy(old_path, new_path)
+                print(f"{Fore.BLUE}'{old_path}'\n -> {Fore.YELLOW}'{new_path}'{Style.RESET_ALL}\n")
         
-        new_path = value.joinpath(filename)
-        old_path = old_dict[key].joinpath(filename)
-        
-        if not new_path.exists():
-            shutil.copy(old_path, new_path)
-            print(f"{Fore.BLUE}'{old_path}'\n -> {Fore.YELLOW}'{new_path}'{Style.RESET_ALL}\n")
+    except KeyError:
+        pass
