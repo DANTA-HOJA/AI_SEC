@@ -655,7 +655,7 @@ class BaseTrainer:
         log["valid_state"] = ""
         if log[self.score_key] > self.best_val_f1:
             
-            log["valid_state"] = "☆★☆ BEST_VALIDATION ☆★☆"
+            log["valid_state"] = "☆★☆ BEST_VALIDATION_SCORE ☆★☆"
             self.best_val_f1 = log[self.score_key]
                         
             """ Update `best_val_log` """
@@ -666,8 +666,7 @@ class BaseTrainer:
             self.best_optimizer_state_dict = deepcopy(self.optimizer.state_dict())
             self.best_val_log["epoch"] = epoch
             
-            output_string += (f", ☆★☆ BEST_VALIDATION ☆★☆"
-                              f", best_val_avg_loss = {self.best_val_log['average_loss']}"
+            output_string += (f", ☆★☆ BEST_VALIDATION_SCORE ☆★☆"
                               f", best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
         
         """ Check 'EarlyStop' """
@@ -676,10 +675,12 @@ class BaseTrainer:
             if log["average_loss"] < self.best_val_avg_loss:
                 self.best_val_avg_loss = log["average_loss"]
                 self.accum_no_improved = 0
+                output_string += (f", ☆★☆ BEST_VAL_LOSS ☆★☆"
+                                  f", best_val_avg_loss = {self.best_val_avg_loss}")
             else:
-                log["valid_improve"] = "◎㊣◎ LOSS_NO_IMPROVED ◎㊣◎"
+                log["valid_improve"] = "◎㊣◎ VAL_LOSS_NO_IMPROVED ◎㊣◎"
                 self.accum_no_improved += 1
-                output_string += (f", ◎㊣◎ LOSS_NO_IMPROVED ◎㊣◎"
+                output_string += (f", ◎㊣◎ VAL_LOSS_NO_IMPROVED ◎㊣◎"
                                   f", accum_no_improved = {self.accum_no_improved}")
         
         """ Update `self.valid_logs` """
