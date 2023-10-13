@@ -58,7 +58,7 @@ class BrightfieldAnalyzer():
     
     
     
-    def run(self, config_file:Union[str, Path]="0.3.1.analyze_brightfield.toml"):
+    def run(self, config_file:Union[str, Path]="0.3.analyze_brightfield.toml"):
         """ Actions
         1. Load config
         2. Source: 
