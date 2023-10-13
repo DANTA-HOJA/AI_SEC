@@ -491,15 +491,15 @@ class ProcessedDataInstance():
         # ---------------------------------------------------------------------
         # brightfield
         
-        """ Scan `AutoAnalysis`, `ManualAnalysis` results """
-        bf_auto_results_list = self._get_sorted_results("brightfield", "AutoAnalysis")[1]
+        """ Scan `UNetAnalysis`, `ManualAnalysis` results """
+        bf_auto_results_list = self._get_sorted_results("brightfield", "UNetAnalysis")[1]
         bf_manual_results_list = self._get_sorted_results("brightfield", "ManualAnalysis")[1]
         self._cli_out.write((f"brightfield: found "
-                             f"{len(bf_auto_results_list)} AutoAnalysis.csv, "
+                             f"{len(bf_auto_results_list)} UNetAnalysis.csv, "
                              f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
                              f"Total: {len(bf_auto_results_list) + len(bf_manual_results_list)} files"))
 
-        """ Merge `AutoAnalysis`, `ManualAnalysis` results """
+        """ Merge `UNetAnalysis`, `ManualAnalysis` results """
         bf_auto_results_dict = dname.create_dict_by_id(bf_auto_results_list)
         bf_manual_results_dict = dname.create_dict_by_id(bf_manual_results_list)
         bf_merge_results_dict = dname.merge_dict_by_id(bf_auto_results_dict, bf_manual_results_dict)
@@ -536,7 +536,7 @@ class ProcessedDataInstance():
                 bf_result_path = bf_merge_results_list.pop(0)
                 bf_result_path_split = str(bf_result_path).split(os.sep)
                 bf_result_dname = bf_result_path_split[-2]
-                bf_result_analysis_mode = bf_result_path_split[-1].split(".")[0] # `AutoAnalysis` or `ManualAnalysis`
+                bf_result_analysis_mode = bf_result_path_split[-1].split(".")[0] # `UNetAnalysis` or `ManualAnalysis`
                 self._cli_out.write(f"bf_result_dname : '{bf_result_dname}'")
                 self._cli_out.write(f"analysis_mode : '{bf_result_analysis_mode}'")
                 
