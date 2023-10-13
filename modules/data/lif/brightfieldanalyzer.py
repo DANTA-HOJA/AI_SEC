@@ -47,7 +47,14 @@ class BrightfieldAnalyzer():
         self.mode = "NEW"
         self.analyze_param_dict = None
         self.log_writer = None
-        self.alias_map = {}
+        self.alias_map = {
+            "ManualAnalysis": "ManualAnalysis.csv",
+            "Manual_measured_mask": "Manual_measured_mask.tif",
+            "Manual_cropped_BF--MIX": "Manual_cropped_BF--MIX.tif",
+            "UNetAnalysis": "UNetAnalysis.csv",
+            "UNet_predict_mask": "UNet_predict_mask.tif",
+            "UNet_cropped_BF--MIX": "UNet_cropped_BF--MIX.tif",
+        }
     
     
     
