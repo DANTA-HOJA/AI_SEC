@@ -120,7 +120,7 @@ class ImageCropper():
     def _check_if_any_crop_dir_exists(self):
         """
         """
-        replace = True #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
+        replace = False #  TODO:  可以在 config 多加一個 replace 參數，選擇要不要重切
 
         existing_crop_dir = []
         for dir in [self.save_dir_train, self.save_dir_test]:
@@ -136,7 +136,7 @@ class ImageCropper():
                 self._cli_out.write(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
             else:
                 raise FileExistsError(f"{Fore.YELLOW}{Back.BLACK} To re-crop the images, "
-                                      f"set `config.replace` = True {Style.RESET_ALL}\n")
+                                      f"set `config.replace` = True {Style.RESET_ALL}\n") # WARNING: config not implemented
         # ---------------------------------------------------------------------/
 
 
