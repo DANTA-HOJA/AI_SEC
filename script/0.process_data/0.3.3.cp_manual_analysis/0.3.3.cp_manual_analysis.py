@@ -32,7 +32,7 @@ new_dict = new_instance.brightfield_processed_dname_dirs_dict
 
 """ Main Process """
 cli_out.divide()
-filenames = ["Manual_cropped_BF--MIX.tif", "Manual_measured_mask.tif", "ManualAnalysis.csv"]
+filenames = ["Manual_measured_mask.tif", "ManualAnalysis.csv", "Manual_cropped_BF--MIX.tif"]
 
 for dname, old_dir in old_dict.items():
     
