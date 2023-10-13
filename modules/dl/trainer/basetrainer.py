@@ -131,6 +131,14 @@ class BaseTrainer:
                 }
                 plot_training_trend(**plot_training_trend_kwargs) # save file
                 
+                """ Print `output_string` """
+                if ("◎㊣◎" in self.output_string) or ("☆★☆" in self.output_string):
+                    self._cli_out.write(self.output_string)
+                
+                """ SystemExit condition """
+                if self.accum_no_improved == self.max_no_improved:
+                    sys.exit() # raise SystemExit
+                
                 # Update `pbar_n_epoch`
                 self.pbar_n_epoch.update(1)
                 self.pbar_n_epoch.refresh()
@@ -528,8 +536,9 @@ class BaseTrainer:
         self.valid_logs: List[dict] = []
         
         """ best record variables """
+        self.output_string: str = ""
+        self.best_train_avg_loss: float = np.inf
         self.best_val_log: dict = { "Best": self.time_stamp, "epoch": 0 }
-        self.best_val_avg_loss: float = np.inf
         self.best_val_f1: float = 0.0
         self.best_model_state_dict: dict = deepcopy(self.model.state_dict())
         self.best_optimizer_state_dict: dict = deepcopy(self.optimizer.state_dict())
@@ -554,6 +563,7 @@ class BaseTrainer:
         pred_list: list = []
         gt_list: list = []
         accum_loss: float = 0.0
+        self.output_string = f"Epoch: {epoch:{formatter_padr0(self.epochs)}}"
         self.pbar_n_train.n = 0
         self.pbar_n_train.refresh()
         
@@ -598,6 +608,19 @@ class BaseTrainer:
         calculate_metrics(log, (accum_loss/len(self.train_dataloader)), 
                           pred_list, gt_list, self.class2num_dict)
         
+        """ Check 'EarlyStop' """
+        log["train_state"] = ""
+        if self.enable_earlystop:
+            if log["average_loss"] < self.best_train_avg_loss:
+                self.best_train_avg_loss = log["average_loss"]
+                self.accum_no_improved = 0
+                self.output_string += (f", ☆★☆ BEST_TRAIN_LOSS ☆★☆"
+                                       f", best_train_avg_loss = {self.best_train_avg_loss}")
+            else:
+                log["train_state"] = "◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
+                self.accum_no_improved += 1
+                self.output_string += (f", ◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
+                                       f", accum_no_improved = {self.accum_no_improved}")
         
         """ Update `self.train_logs` """
         self.train_logs.append(log)
@@ -622,7 +645,6 @@ class BaseTrainer:
         pred_list: list = []
         gt_list: list = []
         accum_loss: float = 0.0
-        output_string = f"Epoch: {epoch:{formatter_padr0(self.epochs)}}"
         self.pbar_n_valid.n = 0
         self.pbar_n_valid.refresh()
         
@@ -666,22 +688,8 @@ class BaseTrainer:
             self.best_optimizer_state_dict = deepcopy(self.optimizer.state_dict())
             self.best_val_log["epoch"] = epoch
             
-            output_string += (f", ☆★☆ BEST_VALIDATION_SCORE ☆★☆"
-                              f", best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
-        
-        """ Check 'EarlyStop' """
-        log["valid_improve"] = ""
-        if self.enable_earlystop:
-            if log["average_loss"] < self.best_val_avg_loss:
-                self.best_val_avg_loss = log["average_loss"]
-                self.accum_no_improved = 0
-                output_string += (f", ☆★☆ BEST_VAL_LOSS ☆★☆"
-                                  f", best_val_avg_loss = {self.best_val_avg_loss}")
-            else:
-                log["valid_improve"] = "◎㊣◎ VAL_LOSS_NO_IMPROVED ◎㊣◎"
-                self.accum_no_improved += 1
-                output_string += (f", ◎㊣◎ VAL_LOSS_NO_IMPROVED ◎㊣◎"
-                                  f", accum_no_improved = {self.accum_no_improved}")
+            self.output_string += (f", ☆★☆ BEST_VALIDATION_SCORE ☆★☆"
+                                   f", best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
         
         """ Update `self.valid_logs` """
         self.valid_logs.append(log)
@@ -691,14 +699,6 @@ class BaseTrainer:
         temp_str += f"{self.score_key}: {log[self.score_key]} {'}'} "
         self.pbar_n_valid.postfix = temp_str
         self.pbar_n_valid.refresh()
-        
-        """ Print `output_string` """
-        if ("◎㊣◎" in output_string) or ("☆★☆" in output_string):
-            self._cli_out.write(output_string)
-        
-        """ SystemExit condition """
-        if self.accum_no_improved == self.max_no_improved:
-            sys.exit() # raise SystemExit
         # ---------------------------------------------------------------------/
 
 
