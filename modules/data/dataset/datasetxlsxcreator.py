@@ -168,7 +168,8 @@ class DatasetXLSXCreator():
         """ Load `clustered_xlsx`, add a fish_id column to retrieve the class """
         clustered_xlsx_df: pd.DataFrame = pd.read_excel(self.processed_data_instance.clustered_xlsx_files_dict[
                                                              self.cluster_desc], engine='openpyxl')
-        clustered_xlsx_df['fish_id'] = clustered_xlsx_df["Brightfield"].apply(lambda x: dname.get_dname_sortinfo(x)[0])
+        clustered_xlsx_df["fish_id"] = clustered_xlsx_df["Brightfield"].apply(lambda x: dname.get_dname_sortinfo(x)[0])
+        id2cls_dict: dict = { fish_id: cls for fish_id, cls in zip(clustered_xlsx_df["fish_id"], clustered_xlsx_df["class"])}
         create_new_dir(self.dataset_xlsx_dir)
         
         """ Get images """
@@ -202,9 +203,7 @@ class DatasetXLSXCreator():
                 cut_section = parent_dsname_split[3]
                 
                 """ Get `fish_class` """
-                df_filtered_rows = clustered_xlsx_df[clustered_xlsx_df['fish_id'] == fish_id]
-                df_filtered_rows = df_filtered_rows.reset_index(drop=True)
-                fish_class = df_filtered_rows.loc[0, "class"]
+                fish_class = id2cls_dict[fish_id]
                 
                 """ preserve / discard """
                 if self.dynamic_select:
