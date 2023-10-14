@@ -178,8 +178,8 @@ class BaseImageTester:
         """
         path = self.history_dir.joinpath("train_config.toml")
         if not path.exists():
-            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `dataset_xlsx`"
-                                    f"run one of the training scripts in `2.training` directory. "
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find 'train_config.toml' "
+                                    f"( loss the most important file ). "
                                     f"{Style.RESET_ALL}\n")
         
         self.train_config: Union[dict, TOMLDocument] = load_config(path, cli_out=self._cli_out)
