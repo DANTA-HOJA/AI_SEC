@@ -15,10 +15,7 @@ def get_dsname_sortinfo(string_with_fish_dsname:Union[str, Path]) -> tuple:
     else: raise TypeError("Unrecognized type of `string_with_fish_dsname`. Only `pathlib.Path` or `str` are accepted.")
     
     file_name = string_with_fish_dsname.split(os.sep)[-1]
-    temp_split = file_name.split(".") # [fish_dsname, tiff]
-    if temp_split[-1] != "tiff": raise ValueError(f"File extension of dataset images should be `tiff` : {file_name}")
-    
-    fish_dsname = temp_split[0]
+    fish_dsname = file_name.split(".")[0] # [fish_dsname, tiff]
     fish_dsname_split = re.split(" |_|-", fish_dsname)
     
     if len(fish_dsname_split) == 4:
