@@ -37,7 +37,7 @@ def plot_in_rgb(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     # Create figure
     fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
-    fig.suptitle(f"Channel: ' RGB ' , shape = {img_rgb.shape}")
+    fig.suptitle(f"Mode: RGB, img_size = {img_rgb.shape}")
     plt.imshow(img_rgb, vmin=0, vmax=255)
     
     plt.show()
@@ -67,7 +67,7 @@ def plot_in_gray(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     # Create figure
     fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
-    fig.suptitle(f"Channel: ' Gray (weighted-RGB) ' , shape = {img_gray.shape}")
+    fig.suptitle(f"Mode: Gray (weighted-RGB), img_size = {img_gray.shape}")
     plt.imshow(img_gray, cmap='gray', vmin=0, vmax=255)
     
     plt.show()
@@ -98,10 +98,10 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
     
     # Create figure
     fig, axs = plt.subplots(1, 4, figsize=fig_size_div_dpi, dpi=fig_dpi)
-    fig.suptitle(f"Plot by ' RGB Channel ' , shape = {img_rgb.shape}")
+    fig.suptitle(f"Mode: RGB_Channel, img_size = {img_rgb.shape}")
     
     # merge RGB (original)
-    axs[0].set_title(f"Merge RGB")
+    axs[0].set_title("RGB")
     axs[0].imshow(img_rgb, vmin=0, vmax=255)
     
     # plot R Channel
