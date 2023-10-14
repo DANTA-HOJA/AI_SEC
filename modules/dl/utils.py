@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 from sklearn.metrics import f1_score
 
-from ..plot.plt_show import plot_in_rgb
+from ..plot.utils import plot_in_rgb
 from ..shared.clioutput import CLIOutput
 from ..assert_fn import *
 # -----------------------------------------------------------------------------/
