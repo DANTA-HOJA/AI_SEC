@@ -41,7 +41,7 @@ class BaseImageTester:
         # """ components """
         
         self._path_navigator = PathNavigator()
-        self._cli_out = CLIOutput
+        self._cli_out: CLIOutput
         
         # ---------------------------------------------------------------------
         # """ attributes """
