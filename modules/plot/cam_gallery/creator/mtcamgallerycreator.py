@@ -3,11 +3,11 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
+import threading
+from threading import Lock
 
 from colorama import Fore, Style
 from tqdm.auto import tqdm
-import threading
-from threading import Lock
 
 from .camgallerycreator import CamGalleryCreator
 from ....shared.clioutput import CLIOutput
