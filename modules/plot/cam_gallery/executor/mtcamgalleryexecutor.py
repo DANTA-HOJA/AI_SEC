@@ -176,7 +176,7 @@ class MtCamGalleryExecutor:
         """
         fish_dsname_list = [ str(path).split(os.sep)[-1] for path in list(self.cam_result_root.glob("*")) ]
         fish_dsname_list = sorted(fish_dsname_list, key=dsname.get_dsname_sortinfo)
-        fish_dsname_list = fish_dsname_list[:32] # for debug
+        # fish_dsname_list = fish_dsname_list[:32] # for debug
         
         # update `self.max_str_len_dict["fish_dsname"]`
         for fish_dsname in fish_dsname_list:
