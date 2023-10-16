@@ -64,3 +64,11 @@ class MtCamGalleryCreator(CamGalleryCreator):
             self.progressbar.refresh()
             self.gen_single_cam_gallery(fish_dsname)
         # ---------------------------------------------------------------------/
+
+
+
+    def _set_cam_gallery_dir(self):
+        """ 移除資料夾檢查，改從 `MtCamGalleryExecutor` 檢查
+        """
+        self.cam_gallery_dir = self.history_dir.joinpath("!--- CAM Gallery")
+        # ---------------------------------------------------------------------/
