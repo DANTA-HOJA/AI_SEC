@@ -84,6 +84,8 @@ class CamGalleryCreator:
         self.progressbar = tqdm(total=len(fish_dsname_list), desc=f"[ {self._cli_out.logger_name} ] : ")
             
         for fish_dsname in fish_dsname_list:
+            self.progressbar.desc = f"[ {self._cli_out.logger_name} ] Generating '{fish_dsname}' "
+            self.progressbar.refresh()
             self.gen_single_cam_gallery(fish_dsname)
         
         self.progressbar.close()
@@ -273,9 +275,6 @@ class CamGalleryCreator:
     def gen_single_cam_gallery(self, fish_dsname:str):
         """
         """
-        self.progressbar.desc = f"[ {self._cli_out.logger_name} ] Generating '{fish_dsname}' "
-        self.progressbar.refresh()
-        
         fish_cls = self.get_fish_cls(fish_dsname)
         
         test_preserve_path_list, \
