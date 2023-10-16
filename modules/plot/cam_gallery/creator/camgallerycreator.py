@@ -20,7 +20,7 @@ from ...utils import draw_x_on_image, draw_predict_ans_on_image, \
                      plot_with_imglist_auto_row
 from ....data.dataset import dsname
 from ....shared.clioutput import CLIOutput
-from ....shared.config import load_config, dump_config
+from ....shared.config import load_config
 from ....shared.pathnavigator import PathNavigator
 from ....shared.utils import create_new_dir
 from ....assert_fn import assert_0_or_1_history_dir
