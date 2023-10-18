@@ -29,7 +29,7 @@ print(f">>> Brightfield Alias Map [ {len(alias_map)} files ]: \n{json.dumps(alia
 alias_map = processed_data_instance.palmskin_processed_alias_map
 print(f">>> Palmskin Alias Map [ {len(alias_map)} files ]: \n{json.dumps(alias_map, indent=2)}\n")
 
-# gtarget results
+# target results
 rel_path, result_paths = processed_data_instance._get_sorted_results("palmskin", "RGB_fusion")
 result_paths = [str(result_path) for result_path in result_paths]
 print(f">>> Relative Path to `dname_dir`: {rel_path} [ found {len(result_paths)} items ] \n{json.dumps(result_paths, indent=2)}\n")
