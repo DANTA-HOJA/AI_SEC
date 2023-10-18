@@ -12,8 +12,14 @@ from modules.data.processeddatainstance import ProcessedDataInstance
 # -----------------------------------------------------------------------------/
 
 
+# config_path
+path = os.path.splitext(__file__)[0]
+up_dir, name = os.path.split(path)
+config_path = Path(up_dir).joinpath("Config", f"{name}.toml")
+
+# init `ProcessedDataInstance`
 processed_data_instance = ProcessedDataInstance()
-processed_data_instance.set_attrs("0.5.create_data_xlsx.toml")
+processed_data_instance.set_attrs(config_path)
 
 # reminder
 print(f"palmskin_processed_reminder: '{processed_data_instance.palmskin_processed_reminder}'")
