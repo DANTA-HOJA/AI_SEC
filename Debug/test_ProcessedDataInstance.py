@@ -8,18 +8,14 @@ abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
+from utils import get_debug_config
 from modules.data.processeddatainstance import ProcessedDataInstance
 # -----------------------------------------------------------------------------/
 
 
-# config_path
-path = os.path.splitext(__file__)[0]
-up_dir, name = os.path.split(path)
-config_path = Path(up_dir).joinpath("Config", f"{name}.toml")
-
 # init `ProcessedDataInstance`
 processed_data_instance = ProcessedDataInstance()
-processed_data_instance.set_attrs(config_path)
+processed_data_instance.set_attrs(get_debug_config(__file__))
 
 # reminder
 print(f"palmskin_processed_reminder: '{processed_data_instance.palmskin_processed_reminder}'")
