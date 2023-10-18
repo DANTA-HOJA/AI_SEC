@@ -216,7 +216,7 @@ class BaseImageTester:
                                                                 f"{self.dataset_xlsx_name}.xlsx")
         if not self.dataset_xlsx_path.exists():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `dataset_xlsx` "
-                                    f"run `1.3.create_dataset_xlsx.py` before testing. "
+                                    f"run `1.3.create_dataset_xlsx.py` to create it. "
                                     f"{Style.RESET_ALL}\n")
         # ---------------------------------------------------------------------/
 
