@@ -8,8 +8,9 @@ abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
-from modules.shared.config import load_config
 from modules.data.processeddatainstance import ProcessedDataInstance
+# -----------------------------------------------------------------------------/
+
 
 processed_data_instance = ProcessedDataInstance()
 processed_data_instance.set_attrs("0.5.create_data_xlsx.toml")
