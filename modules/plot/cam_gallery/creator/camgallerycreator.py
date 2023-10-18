@@ -181,9 +181,6 @@ class CamGalleryCreator:
         self.dataset_result_alias: str = self.train_config["dataset"]["result_alias"]
         self.dataset_classif_strategy: str = self.train_config["dataset"]["classif_strategy"]
         self.dataset_xlsx_name: str = self.train_config["dataset"]["xlsx_name"]
-        
-        temp_split = re.split("_", self.dataset_xlsx_name)
-        self.crop_dir_name: str = f"{temp_split[2]}_{temp_split[3]}"
         # ---------------------------------------------------------------------/
 
 
