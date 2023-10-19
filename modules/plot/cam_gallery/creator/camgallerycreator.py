@@ -445,7 +445,7 @@ class CamGalleryCreator:
             "column"     : self.column,
             "fig_dpi"    : 200,
             "figtitle"   : f"( original ) {fish_dsname} : {orig_img_list[-1].shape[:2]}",
-            "save_path"  : f"{self.cam_gallery_dir}/{fish_cls}/{self.cls_matching_state}/{fish_dsname}_orig.png",
+            "save_path"  : self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, f"{fish_dsname}_orig.png"),
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
@@ -468,7 +468,7 @@ class CamGalleryCreator:
             "fig_dpi"    : 200,
             "figtitle"   : (f"( cam overlay ) {fish_dsname} : {cam_overlay_img_list[-1].shape[:2]}, "
                             f"correct : {self.pred_cls_cnt[fish_cls]}/{len(self.cam_result_img_dict)} ({self.matching_ratio_percent/100})") ,
-            "save_path"  : f"{self.cam_gallery_dir}/{fish_cls}/{self.cls_matching_state}/{fish_dsname}_overlay.png",
+            "save_path"  : self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, f"{fish_dsname}_overlay.png"),
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
