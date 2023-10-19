@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List, Tuple, Optional # Optional[] = Union[ , None]
 import io
 import tempfile
@@ -125,7 +126,7 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
                       figtitle:str="", subtitle_list:Optional[List[str]]=None,
                       font_style:Optional[str]=None,
-                      save_path:str=None, use_rgb:bool=False,
+                      save_path:Optional[Path]=None, use_rgb:bool=False,
                       show_fig:bool=True, verbose:bool=False):
     
     """
@@ -180,13 +181,13 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     y_width, y_height = bbox.width, bbox.height
     
     # Store figure into `buffer`
-    rgba_image = plt_to_pillow(fig) # matplotlib figure 預設為 RGBA (透明背景)
+    rgba_image = plt_to_pillow(fig, os.path.dirname(save_path)) # matplotlib figure 預設為 RGBA (透明背景)
     
     # Draw `title` on `background`
     rgba_image = add_big_title(rgba_image, figtitle, ylabel_width=y_width, 
                                font_style=font_style, verbose=verbose)
     
-    if save_path is not None: rgba_image.save(os.path.normpath(save_path))
+    if save_path is not None: rgba_image.save(save_path)
     if show_fig: rgba_image.show()
     
     rgba_image.close()
@@ -198,7 +199,7 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
 def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
                                figtitle:str="", subtitle_list:Optional[List[str]]=None,
                                font_style:Optional[str]=None,
-                               save_path:str=None, use_rgb:bool=False,
+                               save_path:Optional[Path]=None, use_rgb:bool=False,
                                show_fig:bool=True, verbose:bool=False):
     
     
@@ -232,7 +233,7 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
 
 
 
-def plt_to_pillow(figure:figure.Figure):
+def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
     
     # size_mb = 50
     # initial_bytes = b"\0" * size_mb * 1024 * 1024
@@ -243,10 +244,10 @@ def plt_to_pillow(figure:figure.Figure):
     #                                        ## Note: matplotlib figure 預設為 RGBA (透明背景)
     # buffer.close()
     
-    with tempfile.NamedTemporaryFile(suffix='.png') as temp_file:
-        figure.savefig(temp_file.name, format='png')
-        temp_file.seek(0)
-        pil_img = deepcopy(Image.open(temp_file))
+    with tempfile.NamedTemporaryFile(suffix='.png', dir=temp_file_dir) as f_writer:
+        figure.savefig(f_writer, format='png')
+        f_writer.seek(0)
+        pil_img = deepcopy(Image.open(f_writer))
     
     return pil_img
     # -------------------------------------------------------------------------/
