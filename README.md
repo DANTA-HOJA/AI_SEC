@@ -138,3 +138,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
   1. 加入原始照片部位標記，fish_1_A → fish_1_A_U
   2. 分 train/test 的時候，若 test 為 U，則 train 強制為 D，反之亦然
+
+### 2023/10/13
+
+- 新增 Brightfield Segmentation model : [ZebraFish_BF_Seg](https://github.com/DANTA-HOJA/ZebraFish_BF_Seg)
