@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import List, Tuple, Optional # Optional[] = Union[ , None]
+import platform
 import io
 import tempfile
 from copy import deepcopy
@@ -123,30 +124,54 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
 
 
 
+def get_matplotlib_default_font():
+    """ `matplotlib` default font: `DejaVu Sans`
+    """
+    return font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    # -------------------------------------------------------------------------/
+
+
+
+def get_mono_font():
+    """ Windows: "consola.ttf"
+        Linux: "UbuntuMono-R.ttf"
+    """
+    platform_name = platform.system()
+    if platform_name == "Windows":
+        return "consola.ttf"
+    elif platform_name == "Linux":
+        return "UbuntuMono-R.ttf"
+    else:
+        raise NotImplementedError("Please assign a mono font on your system")
+    # -------------------------------------------------------------------------/
+
+
+
 def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
-                      figtitle:str="", subtitle_list:Optional[List[str]]=None,
+                      figtitle:str, subtitle_list:Optional[List[str]]=None,
                       font_style:Optional[str]=None,
                       save_path:Optional[Path]=None, use_rgb:bool=False,
                       show_fig:bool=True, verbose:bool=False):
-    
+    """ Show images in gallery way
+
+    Args:
+        img_list (List[cv2.Mat]): a list contain several images, channel_order = BGR (default of 'cv2.imread()')
+        row (int): number of rows of gallery.
+        column (int): number of columns of gallery.
+        fig_dpi (int): argumnet of matplotlib figure.
+        figtitle (str, optional): big title of gallery.
+        subtitle_list (Optional[List[str]], optional): title of each sub images. Defaults to None.
+        font_style (Optional[str], optional): if None will use matplotlib default font. Defaults to None.
+        save_path (Optional[Path], optional): Defaults to None.
+        use_rgb (bool, optional): specify images in `img_list` are `RGB` order images. Defaults to False.
+        show_fig (bool, optional): show gallery on GUI window. Defaults to True.
+        verbose (bool, optional): if True, will show debug info on CLI output. Defaults to False.
     """
-    show an RGB image by splitting its channels.
-    
-    Args: [  TODO:  not update yet ]
-        window_name (str): GUI_window/figure name.
-        img_list ( List[cv2.Mat] ): an list contain several images, channel orient = BGR (default orient of 'cv2.imread()')
-        row (int): number of rows in GUI_window.
-        column (int): number of columns in GUI_window.
-        title (list): optional, title for each figure.
-        plt (module): matplotlib.pyplot.
-    """
-    
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
     
     # Get the path of matplotlib default font: `DejaVu Sans`
-    if font_style is None:
-        font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
+    if not font_style: font_style = get_matplotlib_default_font()
     
     # Get minimum image shape ( image may in different size )
     min_img_shape = [np.inf, np.inf]
@@ -171,10 +196,10 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     
     if subtitle_list is not None:
         for i, ax in enumerate(axs.flatten()):
-            fontsize = int(min_img_shape[0]*0.05)
+            font_size = int(min_img_shape[0]*0.05)
             max_width = min_img_shape[1]*0.91*0.75
             opti_font_info = calculate_opti_title_param(subtitle_list[i], max_width,
-                                                        fontsize, font_style, verbose)
+                                                        font_size, font_style, verbose)
             ax.set_title(subtitle_list[i], fontsize=opti_font_info[3]) # TODO:  find method to optimize `fontsize` of `subtitle`
     
     # Calculate space occupied by yaxis and ylabel
@@ -198,12 +223,12 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
 
 
 def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
-                               figtitle:str="", subtitle_list:Optional[List[str]]=None,
+                               figtitle:str, subtitle_list:Optional[List[str]]=None,
                                font_style:Optional[str]=None,
                                save_path:Optional[Path]=None, use_rgb:bool=False,
                                show_fig:bool=True, verbose:bool=False):
-    
-    
+    """
+    """
     assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
     if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
     
@@ -230,8 +255,38 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
 
 
 
-def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
+def calculate_opti_title_param(title:str, max_width:int,
+                               font_size:int, font_style:Optional[str]=None,
+                               verbose:bool=False):
+    """
+    """
+    # set default values
+    if not font_style: font_style = get_mono_font()
     
+    # text
+    font = ImageFont.truetype(font_style, font_size)
+
+    # Get title size
+    title_bbox = font.getbbox(title) # (left, top, right, bottom) bounding box
+    title_width = title_bbox[2] - title_bbox[0]
+    title_height = title_bbox[3] - title_bbox[1]
+    
+    if verbose: 
+        print(f'fontsize: {font_size}, (title_width, title_height): ({title_width}, {title_height})')
+    
+    if title_width > max_width:
+        return calculate_opti_title_param(title, max_width,
+                                          int(0.9*font_size), font_style, verbose)
+    
+    if verbose: print("="*100, "\n")
+    return title_width, title_height, font, font_size
+    # -------------------------------------------------------------------------/
+
+
+
+def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
+    """
+    """
     # size_mb = 50
     # initial_bytes = b"\0" * size_mb * 1024 * 1024
     # buffer = io.BytesIO(initial_bytes=initial_bytes)
@@ -251,40 +306,21 @@ def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
 
 
 
-def calculate_opti_title_param(title:str, max_width:int,
-                               fontsize:int, font_style:str="consola.ttf", 
-                               verbose:bool=False):
-       
-    font = ImageFont.truetype(font_style, fontsize)
-
-    # Get title size
-    title_bbox = font.getbbox(title) # (left, top, right, bottom) bounding box
-    title_width = title_bbox[2] - title_bbox[0]
-    title_height = title_bbox[3] - title_bbox[1]
-    
-    if verbose: 
-        print(f'fontsize: {fontsize}, (title_width, title_height): ({title_width}, {title_height})')
-    
-    if title_width > max_width:
-        return calculate_opti_title_param(title, max_width,
-                                          int(0.9*fontsize), font_style, verbose)
-    
-    if verbose: print("="*100, "\n")
-    return title_width, title_height, font, fontsize
-    # -------------------------------------------------------------------------/
-
-
-
-def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2, 
-                  font_style:str="consola.ttf", font_color: Tuple[int, int, int, int]=(0, 0, 0, 255),
+def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
+                  font_style:Optional[str]=None, font_color: Optional[Tuple[int, int, int, int]]=None,
                   ylabel_width:int=0, verbose:bool=False):
-
+    """
+    """
+    # set default values (tuple color order: RGB)
+    if not font_style: font_style = get_matplotlib_default_font()
+    if not font_color: font_color = (0, 0, 0, 255)
+    
     # Get title parameters
-    fontsize = int(rgba_image.height*0.05)
+    font_size = int(rgba_image.height*0.05)
     max_width = rgba_image.width*0.95
     title_width, title_height, font, _ = \
         calculate_opti_title_param(title, max_width,
-                                   fontsize, font_style, verbose)
+                                   font_size, font_style, verbose)
     title_space = int(title_height*title_line_height) # title + line height
 
     # Create empty background in RGBA
@@ -293,7 +329,7 @@ def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
     background = Image.new('RGBA', background_size, color = (0, 0, 0, 0)) # RGBA 可以建立透明背景
     if verbose: print(f'background.size {type(background.size)}: {background.size}')
     
-    # Create `drawer`
+    # init draw component
     draw = ImageDraw.Draw(background)
 
     # Put the `rgba_image` with offset `title_space`
@@ -310,13 +346,16 @@ def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
 
 
 def draw_x_on_image(rgb_image:Image.Image,
-                    line_color:Optional[Tuple[int, int, int]]=None, line_width:Optional[int]=None):
-    
-    draw = ImageDraw.Draw(rgb_image)
-    
-    # set default value, color: RGB
+                    line_color:Optional[Tuple[int, int, int]]=None,
+                    line_width:Optional[int]=None):
+    """
+    """
+    # set default values (tuple color order: RGB)
     if not line_color: line_color = (180, 160, 0)
     if not line_width: line_width = 2
+    
+    # init draw component
+    draw = ImageDraw.Draw(rgb_image)
     
     # set 4 corners
     top_left = (0, 0)
@@ -336,16 +375,18 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
                               correct_color:Optional[Tuple[int, int, int]]=None,
                               incorrect_color:Optional[Tuple[int, int, int]]=None,
                               shadow_color:Optional[Tuple[int, int, int]]=None):
-    
-    draw = ImageDraw.Draw(rgb_image)
-    
-    # set default value, color: RGB
-    if not font_style: font_style = "consola.ttf"
+    """
+    """
+    # set default values (tuple color order: RGB)
+    if not font_style: font_style = get_mono_font()
     ## auto `fontsize` = image_height * 0.07
     if not font_size: font_size = round(np.array(rgb_image).shape[0]*0.07)
     if not correct_color: correct_color = (0, 255, 0)
     if not incorrect_color: incorrect_color = (255, 255, 255)
     if not shadow_color: shadow_color = (0, 0, 0)
+    
+    # init draw component
+    draw = ImageDraw.Draw(rgb_image)
     
     # text
     pred_text = f"prediction : {pred_cls}"
@@ -387,17 +428,19 @@ def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:flo
                             selected_color:Optional[Tuple[int, int, int]]=None,
                             drop_color:Optional[Tuple[int, int, int]]=None,
                             shadow_color:Optional[Tuple[int, int, int]]=None):
-    
-    draw = ImageDraw.Draw(rgb_image)
-    
-    # set default value, color: RGB
-    if not font_style: font_style = "consola.ttf"
+    """
+    """
+    # set default values (tuple color order: RGB)
+    if not font_style: font_style = get_mono_font()
     ## auto `fontsize` = image_height * 0.05
     if not font_size: font_size = round(np.array(rgb_image).shape[0]*0.05)
     if not selected_color: selected_color = (255, 255, 255)
     if not drop_color: drop_color = (255, 255, 127)
     if not shadow_color: shadow_color = (0, 0, 0)
-
+    
+    # init draw component
+    draw = ImageDraw.Draw(rgb_image)
+    
     # text
     intensity_text = f"@ intensity: {intensity}"
     darkratio_text = f">> dark_ratio: {dark_ratio:.5f}"
@@ -442,8 +485,10 @@ def postprocess_cam_image(image:np.ndarray, grayscale_cam:np.ndarray, use_rgb,
                           colormap:int, image_weight:float, cam_save_path:str,
                           pred_cls:str, gt_cls:str, resize:Optional[Tuple[int, int]]=None,
                           font_style:Optional[str]=None, font_size:Optional[int]=None):
-    
-    if not font_style: font_style = "consola.ttf"
+    """
+    """
+    # set default values
+    if not font_style: font_style = get_mono_font()
     if not font_size: font_size = 16
     
     if use_rgb: rgb_img = image
