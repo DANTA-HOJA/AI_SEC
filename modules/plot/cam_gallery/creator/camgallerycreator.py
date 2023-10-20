@@ -17,8 +17,9 @@ from colorama import Fore, Back, Style
 from tqdm.auto import tqdm
 
 from ...utils import draw_x_on_image, draw_predict_ans_on_image, \
-                     plot_with_imglist_auto_row
+                     plot_with_imglist_auto_row, get_mono_font
 from ....data.dataset import dsname
+from ....data.dataset.utils import parse_dataset_xlsx_name
 from ....shared.clioutput import CLIOutput
 from ....shared.config import load_config
 from ....shared.pathnavigator import PathNavigator
@@ -61,6 +62,7 @@ class CamGalleryCreator:
         """ Load `dataset_xlsx` """
         self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
         
+        self._set_attrs_default_value()
         self._set_cam_result_root()
         self._set_cam_gallery_dir()
         self._set_predict_ans_dict()
@@ -200,6 +202,34 @@ class CamGalleryCreator:
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `dataset_xlsx` "
                                     f"run `1.3.create_dataset_xlsx.py` to create it. "
                                     f"{Style.RESET_ALL}\n")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_attrs_default_value(self):
+        """
+        """
+        """ [layout] """
+        if not self.column:
+            crop_size = parse_dataset_xlsx_name(self.dataset_xlsx_name)["crop_size"]
+            if crop_size == 512: self.column = 5
+            elif crop_size == 256: self.column = 13
+        
+        """ [draw.drop_image.line] """
+        if not self.line_color: self.line_color = (180, 160, 0)
+        if not self.line_width: self.line_width = 2
+        
+        """ [draw.cam_image] """
+        if not self.cam_weight: self.cam_weight = 0.5
+        
+        """ [draw.cam_image.text] """
+        if not self.text_font_style: self.text_font_style = get_mono_font()
+        if not self.text_font_size: self.text_font_size = None
+        
+        """ [draw.cam_image.text.color] """
+        if not self.text_correct_color: self.text_correct_color = (0, 255, 0)
+        if not self.text_incorrect_color: self.text_incorrect_color = (255, 255, 255)
+        if not self.text_shadow_color: self.text_shadow_color = (0, 0, 0)
         # ---------------------------------------------------------------------/
 
 
