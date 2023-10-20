@@ -82,11 +82,11 @@ class VitB16Trainer(BaseTrainer):
     def _set_loss_fn(self):
         """
         """
-        if self.aug_on_fly is True: # `loss_function` with `class_weight`
+        if self.forcing_balance is True:
+            self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
+        else: # `loss_function` with `class_weight`
             self.loss_fn: nn.CrossEntropyLoss = \
                 nn.CrossEntropyLoss(weight=calculate_class_weight(self.class_counts_dict))
-        else:
-            self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
         
         self.loss_fn.to(self.device)
         # ---------------------------------------------------------------------/
