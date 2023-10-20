@@ -12,6 +12,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from colorama import Fore, Back, Style
 
+from .utils import log 
 from .. import dname
 from ..processeddatainstance import ProcessedDataInstance
 from ...shared.clioutput import CLIOutput
@@ -175,19 +176,11 @@ class SurfaceAreaKMeansCluster():
 
 
 
-    def log(self, base, x):
-        """
-        """
-        return np.log(x) / np.log(base)
-        # ---------------------------------------------------------------------/
-
-
-
     def run_kmeans(self):
         """
         """
         if self.cluster_with_log_scale:
-            self.surface_area = self.log(self.log_base, self.surface_area)
+            self.surface_area = log(self.log_base, self.surface_area)
         
         self.kmeans.fit(self.surface_area)
         self.y_kmeans = self.kmeans.predict(self.surface_area) # 產生分群結果
