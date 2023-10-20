@@ -9,6 +9,7 @@ import json
 
 import numpy as np
 import pandas as pd
+from tomlkit.toml_document import TOMLDocument
 from sklearn.cluster import KMeans
 from colorama import Fore, Back, Style
 
@@ -44,9 +45,9 @@ class SurfaceAreaKMeansCluster():
     def _set_attrs(self, config_file:Union[str, Path]):
         """
         """
+        self.config: Union[dict, TOMLDocument] = load_config(config_file, cli_out=self._cli_out)
         self.processed_data_instance.set_attrs(config_file)
-        self._set_config_attrs(config_file)
-        
+        self._set_config_attrs()
         self._set_orig_xlsx_attrs()
         
         self.bf_dnames:List[str] = list(self.orig_xlsx_df["Brightfield"])
@@ -81,7 +82,7 @@ class SurfaceAreaKMeansCluster():
 
 
 
-    def _set_config_attrs(self, config_file:Union[str, Path]):
+    def _set_config_attrs(self):
         """ Set below attributes
             - `self.batch_id_interval`: List[int]
             - `self.batch_idx2str`: Dict[int, str]
@@ -90,21 +91,20 @@ class SurfaceAreaKMeansCluster():
             - `self.labels`: List[str]
             - `self.cluster_with_log_scale`: bool
             - `self.log_base`: int
-        """
-        config = load_config(config_file, cli_out=self._cli_out)
-        
+        """        
         """ [batch_info] """
-        self.batch_id_interval: List[int] = config["batch_info"]["id_interval"]
-        self.batch_idx2str: Dict[int, str] = {i: name for i, name in enumerate(config["batch_info"]["names"])}
+        self.batch_id_interval: List[int] = self.config["batch_info"]["id_interval"]
+        self.batch_idx2str: Dict[int, str] = \
+            {i: name for i, name in enumerate(self.config["batch_info"]["names"])}
         
         """ [cluster] """
-        self.random_seed: int = config["cluster"]["random_seed"]
-        self.n_class: int = config["cluster"]["n_class"]
-        self.labels: List[str] = config["cluster"]["labels"]
-        self.cluster_with_log_scale: bool = config["cluster"]["cluster_with_log_scale"]
+        self.random_seed: int = self.config["cluster"]["random_seed"]
+        self.n_class: int = self.config["cluster"]["n_class"]
+        self.labels: List[str] = self.config["cluster"]["labels"]
+        self.cluster_with_log_scale: bool = self.config["cluster"]["cluster_with_log_scale"]
         
         """ [log_scale] """
-        self.log_base: int = config["log_scale"]["base"]
+        self.log_base: int = self.config["log_scale"]["base"]
         # ---------------------------------------------------------------------/
 
 
