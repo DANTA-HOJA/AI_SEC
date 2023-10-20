@@ -145,8 +145,8 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
     
     # Get the path of matplotlib default font: `DejaVu Sans`
-    default_font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
-    if font_style is None: font_style = default_font_style
+    if font_style is None:
+        font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
     # Get minimum image shape ( image may in different size )
     min_img_shape = [np.inf, np.inf]
@@ -205,10 +205,6 @@ def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
     
     assert column <= len(img_list), f"len(img_list) = {len(img_list)}, but column = {column}, 'column' should not greater than 'len(img_list)'"
     if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
-    
-    # Get the path of matplotlib default font: `DejaVu Sans`
-    if font_style is None:
-        font_style = font_manager.findfont(plt.rcParams['font.sans-serif'][0])
     
     # append empty arrays to the end of 'image_list' until its length is a multiple of 'column'
     orig_len = len(img_list)
