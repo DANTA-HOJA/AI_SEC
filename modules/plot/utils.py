@@ -173,7 +173,8 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
         for i, ax in enumerate(axs.flatten()):
             fontsize = int(min_img_shape[0]*0.05)
             max_width = min_img_shape[1]*0.91*0.75
-            opti_font_info = calculate_opti_title_param(subtitle_list[i], max_width, fontsize, default_font_style, verbose)
+            opti_font_info = calculate_opti_title_param(subtitle_list[i], max_width,
+                                                        fontsize, font_style, verbose)
             ax.set_title(subtitle_list[i], fontsize=opti_font_info[3]) # TODO:  find method to optimize `fontsize` of `subtitle`
     
     # Calculate space occupied by yaxis and ylabel
@@ -250,7 +251,8 @@ def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
 
 
 
-def calculate_opti_title_param(title:str, max_width:int, fontsize:int, font_style:str="consola.ttf", 
+def calculate_opti_title_param(title:str, max_width:int,
+                               fontsize:int, font_style:str="consola.ttf", 
                                verbose:bool=False):
        
     font = ImageFont.truetype(font_style, fontsize)
@@ -264,7 +266,8 @@ def calculate_opti_title_param(title:str, max_width:int, fontsize:int, font_styl
         print(f'fontsize: {fontsize}, (title_width, title_height): ({title_width}, {title_height})')
     
     if title_width > max_width:
-        return calculate_opti_title_param(title, max_width, int(0.9*fontsize), font_style, verbose)
+        return calculate_opti_title_param(title, max_width,
+                                          int(0.9*fontsize), font_style, verbose)
     
     if verbose: print("="*100, "\n")
     return title_width, title_height, font, fontsize
@@ -279,7 +282,9 @@ def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
     # Get title parameters
     fontsize = int(rgba_image.height*0.05)
     max_width = rgba_image.width*0.95
-    title_width, title_height, font, _ = calculate_opti_title_param(title, max_width, fontsize, font_style, verbose)
+    title_width, title_height, font, _ = \
+        calculate_opti_title_param(title, max_width,
+                                   fontsize, font_style, verbose)
     title_space = int(title_height*title_line_height) # title + line height
 
     # Create empty background in RGBA
