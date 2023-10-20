@@ -65,6 +65,22 @@ class SurfaceAreaKMeansCluster():
 
 
 
+    def run(self, config_file:Union[str, Path]="0.6.cluster_data.toml"):
+        """
+        """
+        self._cli_out.divide()
+        self._set_attrs(config_file)
+        
+        self.run_kmeans()
+        self._set_cidx_max_area_dict()
+        self._set_cidx2clabel()
+        self.gen_clustered_xlsx_df()
+        self.save_clustered_xlsx_df()
+        self.save_kmeans_centers()
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_config_attrs(self, config_file:Union[str, Path]):
         """ Set below attributes
             - `self.batch_id_interval`: List[int]
@@ -271,20 +287,4 @@ class SurfaceAreaKMeansCluster():
         
         path = self.clustered_xlsx_dir.joinpath("kmeans_centers.toml")
         dump_config(path, save_dict)
-        # ---------------------------------------------------------------------/
-
-
-
-    def run(self, config_file:Union[str, Path]="0.6.cluster_data.toml"):
-        """
-        """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
-        
-        self.run_kmeans()
-        self._set_cidx_max_area_dict()
-        self._set_cidx2clabel()
-        self.gen_clustered_xlsx_df()
-        self.save_clustered_xlsx_df()
-        self.save_kmeans_centers()
         # ---------------------------------------------------------------------/
