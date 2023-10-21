@@ -10,6 +10,7 @@ import traceback
 import shutil
 
 import random
+import matplotlib; matplotlib.use("agg")
 import numpy as np
 import pandas as pd
 from tomlkit.toml_document import TOMLDocument
