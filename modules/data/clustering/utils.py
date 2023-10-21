@@ -2,7 +2,7 @@ import numpy as np
 # -----------------------------------------------------------------------------/
 
 
-def log(self, base, x):
+def log(base, x):
     """
     """
     return np.log(x) / np.log(base)
