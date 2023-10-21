@@ -53,16 +53,16 @@ class CamGalleryCreator:
         """
         self.config: Union[dict, TOMLDocument] = load_config(config_file, cli_out=self._cli_out)
         self._set_config_attrs()
+        self._set_config_attrs_default_value()
         self._set_history_dir()
         self._set_train_config_attrs()
         self._set_dataset_xlsx_path()
+        self._set_cam_result_root()
+        self._set_cam_gallery_dir()
         
         """ Load `dataset_xlsx` """
         self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
         
-        self._set_attrs_default_value()
-        self._set_cam_result_root()
-        self._set_cam_gallery_dir()
         self._set_predict_ans_dict()
         self._set_rank_dict()
         # ---------------------------------------------------------------------/
@@ -204,7 +204,7 @@ class CamGalleryCreator:
 
 
 
-    def _set_attrs_default_value(self):
+    def _set_config_attrs_default_value(self):
         """
         """
         """ [layout] """
