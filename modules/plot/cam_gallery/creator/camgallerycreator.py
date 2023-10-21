@@ -9,7 +9,7 @@ import json
 
 import cv2
 from PIL import Image
-import matplotlib
+import matplotlib; matplotlib.use("agg")
 import numpy as np
 import pandas as pd
 from tomlkit.toml_document import TOMLDocument
@@ -25,8 +25,6 @@ from ....shared.config import load_config
 from ....shared.pathnavigator import PathNavigator
 from ....shared.utils import create_new_dir
 from ....assert_fn import assert_0_or_1_history_dir
-
-matplotlib.use('agg')
 # -----------------------------------------------------------------------------/
 
 
