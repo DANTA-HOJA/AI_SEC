@@ -3,10 +3,10 @@ import sys
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
-import traceback
 from threading import Lock
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
+import traceback
 
 from tomlkit.toml_document import TOMLDocument
 from colorama import Fore, Back, Style
