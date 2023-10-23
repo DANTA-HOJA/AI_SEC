@@ -500,6 +500,34 @@ class SurfaceAreaKMeansPlotter():
 
 
 
+    def plot_old_classdiv_xlsx(self):
+        """
+        """
+        for old_classdiv_xlsx_path in self.old_classdiv_xlsx_list:
+            
+            try:
+                if old_classdiv_xlsx_path == "":
+                    raise ValueError(f"`old_classdiv_xlsx_path` can't be an empty string")
+                
+                # check exists
+                old_classdiv_xlsx_path = Path(old_classdiv_xlsx_path)
+                if not old_classdiv_xlsx_path.exists():
+                    raise FileNotFoundError(f"Can't find file: '{old_classdiv_xlsx_path.resolve()}'")
+
+                old_classdiv_strategy, compare_dir, \
+                    old_classdiv_info_dict = self.get_old_xlsx_attrs(old_classdiv_xlsx_path)
+                
+            except (FileNotFoundError, ValueError, AssertionError):
+                self._cli_out.write(f"{Fore.RED}{Back.BLACK}\n\n{traceback.format_exc()}{Style.RESET_ALL}")
+                self._cli_out.write(f"{Fore.YELLOW}{Back.BLACK}Compare figure will not generate{Style.RESET_ALL}")
+                continue
+            
+            fig = self.plot_old_classdiv_boundary(self.fig, old_classdiv_info_dict)
+            self.save_fig_with_old_classdiv(fig, old_classdiv_strategy, compare_dir)
+        # ---------------------------------------------------------------------/
+
+
+
     def get_old_xlsx_attrs(self, old_classdiv_xlsx_path:Path):
         """
         """
@@ -540,34 +568,6 @@ class SurfaceAreaKMeansPlotter():
             old_classdiv_info_dict['R_std_value'] = old_classdiv_xlsx_df["R_1s"][0]
         
         return old_classdiv_strategy, compare_dir, old_classdiv_info_dict
-        # ---------------------------------------------------------------------/
-
-
-
-    def plot_old_classdiv_xlsx(self):
-        """
-        """
-        for old_classdiv_xlsx_path in self.old_classdiv_xlsx_list:
-            
-            try:
-                if old_classdiv_xlsx_path == "":
-                    raise ValueError(f"`old_classdiv_xlsx_path` can't be an empty string")
-                
-                # check exists
-                old_classdiv_xlsx_path = Path(old_classdiv_xlsx_path)
-                if not old_classdiv_xlsx_path.exists():
-                    raise FileNotFoundError(f"Can't find file: '{old_classdiv_xlsx_path.resolve()}'")
-
-                old_classdiv_strategy, compare_dir, \
-                    old_classdiv_info_dict = self.get_old_xlsx_attrs(old_classdiv_xlsx_path)
-                
-            except (FileNotFoundError, ValueError, AssertionError):
-                self._cli_out.write(f"{Fore.RED}{Back.BLACK}\n\n{traceback.format_exc()}{Style.RESET_ALL}")
-                self._cli_out.write(f"{Fore.YELLOW}{Back.BLACK}Compare figure will not generate{Style.RESET_ALL}")
-                continue
-            
-            fig = self.plot_old_classdiv_boundary(self.fig, old_classdiv_info_dict)
-            self.save_fig_with_old_classdiv(fig, old_classdiv_strategy, compare_dir)
         # ---------------------------------------------------------------------/
 
 
