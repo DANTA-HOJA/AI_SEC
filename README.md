@@ -2,6 +2,12 @@
 
 MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Posterior``` )
 
+## Package Dependencies
+
+```
+numpy==1.23.0
+```
+
 ## Data Information ( *temporarily halt updates* )
 
 - 目前最大編號 : ```207```
