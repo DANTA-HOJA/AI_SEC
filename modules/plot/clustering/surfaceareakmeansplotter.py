@@ -222,8 +222,7 @@ class SurfaceAreaKMeansPlotter():
         for label in self.labels:
             df = self.clustered_xlsx_df[self.clustered_xlsx_df["class"] == label]
             max_area = df["Trunk surface area, SA (um2)"].max()
-            if self.x_axis_log_scale:
-                self.clusters_max_area_dict[label] = max_area
+            self.clusters_max_area_dict[label] = max_area
         # ---------------------------------------------------------------------/
 
 
@@ -494,8 +493,8 @@ class SurfaceAreaKMeansPlotter():
         self.fig.suptitle(self.fig_title, size=20)
         
         # save figure
-        save_name = f"{{{self.clustered_xlsx_name}}}{'_kde' if self.x_axis_log_scale else ''}.png"
-        self.fig.savefig(self.clustered_xlsx_dir.joinpath(save_name))
+        self.fig_file_name = f"{{{self.clustered_xlsx_name}}}{'_kde' if self.x_axis_log_scale else ''}"
+        self.fig.savefig(self.clustered_xlsx_dir.joinpath(f"{self.fig_file_name}.png"))
         # ---------------------------------------------------------------------/
 
 
@@ -594,10 +593,13 @@ class SurfaceAreaKMeansPlotter():
                                    old_classdiv_strategy:str, save_dir:Path):
         """
         """
-        fig_name_old_classdiv = f"{self.fig_title}, {old_classdiv_strategy}"
-        figure.suptitle(fig_name_old_classdiv, size=20)
+        self.fig.savefig(save_dir.joinpath(f"{self.fig_file_name}.png"))
         
-        save_path = save_dir.joinpath(f"{fig_name_old_classdiv}.png")
+        old_classdiv_fig_title = f"{self.fig_title}, {old_classdiv_strategy}"
+        figure.suptitle(old_classdiv_fig_title, size=20)
+        
+        old_classdiv_fig_save_name = f"{self.fig_file_name}_{old_classdiv_strategy}"
+        save_path = save_dir.joinpath(f"{old_classdiv_fig_save_name}.png")
         figure.savefig(save_path)
         self._cli_out.write(f"Compare figure: '{save_path.resolve()}'")
         # ---------------------------------------------------------------------/
