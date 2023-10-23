@@ -62,6 +62,32 @@ class ImageCropper():
 
 
 
+    def run(self, config_file:Union[str, Path]="1.make_dataset.toml"):
+        """
+        """
+        self._cli_out.divide()
+        self._set_attrs(config_file)
+        
+        self._check_if_any_crop_dir_exists()
+        train_img_paths = list(self.save_dir_train.glob(f"*/*.tiff"))
+        test_img_paths = list(self.save_dir_test.glob(f"*/*.tiff"))
+        self.img_paths = sorted(test_img_paths + train_img_paths, key=dsname.get_dsname_sortinfo)
+        self._cli_out.write(f"found {len(self.img_paths)} images, "
+                            f"train: {len(train_img_paths)}, "
+                            f"test: {len(test_img_paths)}")
+        
+        self._cli_out.divide()
+        self.pbar = tqdm(total=len(self.img_paths), desc=f"[ {self._cli_out.logger_name} ] ")
+        
+        for img_path in self.img_paths:
+            self.crop_single_image(img_path)
+        
+        self.pbar.close()
+        self._cli_out.new_line()
+        # ---------------------------------------------------------------------/
+
+
+
     def _set_config_attrs(self):
         """ Set below attributes
             - `self.palmskin_result_alias`: str
@@ -141,56 +167,38 @@ class ImageCropper():
 
 
 
-    def run(self, config_file:Union[str, Path]="1.make_dataset.toml"):
+    def crop_single_image(self, img_path:Path):
         """
         """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
-        
-        self._check_if_any_crop_dir_exists()
-        train_img_paths = list(self.save_dir_train.glob(f"*/*.tiff"))
-        test_img_paths = list(self.save_dir_test.glob(f"*/*.tiff"))
-        img_paths = sorted(test_img_paths + train_img_paths, key=dsname.get_dsname_sortinfo)
-        self._cli_out.write(f"found {len(img_paths)} images, "
-                            f"train: {len(train_img_paths)}, "
-                            f"test: {len(test_img_paths)}")
-        
-        self._cli_out.divide()
-        with tqdm(total=len(img_paths), desc=f"[ {self._cli_out.logger_name} ] : ") as pbar:
+        img = cv2.imread(str(img_path))
             
-            for path in img_paths:
-                
-                img = cv2.imread(str(path))
-                
-                """ Extract info """
-                path_split = str(path).split(os.sep)
-                fish_dsname = path_split[-2]
-                file_ext = path_split[-1].split(".")[-1]
-                
-                """ Generate `crop_dir` """
-                crop_dir = path_split[:-1]
-                crop_dir.append(self.crop_dir_name)
-                crop_dir = Path(os.sep.join(crop_dir))
-                create_new_dir(crop_dir)
-                
-                # cropping
-                crop_img_list = gen_crop_img(img, self.config)
-                
-                if pbar.total != len(img_paths)*len(crop_img_list):
-                    pbar.total = len(img_paths)*len(crop_img_list)
-                
-                for i, cropped_img in enumerate(crop_img_list):
-                    
-                    cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
-                    
-                    pbar.desc = f"[ {self._cli_out.logger_name} ] {cropped_name} : "
-                    pbar.refresh()
-                    
-                    save_path = crop_dir.joinpath(f"{cropped_name}.{file_ext}")
-                    cv2.imwrite(str(save_path), cropped_img)
-                    
-                    pbar.update(1)
-                    pbar.refresh()
+        """ Extract info """
+        path_split = str(img_path).split(os.sep)
+        fish_dsname = path_split[-2]
+        file_ext = path_split[-1].split(".")[-1]
         
-        self._cli_out.new_line()
+        """ Generate `crop_dir` """
+        crop_dir = path_split[:-1]
+        crop_dir.append(self.crop_dir_name)
+        crop_dir = Path(os.sep.join(crop_dir))
+        create_new_dir(crop_dir)
+        
+        # cropping
+        crop_img_list = gen_crop_img(img, self.config)
+        
+        if self.pbar.total != len(self.img_paths)*len(crop_img_list):
+            self.pbar.total = len(self.img_paths)*len(crop_img_list)
+        
+        for i, cropped_img in enumerate(crop_img_list):
+            
+            cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
+            
+            self.pbar.desc = f"[ {self._cli_out.logger_name} ] {cropped_name} : "
+            self.pbar.refresh()
+            
+            save_path = crop_dir.joinpath(f"{cropped_name}.{file_ext}")
+            cv2.imwrite(str(save_path), cropped_img)
+            
+            self.pbar.update(1)
+            self.pbar.refresh()
         # ---------------------------------------------------------------------/
