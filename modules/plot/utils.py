@@ -18,15 +18,12 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 # -----------------------------------------------------------------------------/
 
 
-def plot_in_rgb(img_path:str, fig_size:Tuple[float, float], plt=plt):
-    
-    """
-    show image in RGB color space.
-    
+def plot_in_rgb(img_path:str, fig_size:Tuple[float, float]):
+    """ Show image in RGB color space.
+
     Args:
-        window_name (str): GUI_window/figure name.
-        img ( cv2.Mat ): an image you want to display, channel orient = BGR (default orient of 'cv2.imread()')
-        plt (module): matplotlib.pyplot.
+        img_path (str): read image using 'cv2.imread()'
+        fig_size (Tuple[float, float]): pixel * pixel
     """
     img = cv2.imread(img_path)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -38,25 +35,22 @@ def plot_in_rgb(img_path:str, fig_size:Tuple[float, float], plt=plt):
     fig_size_div_dpi.append(fig_size[1]/fig_dpi)
     
     # Create figure
-    fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig, ax = plt.subplots(1, 1, figsize=fig_size_div_dpi, dpi=fig_dpi)
     fig.suptitle(f"Mode: RGB, img_size = {img_rgb.shape}")
-    plt.imshow(img_rgb, vmin=0, vmax=255)
+    ax.imshow(img_rgb, vmin=0, vmax=255)
     
     plt.show()
-    plt.close()
+    plt.close(fig)
     # -------------------------------------------------------------------------/
 
 
 
-def plot_in_gray(img_path:str, fig_size:Tuple[float, float], plt=plt):
-    
-    """
-    show image in weighted-RGB gray scale.
-    
+def plot_in_gray(img_path:str, fig_size:Tuple[float, float]):
+    """ Show image in weighted-RGB gray scale.
+
     Args:
-        window_name (str): GUI_window/figure name.
-        img ( cv2.Mat ): an image you want to display, channel orient = BGR (default orient of 'cv2.imread()')
-        plt (module): matplotlib.pyplot.
+        img_path (str): read image using 'cv2.imread()'
+        fig_size (Tuple[float, float]): pixel * pixel
     """
     img = cv2.imread(img_path)
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -68,25 +62,22 @@ def plot_in_gray(img_path:str, fig_size:Tuple[float, float], plt=plt):
     fig_size_div_dpi.append(fig_size[1]/fig_dpi)
     
     # Create figure
-    fig = plt.figure(figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig, ax = plt.subplots(1, 1, figsize=fig_size_div_dpi, dpi=fig_dpi)
     fig.suptitle(f"Mode: Gray (weighted-RGB), img_size = {img_gray.shape}")
-    plt.imshow(img_gray, cmap='gray', vmin=0, vmax=255)
+    ax.imshow(img_gray, cmap='gray', vmin=0, vmax=255)
     
     plt.show()
-    plt.close()
+    plt.close(fig)
     # -------------------------------------------------------------------------/
 
 
 
-def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
-    
-    """
-    show an BGR image by splitting its channels.
-    
+def plot_by_channel(img_path:str, fig_size:Tuple[float, float]):
+    """ Show image by splitting its channels.
+
     Args:
-        window_name (str): GUI_window/figure name.
-        img ( cv2.Mat ): an image you want to display, channel orient = BGR (default orient of 'cv2.imread()')
-        plt (module): matplotlib.pyplot.
+        img_path (str): read image using 'cv2.imread()'
+        fig_size (Tuple[float, float]): pixel * pixel
     """
     img = cv2.imread(img_path)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) # BGR -> RGB
@@ -99,27 +90,27 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float], plt=plt):
     fig_size_div_dpi.append(fig_size[1]/fig_dpi)
     
     # Create figure
-    fig, axs = plt.subplots(1, 4, figsize=fig_size_div_dpi, dpi=fig_dpi)
+    fig, axes = plt.subplots(1, 4, figsize=fig_size_div_dpi, dpi=fig_dpi)
     fig.suptitle(f"Mode: RGB_Channel, img_size = {img_rgb.shape}")
     
     # merge RGB (original)
-    axs[0].set_title("RGB")
-    axs[0].imshow(img_rgb, vmin=0, vmax=255)
+    axes[0].set_title("RGB")
+    axes[0].imshow(img_rgb, vmin=0, vmax=255)
     
     # plot R Channel
-    axs[1].set_title("R")
-    axs[1].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
+    axes[1].set_title("R")
+    axes[1].imshow(ch_R, cmap='gray', vmin=0, vmax=255)
     
     # plot G Channel
-    axs[2].set_title("G")
-    axs[2].imshow(ch_G, cmap='gray', vmin=0, vmax=255)
+    axes[2].set_title("G")
+    axes[2].imshow(ch_G, cmap='gray', vmin=0, vmax=255)
     
     # plot B Channel
-    axs[3].set_title("B")
-    axs[3].imshow(ch_B, cmap='gray', vmin=0, vmax=255)
+    axes[3].set_title("B")
+    axes[3].imshow(ch_B, cmap='gray', vmin=0, vmax=255)
     
     plt.show()
-    plt.close()
+    plt.close(fig)
     # -------------------------------------------------------------------------/
 
 
@@ -147,7 +138,7 @@ def get_mono_font():
 
 
 
-def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
+def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:int,
                       figtitle:str, subtitle_list:Optional[List[str]]=None,
                       font_style:Optional[str]=None,
                       save_path:Optional[Path]=None, use_rgb:bool=False,
@@ -155,7 +146,7 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
     """ Show images in gallery way
 
     Args:
-        img_list (List[cv2.Mat]): a list contain several images, channel_order = BGR (default of 'cv2.imread()')
+        img_list (List[np.ndarray]): a list contain several images, channel_order = BGR (default of 'cv2.imread()')
         row (int): number of rows of gallery.
         column (int): number of columns of gallery.
         fig_dpi (int): argumnet of matplotlib figure.
@@ -222,7 +213,7 @@ def plot_with_imglist(img_list:List[cv2.Mat], row:int, column:int, fig_dpi:int,
 
 
 
-def plot_with_imglist_auto_row(img_list:List[cv2.Mat], column:int, fig_dpi:int,
+def plot_with_imglist_auto_row(img_list:List[np.ndarray], column:int, fig_dpi:int,
                                figtitle:str, subtitle_list:Optional[List[str]]=None,
                                font_style:Optional[str]=None,
                                save_path:Optional[Path]=None, use_rgb:bool=False,
