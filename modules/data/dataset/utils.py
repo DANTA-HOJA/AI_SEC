@@ -105,11 +105,11 @@ def parse_dataset_xlsx_name(dataset_xlsx_name:str) -> dict:
 
 
 
-def gen_crop_img(img:cv2.Mat, config:Union[dict, TOMLDocument]) -> List[cv2.Mat]:
+def gen_crop_img(img:np.ndarray, config:Union[dict, TOMLDocument]) -> List[np.ndarray]:
     """ Generate the crop images using `crop_size` and `shift_region`
 
     Args:
-        img (cv2.Mat): The source image to generate its crop images
+        img (np.ndarray): The source image to generate its crop images
     
     config:
         crop_size (int): Size/shape of cropped image
@@ -117,7 +117,7 @@ def gen_crop_img(img:cv2.Mat, config:Union[dict, TOMLDocument]) -> List[cv2.Mat]
                             e.g. if `shift_region` = '1/3', the overlap region of each cropped image is '2/3'
 
     Returns:
-        List[cv2.Mat]
+        List[np.ndarray]
     """
     img_size = img.shape
     
@@ -162,18 +162,18 @@ def gen_crop_img(img:cv2.Mat, config:Union[dict, TOMLDocument]) -> List[cv2.Mat]
 
 
 
-def drop_too_dark(crop_img_list:List[cv2.Mat], config:Union[dict, TOMLDocument]) -> Tuple[List[Tuple], List[Tuple]]:
+def drop_too_dark(crop_img_list:List[np.ndarray], config:Union[dict, TOMLDocument]) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """ Drop the image which too many dark pixels
 
     Args:
-        crop_img_list (List[cv2.Mat]): a list contains `BGR` images
+        crop_img_list (List[np.ndarray]): a list contains `BGR` images
     
     config:
         intensity (int): a threshold (grayscale image) to define too dark or not 
         drop_ratio (float): a threshold (pixel_too_dark / all_pixel) to decide the crop image keep or drop, if drop_ratio < 0.5, keeps the crop image.
 
     Returns:
-        Tuple[List[cv2.Mat], List[cv2.Mat]]: ('select_crop_img_list', 'drop_crop_img_list')
+        Tuple[List[np.ndarray], List[np.ndarray]]: ('select_crop_img_list', 'drop_crop_img_list')
     """
     """ Get config variables """
     intensity: int = config["param"]["intensity"]
