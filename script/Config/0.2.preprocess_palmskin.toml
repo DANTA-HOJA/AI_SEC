@@ -1,0 +1,36 @@
+[data_nasdl]
+  dir = "{20230904_Update}_Zebrafish_AP_strategies"
+  type = "PalmSkin_RAW" # This config is EXCLUSIVE for palmskin images.
+  batches = []
+  # batches = ["Upload_20221209", ...] # directory example
+  #
+  # Note:
+  # - If `batches` is [] (empty list), it will recursively scan and process ALL LIF FILEs on:
+  #     => 'Path(THIS_REPOSITORY)/{Data}_NASDL/`dir`/PalmSkin_RAW/**/*.lif'
+  # - If directories are given, it will handle the given directories only.
+
+# -----------------------------------------------------------------------------\
+[data_processed]
+  instance_desc = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num], [num] will determine later.
+  palmskin_reminder = "m113_m222_ku15" # dir_name = {`palmskin_reminder`}_PalmSkin_preprocess.
+  # Note: `palmskin_reminder` is JUST a reminder; the identity still depends on `instance_desc`.
+  #
+  # - UPDATE MODE: If `instance_desc` is an existing folder,
+  #                it will 1. Use [param] in the existing config to process the RAW files;
+  #                        2. Store the processed files into the existing folder.
+  #
+  # - CREATE MODE: If `instance_desc` is NOT an existing folder,
+  #                it will 1. CREATE a NEW directory with the name '{`instance_desc`}_Academia_Sinica_iTBA';
+  #                        2. Use [param] in this config to process the RAW files;
+  #                        3. Store the processed files into the NEW directory.
+  #
+  # - Therefore, you can specify
+  #     1. a new `data_processed.instance_desc` name
+  #     2. a new `data_nasdl.batches` list
+  #   to create a instance with specific data.
+
+# -----------------------------------------------------------------------------\
+[param]
+    median3d_xyz = [1, 1, 3]
+    mean3d_xyz = [2, 2, 2]
+    kuwahara_sampling = 15

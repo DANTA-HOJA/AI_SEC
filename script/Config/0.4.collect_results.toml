@@ -1,0 +1,8 @@
+[data_processed]
+  instance_desc = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+
+# -----------------------------------------------------------------------------\
+[collection]
+  image_type = "brightfield" # 'palmskin' or 'brightfield'
+  result_alias = "UNet_cropped_BF--MIX"
+  log_mode = "missing" # 'missing' or 'finding' (different representation in log file)

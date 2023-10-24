@@ -1,8 +1,12 @@
 __pycache__
+
 .vscode
+*.code-workspace
+
 *.yaml
 *.toml
 
+*.sh
 *.ps1
 
 *.txt
@@ -11,12 +15,11 @@ __pycache__
 *.tif
 *.tiff
 
-*.ckpt
 *.zip
+*.ckpt
 
 FuncTest_with_ipynb/**/*.png
 FuncTest_with_ipynb/tensorboardx/**
 !FuncTest_with_ipynb/tensorboardx/**/*.ipynb
 
-*.sh
-*.code-workspace
+!script/Config/*.toml

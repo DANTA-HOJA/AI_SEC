@@ -1,0 +1,37 @@
+[data_nasdl]
+  dir = "{20230904_Update}_Zebrafish_AP_strategies"
+  type = "BrightField_RAW" # This config is EXCLUSIVE for brightfield images.
+  batches = []
+  # batches = ["Upload_20221209", ...] # directory example
+  #
+  # Note:
+  # - If `batches` is [] (empty list), it will recursively scan and process ALL LIF FILEs on:
+  #     => 'Path(THIS_REPOSITORY)/{Data}_NASDL/`dir`/BrightField_RAW/**/*.lif'
+  # - If directories are given, it will handle the given directories only.
+
+# -----------------------------------------------------------------------------\
+[data_processed]
+  instance_desc = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num], [num] will determine later.
+  brightfield_reminder = "autothres_triangle" # dir_name = {`brightfield_reminder`}_BrightField_analyze.
+  # Note: `brightfield_reminder` is JUST a reminder; the identity still depends on `instance_desc`.
+  #
+  # - UPDATE MODE: If `instance_desc` is an existing folder,
+  #                it will 1. Use [param] in the existing config to process the RAW files;
+  #                        2. Store the processed files into the existing folder.
+  #
+  # - CREATE MODE: If `instance_desc` is NOT an existing folder,
+  #                it will 1. CREATE a NEW directory with the name '{`instance_desc`}_Academia_Sinica_iTBA';
+  #                        2. Use [param] in this config to process the RAW files;
+  #                        3. Store the processed files into the NEW directory.
+  #
+  # - Therefore, you can specify
+  #     1. a new `data_processed.instance_desc` name
+  #     2. a new `data_nasdl.batches` list
+  #   to create a instance with specific data.
+
+# -----------------------------------------------------------------------------\
+[param]
+  crop_rect = {"x" = 50, "y" = 700, "w" = 1950, "h" = 700} # (x, y) is 'Left-Top' corner of image
+  micron_per_pixel = 3.25 # for 'Set Scale...' cmd
+  auto_threshold = "Triangle"
+  measure_range = {"lower_bound" = 800000, "upper_bound" = 4000000} # after apply 'Set Scale...' cmd
