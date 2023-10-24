@@ -1,0 +1,39 @@
+[model_prediction]
+  time_stamp = "20231014_05_23_57_"
+  state = "best" # 'best' or 'final' (model.pth)
+
+# -----------------------------------------------------------------------------\
+[multiprocessing]
+  worker = 16 # for `MtCamGalleryExecutor`
+
+# -----------------------------------------------------------------------------\
+# Note:
+# - Set to [] (empty list) to use the 'default value' or activate 'auto-detection'.
+# - color params: The channel order is RGB.
+# - fonts: support `ttf` font file only.
+
+[layout]
+  column = []  # default: CRPS512=5, CRPS256=13
+
+[draw.drop_image.line]
+  color = []  # default: (180, 160,  0 )
+  width = 5   # default: 2
+
+[draw.cam_image]
+  weight = []  # default: 0.5
+               # range: 0-1, the higher value, the more significant cam image.
+
+[draw.cam_image.replace_color]
+  enable = false
+  colormap = "COLORMAP_HOT"
+  # - options of colormap:
+  #   ref: https://docs.opencv.org/4.6.0/d3/d50/group__imgproc__colormap.html#ga9a805d8262bcbe273f16be9ea2055a65
+
+[draw.cam_image.text]
+  font_style = []  # default: Win='consola.ttf', Ubuntu='UbuntuMono-R.ttf'
+  font_size = []   # default: 'auto-detection'
+
+[draw.cam_image.text.color]
+  correct = []                 # default: ( 0 , 255,  0 )
+  incorrect = [255, 255, 170]  # default: (255, 255, 255)
+  shadow = []                  # default: ( 0 ,  0 ,  0 )
