@@ -18,8 +18,8 @@ __pycache__
 *.zip
 *.ckpt
 
-FuncTest_with_ipynb/**/*.png
-FuncTest_with_ipynb/tensorboardx/**
-!FuncTest_with_ipynb/tensorboardx/**/*.ipynb
+ipynb_playground/**/*.png
+ipynb_playground/tensorboardx/**
+ipynb_playground/tensorboardx/**/*.ipynb
 
 !script/Config/*.toml
