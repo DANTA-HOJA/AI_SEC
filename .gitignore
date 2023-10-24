@@ -20,6 +20,7 @@ __pycache__
 
 ipynb_playground/**/*.png
 ipynb_playground/tensorboardx/**
-ipynb_playground/tensorboardx/**/*.ipynb
+!ipynb_playground/tensorboardx/**/*.ipynb
+!ipynb_playground/yaml/sample_config.yaml
 
 !script/Config/*.toml
