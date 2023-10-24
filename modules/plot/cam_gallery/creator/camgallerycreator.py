@@ -395,7 +395,7 @@ class CamGalleryCreator:
 
 
 
-    def draw_on_drop_image(self, path:str, bgr_img:cv2.Mat):
+    def draw_on_drop_image(self, path:str, bgr_img:np.ndarray):
         """
         """
         rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
@@ -407,8 +407,8 @@ class CamGalleryCreator:
 
 
 
-    def draw_on_cam_image(self, cam_path:str, cam_img: cv2.Mat,
-                                preserve_path:str, preserve_bgr_img: cv2.Mat):
+    def draw_on_cam_image(self, cam_path:str, cam_img: np.ndarray,
+                                preserve_path:str, preserve_bgr_img: np.ndarray):
         """
         """
         # preparing `cam_img`
