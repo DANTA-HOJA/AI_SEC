@@ -287,7 +287,7 @@ def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
     #                                        ## Note: matplotlib figure 預設為 RGBA (透明背景)
     # buffer.close()
     
-    with tempfile.NamedTemporaryFile(suffix='.png', dir=temp_file_dir) as f_writer:
+    with tempfile.NamedTemporaryFile(suffix='.png') as f_writer:
         figure.savefig(f_writer, format='png')
         f_writer.seek(0)
         pil_img = deepcopy(Image.open(f_writer))
