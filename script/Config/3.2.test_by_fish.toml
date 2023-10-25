@@ -4,7 +4,7 @@
 
 # -----------------------------------------------------------------------------\
 [test_opts]
-  batch_size = 16
+  batch_size = 64
 
 [test_opts.debug_mode]
   enable = false # if `true`, sample `rand_select` images only
