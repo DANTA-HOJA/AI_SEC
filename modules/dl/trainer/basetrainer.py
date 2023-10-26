@@ -133,8 +133,7 @@ class BaseTrainer:
                 plot_training_trend(**plot_training_trend_kwargs) # save file
                 
                 """ Print `output_string` """
-                if ("◎㊣◎" in self.output_string) or ("☆★☆" in self.output_string):
-                    self._cli_out.write(self.output_string)
+                self._cli_out.write(self.output_string)
                 
                 """ SystemExit condition """
                 if self.accum_no_improved == self.max_no_improved:
@@ -611,17 +610,20 @@ class BaseTrainer:
         
         """ Check 'EarlyStop' """
         log["train_state"] = ""
-        if self.enable_earlystop:
-            if log["average_loss"] < self.best_train_avg_loss:
-                self.best_train_avg_loss = log["average_loss"]
-                self.accum_no_improved = 0
-                self.output_string += (f", ☆★☆ BEST_TRAIN_LOSS ☆★☆"
-                                       f", best_train_avg_loss = {self.best_train_avg_loss}")
-            else:
-                log["train_state"] = "◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
+        if log["average_loss"] < self.best_train_avg_loss:
+            self.best_train_avg_loss = log["average_loss"]
+            if self.enable_earlystop: self.accum_no_improved = 0
+            
+            self.output_string += (f", ☆★☆ BEST_TRAIN_LOSS ☆★☆"
+                                   f", best_train_avg_loss = {self.best_train_avg_loss}")
+        else:
+            log["train_state"] = "◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
+            
+            if self.enable_earlystop:
                 self.accum_no_improved += 1
                 self.output_string += (f", ◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
                                        f", accum_no_improved = {self.accum_no_improved}")
+            else: self.output_string += (f", ◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎")
         
         """ Update `self.train_logs` """
         self.train_logs.append(log)
