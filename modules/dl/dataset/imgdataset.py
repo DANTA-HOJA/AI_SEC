@@ -59,7 +59,7 @@ class ImgDataset(Dataset):
         
         """ Read image """
         fish_path: Path = Path(self.dataset_df.iloc[index]["path"])
-        img: cv2.Mat = cv2.imread(str(fish_path))
+        img: np.ndarray = cv2.imread(str(fish_path))
         
         """ Augmentation on the fly """
         if self.transform is not None:
