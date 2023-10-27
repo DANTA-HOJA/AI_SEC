@@ -12,13 +12,13 @@ abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
-from utils import get_debug_config
+from utils import get_tool_config
 from modules.data.dataset import dsname
 from modules.shared.config import load_config
 # -----------------------------------------------------------------------------/
 
 
-dataset_xlsx_path = load_config(get_debug_config(__file__))["path"]
+dataset_xlsx_path = load_config(get_tool_config(__file__))["path"]
 print(f"\nDataset XLSX Path: '{dataset_xlsx_path}'\n")
 dataset_xlsx_df: pd.DataFrame = pd.read_excel(dataset_xlsx_path, engine='openpyxl')
 
