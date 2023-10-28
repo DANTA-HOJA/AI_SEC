@@ -1,20 +1,26 @@
-import os
-import sys
-import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
-from collections import Counter
 import json
+import os
+import re
+import sys
+from collections import Counter
+from pathlib import Path
 
 import pandas as pd
+from rich import print
+from rich.panel import Panel
+from rich.pretty import Pretty
+from rich.traceback import install
 
 abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from utils import get_tool_config
+
 from modules.data.dataset import dsname
 from modules.shared.config import load_config
+
+install()
 # -----------------------------------------------------------------------------/
 
 
@@ -39,5 +45,5 @@ for fish in preserve_test_fish_dict.keys():
     test_fish_dict.pop(fish)
 
 # CLI out
-print(f">>> Full Discard Test Fish [ {len(test_fish_dict)} fish ]: \n"
-      f"{json.dumps(list(test_fish_dict.keys()), indent=2)}\n")
+print(">>> Full Discard Test Fish [ {x} files ]".format(x=len(test_fish_dict)))
+print(Panel(Pretty(list(test_fish_dict.keys()), expand_all=True)), "\n")
