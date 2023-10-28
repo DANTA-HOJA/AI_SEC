@@ -13,7 +13,7 @@ abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
-from utils import get_tool_config
+from utils import get_tool_config_path
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 
@@ -23,7 +23,7 @@ install()
 
 # init `ProcessedDataInstance`
 processed_data_instance = ProcessedDataInstance()
-processed_data_instance.set_attrs(get_tool_config(__file__))
+processed_data_instance.set_attrs(get_tool_config_path(__file__))
 
 # reminder
 temp_str = processed_data_instance.palmskin_processed_reminder
