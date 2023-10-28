@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+import argparse
 from typing import List, Dict, Tuple, Union
 import toml
 import tomlkit
@@ -8,7 +10,7 @@ from .clioutput import CLIOutput
 from .utils import get_repo_root
 
 from ..assert_fn import assert_only_1_config
-
+# -----------------------------------------------------------------------------/
 
 
 def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
@@ -49,6 +51,7 @@ def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
         config = load_fn(f_reader)
     
     return config
+    # -------------------------------------------------------------------------/
 
 
 
@@ -57,3 +60,33 @@ def dump_config(path:Path, config:Union[dict, TOMLDocument]):
     """
     with open(path, mode="w") as f_writer:
         tomlkit.dump(config, f_writer)
+    # -------------------------------------------------------------------------/
+
+
+
+def get_batch_config(file_path:str) -> List[Path]:
+    """
+    """
+    file_path = os.path.splitext(file_path)[0]
+    file_dir, name = os.path.split(file_path)
+    config_dir = Path(file_dir).joinpath("batch_config")
+    found_list = list(config_dir.glob("**/*.toml"))
+    
+    return found_list
+    # -------------------------------------------------------------------------/
+
+
+
+def get_batch_config_arg():
+    """ using batch config mode
+    """
+    parser = argparse.ArgumentParser(description="using batch config mode")
+    parser.add_argument(
+        "--batch_mode",
+        action="store_true",
+    )
+    
+    args = parser.parse_args()
+    
+    return args
+    # -------------------------------------------------------------------------/
