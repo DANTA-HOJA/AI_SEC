@@ -5,7 +5,8 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 ## Package Dependencies
 
 ```
-numpy==1.23.0
+numpy = 1.23.0
+pytorch = 1.13.1 + cu116
 ```
 
 ## Data Information ( *temporarily halt updates* )
