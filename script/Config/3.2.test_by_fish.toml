@@ -1,0 +1,21 @@
+[model_prediction]
+  time_stamp = "20231014_05_23_57_"
+  state = "best" # 'best' or 'final' (model.pth)
+
+# -----------------------------------------------------------------------------\
+[test_opts]
+  batch_size = 64
+
+[test_opts.debug_mode]
+  enable = false # if `true`, sample `rand_select` images only
+  rand_select = 100 # samples for debugging
+
+[test_opts.cuda]
+  index = 0
+
+# -----------------------------------------------------------------------------\
+[cam]
+  enable = true
+  colormap_key = "COLORMAP_JET"
+  # - options of colormap:
+  #   ref: https://docs.opencv.org/4.6.0/d3/d50/group__imgproc__colormap.html#ga9a805d8262bcbe273f16be9ea2055a65

@@ -1,0 +1,674 @@
+import os
+import sys
+import re
+from pathlib import Path
+from typing import List, Dict, Tuple, Union
+from collections import OrderedDict
+import json
+
+import cv2
+import numpy as np
+import pandas as pd
+import toml
+from tomlkit.toml_document import TOMLDocument
+from colorama import Fore, Back, Style
+from tqdm.auto import tqdm
+
+from . import dname
+from ..shared.clioutput import CLIOutput
+from ..shared.config import load_config
+from ..shared.pathnavigator import PathNavigator
+from ..shared.utils import create_new_dir
+
+from ..assert_fn import *
+# -----------------------------------------------------------------------------/
+
+
+class ProcessedDataInstance():
+
+
+    def __init__(self, display_on_CLI=True) -> None:
+        """
+        """
+        # ---------------------------------------------------------------------
+        # """ components """
+        
+        self._path_navigator = PathNavigator()
+        self._cli_out = CLIOutput(display_on_CLI, 
+                                  logger_name="Processed Data Instance")
+        
+        # ---------------------------------------------------------------------
+        # """ attributes """
+        
+        self.data_processed_root:Union[None, Path] = \
+            self._path_navigator.dbpp.get_one_of_dbpp_roots("data_processed")
+        
+        self.config:Union[dict, TOMLDocument] = {}
+        
+        self.instance_root:Union[None, Path] = None
+        self.instance_desc:Union[None, str] = None
+        self.instance_name:Union[None, str] = None
+        
+        self.palmskin_processed_dir:Union[None, Path] = None
+        self.palmskin_processed_reminder:Union[None, str] = None
+        self.palmskin_processed_dname_dirs_dict:Dict[str, Path] = {}
+        self.palmskin_processed_config:dict = {}
+        self.palmskin_processed_alias_map:Dict[str, str] = {}
+        
+        self.brightfield_processed_dir:Union[None, Path] = None
+        self.brightfield_processed_reminder:Union[None, str] = None
+        self.brightfield_processed_dname_dirs_dict:Dict[str, Path] = {}
+        self.brightfield_processed_config:dict = {}
+        self.brightfield_processed_alias_map:Dict[str, str] = {}
+        
+        self.palmskin_recollect_dir:Union[None, Path] = None
+        self.palmskin_recollected_dirs_dict:Dict[str, Path] = {}
+        
+        self.brightfield_recollect_dir:Union[None, Path] = None
+        self.brightfield_recollected_dirs_dict:Dict[str, Path] = {}
+        
+        self.data_xlsx_path:Union[None, Path] = None
+        
+        self.clustered_xlsx_dir:Union[None, Path] = None
+        self.clustered_xlsx_files_dict:Dict[str, Path] = {}
+        # ---------------------------------------------------------------------/
+
+
+
+    def set_attrs(self, config_file:Union[str, Path]):
+        """
+        """
+        self.config = load_config(config_file, cli_out=self._cli_out)
+        self._set_instance_root()
+        self._set_processed_dirs()
+        self._set_processed_dname_dirs_dicts()
+        self._set_processed_configs()
+        self._set_processed_alias_maps()
+        self._set_recollect_dirs()
+        self._set_data_xlsx_path()
+        self._set_clustered_xlsx_dir()
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_instance_root(self):
+        """ Set below attributes
+            1. `self.instance_root`
+            2. `self.instance_desc`
+            3. `self.instance_name`
+        """
+        path = self._path_navigator.processed_data.get_instance_root(self.config, self._cli_out)
+        assert_dir_exists(path)
+        
+        self.instance_root = path
+        self.instance_desc = self.config["data_processed"]["instance_desc"]
+        self.instance_name = str(self.instance_root).split(os.sep)[-1]
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_processed_dirs(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_dir`
+            2. `self.palmskin_processed_reminder`
+            3. `self.brightfield_processed_dir`
+            4. `self.brightfield_processed_reminder`
+        """
+        """ palmskin """
+        path = self._path_navigator.processed_data.get_processed_dir("palmskin", self.config, self._cli_out)
+        if path:
+            self.palmskin_processed_dir = path
+            self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+        else:
+            raise FileNotFoundError("Can't find any 'PalmSkin_preprocess' directory, "
+                                    "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.\n")
+        
+        """ brightfield """
+        path = self._path_navigator.processed_data.get_processed_dir("brightfield", self.config, self._cli_out)
+        if path:
+            self.brightfield_processed_dir = path
+            self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+        else:
+            raise FileNotFoundError("Can't find any 'BrightField_analyze' directory, "
+                                    "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.\n")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _scan_processed_dname_dirs(self, image_type:str):
+        """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        dname_dirs = processed_dir.glob("*")
+        
+        dname_dirs_dict = {str(dname_dir).split(os.sep)[-1]: dname_dir
+                                                         for dname_dir in dname_dirs}
+        
+        for key in list(dname_dirs_dict.keys()):
+            if key == "!~delete": dname_dirs_dict.pop(key) # rm "!~delete" directory
+            if ".log" in key: dname_dirs_dict.pop(key) # rm "log" files
+            if ".toml" in key: dname_dirs_dict.pop(key) # rm "toml" file
+        
+        dname_dirs_dict = OrderedDict(sorted(list(dname_dirs_dict.items()), key=lambda x: dname.get_dname_sortinfo(x[0])))
+        
+        return dname_dirs_dict
+        # ---------------------------------------------------------------------/
+
+
+
+    def _update_instance_postfixnum(self):
+        """
+        """
+        old_name = self.instance_name
+        new_name = f"{{{self.instance_desc}}}_Academia_Sinica_i{len(self.palmskin_processed_dname_dirs_dict)}"
+        
+        if new_name != old_name:
+            self._cli_out.write("Update Instance Postfix Number ...")
+            os.rename(self.instance_root, self.data_processed_root.joinpath(new_name))
+            self._set_instance_root()
+            self._set_processed_dirs()
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_processed_dname_dirs_dicts(self):
+        """ Set below attributes, run functions : 
+            1. `self.palmskin_processed_dname_dirs_dict`
+            2. `self._update_instance_postfixnum()`
+            3. `self.brightfield_processed_dname_dirs_dict`
+        """
+        """ palmskin """
+        self.palmskin_processed_dname_dirs_dict = self._scan_processed_dname_dirs("palmskin")
+        self._update_instance_postfixnum()
+        
+        """ brightfield """
+        self.brightfield_processed_dname_dirs_dict = self._scan_processed_dname_dirs("brightfield")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_recollect_dirs(self):
+        """ Set below attributes 
+            1. `self.palmskin_recollect_dir`
+            2. `self.palmskin_recollected_dirs_dict`
+            3. `self.brightfield_recollect_dir`
+            4. `self.brightfield_recollected_dirs_dict`
+        """
+        """ palmskin """
+        path = self._path_navigator.processed_data.get_recollect_dir("palmskin", self.config, self._cli_out)
+        if self.palmskin_recollect_dir != path:
+            self.palmskin_recollect_dir = path
+            self._update_recollected_dirs_dict("palmskin")
+        else:
+            self._update_recollected_dirs_dict("palmskin")
+        
+        """ brightfield """
+        path = self._path_navigator.processed_data.get_recollect_dir("brightfield", self.config, self._cli_out)
+        if self.brightfield_recollect_dir != path:
+            self.brightfield_recollect_dir = path
+            self._update_recollected_dirs_dict("brightfield")
+        else:
+            self._update_recollected_dirs_dict("brightfield")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _update_recollected_dirs_dict(self, image_type:str):
+        """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        setattr(self, f"{image_type}_recollected_dirs_dict", {}) # reset dict
+        recollected_dict = getattr(self, f"{image_type}_recollected_dirs_dict")
+        
+        recollect_dir:Union[None, Path] = getattr(self, f"{image_type}_recollect_dir")
+        if recollect_dir is not None:
+            """ Scan directories """
+            found_list = sorted(list(recollect_dir.glob("*")), key=lambda x: str(x))
+            for recollected_dir in found_list:
+                recollected_name = str(recollected_dir).split(os.sep)[-1]
+                recollected_dict[recollected_name] = recollected_dir
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_data_xlsx_path(self):
+        """ Set below attributes
+            1. `self.data_xlsx_path`
+        """
+        self.data_xlsx_path = self._path_navigator.processed_data.get_data_xlsx_path(self.config, self._cli_out)
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_clustered_xlsx_dir(self):
+        """ Set below attributes
+            1. `self.clustered_xlsx_dir`
+            2. `self.clustered_xlsx_files_dict`
+        """
+        path = self._path_navigator.processed_data.get_clustered_xlsx_dir(self.config, self._cli_out)
+        if self.clustered_xlsx_dir != path:
+            self.clustered_xlsx_dir = path
+            self._update_clustered_xlsx_files_dict()
+        else:
+            self._update_clustered_xlsx_files_dict()
+        # ---------------------------------------------------------------------/
+
+
+
+    def _update_clustered_xlsx_files_dict(self):
+        """
+        """
+        self.clustered_xlsx_files_dict = {} # reset variable
+        
+        if self.clustered_xlsx_dir is not None:
+            """ Scan files """
+            found_list = sorted(list(self.clustered_xlsx_dir.glob("**/{*}_data.xlsx")), key=lambda x: str(x))
+            for xlsx_file in found_list:
+                if "temp" in str(xlsx_file): # skip files in 'temp' directory
+                    continue
+                xlsx_name = str(xlsx_file).split(os.sep)[-1]
+                cluster_desc = re.split("{|}", xlsx_name)[1]
+                if cluster_desc in self.clustered_xlsx_files_dict:
+                    raise ValueError(f"Mutlple '{{{cluster_desc}}}_data.xlsx' are found, "
+                                     f"please check file uniqueness under: '{self.clustered_xlsx_dir}'\n")
+                else:
+                    self.clustered_xlsx_files_dict[cluster_desc] = xlsx_file
+        # ---------------------------------------------------------------------/
+
+
+
+    def _load_processed_config(self, image_type:str):
+        """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        if image_type == "palmskin":
+            target_text = "palmskin_preprocess"
+        elif image_type == "brightfield":
+            target_text = "brightfield_analyze"
+        
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        config_path = processed_dir.joinpath(f"{target_text}_config.toml")
+        assert_file_exists(config_path)
+        
+        with open(config_path, mode="r") as f_reader:
+            config = toml.load(f_reader)
+        
+        setattr(self, f"{image_type}_processed_config", config)
+        # ---------------------------------------------------------------------/
+
+
+
+    def _load_processed_alias_map(self, image_type:str):
+        """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        map_path = processed_dir.joinpath(f"{image_type}_result_alias_map.toml")
+        assert_file_exists(map_path)
+        
+        with open(map_path, mode="r") as f_reader:
+            alias_map = toml.load(f_reader)
+        
+        setattr(self, f"{image_type}_processed_alias_map", alias_map)
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_processed_configs(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_config`
+            2. `self.brightfield_processed_config`
+        """
+        self._load_processed_config("palmskin")
+        self._load_processed_config("brightfield")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _set_processed_alias_maps(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_alias_map`
+            2. `self.brightfield_processed_alias_map`
+        """
+        self._load_processed_alias_map("palmskin")
+        self._load_processed_alias_map("brightfield")
+        # ---------------------------------------------------------------------/
+
+
+
+    def _get_sorted_results(self, image_type:str, result_alias:str) -> Tuple[str, List[Path]]:
+        """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+            result_alias (str): please refer to `result_alias_map.toml` \
+                                under `PalmSkin_preprocess` or `BrightField_analyze` directory
+
+        Returns:
+            Tuple[str, List[Path]]: `(relative_path_under_dname_dir, sorted_results)`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        alias_map = getattr(self, f"{image_type}_processed_alias_map")
+        
+        assert alias_map[result_alias]
+        rel_path:str = alias_map[result_alias]
+        sorted_results = sorted(processed_dir.glob(f"*/{rel_path}"), key=dname.get_dname_sortinfo)
+        
+        return rel_path, sorted_results
+        # ---------------------------------------------------------------------/
+
+
+
+    def collect_results(self, config_file:Union[str, Path]="0.4.collect_results.toml"):
+        """ 
+
+        Args:
+            config_file (Union[str, Path], optional): Defaults to `0.4.collect_results.toml`.
+
+        Raises:
+            ValueError: If (config key) `image_type` != 'palmskin' or 'brightfield'.
+            ValueError: If (config key) `log_mode` != 'missing' or 'finding'.
+            FileExistsError: If target `recollect_dir` exists.
+        """        
+        self._cli_out.divide()
+        self.set_attrs(config_file)
+        
+        """ Get variable """
+        config = load_config(config_file)
+        image_type = config["collection"]["image_type"]
+        result_alias = config["collection"]["result_alias"]
+        log_mode = config["collection"]["log_mode"]
+        
+        """ Check variable """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+            
+        if log_mode not in ["missing", "finding"]:
+            raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only\n")
+        
+        """ Scan results """
+        rel_path, results = self._get_sorted_results(image_type, result_alias)
+        
+        """ Get `recollect_dir` """
+        if image_type == "palmskin": target_text = "PalmSkin"
+        elif image_type == "brightfield": target_text = "BrightField"
+        reminder = getattr(self, f"{image_type}_processed_reminder")
+        recollect_dir = self.instance_root.joinpath(f"{{{reminder}}}_{target_text}_reCollection", result_alias)
+        if recollect_dir.exists():
+            raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.\n")
+        else:
+            create_new_dir(recollect_dir)
+        
+        """ Main process """
+        summary = {}
+        summary["result_alias"] = result_alias
+        summary["file_name"] = rel_path.split(os.sep)[-1]
+        summary["max_probable_num"] = dname.get_dname_sortinfo(results[-1])[0]
+        summary["total files"] = len(results)
+        summary[log_mode] = []
+        
+        previous_name = ""
+        for i in range(summary["max_probable_num"]):
+            
+            one_base_iter_num = i+1
+            
+            """ pos option """
+            if image_type == "palmskin": pos_list = ["A", "P"]
+            else: pos_list = [""] # brightfield
+            
+            for pos in pos_list:
+                
+                """ expect_name """
+                if image_type == "palmskin": expect_name = f"{one_base_iter_num}_{pos}"
+                else: expect_name = f"{one_base_iter_num}" # brightfield
+                
+                """ current_name """
+                fish_id, fish_pos = dname.get_dname_sortinfo(results[0])
+                if image_type == "palmskin": current_name = f"{fish_id}_{fish_pos}"
+                else: current_name = f"{fish_id}" # brightfield
+                
+                assert current_name != previous_name, f"Fish repeated!, check '{current_name}' "
+                
+                """ comparing """
+                if current_name == expect_name:
+                    """ True """
+                    path = results.pop(0)
+                    dname.resave_result(path, recollect_dir)
+                    previous_name = current_name
+                    if log_mode == "finding": summary[log_mode].append(f"{expect_name}")
+                else:
+                    """ False """
+                    if log_mode == "missing": summary[log_mode].append(f"{expect_name}")
+
+        summary[f"len({log_mode})"] = len(summary[log_mode])        
+        
+        """ Dump `summary` dict """
+        log_path = recollect_dir.joinpath(f"{{Logs}}_collect_{image_type}_results.log")
+        with open(log_path, mode="w") as f_writer:
+            json.dump(summary, f_writer, indent=4)
+        self._cli_out.write(json.dumps(summary, indent=4))
+        
+        """ Update `recollect_dir` """
+        self._set_recollect_dirs()
+        # ---------------------------------------------------------------------/
+
+
+
+    def create_data_xlsx(self, config_file:Union[str, Path]="0.5.create_data_xlsx.toml"):
+        """ Create a XLSX file contains `dname` and `brightfield analyze` informations \
+            ( used to compute the classes of classification )
+
+        Args:
+            config_file (Union[str, Path], optional): Defaults to `0.5.create_data_xlsx.toml`.
+        """
+        self._cli_out.divide()
+        self.set_attrs(config_file)
+        
+        # ---------------------------------------------------------------------
+        # brightfield
+        
+        """ Scan `UNetAnalysis`, `ManualAnalysis` results """
+        bf_auto_results_list = self._get_sorted_results("brightfield", "UNetAnalysis")[1]
+        bf_manual_results_list = self._get_sorted_results("brightfield", "ManualAnalysis")[1]
+        self._cli_out.write((f"brightfield: found "
+                             f"{len(bf_auto_results_list)} UNetAnalysis.csv, "
+                             f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
+                             f"Total: {len(bf_auto_results_list) + len(bf_manual_results_list)} files"))
+
+        """ Merge `UNetAnalysis`, `ManualAnalysis` results """
+        bf_auto_results_dict = dname.create_dict_by_id(bf_auto_results_list)
+        bf_manual_results_dict = dname.create_dict_by_id(bf_manual_results_list)
+        bf_merge_results_dict = dname.merge_dict_by_id(bf_auto_results_dict, bf_manual_results_dict)
+        bf_merge_results_list = sorted(list(bf_merge_results_dict.values()), key=dname.get_dname_sortinfo)
+        self._cli_out.write(f"--> After Merging , Total: {len(bf_merge_results_list)} files\n")
+        
+        # ---------------------------------------------------------------------
+        # palmskin
+
+        palmskin_processed_dname_dirs = list(self.palmskin_processed_dname_dirs_dict.keys())
+        self._cli_out.write(f"palmskin: found {len(palmskin_processed_dname_dirs)} dname directories\n")
+        
+        # ---------------------------------------------------------------------
+        # Main process
+
+        xlsx_path = self.instance_root.joinpath("data.xlsx")
+        xlsx_df = pd.DataFrame(columns=["Brightfield",
+                                        "Analysis Mode",
+                                        "Palmskin Anterior (SP8)", 
+                                        "Palmskin Posterior (SP8)",
+                                        "Trunk surface area, SA (um2)",
+                                        "Standard Length, SL (um)"])
+        delete_uncomplete_row = True
+        max_probable_num = dname.get_dname_sortinfo(bf_merge_results_list[-1])[0]
+        
+        for i in range(max_probable_num):
+            
+            one_base_iter_num = i+1 # Make iteration starting number start from 1
+            self._cli_out.write(f"one_base_iter_num : {one_base_iter_num}")
+            
+            if  one_base_iter_num == dname.get_dname_sortinfo(bf_merge_results_list[0])[0]:
+                
+                """ Get informations """
+                bf_result_path = bf_merge_results_list.pop(0)
+                bf_result_path_split = str(bf_result_path).split(os.sep)
+                bf_result_dname = bf_result_path_split[-2]
+                bf_result_analysis_mode = bf_result_path_split[-1].split(".")[0] # `UNetAnalysis` or `ManualAnalysis`
+                self._cli_out.write(f"bf_result_dname : '{bf_result_dname}'")
+                self._cli_out.write(f"analysis_mode : '{bf_result_analysis_mode}'")
+                
+                """ Read CSV """
+                analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
+                assert len(analysis_csv) == 1, f"More than 1 measurement in csv file, file: '{bf_result_path}'"
+                
+                """ Get surface area """
+                surface_area = analysis_csv.loc[1, "Area"]
+                self._cli_out.write(f"surface_area : {surface_area}")
+                
+                """ Get standard length """
+                standard_length = analysis_csv.loc[1, "Feret"]
+                self._cli_out.write(f"standard_length : {standard_length}")
+                
+                """ Assign value to Dataframe """
+                xlsx_df.loc[one_base_iter_num, "Brightfield"] = bf_result_dname
+                xlsx_df.loc[one_base_iter_num, "Analysis Mode"] = bf_result_analysis_mode
+                xlsx_df.loc[one_base_iter_num, "Trunk surface area, SA (um2)"] = surface_area
+                xlsx_df.loc[one_base_iter_num, "Standard Length, SL (um)"] = standard_length
+
+            else: xlsx_df.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
+            
+            
+            sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
+            if f"{one_base_iter_num}_A" == f"{sortinfo[0]}_{sortinfo[1]}":
+                palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
+                self._cli_out.write(f"palmskin_A_name : '{palmskin_A_name}'")
+                xlsx_df.loc[one_base_iter_num, "Palmskin Anterior (SP8)" ] =  palmskin_A_name
+            
+            
+            sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
+            if f"{one_base_iter_num}_P" == f"{sortinfo[0]}_{sortinfo[1]}":
+                palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
+                self._cli_out.write(f"palmskin_P_name : '{palmskin_P_name}'")
+                xlsx_df.loc[one_base_iter_num, "Palmskin Posterior (SP8)" ] =  palmskin_P_name
+
+            self._cli_out.write("\n")
+
+        
+        if delete_uncomplete_row: xlsx_df.dropna(inplace=True)
+        xlsx_df.to_excel(xlsx_path, engine="openpyxl")
+        self._set_data_xlsx_path()
+        # ---------------------------------------------------------------------/
+
+
+
+    def __repr__(self):
+        
+        repr_string = "{\n"
+        repr_string += f"self.data_processed_root : '{self.data_processed_root}'\n\n"
+
+        repr_string += f"self.instance_root : '{self.instance_root}'\n"
+        repr_string += f"self.instance_desc : '{self.instance_desc}'\n"
+        repr_string += f"self.instance_name : '{self.instance_name}'\n\n"
+
+        repr_string += f"self.palmskin_processed_dir : '{self.palmskin_processed_dir}'\n"
+        repr_string += f"self.palmskin_processed_reminder : '{self.palmskin_processed_reminder}'\n"
+        repr_string += f"self.palmskin_processed_config.param : {json.dumps(self.palmskin_processed_config['param'], indent=4)}\n\n"
+                
+        repr_string += f"self.brightfield_processed_dir : '{self.brightfield_processed_dir}'\n"
+        repr_string += f"self.brightfield_processed_reminder : '{self.brightfield_processed_reminder}'\n"
+        repr_string += f"self.brightfield_processed_config.param : {json.dumps(self.brightfield_processed_config['param'], indent=4)}\n\n"
+                
+        repr_string += f"self.palmskin_recollect_dir : '{self.palmskin_recollect_dir}'\n"
+        repr_string += f"self.palmskin_recollected_dirs_dict : {json.dumps(list(self.palmskin_recollected_dirs_dict.keys()), indent=4)}\n\n"
+                
+        repr_string += f"self.brightfield_recollect_dir : '{self.brightfield_recollect_dir}'\n"
+        repr_string += f"self.brightfield_recollected_dirs_dict : {json.dumps(list(self.brightfield_recollected_dirs_dict.keys()), indent=4)}\n\n"
+                
+        repr_string += f"self.data_xlsx_path : '{self.data_xlsx_path}'\n"
+                
+        repr_string += f"self.clustered_xlsx_dir : '{self.clustered_xlsx_dir}'\n"
+        repr_string += f"self.clustered_xlsx_files_dict : {json.dumps(list(self.clustered_xlsx_files_dict.keys()), indent=4)}\n\n"
+        repr_string += "}\n"
+        
+        return repr_string
+        # ---------------------------------------------------------------------/
+
+
+
+    def check_palmskin_images_condition(self, config_file:Union[str, Path]="1.make_dataset.toml"):
+        """ Check the existence and readability of the palmskin images recorded in the XLSX file.
+
+        Args:
+            config_file (Union[str, Path]): Defaults to `1.make_dataset.toml`.
+
+        Raises:
+            RuntimeError: If detect a broken/non-existing image.
+        """
+        self._cli_out._display_on_CLI = False # close CLI output temporarily
+        self.set_attrs(config_file)
+        self._cli_out._display_on_CLI = True
+        
+        """ Get variable """
+        config = load_config(config_file)
+        palmskin_result_alias = config["data_processed"]["palmskin_result_alias"]
+        
+        """ Get dnames record in XLSX  """
+        if self.data_xlsx_path is None:
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.xlsx`, "
+                                    f"please use `self.create_data_xlsx()` to create it. {Style.RESET_ALL}\n")
+        xlsx_df: pd.DataFrame = pd.read_excel(self.data_xlsx_path, engine='openpyxl')
+        palmskin_dnames = sorted(pd.concat([xlsx_df["Palmskin Anterior (SP8)"], xlsx_df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
+        
+        """ Get specific results exist in 'PalmSkin_preprocess' directory """
+        rel_path, sorted_results = self._get_sorted_results("palmskin", palmskin_result_alias)
+        file_name = rel_path.split(os.sep)[-1]
+        if rel_path.split(os.sep)[0] == "MetaImage": target_idx = -3
+        else: target_idx = -2
+        sorted_results_dict = {str(result_path).split(os.sep)[target_idx]: result_path for result_path in sorted_results}
+        
+        """ Main Process """
+        self._cli_out.divide()
+        with tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ") as pbar:
+            
+            read_failed = 0
+            for palmskin_dname in palmskin_dnames:
+                pbar.desc = f"Check Image Condition ( {palmskin_dname} ) : "
+                pbar.refresh()
+                try:
+                    result_path = sorted_results_dict.pop(palmskin_dname)
+                    if cv2.imread(str(result_path)) is None:
+                        read_failed += 1
+                        self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
+                except KeyError:
+                    read_failed += 1
+                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{file_name}' of '{palmskin_dname}'{Style.RESET_ALL}")
+                pbar.update(1)
+                pbar.refresh()
+        
+        self._cli_out.new_line()
+        if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}")
+        else: raise RuntimeError(f"{Fore.RED} Due to broken/non-existing images, the process has been halted. {Style.RESET_ALL}\n")
+        # ---------------------------------------------------------------------/

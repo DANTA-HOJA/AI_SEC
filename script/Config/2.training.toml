@@ -1,0 +1,55 @@
+note = "[v3] new 'OOP' programs + Unet BF seg"
+
+# -----------------------------------------------------------------------------\
+[dataset]
+  seed_dir = "SEED_2022"
+  name = "{20230904_update}_Academia_Sinica_i831"
+  result_alias = "RGB_HE_fusion"
+  classif_strategy = "KMeansORIG_RND2022"
+  xlsx_name = "DS_SURF3C_CRPS256_SF14_INT30_DRP45"
+
+# -----------------------------------------------------------------------------\
+[model]
+  name = "vit_b_16"
+  pretrain = "IMAGENET1K_V1"
+
+# -----------------------------------------------------------------------------\
+[train_opts]
+  train_ratio = 0.8
+  random_seed = 2022
+  epochs = 200
+  batch_size = 128
+
+[train_opts.optimizer]
+  learning_rate = 1e-5
+  weight_decay = 0.01
+
+[train_opts.lr_schedular]
+  enable = false
+  step = 20
+  gamma = 0.1
+
+[train_opts.earlystop]
+  enable = true
+  max_no_improved = 20
+
+[train_opts.data]
+  use_hsv = false # using 'HSV' color models when getting item from the Dataset
+  aug_on_fly = true # do augmentation when getting item from the Dataset immediately
+  forcing_balance = false
+  forcing_sample_amount = 2800 # (NotImplemented) set constant number of images for each class
+  # Note: `aug_on_fly` should be `true` if not doing 'pre-augmentation'
+  # Note: if `forcing_balance` is `false` will apply `class_weight`
+  #         to Loss function as a 'auto balance strategy'
+
+[train_opts.debug_mode]
+  enable = false # if `true`, sample `rand_select` images only
+  rand_select = 100 # samples for debugging
+
+[train_opts.cuda]
+  index = 0
+  use_amp = true # Automatic Mixed Precision
+
+[train_opts.cpu]
+  num_workers = 8
+  # Warning: if `num_workers` != 0, may not use `debugpy` correctly in 'vscode jupyter extension'

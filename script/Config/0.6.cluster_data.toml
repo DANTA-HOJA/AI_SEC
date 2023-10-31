@@ -1,0 +1,39 @@
+[data_processed]
+  instance_desc = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  # will load 'Path(THIS_REPOSITORY)/.../{`instance_desc`}_Academia_Sinica_i[num]/data.xlsx'
+
+# -----------------------------------------------------------------------------\
+[batch_info]
+  id_interval = [0, 116, 164, 207, 255, 420] # n1 < fish_id <= n2
+  names = ["i162", "i242", "i409", "i505", "i831"] # len(names) = len(id_interval) - 1
+  # `names` use auto count here, but can be any string to recognize different batches
+
+[cluster]
+  method = "KMeans" # (FutureFunc) choose different clustering algorithm.
+  random_seed = 2022 # some of clustering algorithms needs a random seed.
+  n_class = 3
+  labels = ["S", "M", "L"] # order: from small to large.
+  cluster_with_log_scale = false
+
+[log_scale]
+  base = 10
+  x_axis_log_scale = false
+
+# -----------------------------------------------------------------------------\
+[old_classdiv_xlsx]
+  full_paths = []
+  # full_paths = [
+  #   "Path(THIS_REPOSITORY)/.../{3CLS_SURF_050STDEV}_data.xlsx",
+  #   "Path(THIS_REPOSITORY)/.../{3CLS_SURF_075STDEV}_data.xlsx",
+  #   ...
+  # ]
+
+# -----------------------------------------------------------------------------\
+  #  n_class = 2
+  #  labels = ["S", "L"]
+
+  #  n_class = 3
+  #  labels = ["S", "M", "L"]
+
+  #  n_class = 4
+  #  labels = ["S", "M", "L", "XL"]

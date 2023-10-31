@@ -2,6 +2,13 @@
 
 MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Posterior``` )
 
+## Package Dependencies
+
+```
+numpy = 1.23.0
+pytorch = 1.13.1 + cu116
+```
+
 ## Data Information ( *temporarily halt updates* )
 
 - 目前最大編號 : ```207```
@@ -48,7 +55,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 - 修改+優化 *" ImageJ Macro "*，可開始自行計算 *SA* , *SL* ，不需依賴中研院提供的 ```Machine learning.xlsx```，且改由 ```data_operate/``` 底下一系列的 *" new scripts "* 產生 ```XLSX_FILE``` 並更名為 ```data.xlsx```
 - *" 2022/12/09 "* 以後開始含有 ```BF_Analysis/```，複製 ```{NAS_DL}_Academia_Sinica_Data/.../BrightField_raw_lif/``` 資料夾，並使用修改後的 *" ImageJ Macro "* 計算 *SA* , *SL*
 - 修改後的 *" ImageJ Macro "* 更名為 : ```[20230118_mod] macro for SL and SA measurement by SRY.ijm```
-- 因應 *" 2022/12/09 "* 的 *統一命名規則* ， ```{NAS_DL}_Academia_Sinica_Data/.../``` ， 底下的 *" BrightField_raw_lif "*, *" Fish_BrightField "*, *" palmskin_raw_lif "*, *" stacked_palmskin_tiff "* , 以日期區分子資料夾， *" Before_20221109 "* 存放命名統一前的檔案；更新以 *" Upload_{ 上傳日期 } "* 作為資料夾名稱，例如：*" Upload_20221209 "*
+- 因應 *" 2022/12/09 "* 的 *統一命名規則* ， ```{NAS_DL}_Academia_Sinica_Data/.../``` ， 底下的 *" BrightField_raw_lif "*, *" Fish_BrightField "*, *" palmskin_raw_lif "*, *" stacked_palmskin_tiff "* , 以日期區分子資料夾， *" Before_20221109 "* 存放命名統一前的檔案；更新以 "*Upload_{ 上傳日期 }*" 作為資料夾名稱，例如： "*Upload_20221209*"
 
 ### 2023/01/26
 
@@ -118,7 +125,7 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 ### 2023/02/13
 
 - 調整 NAS 上 *" BrightField_raw_lif "* 、 *" palmskin_raw_lif "* 內的檔案名稱，確保兩者檔名相似性 ( 只有部分分隔符號不同 )
-- 調整 NAS 上的資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/(doc)_pngs/OldNewDirNameCompare.png) )
+- 調整 NAS 上的資料夾名稱 ( 新舊資料夾名稱比對 : [圖片](/Documents/PNG/OldNewDirNameCompare.png) )
 
 ### 2023/02/14
 
@@ -126,3 +133,19 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 - ```BF_Analysis``` 不再額外複製 ```{NAS_DL}_Academia_Sinica_Data/.../BrightField_RAW/``` ，改採 *直接讀取* 檔案產生 *SA* , *SL* 計算結果
 - ```BF_Analysis``` 開始加上 prefix， {} 內用於紀錄該次針對計算所調整的項目
 - 合併 ```/data_operate/BrightField/collect_BF_raw_lif.py``` 的操作合併至 [imagej_BF_Analysis](/data_operate/BrightField/imagej_BF_Analysis.ipynb)
+
+### 2023/05/26
+
+- 做好初版 `train_config` parser ( data, dataset info not yet )， `{Dataset}_Cropped` 路徑開始加入 `result_alias` ( 現在還是 rewrite 不是 update，詳細 TODO 參照 [SinglePredictionParser.py](/modules/db/SinglePredictionParser.py) )
+
+### 2023/06/15
+
+- v2: 開始製作 dataset 採用標記的版本（使用 dataframe 紀錄資訊，不用一直重切 dataset）
+- v2 new feature:
+
+  1. 加入原始照片部位標記，fish_1_A → fish_1_A_U
+  2. 分 train/test 的時候，若 test 為 U，則 train 強制為 D，反之亦然
+
+### 2023/10/13
+
+- 新增 Brightfield Segmentation model : [ZebraFish_BF_Seg](https://github.com/DANTA-HOJA/ZebraFish_BF_Seg)

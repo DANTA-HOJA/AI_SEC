@@ -1,0 +1,10 @@
+[data_nasdl]
+  dir = "{20230904_Update}_Zebrafish_AP_strategies"
+  type = "BrightField_RAW" # 'BrightField_RAW' or 'PalmSkin_RAW'
+  batches = []
+  # batches = ["Upload_20221209", ...] # directory example
+  #
+  # Note:
+  # - If `batches` is [] (empty list), it will recursively scan and process ALL LIF FILEs on:
+  #     => 'Path(THIS_REPOSITORY)/{Data}_NASDL/`dir`/`type`/**/*.lif'
+  # - If directories are given, it will handle the given directories only.
