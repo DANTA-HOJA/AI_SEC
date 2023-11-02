@@ -376,8 +376,8 @@ class BaseTrainer:
             train: pd.DataFrame = df.sample(frac=self.train_ratio, replace=False,
                                             random_state=self.rand_seed)
             valid: pd.DataFrame = df[~df.index.isin(train.index)]
-            self.train_df = pd.concat([self.train_df, train], ignore_index=True)
-            self.valid_df = pd.concat([self.valid_df, valid], ignore_index=True)
+            self.train_df = pd.concat([self.train_df.astype(train.dtypes), train], ignore_index=True)
+            self.valid_df = pd.concat([self.valid_df.astype(valid.dtypes), valid], ignore_index=True)
 
             train_d = train[(train["cut_section"] == "D")]
             train_u = train[(train["cut_section"] == "U")]
