@@ -72,48 +72,6 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
 
 
 
-# def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
-#                 cli_out:CLIOutput=None) -> Union[dict, TOMLDocument]:
-#     """ Scan and load the specific config under repo root
-
-#     Args:
-#         config_file (Union[str, Path]): full file name, like `abc.toml`
-#         reserve_comment (bool, optional): Defaults to False.
-#         cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
-
-#     Raises:
-#         NotImplementedError: If (argument) `config_file` not `str` or `Path` object.
-
-#     Returns:
-#         Union[dict, TOMLDocument]: a toml config
-#     """
-#     if reserve_comment:
-#         load_fn = tomlkit.load
-#     else:
-#         load_fn = toml.load
-    
-#     path = None
-#     if isinstance(config_file, Path):
-#         path = config_file
-#     elif isinstance(config_file, str):
-#         repo_root = get_repo_root()
-#         found_list = list(repo_root.glob(f"**/{config_file}"))
-#         assert_only_1_config(found_list, config_file)
-#         path = found_list[0]
-#     else:
-#         raise NotImplementedError("Argument `config_file` should be `str` or `Path` object.")
-    
-#     """ CLI output """
-#     if cli_out: cli_out.write(f"Config Path: '{path}'")
-    
-#     with open(path, mode="r") as f_reader:
-#         config = load_fn(f_reader)
-    
-#     return config
-    # -------------------------------------------------------------------------/
-
-
-
 def get_maxlength_in_dictkeys(eval_dict:dict) -> int:
     """ TODO
     """
@@ -198,4 +156,18 @@ def formatter_padr0(obj) -> str:
     
     else:
         raise NotImplementedError("Unrecognized type of given object")
+    # -------------------------------------------------------------------------/
+
+
+
+def exclude_tmp_paths(found_list:List[Path]):
+    """ exclude paths if "tmp" or "temp" in path 
+    """
+    for _ in range(len(found_list)):
+        path: Path = found_list.pop(0)
+        path_split = str(path).split(os.sep)
+        if ("tmp" not in path_split) and ("temp" not in path_split):
+            found_list.append(path)
+    
+    return found_list
     # -------------------------------------------------------------------------/
