@@ -10,6 +10,7 @@ __pycache__
 *.ps1
 
 *.txt
+*.csv
 *.xlsx
 
 *.tif
