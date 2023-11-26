@@ -173,6 +173,7 @@ class ProcessedDataInstance():
             os.rename(self.instance_root, self.data_processed_root.joinpath(new_name))
             self._set_instance_root()
             self._set_processed_dirs()
+            self.palmskin_processed_dname_dirs_dict = self._scan_processed_dname_dirs("palmskin")
         # ---------------------------------------------------------------------/
 
 
