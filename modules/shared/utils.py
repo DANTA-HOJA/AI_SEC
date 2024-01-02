@@ -47,7 +47,7 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
 
 
 
-def get_repo_root(cli_out:CLIOutput=None) -> Path:
+def get_repo_root(repo_name:str="ZebraFish_AP_POS", cli_out:CLIOutput=None) -> Path:
     """ Get repository root path on local machine
 
     Args:
@@ -58,7 +58,7 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
     """
     """ Analyze """
     path_split = os.path.abspath(".").split(os.sep)
-    target_idx = get_target_str_idx_in_list(path_split, "ZebraFish_AP_POS")
+    target_idx = get_target_str_idx_in_list(path_split, repo_name)
     assert_run_under_repo_root(target_idx)
     
     """ Generate path """
