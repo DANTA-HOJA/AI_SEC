@@ -1,43 +1,45 @@
 import os
-import sys
 import re
+import sys
 from pathlib import Path
-from typing import List, Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
+
 from tomlkit.toml_document import TOMLDocument
 
+from ..assert_fn import *
+from ..assert_fn import (assert_0_or_1_instance_root,
+                         assert_0_or_1_processed_dir,
+                         assert_0_or_1_recollect_dir)
 from .clioutput import CLIOutput
 from .config import load_config
 
-from ..assert_fn import *
-from ..assert_fn import assert_0_or_1_instance_root, assert_0_or_1_processed_dir, \
-                        assert_0_or_1_recollect_dir
-
-
 __all__ = ["PathNavigator"]
+# -----------------------------------------------------------------------------/
 
 
+class PathNavigator:
 
-class PathNavigator():
-    
     def __init__(self) -> None:
         """
         """
         self.dbpp = _DBPPNavigator()
         self.raw_data = _RAWDataPathNavigator()
         self.processed_data = _ProcessedDataPath()
+        # ---------------------------------------------------------------------/
 
 
 
-class _DBPPNavigator():
-    
+class _DBPPNavigator:
+
     def __init__(self) -> None:
         """
         """
         """ Load `dbpp_config` """
         self.dbpp_config = load_config("db_path_plan.toml")
-    
-    
-    def get_fiji_local_dir(self, cli_out:CLIOutput=None) -> str:
+        # ---------------------------------------------------------------------/
+
+
+    def get_fiji_local_dir(self, cli_out:CLIOutput=None) -> Path:
         """
         """
         """ `dbpp_config` keywords """
@@ -47,9 +49,10 @@ class _DBPPNavigator():
         """ CLI output """
         if cli_out: cli_out.write(f"Fiji Local: '{fiji_local}'")
         
-        return str(fiji_local)
-    
-    
+        return fiji_local
+        # ---------------------------------------------------------------------/
+
+
     def get_one_of_dbpp_roots(self, dbpp_key:str, cli_out:CLIOutput=None) -> Path:
         """
         """
@@ -69,17 +72,19 @@ class _DBPPNavigator():
             cli_out.write(f"{' '.join(abbr_list[2:])} Root: '{chosen_root}'")
             
         return chosen_root
+        # ---------------------------------------------------------------------/
 
 
 
-class _RAWDataPathNavigator():
-    
+class _RAWDataPathNavigator:
+
     def __init__(self) -> None:
         """
         """
         self.dbpp = _DBPPNavigator()
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def get_lif_scan_root(self, config:Union[dict, TOMLDocument],
                           cli_out:CLIOutput=None) -> Path:
         """
@@ -97,17 +102,19 @@ class _RAWDataPathNavigator():
         if cli_out: cli_out.write(f"LIF Scan Root: '{lif_scan_root}'")
         
         return lif_scan_root
+        # ---------------------------------------------------------------------/
 
 
 
-class _ProcessedDataPath():
-    
+class _ProcessedDataPath:
+
     def __init__(self) -> None:
         """
         """
         self.dbpp = _DBPPNavigator()
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def get_instance_root(self, config:Union[dict, TOMLDocument],
                           cli_out:CLIOutput=None) -> Path:
         """
@@ -130,8 +137,9 @@ class _ProcessedDataPath():
         if cli_out: cli_out.write(f"Instance Root: '{instance_root}'")
         
         return instance_root
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def get_processed_dir(self, image_type:str, config:Union[dict, TOMLDocument],
                           cli_out:CLIOutput=None):
         """ Get one of processed directories,
@@ -163,8 +171,9 @@ class _ProcessedDataPath():
             processed_dir = None
         
         return processed_dir
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def get_recollect_dir(self, image_type:str, config:Union[dict, TOMLDocument],
                           cli_out:CLIOutput=None):
         """ Get one of recollect directories,
@@ -196,8 +205,9 @@ class _ProcessedDataPath():
             recollect_dir = None
         
         return recollect_dir
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def get_data_xlsx_path(self, config:Union[dict, TOMLDocument], cli_out:CLIOutput=None):
         """
         """
@@ -211,8 +221,9 @@ class _ProcessedDataPath():
             data_xlsx_path = None
         
         return data_xlsx_path
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def get_clustered_xlsx_dir(self, config:Union[dict, TOMLDocument], cli_out:CLIOutput=None):
         """
         """
@@ -226,3 +237,4 @@ class _ProcessedDataPath():
             clustered_xlsx_dir = None
         
         return clustered_xlsx_dir
+        # ---------------------------------------------------------------------/
