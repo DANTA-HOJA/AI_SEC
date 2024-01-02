@@ -1,50 +1,63 @@
 import os
-import sys
 import re
+import sys
 from pathlib import Path
 
-import jpype               # Import module
-import jpype.imports       # Enable Java imports
+import imagej  # pyimagej
+import jpype  # Import module
+import jpype.imports  # Enable Java imports
+import scyjava as sj  # scyjava : Supercharged Java access from Python built on `JPype` and `jgo`., see https://github.com/scijava/scyjava
 from jpype.types import *  # Pull in types
-import scyjava as sj       # scyjava : Supercharged Java access from Python, see https://github.com/scijava/scyjava
-import imagej              # pyimagej
 
-from ...shared.clioutput import CLIOutput
-from ...shared.pathnavigator import PathNavigator
+from ...shared.baseobject import BaseObject
+# -----------------------------------------------------------------------------/
 
 
-class ZFIJ():
-    
+class ZFIJ(BaseObject):
+
     def __init__(self, display_on_CLI=True) -> None:
-        """ Initialize `ImageJ` and the necessary components used in `ZebraFish_AP_POS`
         """
-        self._path_navigator = PathNavigator()
+        """
+        # ---------------------------------------------------------------------
+        # """ components """
+        super().__init__(display_on_CLI)
+        self._cli_out._set_logger("Zebrafish IJ")
         
-        """ CLI output """
-        self._cli_out = CLIOutput(display_on_CLI, logger_name="Zebrafish IJ")
+        # ---------------------------------------------------------------------
+        # """ attributes """
+        # TODO
+        # ---------------------------------------------------------------------
+        # """ actions """
+        
         self._cli_out.divide()
         
-        """ Store 'Working Directory' and `sys.stdout` """
+        # store 'Working Directory' and `sys.stdout`
         orig_wd = os.getcwd()
         # orig_stdout = sys.stdout
         
         self._init_imagej()
         self._init_other_components()
         self._redirect_fn()
-
-        """ Recover 'Working Directory' and `sys.stdout` """
+        
+        # recover 'Working Directory' and `sys.stdout`
         os.chdir(orig_wd)
         # sys.stdout = orig_stdout
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def _init_imagej(self):
         """
         """
         """ JVM Configurations """
         # NOTE: The ImageJ2 gateway is initialized through a Java Virtual Machine (JVM). 
         #       If you want to configure the JVM, it must be done before initializing an ImageJ2 gateway.
-        # sj.config.add_option('-Xmx10g') # adjust memory available to Java
-        sj.config.endpoints.append('ome:formats-gpl:6.11.1')
+        #       originally, we need to use below `jpype` function ( https://github.com/jpype-project/jpype/issues/245 )
+        #
+        #       >>> jpype.startJVM(jpype.getDefaultJVMPath(), "-Xms64m", "-Xmx64m")
+        #
+        #       but `pyimagej` is based on `scyjava` so we can use below function
+        sj.config.add_option('-Xmx10g') # adjust memory available to Java
+        # sj.config.endpoints.append('ome:formats-gpl:6.11.1')
         
         """ Get path of Fiji(ImageJ) """
         self.fiji_local = self._path_navigator.dbpp.get_fiji_local_dir(self._cli_out)
@@ -57,8 +70,9 @@ class ZFIJ():
         
         """ Print Fiji version """
         self._cli_out.write(self.ij.getApp().getInfo(True)) # ImageJ2 2.9.0/1.54b
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def _init_other_components(self):
         """ Create/new the plugin instances
         """
@@ -78,16 +92,18 @@ class ZFIJ():
         self.zProjector = jpype.JClass("ij.plugin.ZProjector")()
         self.rgbStackMerge = jpype.JClass("ij.plugin.RGBStackMerge")()
         self.rgbStackConverter = jpype.JClass("ij.plugin.RGBStackConverter")()
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def _redirect_fn(self):
         """
         """
         self.run = self.ij.IJ.run
         self.save_as_tiff = self.ij.IJ.saveAsTiff
         self.save_as = self.ij.IJ.saveAs
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def reset_all_window(self):
         """
         """
@@ -95,3 +111,4 @@ class ZFIJ():
             self.roiManager.reset()
         self.run("Clear Results", "")
         self.run("Close All", "")
+        # ---------------------------------------------------------------------/
