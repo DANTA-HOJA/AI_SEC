@@ -130,6 +130,7 @@ class BatchLIFNameChecker(BaseObject):
                 """ Print ERRORs after checking 'image name' """
                 try:
                     self._cli_out.write(f"       ##### {self._lif_name_checker.check_dict['failed message']}")
+                    self.run_pause("Use 'LAS X Office' to fix image name, press [ENTER] to continue.")
                 except KeyError:
                     pass
                 
@@ -139,4 +140,13 @@ class BatchLIFNameChecker(BaseObject):
             self._cli_out.write("\n") # make CLI output prettier
         
         self._cli_out.write(" -- finished -- ")
+        # ---------------------------------------------------------------------/
+
+
+    def run_pause(self, msg:str):
+        """
+        """
+        self._cli_out.divide()
+        input(msg)
+        self._cli_out.divide()
         # ---------------------------------------------------------------------/
