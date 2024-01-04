@@ -155,14 +155,25 @@ def formatter_padr0(obj) -> str:
 
 
 
-def exclude_tmp_paths(found_list:List[Path]):
-    """ exclude paths if "tmp" or "temp" in path 
+def exclude_paths(found_list:List[Path], keywords:List[str]):
+    """ exclude paths if `keyword` in path
     """
-    for _ in range(len(found_list)):
-        path: Path = found_list.pop(0)
-        path_split = str(path).split(os.sep)
-        if ("tmp" not in path_split) and ("temp" not in path_split):
-            found_list.append(path)
+    for kw in keywords:
+        for _ in range(len(found_list)):
+            path: Path = found_list.pop(0)
+            path_split = str(path).split(os.sep)
+            ext = os.path.splitext(path)[-1]
+            path_split.insert(0, ext)
+            if kw not in path_split:
+                found_list.append(path)
     
     return found_list
+    # -------------------------------------------------------------------------/
+
+
+
+def exclude_tmp_paths(found_list:List[Path]):
+    """
+    """
+    return exclude_paths(found_list, ["tmp", "temp", "Tmp", "Temp"])
     # -------------------------------------------------------------------------/
