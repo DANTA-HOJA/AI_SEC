@@ -20,6 +20,7 @@ class ZFIJ(BaseObject):
         """
         # ---------------------------------------------------------------------
         # """ components """
+        
         super().__init__(display_on_CLI)
         self._cli_out._set_logger("Zebrafish IJ")
         
