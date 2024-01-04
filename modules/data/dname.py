@@ -73,16 +73,23 @@ def merge_dict_by_id(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Di
 
 def resave_result(original_path:Path, resave_dir:Path):
     
-    if isinstance(original_path, Path): original_path = str(original_path)
+    if isinstance(original_path, Path): original_path:str = str(original_path)
     else: raise TypeError("'original_path' should be a 'Path' object, please using `from pathlib import Path`")
     
     if not isinstance(resave_dir, Path):
         raise TypeError("'resave_dir' should be a 'Path' object, please using `from pathlib import Path`")
     
-    if "MetaImage" in original_path: fish_dname = original_path.split(os.sep)[-3]
-    else: fish_dname = original_path.split(os.sep)[-2]
+    original_path_split = original_path.split(os.sep)
     
-    file_ext = original_path.split(".")[-1]
-    resave_path = resave_dir.joinpath(f"{fish_dname}.{file_ext}")
+    if "_PalmSkin_preprocess" in original_path:
+        target_idx = get_target_str_idx_in_list(original_path_split, "_PalmSkin_preprocess")
+    elif "_BrightField_analyze" in original_path:
+        target_idx = get_target_str_idx_in_list(original_path_split, "_BrightField_analyze")
+    else:
+        raise ValueError(f"Can't recognize the path: '{original_path}'")
+    fish_dname = original_path_split[target_idx+1]
+    
+    file_ext = os.path.splitext(original_path)[-1]
+    resave_path = resave_dir.joinpath(f"{fish_dname}{file_ext}")
     shutil.copy(original_path, resave_path)
     filecmp.cmp(original_path, resave_path)
