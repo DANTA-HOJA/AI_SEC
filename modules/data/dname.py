@@ -1,12 +1,13 @@
-import os
-import sys
-import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
-import shutil
 import filecmp
+import os
+import re
+import shutil
+import sys
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 from ..shared.utils import get_target_str_idx_in_list
+# -----------------------------------------------------------------------------/
 
 
 def get_dname_sortinfo(string_with_fish_dname:Union[str, Path]) -> Tuple[int, str]:
@@ -55,24 +56,32 @@ def get_dname_sortinfo(string_with_fish_dname:Union[str, Path]) -> Tuple[int, st
     if "RGB" in fish_name: assert len(fish_name_split) == 11, f"len(fish_name_list) = '{len(fish_name_split)}', expect '11' "
     
     return int(fish_name_split[8]), fish_name_split[9]
+    # -------------------------------------------------------------------------/
 
 
 
 def create_dict_by_id(path_list:List[Path]) -> Dict[int, Path]:
+    """
+    """
     return {get_dname_sortinfo(path)[0] : path for path in path_list}
+    # -------------------------------------------------------------------------/
 
 
 
 def merge_dict_by_id(auto_analysis_dict:Dict[int, Path], manual_analysis_dict:Dict[int, Path]):
+    """
+    """
     for key, value in manual_analysis_dict.items():
         auto_analysis_dict.pop(key, None)
         auto_analysis_dict[key] = manual_analysis_dict[key]
     return auto_analysis_dict
+    # -------------------------------------------------------------------------/
 
 
 
 def resave_result(original_path:Path, resave_dir:Path):
-    
+    """
+    """
     if isinstance(original_path, Path): original_path:str = str(original_path)
     else: raise TypeError("'original_path' should be a 'Path' object, please using `from pathlib import Path`")
     
@@ -93,3 +102,4 @@ def resave_result(original_path:Path, resave_dir:Path):
     resave_path = resave_dir.joinpath(f"{fish_dname}{file_ext}")
     shutil.copy(original_path, resave_path)
     filecmp.cmp(original_path, resave_path)
+    # -------------------------------------------------------------------------/
