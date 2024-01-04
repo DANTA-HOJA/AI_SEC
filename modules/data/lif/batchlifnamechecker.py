@@ -40,6 +40,7 @@ class BatchLIFNameChecker(BaseObject):
         """
         """
         super()._set_attrs(config)
+        self._set_src_root()
         # ---------------------------------------------------------------------/
 
 
