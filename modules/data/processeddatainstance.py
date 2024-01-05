@@ -79,7 +79,7 @@ class ProcessedDataInstance(BaseObject):
         Args:
             config (Union[str, Path]): a toml file.
         """
-        self._set_attrs(config)
+        super().run(config)
         # ---------------------------------------------------------------------/
 
 
@@ -451,7 +451,6 @@ class ProcessedDataInstance(BaseObject):
             ValueError: If (config key) `log_mode` != 'missing' or 'finding'.
             FileExistsError: If target `recollect_dir` exists.
         """        
-        self._cli_out.divide()
         self.parse_config(config)
         
         """ Get variable """
@@ -547,7 +546,6 @@ class ProcessedDataInstance(BaseObject):
         Args:
             config_file (Union[str, Path]): a toml file.
         """
-        self._cli_out.divide()
         self.parse_config(config)
         # ---------------------------------------------------------------------
         # brightfield
