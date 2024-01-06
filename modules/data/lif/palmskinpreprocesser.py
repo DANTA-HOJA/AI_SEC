@@ -80,9 +80,7 @@ class PalmskinPreprocesser(BaseObject):
     def run(self, config:Union[str, Path]):
         """ Actions
         1. Load config
-        2. Source: 
-            1. Get `lif_scan_root`
-            2. Scan `LIF` files
+        2. Scan `LIF` files
         3. Set `palmskin_processed_dir`
         4. Set `preprocess_param_dict` (Decide which config `[param]` will be used)
             - if mode == `NEW` -> Save the config to `palmskin_processed_dir`
@@ -97,7 +95,7 @@ class PalmskinPreprocesser(BaseObject):
         """ STEP 1. Load config """
         super().run(config)
         
-        """ STEP 2. Source """
+        """ STEP 2. Scan `LIF` files """
         lif_paths = scan_lifs_under_dir(self.src_root, self.nasdl_batches, self._cli_out)
         self.total_lif_file = len(lif_paths)
         
@@ -209,10 +207,9 @@ class PalmskinPreprocesser(BaseObject):
             self.log_writer.write(f"|         {comb_name} \n")
             self.log_writer.write(f"|         Dimensions : {img_dimensions} ( width, height, channels, slices, frames ), Voxel_Z : {voxel_z:.4f} micron \n")
             
-            """ Set `save_root`, `metaimg_dir` """
-            # save_root
-            name_postfix = image_name.split("_")[-1]
-            if "del" in name_postfix.lower(): # ( 有 delete 代表該照片品質不佳 )
+            """ Set `dst_root`, `metaimg_dir` """
+            # dst_root
+            if "del" in image_name_list[-1].lower(): # ( image name 尾有 delete 代表該照片品質不佳 )
                 self.dst_root = self.palmskin_processed_dir.joinpath("!~delete", comb_name)
             else:
                 self.dst_root = self.palmskin_processed_dir.joinpath(comb_name)
