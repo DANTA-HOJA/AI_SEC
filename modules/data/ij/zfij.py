@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import sys
@@ -62,6 +63,14 @@ class ZFIJ(BaseObject):
         
         """ Get path of Fiji(ImageJ) """
         self.fiji_local = self._path_navigator.dbpp.get_fiji_local_dir(self._cli_out)
+        
+        """ Redirect `JAVA_HOME` ('JAVA_HOME' might already be set in the OS environment)"""
+        found_list = list(self.fiji_local.glob("java/**/jre"))
+        if len(found_list) != 1:
+            raise ValueError(f"Multiple JRE are found, "
+                             f"{json.dumps([str(path) for path in found_list], indent=2)}")
+        else:
+            os.environ["JAVA_HOME"] = str(found_list[0])
         
         """ Different methods to start ImageJ """
         # ij = imagej.init(fiji_local) # Same as "ij = imagej.init(fiji_local, mode='headless')", PyImageJ’s default mode is headless
