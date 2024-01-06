@@ -67,12 +67,12 @@ def get_repo_root(repo_name:str="ZebraFish_AP_POS", cli_out:CLIOutput=None) -> P
 
 
 
-def get_maxlength_in_dictkeys(eval_dict:dict) -> int:
+def get_dictkeys_maxlength(eval_dict:dict) -> int:
     """ TODO
     """
     max_length = 0
     for key in eval_dict.keys():
-        if len(key) > max_length:
+        if len(str(key)) > max_length:
             max_length = len(key)
 
     return max_length
@@ -96,7 +96,7 @@ def get_attr_formatstring(object:object, attr:str) -> Union[str, TypeError]:
         if isinstance(obj, dict):
             """ An align dict for pretty CLI output """
             align_dict = {}
-            maxlen = get_maxlength_in_dictkeys(obj)
+            maxlen = get_dictkeys_maxlength(obj)
             for key, value in obj.items():
                 align_dict[f"{key:^{maxlen+2}}"] = value
             """ json format """
