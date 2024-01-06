@@ -311,7 +311,7 @@ class BrightfieldAnalyzer(BaseObject):
         return convert_8bit
         # ---------------------------------------------------------------------/
 
-   
+
     def cropping(self, img, save_name:str, save_dir:Path):
         """
         """
