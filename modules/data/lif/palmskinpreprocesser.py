@@ -1,141 +1,153 @@
 import os
-import sys
 import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
+import sys
 from datetime import datetime
-
-from .utils import scan_lifs_under_dir
-from ..ij.zfij import ZFIJ
-from ...shared.clioutput import CLIOutput
-from ...shared.config import load_config, dump_config
-from ...shared.pathnavigator import PathNavigator
-from ...shared.utils import create_new_dir
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 from ...assert_fn import *
+from ...shared.baseobject import BaseObject
+from ...shared.config import dump_config, load_config
+from ...shared.utils import create_new_dir
+from ..ij.zfij import ZFIJ
+from .utils import scan_lifs_under_dir
+# -----------------------------------------------------------------------------/
 
 
-
-class PalmskinPreprocesser():
+class PalmskinPreprocesser(BaseObject):
 
     def __init__(self, zfij_instance:ZFIJ=None, display_on_CLI=True) -> None:
-        """ Palmskin image preprocessing
         """
-        # Initialize `Fiji` ( This will change the working directory to where the `JVM` exists. )
+        """
+        # ---------------------------------------------------------------------
+        # """ components """
+        
+        super().__init__(display_on_CLI)
+        self._cli_out._set_logger("Preprocess Palmskin")
+        
+        # Initialize `Fiji`
         if zfij_instance:
             self._zfij = zfij_instance
         else:
             self._zfij = ZFIJ(display_on_CLI)
         
-        self._path_navigator = PathNavigator()
-        self._sn_digits = "02"
+        # ---------------------------------------------------------------------
+        # """ attributes """
         
-        """ CLI output """
-        self._cli_out = CLIOutput(display_on_CLI, logger_name="Preprocess Palmskin")
+        self._sn_digits:str = "02"
         
-        self._reset_attrs()
-        self._reset_single_img_attrs()
+        # ---------------------------------------------------------------------
+        # """ actions """
+        # TODO
+        # ---------------------------------------------------------------------/
 
 
+    def _set_attrs(self, config:Union[str, Path]):
+        """
+        """
+        super()._set_attrs(config)
+        self._set_src_root()
+        self._init_task_var()
+        # ---------------------------------------------------------------------/
 
-    def _reset_attrs(self):
+
+    def _set_config_attrs(self):
+        """
+        """
+        self.nasdl_batches = self.config["data_nasdl"]["batches"]
+        self.palmskin_reminder = self.config["data_processed"]["palmskin_reminder"]
+        # ---------------------------------------------------------------------/
+
+
+    def _set_src_root(self):
+        """
+        """
+        self.src_root = self._path_navigator.raw_data.get_lif_scan_root(self.config, self._cli_out)
+        # ---------------------------------------------------------------------/
+
+
+    def _init_task_var(self):
         """
         """
         self.total_lif_file = 0
-        self.lif_enum = 0
         self.palmskin_processed_dir = None
-        self.mode = "NEW"
-        self.preprocess_param_dict = None
+        self.preprocess_param_dict = {}
         self.log_writer = None
-        self.alias_map = {}
+        self.lif_enum = 0
+        # ---------------------------------------------------------------------/
 
 
-
-    def run(self, config_file:Union[str, Path]="0.2.preprocess_palmskin.toml"):
+    def run(self, config:Union[str, Path]):
         """ Actions
         1. Load config
         2. Source: 
             1. Get `lif_scan_root`
             2. Scan `LIF` files
-        3. Destination:
-            1. Get `palmskin_processed_dir`
-            2. Decide which `[param]` will be used
-                - if mode == `NEW` -> Save the config to `palmskin_processed_dir`
-                - if mode == `UPDATE` -> Load the `[param]` from existing config
-            3. Open a `LOG_FILE`
-        4. Preprocess palmskin images
-        5. Close `LOG_FILE` (3.2)
-        6. Save `alias_map` as toml file under `palmskin_processed_dir`
+        3. Set `palmskin_processed_dir`
+        4. Set `preprocess_param_dict` (Decide which config `[param]` will be used)
+            - if mode == `NEW` -> Save the config to `palmskin_processed_dir`
+            - if mode == `UPDATE` -> Load the `[param]` from existing config in `palmskin_processed_dir`
+        5. Open a `LOG_FILE`
+        6. Preprocess palmskin images
+        7. Close `LOG_FILE` ( opened in 5. )
         
         Args:
-            config_file (Union[str, Path], optional): Defaults to `0.2.preprocess_palmskin.toml`.
+            config (Union[str, Path]): a toml file.
         """
-        self._reset_attrs()
-        self._cli_out.divide()
-        
         """ STEP 1. Load config """
-        config = load_config(config_file, cli_out=self._cli_out)
-        nasdl_batches = config["data_nasdl"]["batches"]
+        super().run(config)
         
         """ STEP 2. Source """
-        lif_scan_root = self._path_navigator.raw_data.get_lif_scan_root(config, self._cli_out)
-        lif_path_list = scan_lifs_under_dir(lif_scan_root, nasdl_batches, self._cli_out)
-        self.total_lif_file = len(lif_path_list)
+        lif_paths = scan_lifs_under_dir(self.src_root, self.nasdl_batches, self._cli_out)
+        self.total_lif_file = len(lif_paths)
         
-        """ STEP 3. Destination """
-        """ 3.1. """
-        self.palmskin_processed_dir = self._path_navigator.processed_data.get_processed_dir("palmskin", config, self._cli_out)
-        if self.palmskin_processed_dir:
-            self.mode = "UPDATE"
-        else:
-            instance_root = self._path_navigator.processed_data.get_instance_root(config, self._cli_out)
-            reminder = config["data_processed"]["palmskin_reminder"]
-            self.palmskin_processed_dir = instance_root.joinpath(f"{{{reminder}}}_PalmSkin_preprocess")
+        """ STEP 3. Set `palmskin_processed_dir` """
+        instance_root = self._path_navigator.processed_data.get_instance_root(self.config, self._cli_out)
+        self.palmskin_processed_dir = instance_root.joinpath(f"{{{self.palmskin_reminder}}}_PalmSkin_preprocess")
+        if not self.palmskin_processed_dir.exists():
             create_new_dir(self.palmskin_processed_dir)
-        self._cli_out.write(f"Process Mode : {self.mode}")
-        
-        """ 3.2. """
-        cp_config_path = self.palmskin_processed_dir.joinpath("palmskin_preprocess_config.toml")
-        if self.mode == "UPDATE":
-            assert_file_exists(cp_config_path)
-            self.preprocess_param_dict = load_config(cp_config_path)["param"]
-            self._cli_out.write(f"Parameters (load from): '{cp_config_path}'")
+            self._cli_out.write(f"Process Mode : NEW")
         else:
-            self.preprocess_param_dict = config["param"]
-            dump_config(cp_config_path, config)
+            self._cli_out.write(f"Process Mode : UPDATE")
         
-        """ 3.3. """
+        """ STEP 4. Set `preprocess_param_dict` """
+        palmskin_config = self.palmskin_processed_dir.joinpath("palmskin_preprocess_config.toml")
+        if not palmskin_config.exists():
+            self.preprocess_param_dict = self.config["param"]
+            dump_config(palmskin_config, self.config)
+        else:
+            self.preprocess_param_dict = load_config(palmskin_config)["param"]
+            self._cli_out.write(f"Preprocess Parameters (load from): '{palmskin_config}'")
+        
+        """ STEP 5. Open a `LOG_FILE` """
         time_stamp = datetime.now().strftime('%Y%m%d_%H_%M_%S')
         log_path = self.palmskin_processed_dir.joinpath(f"{{Logs}}_{{PalmskinPreprocesser}}_{time_stamp}.log")
         self.log_writer = open(log_path, mode="w")
         
-        """ STEP 4. Preprocess palmskin images """
-        for i, lif_path in enumerate(lif_path_list):
+        """ STEP 6. Preprocess palmskin images """
+        self._cli_out.new_line()
+        for i, lif_path in enumerate(lif_paths):
             # process single LIF file
-            self.lif_enum = i+1
+            self.lif_enum = i+1 # (start from 1)
             self._single_lif_preprocess(lif_path)
         
         self.log_writer.write(f"{'-'*40}  finished  {'-'*40} \n")
         self._cli_out.write(" -- finished -- ")
         
-        """ STEP 5. Close `LOG_FILE` """
+        """ STEP 7. Close `LOG_FILE` """
         self.log_writer.close()
-        
-        """ STEP 6. Save `alias_map` """
-        alias_map_path = self.palmskin_processed_dir.joinpath(f"palmskin_result_alias_map.toml")
-        dump_config(alias_map_path, self.alias_map)
-    
+        # ---------------------------------------------------------------------/
 
 
     def _reset_single_img_attrs(self):
         """
         """
-        self.save_root = None
+        self.dst_root = None
         self.metaimg_dir = None
         self.result_sn = 0
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def _single_lif_preprocess(self, lif_path:str):
         """
         """
@@ -163,7 +175,7 @@ class PalmskinPreprocesser():
         for idx in range(series_cnt):
             
             self._reset_single_img_attrs()
-            series_num = idx+1
+            series_num = idx+1 # (start from 1)
             
             self._zfij.run("Bio-Formats Importer", f"open='{lif_path}' color_mode=Default rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT series_{series_num}")
             img = self._zfij.ij.WindowManager.getCurrentImage() # get image, <java class 'ij.ImagePlus'>
@@ -198,21 +210,23 @@ class PalmskinPreprocesser():
             self.log_writer.write(f"|         Dimensions : {img_dimensions} ( width, height, channels, slices, frames ), Voxel_Z : {voxel_z:.4f} micron \n")
             
             """ Set `save_root`, `metaimg_dir` """
-            if "delete" in comb_name:
-                self.save_root = self.palmskin_processed_dir.joinpath("!~delete", comb_name)
+            # save_root
+            name_postfix = image_name.split("_")[-1]
+            if "del" in name_postfix.lower(): # ( 有 delete 代表該照片品質不佳 )
+                self.dst_root = self.palmskin_processed_dir.joinpath("!~delete", comb_name)
             else:
-                self.save_root = self.palmskin_processed_dir.joinpath(comb_name)
-            assert_dir_not_exists(self.save_root)
-            create_new_dir(self.save_root)
-            self.metaimg_dir = self.save_root.joinpath("MetaImage")
+                self.dst_root = self.palmskin_processed_dir.joinpath(comb_name)
+            assert_dir_not_exists(self.dst_root) # 已存在會直接 ERROR，防止誤寫其他二次分析結果
+            create_new_dir(self.dst_root)
+            # metaimg_dir
+            self.metaimg_dir = self.dst_root.joinpath("MetaImage")
             create_new_dir(self.metaimg_dir)
-            
             
             """ Do preprocess """
             self._zfij.run(img, "Set Scale...", "distance=2.2 known=1 unit=micron")
-            ch_list = self._zfij.channelSplitter.split(img)
+            ch_list = self._zfij.channelSplitter.split(img) # oreder = (B, G, R, BF)
             
-            RGB_direct_max_zproj = self.direct_max_zproj(ch_list, "RGB_direct_max_zproj", self.save_root)
+            RGB_direct_max_zproj = self.direct_max_zproj(ch_list, "RGB_direct_max_zproj", self.dst_root)
             
             ch_B_img_dict = self.channel_preprocess(ch_list[0], "B")
             ch_G_img_dict = self.channel_preprocess(ch_list[1], "G")
@@ -221,14 +235,14 @@ class PalmskinPreprocesser():
             RGB_m3d = self.merge_to_RGBstack(ch_R_img_dict["m3d"], ch_G_img_dict["m3d"], ch_B_img_dict["m3d"], "RGB_m3d", self.metaimg_dir)
             RGB_mm3d = self.merge_to_RGBstack(ch_R_img_dict["mm3d"], ch_G_img_dict["mm3d"], ch_B_img_dict["mm3d"], "RGB_mm3d", self.metaimg_dir)
             RGB_mm3d_kuwahara = self.merge_to_RGBstack(ch_R_img_dict["mm3d_kuwahara"], ch_G_img_dict["mm3d_kuwahara"], ch_B_img_dict["mm3d_kuwahara"], "RGB_mm3d_kuwahara", self.metaimg_dir)
-            RGB_fusion = self.average_fusion(RGB_mm3d, RGB_mm3d_kuwahara, "RGB_fusion", self.save_root)
-            RGB_fusion2Gray = self.RGB_to_Gray(RGB_fusion, "RGB_fusion2Gray", self.save_root)
+            RGB_fusion = self.average_fusion(RGB_mm3d, RGB_mm3d_kuwahara, "RGB_fusion", self.dst_root)
+            RGB_fusion2Gray = self.RGB_to_Gray(RGB_fusion, "RGB_fusion2Gray", self.dst_root)
             
             RGB_m3d_HE = self.histogram_equalization(RGB_m3d, "RGB_m3d_HE", self.metaimg_dir)
             RGB_mm3d_HE = self.histogram_equalization(RGB_mm3d, "RGB_mm3d_HE", self.metaimg_dir)
             RGB_mm3d_kuwahara_HE = self.histogram_equalization(RGB_mm3d_kuwahara, f"RGB_mm3d_kuwahara_HE", self.metaimg_dir)
-            RGB_HE_fusion = self.average_fusion(RGB_mm3d_HE, RGB_mm3d_kuwahara_HE, "RGB_HE_fusion", self.save_root)
-            RGB_HE_fusion2Gray = self.RGB_to_Gray(RGB_HE_fusion, "RGB_HE_fusion2Gray", self.save_root)
+            RGB_HE_fusion = self.average_fusion(RGB_mm3d_HE, RGB_mm3d_kuwahara_HE, "RGB_HE_fusion", self.dst_root)
+            RGB_HE_fusion2Gray = self.RGB_to_Gray(RGB_HE_fusion, "RGB_HE_fusion2Gray", self.dst_root)
             
             """ Close opened image """
             self._zfij.reset_all_window()
@@ -236,9 +250,9 @@ class PalmskinPreprocesser():
         
         self._cli_out.write("\n") # make CLI output prettier
         self.log_writer.write("\n\n\n")
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def _save_tif_with_SN(self, img, save_name:str, save_dir:Path) -> None:
         """
         """
@@ -246,9 +260,8 @@ class PalmskinPreprocesser():
         save_path = save_dir.joinpath(full_name)
         self._zfij.save_as_tiff(img, str(save_path))
         
-        self.alias_map[f"{save_name}"] = str(save_path.relative_to(self.save_root))
         self.result_sn += 1
-
+        # ---------------------------------------------------------------------/
 
 
     def merge_to_RGBstack(self, ch_R, ch_G, ch_B, save_name:str, save_dir:Path):
@@ -261,7 +274,7 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(RGBstack, save_name, save_dir)
         
         return RGBstack
-
+        # ---------------------------------------------------------------------/
 
 
     def z_projection(self, img, method:str, save_name:str, save_dir:Path):
@@ -276,7 +289,7 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(z_proj, save_name, save_dir)
         
         return z_proj
-
+        # ---------------------------------------------------------------------/
 
 
     def direct_max_zproj(self, img_list, save_name:str, save_dir:Path):
@@ -293,7 +306,7 @@ class PalmskinPreprocesser():
         RGBstack = self.merge_to_RGBstack(ch_R_direct, ch_G_direct, ch_B_direct, save_name, save_dir)
         
         return RGBstack
-
+        # ---------------------------------------------------------------------/
 
 
     def median3D(self, img):
@@ -305,7 +318,7 @@ class PalmskinPreprocesser():
         self._zfij.run(median3D, "Median 3D...", f"x={radius_xyz[0]} y={radius_xyz[1]} z={radius_xyz[2]}")
         
         return median3D
-
+        # ---------------------------------------------------------------------/
 
 
     def mean3D(self, img):
@@ -317,9 +330,9 @@ class PalmskinPreprocesser():
         self._zfij.run(mean3D, "Mean 3D...", f"x={radius_xyz[0]} y={radius_xyz[1]} z={radius_xyz[2]}")
         
         return mean3D
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def kuwahara_filter(self, img, save_name:str, save_dir:Path):
         """
         """
@@ -332,9 +345,9 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(kuwahara, save_name, save_dir)
         
         return kuwahara
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def histogram_equalization(self, img, save_name:str, save_dir:Path):
         """
         """
@@ -345,9 +358,9 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(he, save_name, save_dir)
         
         return he
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def average_fusion(self, image_1, image_2, save_name:str, save_dir:Path):
         """
         """
@@ -357,9 +370,9 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(avg_fusion, save_name, save_dir)
         
         return avg_fusion
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def channel_preprocess(self, ch_img, ch_name:str):
         """
         """
@@ -368,12 +381,12 @@ class PalmskinPreprocesser():
         m3d           = self.z_projection(self.median3D(ch_img), "max", f"ch_{ch_name}_m3d", self.metaimg_dir)
         mm3d          = self.z_projection(self.mean3D(m3d), "max", f"ch_{ch_name}_mm3d", self.metaimg_dir)
         mm3d_kuwahara = self.kuwahara_filter(mm3d, f"ch_{ch_name}_mm3d_kuwahara", self.metaimg_dir)
-        fusion        = self.average_fusion(mm3d, mm3d_kuwahara, f"ch_{ch_name}_fusion", self.save_root)
+        fusion        = self.average_fusion(mm3d, mm3d_kuwahara, f"ch_{ch_name}_fusion", self.dst_root)
         
         m3d_HE           = self.histogram_equalization(m3d, f"ch_{ch_name}_m3d_HE", self.metaimg_dir)
         mm3d_HE          = self.histogram_equalization(mm3d, f"ch_{ch_name}_mm3d_HE", self.metaimg_dir)
         mm3d_kuwahara_HE = self.histogram_equalization(mm3d_kuwahara, f"ch_{ch_name}_mm3d_kuwahara_HE", self.metaimg_dir)
-        HE_fusion        = self.average_fusion(mm3d_HE, mm3d_kuwahara_HE, f"ch_{ch_name}_HE_fusion", self.save_root)
+        HE_fusion        = self.average_fusion(mm3d_HE, mm3d_kuwahara_HE, f"ch_{ch_name}_HE_fusion", self.dst_root)
         
         img_dict["m3d"] = m3d
         img_dict["mm3d"] = mm3d
@@ -385,9 +398,9 @@ class PalmskinPreprocesser():
         img_dict["HE_fusion"] = HE_fusion
         
         return img_dict
-    
-    
-    
+        # ---------------------------------------------------------------------/
+
+
     def RGB_to_Gray(self, rgb_img, save_name:str, save_dir:Path):
         """
         """
@@ -399,3 +412,4 @@ class PalmskinPreprocesser():
         self._save_tif_with_SN(gray_img, save_name, save_dir)
         
         return gray_img
+        # ---------------------------------------------------------------------/
