@@ -544,7 +544,7 @@ class ProcessedDataInstance(BaseObject):
             ( the gernerated file is used to compute the label of classification )
 
         Args:
-            config_file (Union[str, Path]): a toml file.
+            config (Union[str, Path]): a toml file.
         """
         self.parse_config(config)
         # ---------------------------------------------------------------------
@@ -652,7 +652,7 @@ class ProcessedDataInstance(BaseObject):
         """ Check the existence and readability of the palmskin images recorded in the XLSX file.
 
         Args:
-            config_file (Union[str, Path]): Defaults to `1.make_dataset.toml`.
+            config (Union[str, Path]): a toml file.
 
         Raises:
             RuntimeError: If detect a broken/non-existing image.

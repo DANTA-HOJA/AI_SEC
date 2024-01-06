@@ -69,7 +69,7 @@ class BatchLIFNameChecker(BaseObject):
         3. Check LIF name
 
         Args:
-            config (Union[str, Path]): a toml file
+            config (Union[str, Path]): a toml file.
         """
         """ STEP 1. Load config """
         super().run(config)
