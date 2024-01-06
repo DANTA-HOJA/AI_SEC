@@ -6,11 +6,11 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from modules.data.lif.palmskinpreprocesser import PalmskinPreprocesser
-from modules.shared.utils import get_coupled_config_name, get_repo_root
+from modules.shared.utils import get_repo_root
 # -----------------------------------------------------------------------------/
 
 """ Detect Repository """
 print(f"Repository: '{get_repo_root()}'")
 
 palmskin_preprocesser = PalmskinPreprocesser()
-palmskin_preprocesser.run(get_coupled_config_name(__file__))
+palmskin_preprocesser.run("0.2.preprocess_palmskin.toml")
