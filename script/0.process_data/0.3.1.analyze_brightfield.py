@@ -7,10 +7,10 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.data.lif.brightfieldanalyzer import BrightfieldAnalyzer
 from modules.shared.utils import get_repo_root
+# -----------------------------------------------------------------------------/
 
 """ Detect Repository """
 print(f"Repository: '{get_repo_root()}'")
 
-
 brightfield_analyzer = BrightfieldAnalyzer()
-brightfield_analyzer.run()
+brightfield_analyzer.run("0.3.analyze_brightfield.toml")
