@@ -13,4 +13,4 @@ from modules.shared.utils import get_repo_root
 print(f"Repository: '{get_repo_root()}'")
 
 batch_lif_name_checker = BatchLIFNameChecker()
-batch_lif_name_checker.run("0.1.check_lif_name.toml")
+batch_lif_name_checker.run("0.1.1.check_lif_name.toml")
