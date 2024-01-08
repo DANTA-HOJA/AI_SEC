@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import cv2
-import numpy
+import numpy as np
 from rich import print
 from rich.pretty import Pretty
 from rich.progress import *
@@ -13,6 +13,7 @@ abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
+from modules.data import dname
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
@@ -43,7 +44,6 @@ cliout.write(f"old: {old_di.instance_name}, "
 _, new_paths = new_di.get_sorted_results(image_type, result_file)
 cliout.write(f"new: {new_di.instance_name}, "
              f"detect {len(new_paths)} files")
-cliout.divide()
 
 # get longer list
 longer = 0
@@ -53,30 +53,72 @@ else:
     longer = new_paths
 
 # start compare
-final_path = []
+equal_interval = {"start": None, "end": None}
 progress = Progress(
     SpinnerColumn(),
     *Progress.get_default_columns(),
     TextColumn("{task.completed} of {task.total}")
 )
 
+cliout.divide()
 with progress:
 
     task1 = progress.add_task("[red]Image Equivalent...", total=len(longer))
     
-    for old_path, new_path in zip(old_paths, new_paths):
+    for _ in range(len(longer)):
+            
+        if len(old_paths) > 0:
+            old_info = dname.get_dname_sortinfo(old_paths[0])
+            tmp = 1 if old_info[1] == "A" else 2
+            old_id = old_info[0]*10 + tmp
+        else: old_id = np.inf
         
-        img1 = cv2.imread(str(old_path))
-        img2 = cv2.imread(str(new_path))
-        final_path = [old_path, new_path]
+        if len(new_paths) > 0:
+            new_info = dname.get_dname_sortinfo(new_paths[0])
+            tmp = 1 if new_info[1] == "A" else 2
+            new_id = new_info[0]*10 + tmp
+        else: new_id = np.inf
         
-        if not numpy.array_equal(img1, img2):
-            cliout.divide()
-            print("ERROR: ", Pretty(final_path, expand_all=True))
-            raise ValueError()
+        if old_id == new_id:
+            
+            old_path = old_paths.pop(0)
+            new_path = new_paths.pop(0)
+            broken_img = False
+            
+            img1 = cv2.imread(str(old_path))
+            if img1 is None:
+                broken_img = True
+                print(f"Fish {old_info} is broken: [red]'{old_path}'\n")
+            
+            img2 = cv2.imread(str(new_path))
+            if img2 is None:
+                broken_img = True
+                print(f"Fish {new_info} is broken: [red]'{new_path}'\n")
+            
+            if broken_img is True:
+                progress.update(task1, advance=1)
+                continue
+            
+            if equal_interval["start"] is None:
+                equal_interval["start"] = old_info
+            else:
+                equal_interval["end"] = old_info
+            
+            if not np.array_equal(img1, img2):
+                cliout.divide()
+                print("ERROR: ", Pretty([old_path, new_path], expand_all=True))
+                raise ValueError
+        
+        else:
+            if old_id < new_id:
+                old_paths.pop(0)
+                print(f"Fish {old_info} skipped: One of image is missing")
+            else:
+                new_paths.pop(0)
+                print(f"Fish {new_info} skipped: One of image is missing")
         
         progress.update(task1, advance=1)
 
 cliout.divide()
-print("Last Path: ", Pretty(final_path, expand_all=True))
+print("Equal Interval: ", Pretty(equal_interval))
 cliout.new_line()
