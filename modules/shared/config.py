@@ -13,33 +13,36 @@ from ..assert_fn import assert_only_1_config
 # -----------------------------------------------------------------------------/
 
 
-def load_config(config_file:Union[str, Path], reserve_comment:bool=False,
+def load_config(config:Union[str, Path], reserve_comment:bool=False,
                 cli_out:CLIOutput=None) -> Union[dict, TOMLDocument]:
     """ Scan and load the specific config under repo root
 
     Args:
-        config_file (Union[str, Path]): full file name, like `abc.toml`
+        config (Union[str, Path]): full file name, like `abc.toml`
         reserve_comment (bool, optional): Defaults to False.
         cli_out (CLIOutput, optional): a `CLIOutput` object. Defaults to None.
 
     Raises:
-        NotImplementedError: If (argument) `config_file` not `str` or `Path` object.
+        NotImplementedError: If (argument) `config` not `str` or `Path` object.
 
     Returns:
         Union[dict, TOMLDocument]: a toml config
     """
+    if isinstance(config, dict):
+        return config
+    
     if reserve_comment:
         load_fn = tomlkit.load
     else:
         load_fn = toml.load
     
     path = None
-    if isinstance(config_file, Path):
-        path = config_file
-    elif isinstance(config_file, str):
+    if isinstance(config, Path):
+        path = config
+    elif isinstance(config, str):
         repo_root = get_repo_root()
-        found_list = list(repo_root.glob(f"**/{config_file}"))
-        assert_only_1_config(found_list, config_file)
+        found_list = list(repo_root.glob(f"**/{config}"))
+        assert_only_1_config(found_list, config)
         path = found_list[0]
     else:
         raise NotImplementedError("Argument `config_file` should be `str` or `Path` object.")
