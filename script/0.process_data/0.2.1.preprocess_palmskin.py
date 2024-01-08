@@ -13,4 +13,4 @@ from modules.shared.utils import get_repo_root
 print(f"Repository: '{get_repo_root()}'")
 
 palmskin_preprocesser = PalmskinPreprocesser()
-palmskin_preprocesser.run("0.2.preprocess_palmskin.toml")
+palmskin_preprocesser.run("0.2.1.preprocess_palmskin.toml")
