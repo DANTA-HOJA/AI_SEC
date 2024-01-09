@@ -669,7 +669,7 @@ class ProcessedDataInstance(BaseObject):
         """ Get dnames record in CSV  """
         if self.data_file is None:
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.csv`, "
-                                    f"please use `ProcessedDataInstance.create_data_file()` to create it. {Style.RESET_ALL}\n")
+                                    f"please use `ProcessedDataInstance.create_tabular_file()` to create it. {Style.RESET_ALL}\n")
         df: pd.DataFrame = pd.read_csv(self.data_file, encoding='utf_8_sig')
         palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"], df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
         
