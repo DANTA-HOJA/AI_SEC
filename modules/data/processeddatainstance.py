@@ -684,6 +684,7 @@ class ProcessedDataInstance(BaseObject):
         
         """ Main Process """
         self._cli_out.divide()
+        self._reset_pbar()
         with self._pbar:
             
             # add task to `self._pbar`
