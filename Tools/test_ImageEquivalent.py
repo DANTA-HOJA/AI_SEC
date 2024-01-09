@@ -63,7 +63,7 @@ progress = Progress(
 cliout.divide()
 with progress:
 
-    task1 = progress.add_task("[red]Image Equivalent...", total=len(longer))
+    task1 = progress.add_task("[yellow]Image Equivalent...", total=len(longer))
     
     for _ in range(len(longer)):
             
