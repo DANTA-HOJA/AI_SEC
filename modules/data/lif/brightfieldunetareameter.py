@@ -1,74 +1,89 @@
 import os
-import sys
 import re
+import sys
 from pathlib import Path
-from typing import List, Dict, Tuple, Union
-
-from tqdm.auto import tqdm
-
-from ..ij.zfij import ZFIJ
-from ..processeddatainstance import ProcessedDataInstance
-from ...shared.clioutput import CLIOutput
+from typing import Dict, List, Tuple, Union
 
 from ...assert_fn import *
+from ...shared.baseobject import BaseObject
+from ..ij.zfij import ZFIJ
+from ..processeddatainstance import ProcessedDataInstance
 # -----------------------------------------------------------------------------/
 
 
-class BrightfieldUNetAreaMeter():
+class BrightfieldUNetAreaMeter(BaseObject):
 
-
-    def __init__(self, zfij_instance:ZFIJ=None, display_on_CLI=True) -> None:
+    def __init__(self, zfij_instance:ZFIJ=None, processed_data_instance=None,
+                 display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
-        # Initialize `Fiji` ( This will change the working directory to where the `JVM` exists. )
+        super().__init__(display_on_CLI)
+        self._cli_out._set_logger("UNet Area Meter (Brightfield)")
+        
+        # Initialize `Fiji`
         if zfij_instance:
             self._zfij = zfij_instance
         else:
             self._zfij = ZFIJ(display_on_CLI)
         
-        self.processed_data_instance = ProcessedDataInstance()
-        self._cli_out = CLIOutput(display_on_CLI, logger_name="UNet Area Meter (Brightfield)")
+        if processed_data_instance:
+            self._processed_di = processed_data_instance
+        else:
+            self._processed_di = ProcessedDataInstance()
         
         # ---------------------------------------------------------------------
         # """ attributes """
         # TODO
+        # ---------------------------------------------------------------------
+        # """ actions """
+        # TODO
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_attrs(self, config_file:Union[str, Path]):
+    def _set_attrs(self, config:Union[str, Path]):
         """
         """
-        self.processed_data_instance.set_attrs(config_file)
+        super()._set_attrs(config)
+        self._processed_di.parse_config(config)
         
         self.analyze_param_dict = \
-            self.processed_data_instance.brightfield_processed_config["param"]
+            self._processed_di.brightfield_processed_config["param"]
         # ---------------------------------------------------------------------/
 
 
+    def _set_config_attrs(self):
+        """
+        """
+        pass
+        # ---------------------------------------------------------------------/
 
-    def run(self, config_file:Union[str, Path]="0.3.analyze_brightfield.toml"):
+
+    def run(self, config:Union[str, Path]):
         """
+
+        Args:
+            config (Union[str, Path]): a toml file.
         """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
+        super().run(config)
         
-        dname_dirs = self.processed_data_instance.brightfield_processed_dname_dirs_dict.values()
+        dname_dirs = self._processed_di.brightfield_processed_dname_dirs_dict.values()
         
         self._cli_out.divide()
-        with tqdm(total=len(dname_dirs), desc=f"[ {self._cli_out.logger_name} ] : ") as pbar:
+        with self._pbar:
+            
+            # add task to `self._pbar`
+            task_desc = f"[yellow][ {self._cli_out.logger_name} ] : "
+            task = self._pbar.add_task(task_desc, total=len(dname_dirs))
             
             for dname_dir in dname_dirs:
                 self._single_unet_area_measurement(dname_dir)
-                pbar.update(1)
-                pbar.refresh()
+                self._pbar.update(task, advance=1)
         
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
-
 
 
     def _single_unet_area_measurement(self, dname_dir:Path):
@@ -89,10 +104,9 @@ class BrightfieldUNetAreaMeter():
         roi_cnt = int(self._zfij.roiManager.getCount())
         if roi_cnt == 1:
             self.save_measured_result(dname_dir)
-
+        
         self._zfij.reset_all_window()
         # ---------------------------------------------------------------------/
-
 
 
     def convert_to_mask(self, img):
@@ -101,7 +115,6 @@ class BrightfieldUNetAreaMeter():
         self._zfij.ij.prefs.blackBackground = True
         self._zfij.run(img, "Convert to Mask", "")
         # ---------------------------------------------------------------------/
-
 
 
     def zf_measurement(self, img):
@@ -113,7 +126,6 @@ class BrightfieldUNetAreaMeter():
         self._zfij.run("Set Measurements...", "area mean min feret's display redirect=None decimal=2")
         self._zfij.run(img, "Analyze Particles...", f"size={lower_bound}-{upper_bound} display include add")
         # ---------------------------------------------------------------------/
-
 
 
     def save_measured_result(self, dname_dir:Path):
