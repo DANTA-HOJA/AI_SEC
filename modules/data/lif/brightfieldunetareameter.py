@@ -21,7 +21,7 @@ class BrightfieldUNetAreaMeter(BaseObject):
         # """ components """
         
         super().__init__(display_on_CLI)
-        self._cli_out._set_logger("UNet Area Meter (Brightfield)")
+        self._cli_out._set_logger("Measure UNet Area (Brightfield)")
         
         # Initialize `Fiji`
         if zfij_instance:
