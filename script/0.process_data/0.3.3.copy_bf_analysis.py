@@ -66,6 +66,7 @@ with progress:
                     print(f"[#2596be]'{old_path}'\n [#FFFFFF]--> [#be4d25]'{new_path}'\n")
             
             progress.update(task, advance=1)
+            progress.refresh()
             
         except KeyError:
             pass

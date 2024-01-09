@@ -81,6 +81,7 @@ class BrightfieldUNetAreaMeter(BaseObject):
             for dname_dir in dname_dirs:
                 self._single_unet_area_measurement(dname_dir)
                 self._pbar.update(task, advance=1)
+                self._pbar.refresh()
         
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/

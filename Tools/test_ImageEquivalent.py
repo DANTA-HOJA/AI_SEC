@@ -99,6 +99,7 @@ with progress:
             
             if broken_img is True:
                 progress.update(task, advance=1)
+                progress.refresh()
                 continue
             
             if equal_interval["start"] is None:
@@ -120,6 +121,7 @@ with progress:
                 print(f"Fish {new_info} skipped: One of image is missing")
         
         progress.update(task, advance=1)
+        progress.refresh()
 
 cli_out.divide()
 print("Equal Interval: ", Pretty(equal_interval))
