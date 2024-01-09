@@ -13,4 +13,4 @@ from modules.shared.utils import get_repo_root
 print(f"Repository: '{get_repo_root()}'")
 
 brightfield_unet_area_meter = BrightfieldUNetAreaMeter()
-brightfield_unet_area_meter.run("0.3.analyze_brightfield.toml")
+brightfield_unet_area_meter.run("0.3.1.analyze_brightfield.toml")
