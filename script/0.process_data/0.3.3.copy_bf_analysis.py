@@ -43,7 +43,8 @@ new_dict = new_di.brightfield_processed_dname_dirs_dict
 progress = Progress(
     SpinnerColumn(),
     *Progress.get_default_columns(),
-    TextColumn("{task.completed} of {task.total}")
+    TextColumn("{task.completed} of {task.total}"),
+    auto_refresh=False
 )
 
 cli_out.divide()

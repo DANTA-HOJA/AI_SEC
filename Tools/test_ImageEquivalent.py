@@ -58,7 +58,8 @@ equal_interval = {"start": None, "end": None}
 progress = Progress(
     SpinnerColumn(),
     *Progress.get_default_columns(),
-    TextColumn("{task.completed} of {task.total}")
+    TextColumn("{task.completed} of {task.total}"),
+    auto_refresh=False
 )
 
 cli_out.divide()
