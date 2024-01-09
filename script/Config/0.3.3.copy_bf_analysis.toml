@@ -1,0 +1,14 @@
+[instance_desc]
+  old = "20231229_manualroi" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  new = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+
+# -----------------------------------------------------------------------------\
+[copy_info]
+  filenames = [
+    "Manual_measured_mask.tif",
+    "ManualAnalysis.csv",
+    "Manual_cropped_BF--MIX.tif",
+    "UNet_predict_mask.tif",
+    "UNetAnalysis.csv",
+    "UNet_cropped_BF--MIX.tif"
+  ]
