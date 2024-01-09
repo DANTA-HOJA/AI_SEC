@@ -7,10 +7,10 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.utils import get_repo_root
+# -----------------------------------------------------------------------------/
 
 """ Detect Repository """
 print(f"Repository: '{get_repo_root()}'")
 
-
 processed_data_instance = ProcessedDataInstance()
-processed_data_instance.create_data_xlsx()
+processed_data_instance.create_tabular_file("0.5.cluster_data.toml")

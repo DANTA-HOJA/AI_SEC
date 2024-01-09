@@ -539,8 +539,8 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def create_data_file(self, config:Union[str, Path]):
-        """ Create a CSV file contains `dname` and `brightfield analyze` informations \
+    def create_tabular_file(self, config:Union[str, Path]):
+        """ Create a tabular file contains `dname` and `brightfield analyze` informations \
             ( the gernerated file is used to compute the label of classification )
 
         Args:
@@ -624,20 +624,22 @@ class ProcessedDataInstance(BaseObject):
 
             else: df.loc[one_base_iter_num] = np.nan # Can't find corresponding analysis result, make an empty row.
             
+            if len(palmskin_processed_dname_dirs) > 0:
+                
+                # position A
+                sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
+                if f"{one_base_iter_num}_A" == f"{sortinfo[0]}_{sortinfo[1]}":
+                    palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
+                    self._cli_out.write(f"palmskin_A_name : '{palmskin_A_name}'")
+                    df.loc[one_base_iter_num, "Palmskin Anterior (SP8)" ] =  palmskin_A_name
+                
+                # position P
+                sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
+                if f"{one_base_iter_num}_P" == f"{sortinfo[0]}_{sortinfo[1]}":
+                    palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
+                    self._cli_out.write(f"palmskin_P_name : '{palmskin_P_name}'")
+                    df.loc[one_base_iter_num, "Palmskin Posterior (SP8)" ] =  palmskin_P_name
             
-            sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
-            if f"{one_base_iter_num}_A" == f"{sortinfo[0]}_{sortinfo[1]}":
-                palmskin_A_name = palmskin_processed_dname_dirs.pop(0)
-                self._cli_out.write(f"palmskin_A_name : '{palmskin_A_name}'")
-                df.loc[one_base_iter_num, "Palmskin Anterior (SP8)" ] =  palmskin_A_name
-            
-            
-            sortinfo = dname.get_dname_sortinfo(palmskin_processed_dname_dirs[0])
-            if f"{one_base_iter_num}_P" == f"{sortinfo[0]}_{sortinfo[1]}":
-                palmskin_P_name = palmskin_processed_dname_dirs.pop(0)
-                self._cli_out.write(f"palmskin_P_name : '{palmskin_P_name}'")
-                df.loc[one_base_iter_num, "Palmskin Posterior (SP8)" ] =  palmskin_P_name
-
             self._cli_out.divide()
 
         
