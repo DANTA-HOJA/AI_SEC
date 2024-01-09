@@ -4,5 +4,5 @@
 # -----------------------------------------------------------------------------\
 [collection]
   image_type = "brightfield" # 'palmskin' or 'brightfield'
-  result_alias = "UNet_cropped_BF--MIX"
+  result_file = "UNet_cropped_BF--MIX.tif"
   log_mode = "missing" # 'missing' or 'finding' (different representation in log file)
