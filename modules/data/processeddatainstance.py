@@ -684,12 +684,17 @@ class ProcessedDataInstance(BaseObject):
         
         """ Main Process """
         self._cli_out.divide()
-        with tqdm(total=len(palmskin_dnames), desc="Check Image Condition: ") as pbar:
+        with self._pbar:
+            
+            # add task to `self._pbar`
+            task_desc = f"[yellow]Check Image Condition: "
+            task = self._pbar.add_task(task_desc, total=len(palmskin_dnames))
             
             read_failed = 0
             for palmskin_dname in palmskin_dnames:
-                pbar.desc = f"Check Image Condition ( {palmskin_dname} ) : "
-                pbar.refresh()
+                dyn_desc = f"[yellow]Check Image Condition ( {palmskin_dname} ) : "
+                self._pbar.update(task, description=dyn_desc)
+                self._pbar.refresh()
                 try:
                     result_path = sorted_results_dict.pop(palmskin_dname)
                     if cv2.imread(str(result_path)) is None:
@@ -700,8 +705,8 @@ class ProcessedDataInstance(BaseObject):
                     read_failed += 1
                     self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{palmskin_result_file}' "
                                         f"of '{palmskin_dname}'{Style.RESET_ALL}")
-                pbar.update(1)
-                pbar.refresh()
+                self._pbar.update(task, advance=1)
+                self._pbar.refresh()
         
         self._cli_out.new_line()
         if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}")
