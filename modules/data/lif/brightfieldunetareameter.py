@@ -72,6 +72,7 @@ class BrightfieldUNetAreaMeter(BaseObject):
         dname_dirs = self._processed_di.brightfield_processed_dname_dirs_dict.values()
         
         self._cli_out.divide()
+        self._reset_pbar()
         with self._pbar:
             
             # add task to `self._pbar`
