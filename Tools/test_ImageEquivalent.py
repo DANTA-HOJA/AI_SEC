@@ -21,7 +21,8 @@ from modules.shared.utils import get_coupled_config_name
 # -----------------------------------------------------------------------------/
 
 # set variables
-cliout = CLIOutput("Image Equivalent")
+cli_out = CLIOutput()
+cli_out._set_logger("Image Equivalent")
 config = load_config(get_coupled_config_name(__file__))
 old_ins = config["instance_desc"]["old"]
 new_ins = config["instance_desc"]["new"]
@@ -35,15 +36,15 @@ old_di.parse_config({"data_processed": {"instance_desc": old_ins}})
 new_di = ProcessedDataInstance()
 new_di._cli_out._set_logger("ProcessedDataInstance (NEW)")
 new_di.parse_config({"data_processed": {"instance_desc": new_ins}})
-cliout.divide()
+cli_out.divide()
 
 # get `paths` in `ProcessedDataInstance`
 _, old_paths = old_di.get_sorted_results(image_type, result_file)
-cliout.write(f"old: {old_di.instance_name}, "
-             f"detect {len(old_paths)} files")
+cli_out.write(f"old: {old_di.instance_name}, "
+              f"detect {len(old_paths)} files")
 _, new_paths = new_di.get_sorted_results(image_type, result_file)
-cliout.write(f"new: {new_di.instance_name}, "
-             f"detect {len(new_paths)} files")
+cli_out.write(f"new: {new_di.instance_name}, "
+              f"detect {len(new_paths)} files")
 
 # get longer list
 longer = 0
@@ -60,10 +61,11 @@ progress = Progress(
     TextColumn("{task.completed} of {task.total}")
 )
 
-cliout.divide()
+cli_out.divide()
 with progress:
 
-    task1 = progress.add_task("[yellow]Image Equivalent...", total=len(longer))
+    task_desc = f"[yellow]{cli_out.logger_name}..."
+    task = progress.add_task(task_desc, total=len(longer))
     
     for _ in range(len(longer)):
             
@@ -96,7 +98,7 @@ with progress:
                 print(f"Fish {new_info} is broken: [red]'{new_path}'\n")
             
             if broken_img is True:
-                progress.update(task1, advance=1)
+                progress.update(task, advance=1)
                 continue
             
             if equal_interval["start"] is None:
@@ -105,7 +107,7 @@ with progress:
                 equal_interval["end"] = old_info
             
             if not np.array_equal(img1, img2):
-                cliout.divide()
+                cli_out.divide()
                 print("ERROR: ", Pretty([old_path, new_path], expand_all=True))
                 raise ValueError
         
@@ -117,8 +119,8 @@ with progress:
                 new_paths.pop(0)
                 print(f"Fish {new_info} skipped: One of image is missing")
         
-        progress.update(task1, advance=1)
+        progress.update(task, advance=1)
 
-cliout.divide()
+cli_out.divide()
 print("Equal Interval: ", Pretty(equal_interval))
-cliout.new_line()
+cli_out.new_line()
