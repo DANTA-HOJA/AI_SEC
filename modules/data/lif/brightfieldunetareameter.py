@@ -13,7 +13,8 @@ from ..processeddatainstance import ProcessedDataInstance
 
 class BrightfieldUNetAreaMeter(BaseObject):
 
-    def __init__(self, zfij_instance:ZFIJ=None, processed_data_instance=None,
+    def __init__(self, zfij_instance:ZFIJ=None,
+                 processed_data_instance:ProcessedDataInstance=None,
                  display_on_CLI=True) -> None:
         """
         """
@@ -91,9 +92,9 @@ class BrightfieldUNetAreaMeter(BaseObject):
     def _single_unet_area_measurement(self, dname_dir:Path):
         """
         """
-        mask_path = dname_dir.joinpath("UNet_predict_mask.tif")
+        mask_file = dname_dir.joinpath("UNet_predict_mask.tif")
         
-        img = self._zfij.ij.IJ.openImage(str(mask_path))
+        img = self._zfij.ij.IJ.openImage(str(mask_file))
         img.hide()
         
         micron_per_pixel = self.analyze_param_dict["micron_per_pixel"]
@@ -133,6 +134,6 @@ class BrightfieldUNetAreaMeter(BaseObject):
     def save_measured_result(self, dname_dir:Path):
         """
         """
-        save_path = dname_dir.joinpath("UNetAnalysis.csv")
-        self._zfij.save_as("Results", str(save_path))
+        save_file = dname_dir.joinpath("UNetAnalysis.csv")
+        self._zfij.save_as("Results", str(save_file))
         # ---------------------------------------------------------------------/
