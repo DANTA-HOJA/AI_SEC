@@ -31,7 +31,7 @@ rand_seed = config["cluster"]["random_seed"]
 """ Read `data.csv` """
 processed_di = ProcessedDataInstance()
 processed_di.parse_config(config)
-df = pd.read_csv(processed_di.data_file, encoding='utf_8_sig', index_col=[0])
+df = pd.read_csv(processed_di.tabular_file, encoding='utf_8_sig', index_col=[0])
 cli_out.divide()
 
 """ Main Process """
