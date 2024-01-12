@@ -9,9 +9,7 @@ from typing import Dict, List, Tuple, Union
 import cv2
 import numpy as np
 import pandas as pd
-import toml
 from colorama import Back, Fore, Style
-from tqdm.auto import tqdm
 
 from ..assert_fn import *
 from ..assert_fn import (assert_0_or_1_processed_dir,
@@ -61,8 +59,7 @@ class ProcessedDataInstance(BaseObject):
         self.brightfield_recollect_dir:Union[None, Path] = None
         self.brightfield_recollected_dirs_dict:Dict[str, Path] = {}
         
-        self.data_file:Union[None, Path] = None
-        self.datasplit_file:Union[None, Path] = None
+        self.tabular_file:Union[None, Path] = None
         
         self.clustered_file_dir:Union[None, Path] = None
         self.clustered_files_dict:Dict[str, Path] = {}
@@ -93,7 +90,7 @@ class ProcessedDataInstance(BaseObject):
         self._set_processed_configs()
         self._set_recollect_dirs()
         self._set_clustered_file_dir()
-        self._set_data_file()
+        self._set_tabular_file()
         # ---------------------------------------------------------------------/
 
 
@@ -309,19 +306,19 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_data_file(self):
+    def _set_tabular_file(self):
         """ Set below attributes
-            1. `self.data_file`
+            1. `self.tabular_file`
         """
-        data_file = self.instance_root.joinpath("data.csv")
+        tabular_file = self.instance_root.joinpath("data.csv")
         
-        if data_file.exists():
+        if tabular_file.exists():
             """ CLI output """
-            self._cli_out.write(f"data.csv : '{data_file}'")
+            self._cli_out.write(f"Tabular File : '{tabular_file}'")
         else:
-            data_file = None
+            tabular_file = None
         
-        self.data_file = data_file
+        self.tabular_file = tabular_file
         # ---------------------------------------------------------------------/
 
 
@@ -389,9 +386,9 @@ class ProcessedDataInstance(BaseObject):
             target_text = "brightfield_analyze"
         
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
-        config_path = processed_dir.joinpath(f"{target_text}_config.toml")
-        if config_path.exists():
-            config = load_config(config_path)
+        config_file = processed_dir.joinpath(f"{target_text}_config.toml")
+        if config_file.exists():
+            config = load_config(config_file)
         else:
             config = {}
         
@@ -409,12 +406,12 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def get_sorted_results(self, image_type:str, result_file:str) -> Tuple[Union[None, str], List[Path]]:
+    def get_sorted_results(self, image_type:str, result_name:str) -> Tuple[Union[None, str], List[Path]]:
         """
 
         Args:
             image_type (str): `palmskin` or `brightfield`
-            result_file (str): one of results in each zebrafish dname directory
+            result_name (str): one of results in each zebrafish dname directory
 
         Returns:
             Tuple[str, List[Path]]: `(relative_path_in_dname_dir, sorted_results)`
@@ -424,7 +421,7 @@ class ProcessedDataInstance(BaseObject):
         
         # sorted_results
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
-        found_list = list(processed_dir.glob(f"**/{result_file}"))
+        found_list = list(processed_dir.glob(f"**/{result_name}"))
         found_list = exclude_paths(found_list, ["!~delete"])
         sorted_results = sorted(found_list, key=dname.get_dname_sortinfo)
         
@@ -455,7 +452,7 @@ class ProcessedDataInstance(BaseObject):
         
         """ Get variable """
         image_type   = self.config["collection"]["image_type"]
-        result_file = self.config["collection"]["result_file"]
+        result_name = self.config["collection"]["result_name"]
         log_mode     = self.config["collection"]["log_mode"]
         
         """ Check variable """
@@ -466,14 +463,14 @@ class ProcessedDataInstance(BaseObject):
             raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only\n")
         
         """ Scan results """
-        rel_path, sorted_results = self.get_sorted_results(image_type, result_file)
-        assert rel_path is not None, "Can't find any result file, `result_file` should be a FULL_NAME (with file extension)"
+        rel_path, sorted_results = self.get_sorted_results(image_type, result_name)
+        assert rel_path is not None, "Can't find any result file, `result_name` should be a FULL_NAME (with file extension)"
         
         """ Get `recollect_dir` """
         if image_type == "palmskin": target_text = "PalmSkin"
         elif image_type == "brightfield": target_text = "BrightField"
         reminder = getattr(self, f"{image_type}_processed_reminder")
-        recollect_dir = self.instance_root.joinpath(f"{{{reminder}}}_{target_text}_reCollection", os.path.splitext(result_file)[0])
+        recollect_dir = self.instance_root.joinpath(f"{{{reminder}}}_{target_text}_reCollection", os.path.splitext(result_name)[0])
         if recollect_dir.exists():
             raise FileExistsError(f"Directory: '{recollect_dir.resolve()}' already exists, please delete it before collecting results.\n")
         else:
@@ -481,8 +478,8 @@ class ProcessedDataInstance(BaseObject):
         
         """ Main process """
         summary = {}
-        summary["result_file"] = result_file
-        summary["relative_path"] = rel_path
+        summary["result_name"] = result_name
+        summary["relative_path_in_dname_dir"] = rel_path
         summary["max_probable_num"] = dname.get_dname_sortinfo(sorted_results[-1])[0]
         summary["total files"] = len(sorted_results)
         summary[log_mode] = []
@@ -528,8 +525,8 @@ class ProcessedDataInstance(BaseObject):
         summary[f"len({log_mode})"] = len(summary[log_mode])
         
         """ Dump `summary` dict """
-        log_path = recollect_dir.joinpath(f"{{Logs}}_collect_{image_type}_results.log")
-        with open(log_path, mode="w") as f_writer:
+        log_file = recollect_dir.joinpath(f"{{Logs}}_collect_{image_type}_results.log")
+        with open(log_file, mode="w") as f_writer:
             json.dump(summary, f_writer, indent=4)
         self._cli_out.write(json.dumps(summary, indent=4))
         
@@ -580,7 +577,7 @@ class ProcessedDataInstance(BaseObject):
                                    "Palmskin Posterior (SP8)",
                                    "Trunk surface area, SA (um2)",
                                    "Standard Length, SL (um)"])
-        data_file = self.instance_root.joinpath("data.csv")
+        tabular_file = self.instance_root.joinpath("data.csv")
         delete_uncomplete_row = True
         
         self._cli_out.divide()
@@ -593,20 +590,20 @@ class ProcessedDataInstance(BaseObject):
             if  one_base_iter_num == dname.get_dname_sortinfo(bf_merge_results_list[0])[0]:
                 
                 """ Get informations """
-                bf_result_path = bf_merge_results_list.pop(0)
-                bf_result_path_split = str(bf_result_path).split(os.sep)
+                bf_result_file = bf_merge_results_list.pop(0)
+                bf_result_file_split = str(bf_result_file).split(os.sep)
                 # dname
-                target_idx = get_target_str_idx_in_list(bf_result_path_split, "_BrightField_analyze")
-                bf_result_dname = bf_result_path_split[target_idx+1]
+                target_idx = get_target_str_idx_in_list(bf_result_file_split, "_BrightField_analyze")
+                bf_result_dname = bf_result_file_split[target_idx+1]
                 # analysis mode
-                bf_result_analysis_mode = os.path.splitext(bf_result_path_split[-1])[0] # `UNetAnalysis` or `ManualAnalysis`
+                bf_result_analysis_mode = os.path.splitext(bf_result_file_split[-1])[0] # `UNetAnalysis` or `ManualAnalysis`
                 
                 self._cli_out.write(f"bf_result_dname : '{bf_result_dname}'")
                 self._cli_out.write(f"analysis_mode : '{bf_result_analysis_mode}'")
                 
                 """ Read CSV """
-                analysis_csv = pd.read_csv(bf_result_path, index_col=" ")
-                assert len(analysis_csv) == 1, f"More than 1 measurement in csv file, file: '{bf_result_path}'"
+                analysis_csv = pd.read_csv(bf_result_file, index_col=" ")
+                assert len(analysis_csv) == 1, f"More than 1 measurement in csv file, file: '{bf_result_file}'"
                 
                 """ Get surface area """
                 surface_area = analysis_csv.loc[1, "Area"]
@@ -644,8 +641,8 @@ class ProcessedDataInstance(BaseObject):
 
         
         if delete_uncomplete_row: df.dropna(inplace=True)
-        df.to_csv(data_file, encoding='utf_8_sig')
-        self._set_data_file()
+        df.to_csv(tabular_file, encoding='utf_8_sig')
+        self._set_tabular_file()
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
@@ -664,17 +661,17 @@ class ProcessedDataInstance(BaseObject):
         self._cli_out._display_on_CLI = True
         
         """ Get variable """
-        palmskin_result_file = self.config["data_processed"]["palmskin_result_file"]
+        palmskin_result_name = self.config["data_processed"]["palmskin_result_name"]
         
         """ Get dnames record in CSV  """
-        if self.data_file is None:
-            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `data.csv`, "
-                                    f"please use `ProcessedDataInstance.create_tabular_file()` to create it. {Style.RESET_ALL}\n")
-        df: pd.DataFrame = pd.read_csv(self.data_file, encoding='utf_8_sig')
+        if self.tabular_file is None:
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find tabular file, "
+                                    f"please run `0.5.1.create_tabular_file.py` to create it. {Style.RESET_ALL}\n")
+        df: pd.DataFrame = pd.read_csv(self.tabular_file, encoding='utf_8_sig')
         palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"], df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
         
         """ Get specific results exist in 'PalmSkin_preprocess' directory """
-        _, sorted_results = self.get_sorted_results("palmskin", palmskin_result_file)
+        _, sorted_results = self.get_sorted_results("palmskin", palmskin_result_name)
         
         # sorted_results_dict
         sorted_results_dict:Dict[str, Path] = {}
@@ -699,14 +696,14 @@ class ProcessedDataInstance(BaseObject):
                 self._pbar.update(task, description=dyn_desc)
                 self._pbar.refresh()
                 try:
-                    result_path = sorted_results_dict.pop(palmskin_dname)
-                    if cv2.imread(str(result_path)) is None:
+                    palmskin_result_file = sorted_results_dict.pop(palmskin_dname)
+                    if cv2.imread(str(palmskin_result_file)) is None:
                         read_failed += 1
-                        self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{palmskin_result_file}' "
+                        self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{palmskin_result_name}' "
                                             f"of '{palmskin_dname}'{Style.RESET_ALL}")
                 except KeyError:
                     read_failed += 1
-                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{palmskin_result_file}' "
+                    self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't find '{palmskin_result_name}' "
                                         f"of '{palmskin_dname}'{Style.RESET_ALL}")
                 self._pbar.update(task, advance=1)
                 self._pbar.refresh()
