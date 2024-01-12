@@ -27,7 +27,7 @@ config = load_config(get_coupled_config_name(__file__))
 old_ins = config["instance_desc"]["old"]
 new_ins = config["instance_desc"]["new"]
 image_type = config["image_info"]["image_type"]
-result_file = config["image_info"]["result_file"]
+result_name = config["image_info"]["result_name"]
 
 # init `ProcessedDataInstance`
 old_di = ProcessedDataInstance()
@@ -39,10 +39,10 @@ new_di.parse_config({"data_processed": {"instance_desc": new_ins}})
 cli_out.divide()
 
 # get `paths` in `ProcessedDataInstance`
-_, old_paths = old_di.get_sorted_results(image_type, result_file)
+_, old_paths = old_di.get_sorted_results(image_type, result_name)
 cli_out.write(f"old: {old_di.instance_name}, "
               f"detect {len(old_paths)} files")
-_, new_paths = new_di.get_sorted_results(image_type, result_file)
+_, new_paths = new_di.get_sorted_results(image_type, result_name)
 cli_out.write(f"new: {new_di.instance_name}, "
               f"detect {len(new_paths)} files")
 
