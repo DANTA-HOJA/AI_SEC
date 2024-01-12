@@ -70,16 +70,6 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def parse_config(self, config:Union[str, Path]):
-        """
-
-        Args:
-            config (Union[str, Path]): a toml file.
-        """
-        super().run(config)
-        # ---------------------------------------------------------------------/
-
-
     def _set_attrs(self, config:Union[str, Path]):
         """
         """
@@ -108,6 +98,33 @@ class ProcessedDataInstance(BaseObject):
         """
         self.instance_root = self._path_navigator.processed_data.get_instance_root(self.config, self._cli_out)
         self.instance_name = str(self.instance_root).split(os.sep)[-1]
+        # ---------------------------------------------------------------------/
+
+
+    def _set_processed_dirs(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_dir`
+            2. `self.palmskin_processed_reminder`
+            3. `self.brightfield_processed_dir`
+            4. `self.brightfield_processed_reminder`
+        """
+        """ palmskin """
+        path = self._get_processed_dir("palmskin")
+        if path is not None:
+            self.palmskin_processed_dir = path
+            self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+        else:
+            raise FileNotFoundError("Can't find corresponding 'PalmSkin_preprocess' directory, "
+                                    "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.\n")
+        
+        """ brightfield """
+        path = self._get_processed_dir("brightfield")
+        if path is not None:
+            self.brightfield_processed_dir = path
+            self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
+        else:
+            raise FileNotFoundError("Can't find corresponding 'BrightField_analyze' directory, "
+                                    "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.\n")
         # ---------------------------------------------------------------------/
 
 
@@ -143,30 +160,18 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_processed_dirs(self):
-        """ Set below attributes
-            1. `self.palmskin_processed_dir`
-            2. `self.palmskin_processed_reminder`
-            3. `self.brightfield_processed_dir`
-            4. `self.brightfield_processed_reminder`
+    def _set_processed_dname_dirs_dicts(self):
+        """ Set below attributes, run functions : 
+            1. `self.palmskin_processed_dname_dirs_dict`
+            2. `self._update_instance_postfixnum()`
+            3. `self.brightfield_processed_dname_dirs_dict`
         """
         """ palmskin """
-        path = self._get_processed_dir("palmskin")
-        if path is not None:
-            self.palmskin_processed_dir = path
-            self.palmskin_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
-        else:
-            raise FileNotFoundError("Can't find corresponding 'PalmSkin_preprocess' directory, "
-                                    "please run `0.2.preprocess_palmskin.py` to preprocess your palmskin images first.\n")
+        self.palmskin_processed_dname_dirs_dict = self._scan_processed_dname_dirs("palmskin")
+        self._update_instance_postfixnum()
         
         """ brightfield """
-        path = self._get_processed_dir("brightfield")
-        if path is not None:
-            self.brightfield_processed_dir = path
-            self.brightfield_processed_reminder = re.split("{|}", str(path).split(os.sep)[-1])[1]
-        else:
-            raise FileNotFoundError("Can't find corresponding 'BrightField_analyze' directory, "
-                                    "please run `0.3.analyze_brightfield.py` to analyze your brightfield images first.\n")
+        self.brightfield_processed_dname_dirs_dict = self._scan_processed_dname_dirs("brightfield")
         # ---------------------------------------------------------------------/
 
 
@@ -211,18 +216,63 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_processed_dname_dirs_dicts(self):
-        """ Set below attributes, run functions : 
-            1. `self.palmskin_processed_dname_dirs_dict`
-            2. `self._update_instance_postfixnum()`
-            3. `self.brightfield_processed_dname_dirs_dict`
+    def _set_processed_configs(self):
+        """ Set below attributes
+            1. `self.palmskin_processed_config`
+            2. `self.brightfield_processed_config`
+        """
+        self._load_processed_config("palmskin")
+        self._load_processed_config("brightfield")
+        # ---------------------------------------------------------------------/
+
+
+    def _load_processed_config(self, image_type:str):
+        """
+
+        Args:
+            image_type (str): `palmskin` or `brightfield`
+        """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        if image_type == "palmskin":
+            target_text = "palmskin_preprocess"
+        elif image_type == "brightfield":
+            target_text = "brightfield_analyze"
+        
+        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        config_file = processed_dir.joinpath(f"{target_text}_config.toml")
+        if config_file.exists():
+            config = load_config(config_file)
+        else:
+            config = {}
+        
+        setattr(self, f"{image_type}_processed_config", config)
+        # ---------------------------------------------------------------------/
+
+
+    def _set_recollect_dirs(self):
+        """ Set below attributes 
+            1. `self.palmskin_recollect_dir`
+            2. `self.palmskin_recollected_dirs_dict`
+            3. `self.brightfield_recollect_dir`
+            4. `self.brightfield_recollected_dirs_dict`
         """
         """ palmskin """
-        self.palmskin_processed_dname_dirs_dict = self._scan_processed_dname_dirs("palmskin")
-        self._update_instance_postfixnum()
+        path = self._get_recollect_dir("palmskin")
+        if self.palmskin_recollect_dir != path:
+            self.palmskin_recollect_dir = path
+            self._update_recollected_dirs_dict("palmskin")
+        else:
+            self._update_recollected_dirs_dict("palmskin")
         
         """ brightfield """
-        self.brightfield_processed_dname_dirs_dict = self._scan_processed_dname_dirs("brightfield")
+        path = self._get_recollect_dir("brightfield")
+        if self.brightfield_recollect_dir != path:
+            self.brightfield_recollect_dir = path
+            self._update_recollected_dirs_dict("brightfield")
+        else:
+            self._update_recollected_dirs_dict("brightfield")
         # ---------------------------------------------------------------------/
 
 
@@ -281,44 +331,17 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_recollect_dirs(self):
-        """ Set below attributes 
-            1. `self.palmskin_recollect_dir`
-            2. `self.palmskin_recollected_dirs_dict`
-            3. `self.brightfield_recollect_dir`
-            4. `self.brightfield_recollected_dirs_dict`
-        """
-        """ palmskin """
-        path = self._get_recollect_dir("palmskin")
-        if self.palmskin_recollect_dir != path:
-            self.palmskin_recollect_dir = path
-            self._update_recollected_dirs_dict("palmskin")
-        else:
-            self._update_recollected_dirs_dict("palmskin")
-        
-        """ brightfield """
-        path = self._get_recollect_dir("brightfield")
-        if self.brightfield_recollect_dir != path:
-            self.brightfield_recollect_dir = path
-            self._update_recollected_dirs_dict("brightfield")
-        else:
-            self._update_recollected_dirs_dict("brightfield")
-        # ---------------------------------------------------------------------/
-
-
-    def _set_tabular_file(self):
+    def _set_clustered_file_dir(self):
         """ Set below attributes
-            1. `self.tabular_file`
+            1. `self.clustered_file_dir`
+            2. `self.clustered_files_dict`
         """
-        tabular_file = self.instance_root.joinpath("data.csv")
-        
-        if tabular_file.exists():
-            """ CLI output """
-            self._cli_out.write(f"Tabular File : '{tabular_file}'")
+        path = self._get_clustered_file_dir()
+        if self.clustered_file_dir != path:
+            self.clustered_file_dir = path
+            self._update_clustered_files_dict()
         else:
-            tabular_file = None
-        
-        self.tabular_file = tabular_file
+            self._update_clustered_files_dict()
         # ---------------------------------------------------------------------/
 
 
@@ -357,52 +380,29 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_clustered_file_dir(self):
+    def _set_tabular_file(self):
         """ Set below attributes
-            1. `self.clustered_file_dir`
-            2. `self.clustered_files_dict`
+            1. `self.tabular_file`
         """
-        path = self._get_clustered_file_dir()
-        if self.clustered_file_dir != path:
-            self.clustered_file_dir = path
-            self._update_clustered_files_dict()
+        tabular_file = self.instance_root.joinpath("data.csv")
+        
+        if tabular_file.exists():
+            """ CLI output """
+            self._cli_out.write(f"Tabular File : '{tabular_file}'")
         else:
-            self._update_clustered_files_dict()
+            tabular_file = None
+        
+        self.tabular_file = tabular_file
         # ---------------------------------------------------------------------/
 
 
-    def _load_processed_config(self, image_type:str):
+    def parse_config(self, config:Union[str, Path]):
         """
 
         Args:
-            image_type (str): `palmskin` or `brightfield`
+            config (Union[str, Path]): a toml file.
         """
-        if image_type not in ["palmskin", "brightfield"]:
-            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
-        
-        if image_type == "palmskin":
-            target_text = "palmskin_preprocess"
-        elif image_type == "brightfield":
-            target_text = "brightfield_analyze"
-        
-        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
-        config_file = processed_dir.joinpath(f"{target_text}_config.toml")
-        if config_file.exists():
-            config = load_config(config_file)
-        else:
-            config = {}
-        
-        setattr(self, f"{image_type}_processed_config", config)
-        # ---------------------------------------------------------------------/
-
-
-    def _set_processed_configs(self):
-        """ Set below attributes
-            1. `self.palmskin_processed_config`
-            2. `self.brightfield_processed_config`
-        """
-        self._load_processed_config("palmskin")
-        self._load_processed_config("brightfield")
+        super().run(config)
         # ---------------------------------------------------------------------/
 
 
