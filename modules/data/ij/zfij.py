@@ -2,7 +2,6 @@ import json
 import os
 import re
 import sys
-from pathlib import Path
 
 import imagej  # pyimagej
 import jpype  # Import module
