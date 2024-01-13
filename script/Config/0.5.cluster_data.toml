@@ -21,8 +21,8 @@
 
 # -----------------------------------------------------------------------------\
 [old_classdiv_xlsx]
-  full_paths = []
-  # full_paths = [
+  abs_paths = []
+  # abs_paths = [
   #   "Path(THIS_REPOSITORY)/.../{3CLS_SURF_050STDEV}_data.xlsx",
   #   "Path(THIS_REPOSITORY)/.../{3CLS_SURF_075STDEV}_data.xlsx",
   #   ...
