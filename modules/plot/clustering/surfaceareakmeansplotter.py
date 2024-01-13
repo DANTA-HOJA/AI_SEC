@@ -1,110 +1,74 @@
 import os
-import sys
 import re
-from pathlib import Path
-from typing import List, Dict, Union, Tuple
-from collections import OrderedDict, Counter
-from copy import deepcopy
+import sys
 import traceback
+from collections import Counter, OrderedDict
+from copy import deepcopy
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
-import numpy as np
-import pandas as pd
 import matplotlib; matplotlib.use("agg")
 import matplotlib.cm as cm
-import matplotlib.pyplot as plt
 import matplotlib.patheffects as path_effects
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from colorama import Back, Fore, Style
 from matplotlib.figure import Figure
 from matplotlib.legend import Legend
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.neighbors import KernelDensity
-from sklearn.cluster import KMeans
-from tomlkit.toml_document import TOMLDocument
-from colorama import Fore, Back, Style
 
 from ...data.clustering.utils import log
 from ...data.processeddatainstance import ProcessedDataInstance
-from ...shared.clioutput import CLIOutput
+from ...shared.baseobject import BaseObject
 from ...shared.config import load_config
 from ...shared.utils import create_new_dir
 # -----------------------------------------------------------------------------/
 
 
-class SurfaceAreaKMeansPlotter():
+class SurfaceAreaKMeansPlotter(BaseObject):
 
-
-    def __init__(self, display_on_CLI=True) -> None:
+    def __init__(self, processed_data_instance:ProcessedDataInstance=None,
+                 display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
-        self.processed_data_instance = ProcessedDataInstance()
-        self._cli_out = CLIOutput(display_on_CLI, 
-                                  logger_name="SurfaceArea KMeans Plotter")
+        super().__init__(display_on_CLI)
+        self._cli_out._set_logger("SurfaceArea KMeans Plotter")
+        
+        if processed_data_instance:
+            self._processed_di = processed_data_instance
+        else:
+            self._processed_di = ProcessedDataInstance()
         
         # ---------------------------------------------------------------------
         # """ attributes """
         
         self.kde_kwargs = {"bandwidth": 0.01178167723136119, "kernel": 'gaussian'}
+        
+        # ---------------------------------------------------------------------
+        # """ actions """
+        # TODO
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_attrs(self, config_file:Union[str, Path]):
+    def _set_attrs(self, config:Union[str, Path]):
         """
         """
-        self.config: Union[dict, TOMLDocument] = load_config(config_file, cli_out=self._cli_out)
-        self.processed_data_instance.set_attrs(config_file)
-        self._set_config_attrs()
-        self._set_clustered_xlsx_attrs()
+        super()._set_attrs(config)
+        self._processed_di.parse_config(config)
+        
+        self._set_clustered_file_attrs()
+        self.clustered_df: pd.DataFrame = \
+            pd.read_csv(self.clustered_file, encoding='utf_8_sig')
+        
+        self._set_surface_area()
+        self._set_clusters_max_area_dict()
         self._set_plot_attrs()
         # ---------------------------------------------------------------------/
-
-
-
-    def run(self, config_file:Union[str, Path]="0.6.cluster_data.toml"):
-        """
-        """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
-        
-        self.clustered_xlsx_df: pd.DataFrame = \
-            pd.read_excel(self.clustered_xlsx_path, engine='openpyxl')
-        
-        self.get_surface_area()
-        self.get_clusters_max_area_dict()
-        
-        hist = self.plot_hist()
-        if self.x_axis_log_scale: self.plot_kde(hist)
-        
-        # cluster ( class )
-        self.plot_cluster_distribution()
-        self.plot_cluster_center()
-        self.plot_cluster_boundary()
-        self.plot_cluster_count()
-        self.ax_x_lim = self.ax.get_xlim()
-        
-        # batch
-        self.plot_dividing_line()
-        self.plot_batch_distribution()
-        
-        # day
-        self.plot_dividing_line()
-        self.plot_day_distribution()
-        
-        # update Legends and colorbars
-        self.ax.get_legend().remove()
-        self.ax.add_artist(self.fish_class_legend)
-        self.ax.add_artist(self.fish_batch_legend)
-        self.add_colorbar("day")
-        
-        self.save_fig()
-        self.plot_old_classdiv_xlsx()
-        
-        plt.close(self.fig)
-        self._cli_out.new_line()
-        # ---------------------------------------------------------------------/
-
 
 
     def _set_config_attrs(self):
@@ -132,30 +96,8 @@ class SurfaceAreaKMeansPlotter():
         self.x_axis_log_scale: bool = self.config["log_scale"]["x_axis_log_scale"]
         
         """ [old_classdiv_xlsx] """
-        self.old_classdiv_xlsx_list: List[str] = self.config["old_classdiv_xlsx"]["full_paths"]
+        self.old_classdiv_xlsx_list: List[str] = self.config["old_classdiv_xlsx"]["abs_paths"]
         # ---------------------------------------------------------------------/
-
-
-
-    def _set_clustered_xlsx_attrs(self):
-        """ Set below attributes
-            - `self.clustered_xlsx_name`: str
-            - `self.clustered_xlsx_path`: Path
-            - `self.clustered_xlsx_dir`: Path
-        """
-        def set_attr1() -> str:
-            """ `self.clustered_xlsx_name` """
-            if self.cluster_with_log_scale:
-                name = f"SURF{self.n_class}C_KMeansLOG{self.log_base}_RND{self.random_seed}"
-            else: name = f"SURF{self.n_class}C_KMeansORIG_RND{self.random_seed}"
-            return name
-        
-        self.clustered_xlsx_name: str = set_attr1()
-        self.clustered_xlsx_path: Path = \
-            self.processed_data_instance.clustered_xlsx_files_dict[self.clustered_xlsx_name]
-        self.clustered_xlsx_dir: Path = Path(os.path.dirname(self.clustered_xlsx_path))
-        # ---------------------------------------------------------------------/
-
 
 
     def _set_plot_attrs(self):
@@ -200,34 +142,99 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def get_surface_area(self):
+    def _set_clustered_file_attrs(self):
+        """ Set below attributes
+            - self.clustered_file
+            - self.clustered_desc
+            - self.dst_root
         """
-        """
-        if self.x_axis_log_scale:
-            self.clustered_xlsx_df["Trunk surface area, SA (um2)"] = \
-                self.clustered_xlsx_df["Trunk surface area, SA (um2)"].apply(lambda x: log(self.log_base, x))
+        def gen_clustered_desc() -> str:
+            if self.cluster_with_log_scale:
+                name = f"SURF{self.n_class}C_KMeansLOG{self.log_base}_RND{self.random_seed}"
+            else:
+                name = f"SURF{self.n_class}C_KMeansORIG_RND{self.random_seed}"
+            return name
+            # -----------------------------------------------------------------
         
-        self.surface_area: np.ndarray = \
-            self.clustered_xlsx_df["Trunk surface area, SA (um2)"].to_numpy()
+        desc: str = gen_clustered_desc()
+        try:
+            self.clustered_file: Path = self._processed_di.clustered_files_dict[desc]
+        except KeyError:
+            traceback.print_exc()
+            print(f"{Fore.RED}{Back.BLACK} Can't find `{{{desc}}}_dataset.csv`, "
+                  f"please run `0.5.3.cluster_data.py` to create it. {Style.RESET_ALL}\n")
+            sys.exit()
+        
+        self.clustered_desc = desc
+        self.dst_root: Path = Path(os.path.dirname(self.clustered_file))
         # ---------------------------------------------------------------------/
 
 
+    def _set_surface_area(self):
+        """
+        """
+        if self.x_axis_log_scale:
+            self.clustered_df["Trunk surface area, SA (um2)"] = \
+                self.clustered_df["Trunk surface area, SA (um2)"].apply(lambda x: log(self.log_base, x))
+        
+        self.surface_area: np.ndarray = \
+            self.clustered_df["Trunk surface area, SA (um2)"].to_numpy()
+        # ---------------------------------------------------------------------/
 
-    def get_clusters_max_area_dict(self):
+
+    def _set_clusters_max_area_dict(self):
         """
         """
         self.clusters_max_area_dict: Dict[str, float] = {}
         
         for label in self.labels:
-            df = self.clustered_xlsx_df[self.clustered_xlsx_df["class"] == label]
+            df = self.clustered_df[self.clustered_df["class"] == label]
             max_area = df["Trunk surface area, SA (um2)"].max()
             self.clusters_max_area_dict[label] = max_area
         # ---------------------------------------------------------------------/
 
 
+    def run(self, config:Union[str, Path]):
+        """
 
-    def plot_hist(self):
+        Args:
+            config (Union[str, Path]): a toml file.
+        """
+        super().run(config)
+        
+        hist = self._plot_hist()
+        if self.x_axis_log_scale: self._plot_kde(hist)
+        
+        # cluster ( class )
+        self._plot_cluster_distribution()
+        self._plot_cluster_center()
+        self._plot_cluster_boundary()
+        self._plot_cluster_count()
+        self.ax_x_lim = self.ax.get_xlim()
+        
+        # batch
+        self._plot_dividing_line()
+        self._plot_batch_distribution()
+        
+        # day
+        self._plot_dividing_line()
+        self._plot_day_distribution()
+        
+        # update Legends and colorbars
+        self.ax.get_legend().remove()
+        self.ax.add_artist(self.fish_class_legend)
+        self.ax.add_artist(self.fish_batch_legend)
+        self._add_colorbar("day")
+        
+        self._save_fig()
+        self._plot_old_classdiv_xlsx()
+        
+        plt.close(self.fig)
+        self._cli_out.new_line()
+        # ---------------------------------------------------------------------/
+
+
+    def _plot_hist(self):
         """
         """
         hist = self.ax.hist(self.surface_area, bins=100, density=True, alpha=0.7)
@@ -239,8 +246,7 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_kde(self, hist):
+    def _plot_kde(self, hist):
         """ instantiate and fit the KDE model
         """
         _, bins, _ = hist
@@ -257,14 +263,13 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_marks_scatter(self, attr_prefix:str,
+    def _plot_marks_scatter(self, attr_prefix:str,
                            mark_style:str, separately:bool, legend_name:str,
                            legend_loc:str, legend_bbox_to_anchor:Tuple[float, float]):
         """
         """
         df_col_name = attr_prefix.replace("fish_", "")
-        ordered_list = self.get_ordered_list(df_col_name)
+        ordered_list = self._get_ordered_list(df_col_name)
         
         colormap = matplotlib.colormaps[getattr(self, f"{attr_prefix}_cmap")]
         colors = colormap(np.linspace(0, 1, len(ordered_list)))
@@ -272,7 +277,7 @@ class SurfaceAreaKMeansPlotter():
         scatter_list:list = []
         for i, text in enumerate(ordered_list):
             
-            df = self.clustered_xlsx_df[(self.clustered_xlsx_df[df_col_name] == text)]
+            df = self.clustered_df[(self.clustered_df[df_col_name] == text)]
             surface_area_list = list(df["Trunk surface area, SA (um2)"])
         
             scatter = self.ax.scatter(
@@ -297,7 +302,7 @@ class SurfaceAreaKMeansPlotter():
                         df_col_list.pop(j) # 移除顯示過的
                         for value in df_col_list:
                             cnt = Counter(df[value])
-                            temp_list = self.get_ordered_list(value)
+                            temp_list = self._get_ordered_list(value)
                             temp_dict = { item: cnt[item] for item in temp_list }
                             output_string += f", {temp_dict}"
                             j += 1
@@ -312,17 +317,16 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def get_ordered_list(self, df_col_name:str) -> list:
+    def _get_ordered_list(self, df_col_name:str) -> list:
         """
         """
         if df_col_name == "class":
             ordered_list = deepcopy(self.labels)
         elif df_col_name == "batch":
-            ordered_list = sorted(Counter(self.clustered_xlsx_df["batch"]).keys(),
+            ordered_list = sorted(Counter(self.clustered_df["batch"]).keys(),
                                   key=lambda x: int(x.split('i')[-1]))
         elif df_col_name == "day":
-            ordered_list = sorted(Counter(self.clustered_xlsx_df["day"]).keys())
+            ordered_list = sorted(Counter(self.clustered_df["day"]).keys())
         else:
             raise NotImplementedError
         
@@ -330,8 +334,7 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_cluster_distribution(self):
+    def _plot_cluster_distribution(self):
         """
         """
         """ area ( black ticks ) """
@@ -347,21 +350,20 @@ class SurfaceAreaKMeansPlotter():
             "legend_loc"            : 'upper right',
             "legend_bbox_to_anchor" : (1.0, 0.99) # 0 是靠左，1 是靠右
         }
-        self.plot_marks_scatter(**kwargs)
+        self._plot_marks_scatter(**kwargs)
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_cluster_center(self):
+    def _plot_cluster_center(self):
         """
         """
-        path = self.clustered_xlsx_dir.joinpath("kmeans_centers.toml")
-        if not path.exists():
-            self._cli_out.write(f"Can't find file: '{path}', "
+        file = self.dst_root.joinpath("kmeans_centers.toml")
+        if not file.exists():
+            self._cli_out.write(f"Can't find file: '{file}', "
                                 "'kmeans_centers' will not plot")
             return
         
-        toml_file: dict = load_config(path)
+        toml_file: dict = load_config(file)
         kmeans_centers = np.array(list(toml_file.values()))
         if self.x_axis_log_scale:
             kmeans_centers = log(self.log_base, kmeans_centers)
@@ -374,8 +376,7 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_cluster_boundary(self):
+    def _plot_cluster_boundary(self):
         """
         """
         # min_value line
@@ -386,7 +387,7 @@ class SurfaceAreaKMeansPlotter():
                          color='black', path_effects=[self.text_path_effect])
         
         # cluster_max_value lines
-        text_y_pos = {0: 0.92, 1: 0.95}
+        text_y_pos = {0: 0.92, 1: 0.95} # 文字上下交錯
         for i, boundary in enumerate(self.clusters_max_area_dict.values()):
             self.ax.axvline(x=boundary, color='k', linestyle='--')
             self.ax.text(boundary, text_y_pos[(i%2)], f'x={boundary:.{self.digits}f}  ',
@@ -395,14 +396,13 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_cluster_count(self):
+    def _plot_cluster_count(self):
         """
         """
         value_list = list(self.clusters_max_area_dict.values()) # [100, 200, 300]
         value_list.insert(0, self.surface_area.min()) # [0, 100, 200, 300]
         
-        clusters_count = Counter(self.clustered_xlsx_df["class"])
+        clusters_count = Counter(self.clustered_df["class"])
         
         for i, label in enumerate(self.labels):
             text_center = (value_list[i+1] + value_list[i])/2
@@ -414,8 +414,7 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_dividing_line(self):
+    def _plot_dividing_line(self):
         """
         """
         self.ax.hlines(self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83),
@@ -425,8 +424,7 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_batch_distribution(self):
+    def _plot_batch_distribution(self):
         """
         """
         for flag in [False, True]:
@@ -438,14 +436,13 @@ class SurfaceAreaKMeansPlotter():
                 "legend_loc"            : 'upper left',
                 "legend_bbox_to_anchor" : (0.0, 0.99) # 0 是靠左，1 是靠右
             }
-            self.plot_marks_scatter(**kwargs)
+            self._plot_marks_scatter(**kwargs)
             
             if not flag: self.scatter_n_gap += 1 # 畫完重疊的 scatter 後要加一次間距
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_day_distribution(self):
+    def _plot_day_distribution(self):
         """
         """
         # scatter
@@ -458,18 +455,17 @@ class SurfaceAreaKMeansPlotter():
                 "legend_loc"            : 'upper right',
                 "legend_bbox_to_anchor" : (1.0, 0.88) # 0 是靠左，1 是靠右
             }
-            self.plot_marks_scatter(**kwargs)
+            self._plot_marks_scatter(**kwargs)
             
             if not flag: self.scatter_n_gap += 1 # 畫完重疊的 scatter 後要加一次間距
         # ---------------------------------------------------------------------/
 
 
-
-    def add_colorbar(self, df_col_name:str):
+    def _add_colorbar(self, df_col_name:str):
         """
         """
-        enum_dict = {value: i for i, value in enumerate(self.get_ordered_list(df_col_name))}
-        target_list = [ enum_dict[i] for i in self.clustered_xlsx_df[df_col_name] ]
+        enum_dict = {value: i for i, value in enumerate(self._get_ordered_list(df_col_name))}
+        target_list = [ enum_dict[i] for i in self.clustered_df[df_col_name] ]
         
         
         cax = self.divider.append_axes("right", "2%", pad=0.3+self.colorbar_n_gap*0.2) # "右側" 加新的軸
@@ -483,54 +479,53 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def save_fig(self):
+    def _save_fig(self):
         """
         """
         # set title
-        dataset_inum = self.processed_data_instance.instance_name.split("_")[-1]
-        self.fig_title: str = f"{dataset_inum}, {self.clustered_xlsx_name}{', KDE' if self.x_axis_log_scale else ''}"
+        dataset_inum = self._processed_di.instance_name.split("_")[-1]
+        self.fig_title: str = f"{dataset_inum}, {self.clustered_desc}{', KDE' if self.x_axis_log_scale else ''}"
         self.fig.suptitle(self.fig_title, size=20)
         
         # save figure
-        self.fig_file_name = f"{{{self.clustered_xlsx_name}}}{'_kde' if self.x_axis_log_scale else ''}"
-        self.fig.savefig(self.clustered_xlsx_dir.joinpath(f"{self.fig_file_name}.png"))
+        self.fig_file_name = f"{{{self.clustered_desc}}}{'_kde' if self.x_axis_log_scale else ''}"
+        self.fig.savefig(self.dst_root.joinpath(f"{self.fig_file_name}.png"))
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_old_classdiv_xlsx(self):
+    def _plot_old_classdiv_xlsx(self):
         """
         """
-        for old_classdiv_xlsx_path in self.old_classdiv_xlsx_list:
+        for old_classdiv_xlsx_file in self.old_classdiv_xlsx_list:
             
             try:
-                if old_classdiv_xlsx_path == "":
-                    raise ValueError(f"`old_classdiv_xlsx_path` can't be an empty string")
+                # check item
+                if old_classdiv_xlsx_file == "":
+                    raise ValueError(f"`old_classdiv_xlsx_file` can't be an empty string")
                 
                 # check exists
-                old_classdiv_xlsx_path = Path(old_classdiv_xlsx_path)
-                if not old_classdiv_xlsx_path.exists():
-                    raise FileNotFoundError(f"Can't find file: '{old_classdiv_xlsx_path.resolve()}'")
+                old_classdiv_xlsx_file = Path(old_classdiv_xlsx_file).resolve()
+                if not old_classdiv_xlsx_file.exists():
+                    raise FileNotFoundError(f"Can't find file: '{old_classdiv_xlsx_file}'")
 
+                # get vars
                 old_classdiv_strategy, compare_dir, \
-                    old_classdiv_info_dict = self.get_old_xlsx_attrs(old_classdiv_xlsx_path)
+                    old_classdiv_info_dict = self._get_old_xlsx_attrs(old_classdiv_xlsx_file)
                 
-            except (FileNotFoundError, ValueError, AssertionError):
-                self._cli_out.write(f"{Fore.RED}{Back.BLACK}\n\n{traceback.format_exc()}{Style.RESET_ALL}")
+            except (FileNotFoundError, ValueError, AssertionError) as e:
+                self._cli_out.write(f"{Fore.RED}{Back.BLACK}\n\n{e}{Style.RESET_ALL}")
                 self._cli_out.write(f"{Fore.YELLOW}{Back.BLACK}Compare figure will not generate{Style.RESET_ALL}")
                 continue
             
-            fig = self.plot_old_classdiv_boundary(self.fig, old_classdiv_info_dict)
-            self.save_fig_with_old_classdiv(fig, old_classdiv_strategy, compare_dir)
+            fig = self._plot_old_classdiv_boundary(self.fig, old_classdiv_info_dict)
+            self._save_fig_with_old_classdiv(fig, old_classdiv_strategy, compare_dir)
         # ---------------------------------------------------------------------/
 
 
-
-    def get_old_xlsx_attrs(self, old_classdiv_xlsx_path:Path):
+    def _get_old_xlsx_attrs(self, old_classdiv_xlsx_file:Path):
         """
         """
-        old_classdiv_xlsx_name: str = str(old_classdiv_xlsx_path).split(os.sep)[-1] # '{3CLS_SURF_050STDEV}_data.xlsx'
+        old_classdiv_xlsx_name: str = str(old_classdiv_xlsx_file).split(os.sep)[-1] # '{3CLS_SURF_050STDEV}_data.xlsx'
         name_split: List[str] = re.split("{|_|}", old_classdiv_xlsx_name) # ['', '3CLS', 'SURF', '050STDEV', '', 'data.xlsx']
         
         """ Check old xlsx class """
@@ -538,9 +533,9 @@ class SurfaceAreaKMeansPlotter():
         match = re.search(r'\d+', name_split[1]) # 匹配一個或多個連續數字
         if match: number = int(match.group()) # 如果找到匹配，取出匹配的結果
         else: raise ValueError(f"File name: '{old_classdiv_xlsx_name}' is not correct format.")
-        assert number == self.n_class, (f"`n_class` in `old_classdiv_xlsx` are not match, "
+        assert number == self.n_class, (f"`{old_classdiv_xlsx_name}` not match to `n_class`, "
                                         f"expect {self.n_class}, but got {number}, "
-                                        f"file: '{old_classdiv_xlsx_path.resolve()}'")
+                                        f"file: '{old_classdiv_xlsx_file}'")
         
         """ Get `old_classdiv_strategy` """
         # '050STDEV' -> '0.5_STDEV'
@@ -548,14 +543,14 @@ class SurfaceAreaKMeansPlotter():
         old_classdiv_strategy: str = f"{stdev}_STDEV"
 
         """ Create directory """
-        compare_dir = self.clustered_xlsx_dir.joinpath("compare_clustering", "KMeans_comp_STDEV")
+        compare_dir = self.dst_root.joinpath("compare_clustering", "KMeans_comp_STDEV")
         if self.x_axis_log_scale:
             compare_dir = compare_dir.joinpath(f"x-axis in LOG{self.log_base} scale")
         else: compare_dir = compare_dir.joinpath("x-axis in ORIG scale")
         create_new_dir(compare_dir)
         
         """ Set `old_classdiv_info_dict` """
-        old_classdiv_xlsx_df = pd.read_excel(old_classdiv_xlsx_path, engine = 'openpyxl')
+        old_classdiv_xlsx_df = pd.read_excel(old_classdiv_xlsx_file, engine = 'openpyxl')
         old_classdiv_info_dict = {}
         if self.x_axis_log_scale:
             old_classdiv_info_dict['L_std_value'] = log(self.log_base, old_classdiv_xlsx_df["L_1s"][0])
@@ -570,8 +565,7 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def plot_old_classdiv_boundary(self, figure:Figure,
+    def _plot_old_classdiv_boundary(self, figure:Figure,
                                    old_classdiv_info_dict:Dict[str, float]):
         """
         """
@@ -588,18 +582,17 @@ class SurfaceAreaKMeansPlotter():
         # ---------------------------------------------------------------------/
 
 
-
-    def save_fig_with_old_classdiv(self, figure:Figure,
+    def _save_fig_with_old_classdiv(self, figure:Figure,
                                    old_classdiv_strategy:str, save_dir:Path):
         """
         """
         self.fig.savefig(save_dir.joinpath(f"{self.fig_file_name}.png"))
-        
+             
         old_classdiv_fig_title = f"{self.fig_title}, {old_classdiv_strategy}"
         figure.suptitle(old_classdiv_fig_title, size=20)
         
         old_classdiv_fig_save_name = f"{self.fig_file_name}_{old_classdiv_strategy}"
-        save_path = save_dir.joinpath(f"{old_classdiv_fig_save_name}.png")
-        figure.savefig(save_path)
-        self._cli_out.write(f"Compare figure: '{save_path.resolve()}'")
+        save_file = save_dir.joinpath(f"{old_classdiv_fig_save_name}.png")
+        figure.savefig(save_file)
+        self._cli_out.write(f"Compare figure: '{save_file}'")
         # ---------------------------------------------------------------------/

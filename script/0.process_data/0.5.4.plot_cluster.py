@@ -7,10 +7,10 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.plot.clustering.surfaceareakmeansplotter import SurfaceAreaKMeansPlotter
 from modules.shared.utils import get_repo_root
+# -----------------------------------------------------------------------------/
 
 """ Detect Repository """
 print(f"Repository: '{get_repo_root()}'")
 
-
 sa_kmeans_plotter = SurfaceAreaKMeansPlotter()
-sa_kmeans_plotter.run()
+sa_kmeans_plotter.run("0.5.cluster_data.toml")
