@@ -100,48 +100,6 @@ class SurfaceAreaKMeansPlotter(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_plot_attrs(self):
-        """
-        """
-        self.fig, self.ax = \
-            plt.subplots(1, 1, figsize=(16, 16), dpi=200) # figure 內的 element 都是用比例決定位置的
-                                                          #  一旦決定 figsize 之後如果要調整圖片"長寬比"最好只調整一邊
-                                                          #  調整"整張圖片大小" -> dpi
-        self.divider = make_axes_locatable(self.ax)
-        self.fig.subplots_adjust(top=0.9)
-        
-        # scatter attrs ( scatter y 軸起始位置 )
-        self.scatter_init_pos: float = 0.0
-        if self.x_axis_log_scale:
-            self.scatter_init_pos = -0.175
-        else: self.scatter_init_pos = -8e-8
-        self.scatter_n_gap: int = 0 # 控制 scatter 之間的間距: self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)
-        
-        # digits ( 圖上 "浮點數" 的小數位數 )
-        self.digits: int = 0
-        if self.x_axis_log_scale:
-            self.digits = 8
-        else: self.digits = 2
-
-        # text_path_effect ( 文字陰影 )
-        self.text_path_effect = path_effects.withSimplePatchShadow(
-                                    offset=(0.5, -0.5), linewidth=1, foreground='black')
-        
-        self.ax_x_lim: Tuple[float, float] # 記憶 self.ax.get_xlim()
-        
-        # color maps
-        self.fish_class_cmap: str = "viridis"
-        self.fish_batch_cmap: str = "Paired"
-        self.fish_day_cmap: str = "Dark2"
-        
-        # Legend and colorbar
-        self.fish_class_legend: Legend
-        self.fish_batch_legend: Legend
-        self.fish_day_legend: Legend
-        self.colorbar_n_gap: int = 0 # 控制 colorbar 之間的間距
-        # ---------------------------------------------------------------------/
-
-
     def _set_clustered_file_attrs(self):
         """ Set below attributes
             - self.clustered_file
@@ -191,6 +149,48 @@ class SurfaceAreaKMeansPlotter(BaseObject):
             df = self.clustered_df[self.clustered_df["class"] == label]
             max_area = df["Trunk surface area, SA (um2)"].max()
             self.clusters_max_area_dict[label] = max_area
+        # ---------------------------------------------------------------------/
+
+
+    def _set_plot_attrs(self):
+        """
+        """
+        self.fig, self.ax = \
+            plt.subplots(1, 1, figsize=(16, 16), dpi=200) # figure 內的 element 都是用比例決定位置的
+                                                          #  一旦決定 figsize 之後如果要調整圖片"長寬比"最好只調整一邊
+                                                          #  調整"整張圖片大小" -> dpi
+        self.divider = make_axes_locatable(self.ax)
+        self.fig.subplots_adjust(top=0.9)
+        
+        # scatter attrs ( scatter y 軸起始位置 )
+        self.scatter_init_pos: float = 0.0
+        if self.x_axis_log_scale:
+            self.scatter_init_pos = -0.175
+        else: self.scatter_init_pos = -8e-8
+        self.scatter_n_gap: int = 0 # 控制 scatter 之間的間距: self.scatter_init_pos*(2.85+self.scatter_n_gap*1.83)
+        
+        # digits ( 圖上 "浮點數" 的小數位數 )
+        self.digits: int = 0
+        if self.x_axis_log_scale:
+            self.digits = 8
+        else: self.digits = 2
+
+        # text_path_effect ( 文字陰影 )
+        self.text_path_effect = path_effects.withSimplePatchShadow(
+                                    offset=(0.5, -0.5), linewidth=1, foreground='black')
+        
+        self.ax_x_lim: Tuple[float, float] # 記憶 self.ax.get_xlim()
+        
+        # color maps
+        self.fish_class_cmap: str = "viridis"
+        self.fish_batch_cmap: str = "Paired"
+        self.fish_day_cmap: str = "Dark2"
+        
+        # Legend and colorbar
+        self.fish_class_legend: Legend
+        self.fish_batch_legend: Legend
+        self.fish_day_legend: Legend
+        self.colorbar_n_gap: int = 0 # 控制 colorbar 之間的間距
         # ---------------------------------------------------------------------/
 
 
