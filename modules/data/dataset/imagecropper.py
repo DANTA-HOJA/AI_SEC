@@ -141,7 +141,7 @@ class ImageCropper(BaseObject):
         
         # checking
         self._check_if_any_crop_dir_exists()
-        # self._processed_di.check_palmskin_images_condition(config)
+        self._processed_di.check_palmskin_images_condition(config)
         
         # get dict
         _, sorted_results_dict = \
