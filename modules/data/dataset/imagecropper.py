@@ -14,7 +14,7 @@ from ...data import dname
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir, formatter_padr0
 from ..processeddatainstance import ProcessedDataInstance
-from .utils import gen_crop_img, gen_dataset_xlsx_name_dict
+from .utils import gen_crop_img, gen_dataset_file_name_dict
 # -----------------------------------------------------------------------------/
 
 
@@ -77,9 +77,9 @@ class ImageCropper(BaseObject):
     def _set_crop_dir_name(self):
         """
         """
-        temp_dict = gen_dataset_xlsx_name_dict(self.config)
+        name_dict = gen_dataset_file_name_dict(self.config)
         self.crop_dir_name: str = \
-            f"{temp_dict['crop_size']}_{temp_dict['shift_region']}"
+            f"{name_dict['crop_size']}_{name_dict['shift_region']}"
         # ---------------------------------------------------------------------/
 
 

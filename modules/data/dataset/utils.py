@@ -10,22 +10,23 @@ from tomlkit.toml_document import TOMLDocument
 # -----------------------------------------------------------------------------/
 
 
-def gen_dataset_xlsx_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, str]:
-    """ To generate dataset xlsx name corresponing to the parameters.
+def gen_dataset_file_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, str]:
+    """ To generate dataset file name corresponing to the parameters.
     
     config:
-        cluster_desc (str):      e.g. '{SURF3C_KMeansLOG10_RND2022}_data.xlsx' ---> SURF3C \n
-        crop_size (int):         e.g.                 512                      ---> CRPS512 \n
-        shift_region (str):      e.g.                '1/4'                     ---> SF14 \n
-        intensity (int):         e.g.                  20                      ---> INT20 \n
-        drop_ratio (float):      e.g.                 0.3                      ---> DRP30 \n
+        cluster_desc (str):      e.g. 'SURF3C_KMeansLOG10_RND2022' ---> SURF3C \n
+        crop_size (int):         e.g.             512              ---> CRPS512 \n
+        shift_region (str):      e.g.            '1/4'             ---> SF14 \n
+        intensity (int):         e.g.              20              ---> INT20 \n
+        drop_ratio (float):      e.g.             0.3              ---> DRP30 \n
 
     Raises:
-        ValueError: If "Numerator of `shift_region` is not 1"
+        ValueError: (config) `cluster_desc` not a accept format
+        AssertionError: If Numerator of (config) `shift_region` is not 1
 
     Returns:
-        str: e.g. `DS_SURF4C_CRPS512_SF14_INT20_DRP30`
-    
+        Dict[str, str]:
+        >>> "_".join(name_dict.values()) => `DS_SURF4C_CRPS512_SF14_INT20_DRP30`
     """
     cluster_desc: str = config["data_processed"]["cluster_desc"]
     crop_size: int = config["param"]["crop_size"]
@@ -40,11 +41,11 @@ def gen_dataset_xlsx_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, st
     if match:
         n_class = match.group()
     else:
-        raise ValueError("Can't find any number in `clustered_xlsx_name`")
+        raise ValueError("Can't find any number in (config) `cluster_desc`")
     # Name check
     sub_split = cluster_desc_split[0].split(n_class)
     if (sub_split[0] != "SURF") or (sub_split[1] != "C"):
-        raise ValueError("First part of `cluster_desc` expect 'SURF[number]C', "
+        raise ValueError("First part of (config) `cluster_desc` expect 'SURF[number]C', "
                          f"but got '{cluster_desc_split[0]}'. "
                          "Please check your config file.")
     
