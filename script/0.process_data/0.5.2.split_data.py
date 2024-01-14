@@ -45,8 +45,8 @@ valid_df: pd.DataFrame = training_df[~training_df.index.isin(train_df.index)]
 tmp_dict = {}
 tmp_dict["original_df"] = len(df)
 tmp_dict["training_df"] = len(training_df)
-tmp_dict["train_df"] = len(train_df)
 tmp_dict["test_df"] = len(test_df)
+tmp_dict["train_df"] = len(train_df)
 tmp_dict["valid_df"] = len(valid_df)
 print(Panel(Pretty(tmp_dict, expand_all=True), width=100))
 dump_config(processed_di.instance_root.joinpath("split_num.log"), tmp_dict)
