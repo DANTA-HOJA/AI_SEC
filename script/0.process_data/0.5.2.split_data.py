@@ -26,7 +26,7 @@ train_ratio = 0.9
 cli_out = CLIOutput()
 cli_out._set_logger("Split Dataset")
 config = load_config("0.5.cluster_data.toml")
-rand_seed = config["cluster"]["random_seed"]
+random_seed = config["cluster"]["random_seed"]
 
 """ Read `data.csv` """
 processed_di = ProcessedDataInstance()
@@ -35,10 +35,10 @@ df = pd.read_csv(processed_di.tabular_file, encoding='utf_8_sig', index_col=[0])
 cli_out.divide()
 
 """ Main Process """
-training_df: pd.DataFrame = df.sample(frac=training_ratio, replace=False, random_state=rand_seed)
+training_df: pd.DataFrame = df.sample(frac=training_ratio, replace=False, random_state=random_seed)
 test_df: pd.DataFrame = df[~df.index.isin(training_df.index)]
 
-train_df: pd.DataFrame = training_df.sample(frac=train_ratio, replace=False, random_state=rand_seed)
+train_df: pd.DataFrame = training_df.sample(frac=train_ratio, replace=False, random_state=random_seed)
 valid_df: pd.DataFrame = training_df[~training_df.index.isin(train_df.index)]
 
 # display
@@ -61,5 +61,5 @@ for idx in test_df.index:
     df.loc[idx, "dataset"] = "test"
 
 # save file
-df.to_csv(processed_di.instance_root.joinpath(f"dataset_{rand_seed}.csv"), encoding='utf_8_sig')
+df.to_csv(processed_di.instance_root.joinpath(f"datasplit_{random_seed}.csv"), encoding='utf_8_sig')
 cli_out.new_line()
