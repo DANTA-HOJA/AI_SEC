@@ -39,10 +39,12 @@ new_di.parse_config({"data_processed": {"instance_desc": new_ins}})
 cli_out.divide()
 
 # get `paths` in `ProcessedDataInstance`
-_, old_paths = old_di.get_sorted_results(image_type, result_name)
+_, old_paths = old_di.get_sorted_results_dict(image_type, result_name)
+old_paths = list(old_paths.values())
 cli_out.write(f"old: {old_di.instance_name}, "
               f"detect {len(old_paths)} files")
-_, new_paths = new_di.get_sorted_results(image_type, result_name)
+_, new_paths = new_di.get_sorted_results_dict(image_type, result_name)
+new_paths = list(new_paths.values())
 cli_out.write(f"new: {new_di.instance_name}, "
               f"detect {len(new_paths)} files")
 

@@ -137,12 +137,14 @@ class ProcessedDataInstance(BaseObject):
         Args:
             image_type (str): `palmskin` or `brightfield`
         """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
         """ Assign `target_text` """
         if image_type == "palmskin":
             target_text = "PalmSkin_preprocess"
         elif image_type == "brightfield":
             target_text = "BrightField_analyze"
-        else: raise ValueError(f"Can't recognize arg: '{image_type}'")
         
         """ Scan path """
         found_list = list(self.instance_root.glob(f"{{*}}_{target_text}"))
@@ -235,6 +237,7 @@ class ProcessedDataInstance(BaseObject):
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
+        """ Assign `target_text` """
         if image_type == "palmskin":
             target_text = "palmskin_preprocess"
         elif image_type == "brightfield":
@@ -285,12 +288,14 @@ class ProcessedDataInstance(BaseObject):
         Args:
             image_type (str): `palmskin` or `brightfield`
         """
+        if image_type not in ["palmskin", "brightfield"]:
+            raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
         """ Assign `target_text` """
         if image_type == "palmskin":
             target_text = "PalmSkin_reCollection"
         elif image_type == "brightfield":
             target_text = "BrightField_reCollection"
-        else: raise ValueError(f"Can't recognize arg: '{image_type}'")
         
         """ Scan path """
         found_list = list(self.instance_root.glob(f"{{*}}_{target_text}"))
@@ -406,7 +411,7 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def get_sorted_results(self, image_type:str, result_name:str) -> Tuple[Union[None, str], List[Path]]:
+    def get_sorted_results_dict(self, image_type:str, result_name:str) -> Tuple[Union[None, str], Dict[str, Path]]:
         """
 
         Args:
@@ -414,10 +419,16 @@ class ProcessedDataInstance(BaseObject):
             result_name (str): one of results in each zebrafish dname directory
 
         Returns:
-            Tuple[str, List[Path]]: `(relative_path_in_dname_dir, sorted_results)`
+            Tuple[str, List[Path]]: `(relative_path_in_dname_dir, sorted_results_dict)`
         """
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
+        
+        """ Assign `target_text` """
+        if image_type == "palmskin":
+            target_text = "PalmSkin_preprocess"
+        elif image_type == "brightfield":
+            target_text = "BrightField_analyze"
         
         # sorted_results
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
@@ -433,7 +444,15 @@ class ProcessedDataInstance(BaseObject):
         else:
             rel_path = None
         
-        return rel_path, sorted_results
+        # sorted_results_dict
+        sorted_results_dict:Dict[str, Path] = {}
+        for path in sorted_results:
+            path_split = str(path).split(os.sep)
+            target_idx = get_target_str_idx_in_list(path_split, f"_{target_text}")
+            palmskin_dname = path_split[target_idx+1]
+            sorted_results_dict[palmskin_dname] = path
+        
+        return rel_path, sorted_results_dict
         # ---------------------------------------------------------------------/
 
 
@@ -463,7 +482,8 @@ class ProcessedDataInstance(BaseObject):
             raise ValueError(f"log_mode = '{log_mode}', accept 'missing' or 'finding' only\n")
         
         """ Scan results """
-        rel_path, sorted_results = self.get_sorted_results(image_type, result_name)
+        rel_path, sorted_results_dict = self.get_sorted_results_dict(image_type, result_name)
+        sorted_results = list(sorted_results_dict.values())
         assert rel_path is not None, "Can't find any result file, `result_name` should be a FULL_NAME (with file extension)"
         
         """ Get `recollect_dir` """
@@ -548,8 +568,10 @@ class ProcessedDataInstance(BaseObject):
         # brightfield
         
         """ Scan `UNetAnalysis`, `ManualAnalysis` results """
-        _, bf_auto_results_list = self.get_sorted_results("brightfield", "UNetAnalysis.csv")
-        _, bf_manual_results_list = self.get_sorted_results("brightfield", "ManualAnalysis.csv")
+        _, bf_auto_results_dict = self.get_sorted_results_dict("brightfield", "UNetAnalysis.csv")
+        _, bf_manual_results_dict = self.get_sorted_results_dict("brightfield", "ManualAnalysis.csv")
+        bf_auto_results_list = list(bf_auto_results_dict.values())
+        bf_manual_results_list = list(bf_manual_results_dict.values())
         self._cli_out.write((f"brightfield: found "
                              f"{len(bf_auto_results_list)} UNetAnalysis.csv, "
                              f"{len(bf_manual_results_list)} ManualAnalysis.csv, "
@@ -671,15 +693,7 @@ class ProcessedDataInstance(BaseObject):
         palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"], df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
         
         """ Get specific results exist in 'PalmSkin_preprocess' directory """
-        _, sorted_results = self.get_sorted_results("palmskin", palmskin_result_name)
-        
-        # sorted_results_dict
-        sorted_results_dict:Dict[str, Path] = {}
-        for path in sorted_results:
-            path_split = str(path).split(os.sep)
-            target_idx = get_target_str_idx_in_list(path_split, "_PalmSkin_preprocess")
-            palmskin_dname = path_split[target_idx+1]
-            sorted_results_dict[palmskin_dname] = path
+        _, sorted_results_dict = self.get_sorted_results_dict("palmskin", palmskin_result_name)
         
         """ Main Process """
         self._cli_out.divide()

@@ -43,6 +43,7 @@ print(">>> Palmskin Preprocess Config: ")
 print(Panel(Pretty(temp_dict, expand_all=True)), "\n")
 
 # target results
-rel_path, result_paths = processed_data_instance.get_sorted_results("palmskin", "31_RGB_fusion.tif")
+rel_path, sorted_results_dict = processed_data_instance.get_sorted_results_dict("palmskin", "31_RGB_fusion.tif")
+result_paths = list(sorted_results_dict.values())
 print(">>> Relative Path to `dname_dir`: {} [ found {} items ]".format(rel_path, len(result_paths)))
 print(Panel(Pretty(result_paths, expand_all=True)), "\n")
