@@ -49,7 +49,7 @@ tmp_dict["test_df"] = len(test_df)
 tmp_dict["train_df"] = len(train_df)
 tmp_dict["valid_df"] = len(valid_df)
 print(Panel(Pretty(tmp_dict, expand_all=True), width=100))
-dump_config(processed_di.instance_root.joinpath("split_num.log"), tmp_dict)
+dump_config(processed_di.instance_root.joinpath("split_count.log"), tmp_dict)
 
 # apply split result to `df`
 for idx in train_df.index:
