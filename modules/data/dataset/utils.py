@@ -33,7 +33,6 @@ def gen_dataset_file_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, st
     shift_region: str = config["param"]["shift_region"]
     intensity: int = config["param"]["intensity"]
     drop_ratio: float = config["param"]["drop_ratio"]
-    dynamic_select: bool = config["param"]["dynamic_select"]
     
     """ Converting... `cluster_desc`  """
     cluster_desc_split = re.split("{|_|}", cluster_desc)
@@ -63,12 +62,8 @@ def gen_dataset_file_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, st
     temp_dict["feature_class"] = cluster_desc_split[0]
     temp_dict["crop_size"]     = f"CRPS{crop_size}"
     temp_dict["shift_region"]  = f"SF{fraction}"
-    
-    if dynamic_select:
-        temp_dict["dynamic_select"] = "DYNSELECT"
-    else:
-        temp_dict["intensity"]     = f"INT{intensity}"
-        temp_dict["drop_ratio"]    = f"DRP{ratio}"
+    temp_dict["intensity"]     = f"INT{intensity}"
+    temp_dict["drop_ratio"]    = f"DRP{ratio}"
     
     return temp_dict
     # -------------------------------------------------------------------------/
