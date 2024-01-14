@@ -1,6 +1,5 @@
 [data_processed]
   instance_desc = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
-  # will load 'Path(THIS_REPOSITORY)/.../{`instance_desc`}_Academia_Sinica_i[num]/data.xlsx'
 
 # -----------------------------------------------------------------------------\
 [batch_info]
