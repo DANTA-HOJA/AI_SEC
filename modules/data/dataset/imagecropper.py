@@ -39,7 +39,10 @@ class ImageCropper(BaseObject):
         # """ attributes """
         
         self.palmskin_result_name: str # self._set_config_attrs()
+        self.cluster_desc: str # self._set_config_attrs()
         self.crop_dir_name: str # self._set_crop_dir_name()
+        self.clustered_df: pd.DataFrame # self._set_clustered_df()
+        self.id2dataset_dict: Dict[int, str] # self._set_id2dataset_dict()
         
         # ---------------------------------------------------------------------
         # """ actions """
