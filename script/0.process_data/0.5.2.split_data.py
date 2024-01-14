@@ -12,7 +12,7 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
-from modules.shared.config import load_config
+from modules.shared.config import load_config, dump_config
 from modules.shared.utils import get_repo_root
 # -----------------------------------------------------------------------------/
 
@@ -49,6 +49,7 @@ tmp_dict["train_df"] = len(train_df)
 tmp_dict["test_df"] = len(test_df)
 tmp_dict["valid_df"] = len(valid_df)
 print(Panel(Pretty(tmp_dict, expand_all=True), width=100))
+dump_config(processed_di.instance_root.joinpath("split_num.log"), tmp_dict)
 
 # apply split result to `df`
 for idx in train_df.index:
