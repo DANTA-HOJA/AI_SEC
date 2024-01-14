@@ -66,7 +66,7 @@ class ImageCropper(BaseObject):
     def _set_config_attrs(self):
         """ Set below attributes
             - `self.palmskin_result_name`: str
-            - `self.cluster_desc`: int
+            - `self.cluster_desc`: str
         """
         """ [data_processed] """
         self.palmskin_result_name: str = self.config["data_processed"]["palmskin_result_name"]
