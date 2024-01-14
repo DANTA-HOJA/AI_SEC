@@ -51,7 +51,7 @@ class SurfaceAreaKMeansCluster(BaseObject):
         super()._set_attrs(config)
         self._processed_di.parse_config(config)
         self._set_orig_df()
-        self._set_clustered_file()
+        self._set_clustered_file_attrs()
         
         self.bf_dnames:List[str] = list(self.orig_df["Brightfield"])
         self.surface_area = self.orig_df["Trunk surface area, SA (um2)"].to_numpy()[:, None] # reshape: (100) -> (100, )
@@ -115,8 +115,10 @@ class SurfaceAreaKMeansCluster(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_clustered_file(self):
-        """
+    def _set_clustered_file_attrs(self):
+        """ Set below attributes
+            - self.clustered_file
+            - self.dst_root
         """
         def gen_clustered_desc() -> str:
             if self.cluster_with_log_scale:
@@ -176,6 +178,7 @@ class SurfaceAreaKMeansCluster(BaseObject):
         self._gen_clustered_df()
         self._save_clustered_df()
         self._save_kmeans_centers()
+        self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
 
