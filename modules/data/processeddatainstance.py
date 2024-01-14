@@ -367,13 +367,13 @@ class ProcessedDataInstance(BaseObject):
         
         if self.clustered_file_dir is not None:
             """ Scan files """
-            found_list = sorted(list(self.clustered_file_dir.glob("**/{*}_dataset.csv")), key=lambda x: str(x))
+            found_list = sorted(list(self.clustered_file_dir.glob("**/{*}_datasplit.csv")), key=lambda x: str(x))
             found_list = exclude_tmp_paths(found_list)
             for file in found_list:
                 file_name = str(file).split(os.sep)[-1]
                 cluster_desc = re.split("{|}", file_name)[1]
                 if cluster_desc in self.clustered_files_dict:
-                    raise ValueError(f"Mutlple '{{{cluster_desc}}}_dataset.csv' are found, "
+                    raise ValueError(f"Multiple '{{{cluster_desc}}}_datasplit.csv' are found, "
                                      f"please check file uniqueness under: '{self.clustered_file_dir}'\n")
                 else:
                     self.clustered_files_dict[cluster_desc] = file

@@ -102,14 +102,14 @@ class SurfaceAreaKMeansCluster(BaseObject):
     def _set_orig_df(self):
         """
         """
-        basename = f"dataset_{self.random_seed}.csv"
+        basename = f"datasplit_{self.random_seed}.csv"
         path = self._processed_di.instance_root.joinpath(basename)
         
         if path.exists():
             self._cli_out.write(f"{basename} : '{path}'")
         else:
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `{basename}`, "
-                                    f"please run `0.5.2.split_dataset.py` to create it. {Style.RESET_ALL}\n")
+                                    f"please run `0.5.2.split_data.py` to create it. {Style.RESET_ALL}\n")
         
         self.orig_df = pd.read_csv(path, encoding='utf_8_sig', index_col=[0])
         # ---------------------------------------------------------------------/
@@ -132,7 +132,7 @@ class SurfaceAreaKMeansCluster(BaseObject):
         self.dst_root = self._processed_di.instance_root.joinpath("Clustered_File", desc)
         create_new_dir(self.dst_root)
         
-        self.clustered_file: Path = self.dst_root.joinpath(f"{{{desc}}}_dataset.csv")
+        self.clustered_file: Path = self.dst_root.joinpath(f"{{{desc}}}_datasplit.csv")
         # ---------------------------------------------------------------------/
 
 
