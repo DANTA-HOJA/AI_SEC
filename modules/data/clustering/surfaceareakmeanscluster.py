@@ -50,6 +50,7 @@ class SurfaceAreaKMeansCluster(BaseObject):
         """
         super()._set_attrs(config)
         self._processed_di.parse_config(config)
+        
         self._set_orig_df()
         self._set_clustered_file_attrs()
         
