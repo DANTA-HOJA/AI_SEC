@@ -119,7 +119,7 @@ class SurfaceAreaKMeansPlotter(BaseObject):
             self.clustered_file: Path = self._processed_di.clustered_files_dict[desc]
         except KeyError:
             traceback.print_exc()
-            print(f"{Fore.RED}{Back.BLACK} Can't find `{{{desc}}}_dataset.csv`, "
+            print(f"{Fore.RED}{Back.BLACK} Can't find `{{{desc}}}_datasplit.csv`, "
                   f"please run `0.5.3.cluster_data.py` to create it. {Style.RESET_ALL}\n")
             sys.exit()
         
