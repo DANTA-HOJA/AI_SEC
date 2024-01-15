@@ -208,10 +208,10 @@ class ImageCropper(BaseObject):
         """ Extract info """
         fish_id, fish_pos = dname.get_dname_sortinfo(img_path)
         fish_dsname = f"fish_{fish_id}_{fish_pos}"
-        dataset = self.id2dataset_dict[fish_id]
+        fish_dataset = self.id2dataset_dict[fish_id]
         
         # copy file
-        dsname_dir = self.dst_root.joinpath(dataset, fish_dsname)
+        dsname_dir = self.dst_root.joinpath(fish_dataset, fish_dsname)
         cp_file = dsname_dir.joinpath(f"{fish_dsname}.tiff")
         if not cp_file.exists():
             create_new_dir(dsname_dir)
