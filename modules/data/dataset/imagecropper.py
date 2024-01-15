@@ -207,12 +207,12 @@ class ImageCropper(BaseObject):
         
         """ Extract info """
         fish_id, fish_pos = dname.get_dname_sortinfo(img_path)
-        dsname = f"fish_{fish_id}_{fish_pos}"
+        fish_dsname = f"fish_{fish_id}_{fish_pos}"
         dataset = self.id2dataset_dict[fish_id]
         
         # copy file
-        dsname_dir = self.dst_root.joinpath(dataset, dsname)
-        cp_file = dsname_dir.joinpath(f"{dsname}.tiff")
+        dsname_dir = self.dst_root.joinpath(dataset, fish_dsname)
+        cp_file = dsname_dir.joinpath(f"{fish_dsname}.tiff")
         if not cp_file.exists():
             create_new_dir(dsname_dir)
             shutil.copy(img_path, cp_file)
@@ -229,7 +229,7 @@ class ImageCropper(BaseObject):
         
         for i, cropped_img in enumerate(crop_img_list):
             
-            cropped_name = f"{dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
+            cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
             
             self._pbar.update(sub_task, description=f"[cyan]{cropped_name} : ")
             self._pbar.refresh()
