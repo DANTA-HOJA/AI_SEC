@@ -722,7 +722,6 @@ class ProcessedDataInstance(BaseObject):
                 self._pbar.update(task, advance=1)
                 self._pbar.refresh()
         
-        self._cli_out.new_line()
         if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}")
         else: raise RuntimeError(f"{Fore.RED} Due to broken/non-existing images, the process has been halted. {Style.RESET_ALL}\n")
         # ---------------------------------------------------------------------/
