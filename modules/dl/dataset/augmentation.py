@@ -10,6 +10,7 @@ def dynamic_crop(size:int) -> iaa.Sequential:
             iaa.Affine(rotate=(-25, 25)),
         ),
         iaa.CropToFixedSize(width=size, height=size),
+        # iaa.GammaContrast((0.5, 2.0)), # one line for ablation test
     ])
     
     return transform
@@ -34,7 +35,7 @@ def composite_aug() -> iaa.Sequential:
             iaa.Sometimes(0.5, [
                 iaa.WithChannels([0, 1], iaa.Clouds()), # ch_B, ch_G
                 # iaa.Sometimes(0.3, iaa.Cartoon()),
-                iaa.GammaContrast((0.5, 2.0)),
+                # iaa.GammaContrast((0.5, 2.0)), # 可能會調得更暗，暫時取消
                 iaa.OneOf([
                     iaa.GaussianBlur(sigma=(0, 3.0)), # blur images with a sigma of 0 to 3.0
                     iaa.Sharpen(alpha=0.5)
