@@ -92,7 +92,7 @@ class BaseTrainer(BaseObject):
         self.model_pretrain: str = self.config["model"]["pretrain"]
         
         """ [train_opts] """
-        self.train_ratio: float = self.config["train_opts"]["train_ratio"]
+        # self.train_ratio: float = self.config["train_opts"]["train_ratio"]
         # self.rand_seed: int = self.config["train_opts"]["random_seed"]
         self.epochs: int = self.config["train_opts"]["epochs"]
         self.batch_size: int = self.config["train_opts"]["batch_size"]
