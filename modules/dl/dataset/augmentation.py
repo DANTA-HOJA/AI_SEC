@@ -2,15 +2,31 @@ from imgaug import augmenters as iaa
 # -----------------------------------------------------------------------------/
 
 
-def compose_transform() -> iaa.Sequential:
-    
+def dynamic_crop(size:int) -> iaa.Sequential:
+    """ rotate -> random crop -> return
+    """
     transform = iaa.Sequential([
-        iaa.Sometimes(0.5, iaa.Affine(
-            # scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
-            # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
-            rotate=(-25, 25),
-            shear=(-8, 8)
-        )),
+        iaa.Sometimes(0.5, 
+            iaa.Affine(rotate=(-25, 25)),
+        ),
+        iaa.CropToFixedSize(width=size, height=size),
+    ])
+    
+    return transform
+    # -------------------------------------------------------------------------/
+
+
+
+def composite_aug() -> iaa.Sequential:
+    """
+    """
+    transform = iaa.Sequential([
+        # iaa.Sometimes(0.5, iaa.Affine(
+        #     # scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
+        #     # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
+        #     rotate=(-25, 25),
+        #     shear=(-8, 8)
+        # )),
         # iaa.CropToFixedSize(width=512, height=512),
         iaa.Fliplr(p=0.5),
         iaa.Flipud(p=0.5),

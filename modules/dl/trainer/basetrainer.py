@@ -1,88 +1,70 @@
 import os
-import sys
-import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
-from copy import deepcopy
-from collections import Counter
-from datetime import datetime
-import traceback
-import shutil
-
 import random
+import re
+import shutil
+import sys
+import traceback
+from collections import Counter
+from copy import deepcopy
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
+
 import matplotlib; matplotlib.use("agg")
+import imgaug as ia
 import numpy as np
 import pandas as pd
-from tomlkit.toml_document import TOMLDocument
-from colorama import Fore, Back, Style
+import torch
+from colorama import Back, Fore, Style
+from torch.cuda.amp import GradScaler, autocast
+from torch.utils.data import DataLoader, Dataset
 from tqdm.auto import tqdm
 
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torch.cuda.amp import autocast, GradScaler
-import imgaug as ia
-
-from .utils import calculate_class_weight, plot_training_trend, \
-                   save_training_logs, save_model, rename_training_dir
-from ..utils import set_gpu, gen_class2num_dict, gen_class_counts_dict, \
-                    test_read_image, calculate_metrics
-from ...shared.clioutput import CLIOutput
-from ...shared.config import load_config, dump_config
-from ...shared.pathnavigator import PathNavigator
+from ...shared.baseobject import BaseObject
+from ...shared.config import dump_config
 from ...shared.timer import Timer
 from ...shared.utils import create_new_dir, formatter_padr0
+from ..utils import (calculate_metrics, gen_class2num_dict,
+                     gen_class_counts_dict, set_gpu, test_read_image)
+from .utils import (calculate_class_weight, plot_training_trend,
+                    rename_training_dir, save_model, save_training_logs)
 # -----------------------------------------------------------------------------/
 
 
-class BaseTrainer:
+class BaseTrainer(BaseObject):
 
-
-    def __init__(self) -> None:
+    def __init__(self, display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
-        self._path_navigator = PathNavigator()
-        self._cli_out = CLIOutput
+        super().__init__(display_on_CLI)
         
         # ---------------------------------------------------------------------
         # """ attributes """
         # TODO
+        # ---------------------------------------------------------------------
+        # """ actions """
+        # TODO
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_attrs(self, config_file:Union[str, Path]):
+    def _set_attrs(self, config:Union[str, Path]):
         """
         """
-        self.config: Union[dict, TOMLDocument] = load_config(config_file, cli_out=self._cli_out)
-        self._set_config_attrs()
-        self._set_save_dir()
-        self._set_dataset_xlsx_path()
+        super()._set_attrs(config)
         
-        """ Training reproducibility """
-        self._set_training_reproducibility()
-        
-        """ Set GPU """
+        # GPU settings
         self.device: torch.device = set_gpu(self.cuda_idx, self._cli_out)
+        self._set_training_reproducibility()
+        if self.use_amp: self._set_amp_scaler()
         
-        """ Load `dataset_xlsx` """
-        self.dataset_xlsx_df: pd.DataFrame = pd.read_excel(self.dataset_xlsx_path, engine='openpyxl')
+        self._set_dataset_df()
         self._set_mapping_attrs()
-        
-        """ Set components' necessary variables """
-        self._set_training_df()
-        self._set_class_counts_dict()
         self._set_train_valid_df()
         self._print_trainingset_informations()
-        if self.debug_mode:
-            test_read_image(Path(self.train_df.iloc[-1]["path"]), self._cli_out)
-        
-        """ Save files """
-        create_new_dir(self.save_dir)
-        dump_config(self.save_dir.joinpath("train_config.toml"), self.config) # save file
-        self._save_training_amount_file() # save file
+        self._set_dst_root()
         
         """ Preparing DL components """
         self._set_train_set() # abstract function
@@ -92,115 +74,7 @@ class BaseTrainer:
         self._set_loss_fn() # abstract function
         self._set_optimizer() # abstract function
         if self.use_lr_schedular: self._set_lr_scheduler() # abstract function
-        if self.use_amp: self._set_amp_scaler()
         # ---------------------------------------------------------------------/
-
-
-
-    def run(self, config_file:Union[str, Path]="2.training.toml"):
-        """
-        """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
-        
-        """ Create Timer """
-        timer = Timer()
-        
-        """ Training """
-        self._set_training_attrs()
-        self._cli_out.divide()
-        self.pbar_n_epoch = tqdm(total=self.epochs, desc=f"Epoch ")
-        self.pbar_n_train = tqdm(total=len(self.train_dataloader), desc="Train ")
-        self.pbar_n_valid = tqdm(total=len(self.valid_dataloader), desc="Valid ")
-        try:
-            
-            timer.start()
-            for epoch in range(1, self.epochs+1):
-                # Update progress bar description
-                self.pbar_n_epoch.desc = f"Epoch {epoch:{formatter_padr0(self.epochs)}} "
-                self.pbar_n_epoch.refresh()
-                
-                self._one_epoch_training(epoch)
-                self._one_epoch_validating(epoch)
-                
-                plot_training_trend_kwargs = {
-                    "save_dir"   : self.save_dir,
-                    "loss_key"   : "average_loss",
-                    "score_key"  : self.score_key,
-                    "train_logs" : self.train_logs,
-                    "valid_logs" : self.valid_logs,
-                }
-                plot_training_trend(**plot_training_trend_kwargs) # save file
-                
-                """ Print `output_string` """
-                self._cli_out.write(self.output_string)
-                
-                """ SystemExit condition """
-                if self.accum_no_improved == self.max_no_improved:
-                    sys.exit() # raise SystemExit
-                
-                # Update `pbar_n_epoch`
-                self.pbar_n_epoch.update(1)
-                self.pbar_n_epoch.refresh()
-        
-        except KeyboardInterrupt:
-            self._close_pbars()
-            self.training_state = "KeyboardInterrupt"
-            tqdm.write("KeyboardInterrupt")
-        
-        except SystemExit:
-            self._close_pbars()
-            self.training_state = "EarlyStop"
-            tqdm.write("EarlyStop, exit training")
-        
-        except Exception as e:
-            self._close_pbars()
-            self.training_state = "ExceptionError"
-            tqdm.write(traceback.format_exc())
-            with open(self.save_dir.joinpath(r"{Logs}_ExceptionError.log"), mode="w") as f_writer:
-                f_writer.write(traceback.format_exc())
-
-        else:
-            self._close_pbars()
-            self.training_state = "Completed"
-            tqdm.write("Training Completed")
-        
-        finally:
-            """ Save training consume time """
-            timer.stop()
-            timer.calculate_consume_time()
-            timer.save_consume_time(self.save_dir, desc="training time") # save file
-            
-            if self.best_val_log["epoch"] > 0:
-                """ If `best_val_log["epoch"]` > 0, all of `logs` and `state_dict` are not empty. """
-                
-                """ Save logs (convert to Dataframe) """
-                save_training_logs(self.save_dir, self.train_logs, self.valid_logs, self.best_val_log) # save file*2
-                
-                """ Save model """
-                save_model("best", self.save_dir, self.best_model_state_dict, self.best_optimizer_state_dict) # save file
-                save_model("final", self.save_dir, self.model.state_dict(), self.optimizer.state_dict()) # save file
-
-                """ Rename `save_dir` """
-                # new_name_format : {time_stamp}_{training_state}_{target_epochs_with_ImgLoadOptions}
-                # example : '20230920_13_18_51_{EarlyStop}_{120_epochs_AugOnFly}'
-                rename_training_dir_kwargs = {
-                    "orig_dir"   : self.save_dir,
-                    "time_stamp" : self.time_stamp,
-                    "state"      : self.training_state,
-                    "epochs"     : self.valid_logs[-1]["epoch"],
-                    "aug_on_fly" : self.aug_on_fly,
-                    "use_hsv"    : self.use_hsv
-                }
-                rename_training_dir(**rename_training_dir_kwargs)
-                
-            else: 
-                """ Delete folder if less than one epoch has been completed. """
-                self._cli_out.write(f"Less than One epoch has been completed, "
-                                    f"remove directory '{self.save_dir}' ")
-                shutil.rmtree(self.save_dir)
-        # ---------------------------------------------------------------------/
-
 
 
     def _set_config_attrs(self):
@@ -208,10 +82,10 @@ class BaseTrainer:
         """
         """ [dataset] """
         self.dataset_seed_dir: str = self.config["dataset"]["seed_dir"]
-        self.dataset_name: str = self.config["dataset"]["name"]
-        self.dataset_result_alias: str = self.config["dataset"]["result_alias"]
+        self.dataset_data: str = self.config["dataset"]["data"]
+        self.dataset_palmskin_result: str = self.config["dataset"]["palmskin_result"]
         self.dataset_classif_strategy: str = self.config["dataset"]["classif_strategy"]
-        self.dataset_xlsx_name: str = self.config["dataset"]["xlsx_name"]
+        self.dataset_file_name: str = self.config["dataset"]["file_name"]
         
         """ [model] """
         self.model_name: str = self.config["model"]["name"]
@@ -219,7 +93,7 @@ class BaseTrainer:
         
         """ [train_opts] """
         self.train_ratio: float = self.config["train_opts"]["train_ratio"]
-        self.rand_seed: int = self.config["train_opts"]["random_seed"]
+        # self.rand_seed: int = self.config["train_opts"]["random_seed"]
         self.epochs: int = self.config["train_opts"]["epochs"]
         self.batch_size: int = self.config["train_opts"]["batch_size"]
         
@@ -255,43 +129,16 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_save_dir(self):
-        """
-        """
-        model_cmd: Path = \
-            self._path_navigator.dbpp.get_one_of_dbpp_roots("model_cmd")
-        self.time_stamp: str = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-
-        self.save_dir: Path = model_cmd.joinpath(f"Training_{self.time_stamp}")
-        # ---------------------------------------------------------------------/
-
-
-
-    def _set_dataset_xlsx_path(self):
-        """
-        """
-        dataset_cropped: Path = \
-            self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v2")
-        
-        self.dataset_xlsx_path: Path = dataset_cropped.joinpath(self.dataset_seed_dir,
-                                                                self.dataset_name,
-                                                                self.dataset_result_alias,
-                                                                self.dataset_classif_strategy,
-                                                                f"{self.dataset_xlsx_name}.xlsx")
-        if not self.dataset_xlsx_path.exists():
-            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find `dataset_xlsx` "
-                                    f"run `1.3.create_dataset_xlsx.py` to create it. "
-                                    f"{Style.RESET_ALL}\n")
-        # ---------------------------------------------------------------------/
-
-
-
     def _set_training_reproducibility(self):
-        """ Pytorch reproducibility
+        """ Set below attributes
+            - `self.rand_seed`: int
+        
+        Pytorch reproducibility
             - ref: https://clay-atlas.com/us/blog/2021/08/24/pytorch-en-set-seed-reproduce/?amp=1
             - ref: https://pytorch.org/docs/stable/notes/randomness.html
         """
+        self.rand_seed: int = int(self.dataset_seed_dir.replace("RND", ""))
+        
         """ Seeds """
         random.seed(self.rand_seed)
         np.random.seed(self.rand_seed)
@@ -319,16 +166,49 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
+    def _set_amp_scaler(self):
+        """ A scaler for 'Automatic Mixed Precision (AMP)'
+        """
+        self.scaler = GradScaler()
+        # ---------------------------------------------------------------------/
+
+
+    def _set_dataset_df(self):
+        """
+        """
+        dataset_cropped: Path = \
+            self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
+        
+        src_root = dataset_cropped.joinpath(self.dataset_seed_dir,
+                                            self.dataset_data,
+                                            self.dataset_palmskin_result)
+        
+        dataset_file: Path = src_root.joinpath(self.dataset_classif_strategy,
+                                               self.dataset_file_name)
+        if not dataset_file.exists():
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find target dataset file "
+                                    f"run `1.2.create_dataset_file.py` to create it. "
+                                    f"{Style.RESET_ALL}\n")
+        
+        self.dataset_df: pd.DataFrame = \
+            pd.read_csv(dataset_file, encoding='utf_8_sig')
+        
+        if matplotlib.is_interactive():
+            test_img = src_root.joinpath(self.dataset_df.iloc[-1]["path"])
+            test_read_image(test_img, self._cli_out)
+        # ---------------------------------------------------------------------/
+
 
     def _set_mapping_attrs(self):
         """ Set below attributes
             - `self.num2class_list`: list
             - `self.class2num_dict`: Dict[str, int]
-            
-        example output :
-        >>> num2class_list = ['L', 'M', 'S'], class2num_dict = {'L': 0, 'M': 1, 'S': 2}
+        
+        Example :
+        >>> num2class_list = ['L', 'M', 'S']
+        >>> class2num_dict = {'L': 0, 'M': 1, 'S': 2}
         """
-        self.num2class_list: list = sorted(Counter(self.dataset_xlsx_df["class"]).keys())
+        self.num2class_list: list = sorted(Counter(self.dataset_df["class"]).keys())
         self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
         
         self._cli_out.write(f"num2class_list = {self.num2class_list}, "
@@ -336,30 +216,47 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_training_df(self):
+    def _set_training_df(self): # NOTE: deprecate
         """
         """
-        self.training_df: pd.DataFrame = \
-                self.dataset_xlsx_df[(self.dataset_xlsx_df["dataset"] == "train") & 
-                                     (self.dataset_xlsx_df["state"] == "preserve")]
+        # self.training_df: pd.DataFrame = \
+        #         self.dataset_df[(self.dataset_df["dataset"] == "train") & 
+        #                              (self.dataset_df["state"] == "preserve")]
         
-        if self.debug_mode:
-            self.training_df = self.training_df.sample(n=self.debug_rand_select, 
-                                                       replace=False, 
-                                                       random_state=self.rand_seed)
-            self._cli_out.write(f"Debug mode, reduce to only {len(self.training_df)} images")
+        # if self.debug_mode:
+        #     self.training_df = self.training_df.sample(n=self.debug_rand_select, 
+        #                                                replace=False, 
+        #                                                random_state=self.rand_seed)
+        #     self._cli_out.write(f"Debug mode, reduce to only {len(self.training_df)} images")
         # ---------------------------------------------------------------------/
 
 
+    def _set_train_valid_df(self): # NOTE: deprecate
+        """ Set below attributes
+            - `self.train_df`: pd.DataFrame
+            - `self.valid_df`: pd.DataFrame
+        """
+        # self.train_df: pd.DataFrame = pd.DataFrame(columns=self.training_df.columns)
+        # self.valid_df: pd.DataFrame = pd.DataFrame(columns=self.training_df.columns)
+        
+        # for cls in self.num2class_list:
 
-    def _set_class_counts_dict(self):
-        """
-        """
-        self.class_counts_dict: Dict[str, int] = \
-            gen_class_counts_dict(self.training_df, self.num2class_list)
+        #     df: pd.DataFrame = self.training_df[(self.training_df["class"] == cls)]
+        #     train: pd.DataFrame = df.sample(frac=self.train_ratio, replace=False,
+        #                                     random_state=self.rand_seed)
+        #     valid: pd.DataFrame = df[~df.index.isin(train.index)]
+        #     self.train_df = pd.concat([self.train_df.astype(train.dtypes), train], ignore_index=True)
+        #     self.valid_df = pd.concat([self.valid_df.astype(valid.dtypes), valid], ignore_index=True)
+
+        #     train_d = train[(train["cut_section"] == "D")]
+        #     train_u = train[(train["cut_section"] == "U")]
+        #     valid_d = valid[(valid["cut_section"] == "D")]
+        #     valid_u = valid[(valid["cut_section"] == "U")]
+
+        #     self._cli_out.write(f"{cls}: "
+        #                         f"train: [ total: {len(train)}, D: {len(train_d)}, U: {len(train_u)} ] "
+        #                         f"valid: [ total: {len(valid)}, D: {len(valid_d)}, U: {len(valid_u)} ]")
         # ---------------------------------------------------------------------/
-
 
 
     def _set_train_valid_df(self):
@@ -367,28 +264,29 @@ class BaseTrainer:
             - `self.train_df`: pd.DataFrame
             - `self.valid_df`: pd.DataFrame
         """
-        self.train_df: pd.DataFrame = pd.DataFrame(columns=self.training_df.columns)
-        self.valid_df: pd.DataFrame = pd.DataFrame(columns=self.training_df.columns)
+        self.train_df: pd.DataFrame = \
+                self.dataset_df[(self.dataset_df["dataset"] == "train")]
         
-        for cls in self.num2class_list:
-
-            df: pd.DataFrame = self.training_df[(self.training_df["class"] == cls)]
-            train: pd.DataFrame = df.sample(frac=self.train_ratio, replace=False,
-                                            random_state=self.rand_seed)
-            valid: pd.DataFrame = df[~df.index.isin(train.index)]
-            self.train_df = pd.concat([self.train_df.astype(train.dtypes), train], ignore_index=True)
-            self.valid_df = pd.concat([self.valid_df.astype(valid.dtypes), valid], ignore_index=True)
-
-            train_d = train[(train["cut_section"] == "D")]
-            train_u = train[(train["cut_section"] == "U")]
-            valid_d = valid[(valid["cut_section"] == "D")]
-            valid_u = valid[(valid["cut_section"] == "U")]
-
-            self._cli_out.write(f"{cls}: "
-                                f"train: [ total: {len(train)}, D: {len(train_d)}, U: {len(train_u)} ] "
-                                f"valid: [ total: {len(valid)}, D: {len(valid_d)}, U: {len(valid_u)} ]")
+        self.valid_df: pd.DataFrame = \
+                self.dataset_df[(self.dataset_df["dataset"] == "valid")]
+        
+        # debug: sampleing for faster speed
+        if self.debug_mode:
+            self.train_df = self.train_df.sample(n=self.debug_rand_select,
+                                                 replace=False,
+                                                 random_state=self.rand_seed)
+            self.valid_df = self.valid_df.sample(n=self.debug_rand_select,
+                                                 replace=False,
+                                                 random_state=self.rand_seed)
         # ---------------------------------------------------------------------/
 
+
+    def _set_class_counts_dict(self): # NOTE: deprecate
+        """ WARNING: deprecate: (class) BG 是動態產生的，無法得知 class weight
+        """
+        # self.class_counts_dict: Dict[str, int] = \
+        #     gen_class_counts_dict(self.train_df, self.num2class_list)
+        # ---------------------------------------------------------------------/
 
 
     def _print_trainingset_informations(self):
@@ -400,29 +298,29 @@ class BaseTrainer:
         self._cli_out.write(f"valid_data ({len(self.valid_df)})")
         [self._cli_out.write(f"{i} : img_path = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
         
-        temp_dict: Dict[str, int] = gen_class_counts_dict(self.training_df, self.num2class_list)
-        self._cli_out.write(f"class_weight of `self.training_df` : {calculate_class_weight(temp_dict)}")
+        # temp_dict: Dict[str, int] = gen_class_counts_dict(self.training_df, self.num2class_list)
+        # self._cli_out.write(f"class_weight of `self.training_df` : {calculate_class_weight(temp_dict)}")
         
-        temp_dict = gen_class_counts_dict(self.train_df, self.num2class_list)
-        self._cli_out.write(f"class_weight of `self.train_df` : {calculate_class_weight(temp_dict)}")
+        # temp_dict = gen_class_counts_dict(self.train_df, self.num2class_list)
+        # self._cli_out.write(f"class_weight of `self.train_df` : {calculate_class_weight(temp_dict)}")
         
-        temp_dict = gen_class_counts_dict(self.valid_df, self.num2class_list)
-        self._cli_out.write(f"class_weight of `self.valid_df` : {calculate_class_weight(temp_dict)}")
+        # temp_dict = gen_class_counts_dict(self.valid_df, self.num2class_list)
+        # self._cli_out.write(f"class_weight of `self.valid_df` : {calculate_class_weight(temp_dict)}")
         # ---------------------------------------------------------------------/
 
 
-
-    def _save_training_amount_file(self):
-        """ Save an empty file but file name is training amount info
+    def _set_dst_root(self):
+        """ Set below attributes
+            - `self.time_stamp`: str
+            - `self.dst_root`: Path
         """
-        training_amount = f"{{ dataset_{len(self.training_df)} }}_"
-        training_amount += f"{{ train_{len(self.train_df)} }}_"
-        training_amount += f"{{ valid_{len(self.valid_df)} }}"
-        
-        save_path = self.save_dir.joinpath(training_amount)
-        with open(save_path, mode="w") as f_writer: pass
-        # ---------------------------------------------------------------------/
+        model_library: Path = \
+            self._path_navigator.dbpp.get_one_of_dbpp_roots("model_library")
+        self.time_stamp: str = datetime.now().strftime('%Y%m%d_%H_%M_%S')
 
+        self.dst_root: Path = \
+            model_library.joinpath(f"Training_{self.time_stamp}")
+        # ---------------------------------------------------------------------/
 
 
     def _set_train_set(self): # abstract function
@@ -435,7 +333,6 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
-
     def _set_valid_set(self): # abstract function
         """
         """
@@ -444,7 +341,6 @@ class BaseTrainer:
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
         # ---------------------------------------------------------------------/
-
 
 
     def _set_dataloaders(self):
@@ -476,7 +372,6 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
-
     def _set_model(self): # abstract function
         """
         """
@@ -485,7 +380,6 @@ class BaseTrainer:
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
         # ---------------------------------------------------------------------/
-
 
 
     def _set_loss_fn(self): # abstract function
@@ -498,7 +392,6 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
-
     def _set_optimizer(self): # abstract function
         """
         """
@@ -507,7 +400,6 @@ class BaseTrainer:
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
         # ---------------------------------------------------------------------/
-
 
 
     def _set_lr_scheduler(self): # abstract function
@@ -520,13 +412,135 @@ class BaseTrainer:
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_amp_scaler(self):
-        """ A scaler for 'Automatic Mixed Precision (AMP)'
+    def run(self, config:Union[str, Path]):
         """
-        self.scaler = GradScaler()
+
+        Args:
+            config (Union[str, Path]): a toml file.
+        """
+        super().run(config)
+        
+        create_new_dir(self.dst_root)
+        dump_config(self.dst_root.joinpath("train_config.toml"), self.config) # save file
+        self._save_training_amount_file() # save file
+        
+        """ Create Timer """
+        timer = Timer()
+        
+        """ Training """
+        self._set_training_attrs()
+        self._cli_out.divide()
+        self.pbar_n_epoch = tqdm(total=self.epochs, desc=f"Epoch ")
+        self.pbar_n_train = tqdm(total=len(self.train_dataloader), desc="Train ")
+        self.pbar_n_valid = tqdm(total=len(self.valid_dataloader), desc="Valid ")
+        try:
+            
+            timer.start()
+            for epoch in range(1, self.epochs+1):
+                # Update progress bar description
+                self.pbar_n_epoch.desc = f"Epoch {epoch:{formatter_padr0(self.epochs)}} "
+                self.pbar_n_epoch.refresh()
+                
+                self._one_epoch_training(epoch)
+                self._one_epoch_validating(epoch)
+                
+                plot_training_trend_kwargs = {
+                    "save_dir"   : self.dst_root,
+                    "loss_key"   : "average_loss",
+                    "score_key"  : self.score_key,
+                    "train_logs" : self.train_logs,
+                    "valid_logs" : self.valid_logs,
+                }
+                plot_training_trend(**plot_training_trend_kwargs) # save file
+                
+                """ Print `output_string` """
+                self._cli_out.write(self.output_string)
+                
+                """ SystemExit condition """
+                if self.accum_no_improved == self.max_no_improved:
+                    sys.exit() # raise SystemExit
+                
+                # Update `pbar_n_epoch`
+                self.pbar_n_epoch.update(1)
+                self.pbar_n_epoch.refresh()
+        
+        except KeyboardInterrupt:
+            self._close_pbars()
+            self.training_state = "KeyboardInterrupt"
+            tqdm.write("KeyboardInterrupt")
+        
+        except SystemExit:
+            self._close_pbars()
+            self.training_state = "EarlyStop"
+            tqdm.write("EarlyStop, exit training")
+        
+        except Exception as e:
+            self._close_pbars()
+            self.training_state = "ExceptionError"
+            tqdm.write(traceback.format_exc())
+            with open(self.dst_root.joinpath(r"{Logs}_ExceptionError.log"), mode="w") as f_writer:
+                f_writer.write(traceback.format_exc())
+
+        else:
+            self._close_pbars()
+            self.training_state = "Completed"
+            tqdm.write("Training Completed")
+        
+        finally:
+            """ Save training consume time """
+            timer.stop()
+            timer.calculate_consume_time()
+            timer.save_consume_time(self.dst_root, desc="training time") # save file
+            
+            if self.best_val_log["epoch"] > 0:
+                """ NOTE: Reason of this condition:
+                
+                    If `best_val_log["epoch"]` > 0,
+                    all of `logs` and `state_dict` are not empty.
+                """
+                
+                """ Save logs (convert to Dataframe) """
+                save_training_logs(self.dst_root, self.train_logs, self.valid_logs, self.best_val_log) # save file*2
+                
+                """ Save model """
+                save_model("best", self.dst_root, self.best_model_state_dict, self.best_optimizer_state_dict) # save file
+                save_model("final", self.dst_root, self.model.state_dict(), self.optimizer.state_dict()) # save file
+
+                """ Rename `dst_root` """
+                # new_name_format : {time_stamp}_{training_state}_{target_epochs_with_ImgLoadOptions}
+                # example : '20230920_13_18_51_{EarlyStop}_{120_epochs_AugOnFly}'
+                rename_training_dir_kwargs = {
+                    "orig_dir"   : self.dst_root,
+                    "time_stamp" : self.time_stamp,
+                    "state"      : self.training_state,
+                    "epochs"     : self.valid_logs[-1]["epoch"],
+                    "aug_on_fly" : self.aug_on_fly,
+                    "use_hsv"    : self.use_hsv
+                }
+                rename_training_dir(**rename_training_dir_kwargs)
+                
+            else:
+                """ Delete folder if less than one epoch has been completed. """
+                self._cli_out.write(f"Less than One epoch has been completed, "
+                                    f"remove directory '{self.dst_root}' ")
+                shutil.rmtree(self.dst_root)
         # ---------------------------------------------------------------------/
 
+
+    def _save_training_amount_file(self):
+        """ Save an empty file but file name is training amount info
+        """
+        train_num = len(self.train_df)
+        valid_num = len(self.valid_df)
+        training_num = train_num + valid_num
+        
+        training_amount = f"{{ dataset_{training_num} }}_"
+        training_amount += f"{{ train_{train_num} }}_"
+        training_amount += f"{{ valid_{valid_num} }}"
+        
+        save_path = self.dst_root.joinpath(training_amount)
+        with open(save_path, mode="w") as f_writer: pass
+        # ---------------------------------------------------------------------/
 
 
     def _set_training_attrs(self):
@@ -534,26 +548,26 @@ class BaseTrainer:
         """
         self.train_logs: List[dict] = []
         self.valid_logs: List[dict] = []
+        self.output_string: str = "" # for CLIOutput
         
         """ best record variables """
-        self.output_string: str = ""
-        self.best_train_avg_loss: float = np.inf
-        self.best_val_log: dict = { "Best": self.time_stamp, "epoch": 0 }
         self.best_val_f1: float = 0.0
+        self.best_val_log: dict = { "Best": self.time_stamp, "epoch": 0 }
         self.best_model_state_dict: dict = deepcopy(self.model.state_dict())
         self.best_optimizer_state_dict: dict = deepcopy(self.optimizer.state_dict())
         
         """ early stop """
+        self.best_val_avg_loss: float = np.inf
         self.accum_no_improved: int = 0
         
         """ exception """
         self.training_state: str = ""
         
+        # score
         self.score_key: str = "maweavg_f1"
         self._cli_out.write("※　evaluation metric : "
                                 "maweavg_f1 = ( macro_f1 + weighted_f1 ) / 2")
         # ---------------------------------------------------------------------/
-
 
 
     def _one_epoch_training(self, epoch:int):
@@ -608,23 +622,6 @@ class BaseTrainer:
         calculate_metrics(log, (accum_loss/len(self.train_dataloader)), 
                           pred_list, gt_list, self.class2num_dict)
         
-        """ Check 'EarlyStop' """
-        log["train_state"] = ""
-        if log["average_loss"] < self.best_train_avg_loss:
-            self.best_train_avg_loss = log["average_loss"]
-            if self.enable_earlystop: self.accum_no_improved = 0
-            
-            self.output_string += (f", ☆★☆ BEST_TRAIN_LOSS ☆★☆"
-                                   f", best_train_avg_loss = {self.best_train_avg_loss}")
-        else:
-            log["train_state"] = "◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
-            
-            if self.enable_earlystop:
-                self.accum_no_improved += 1
-                self.output_string += (f", ◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎"
-                                       f", accum_no_improved = {self.accum_no_improved}")
-            else: self.output_string += (f", ◎㊣◎ TRAIN_LOSS_NO_IMPROVED ◎㊣◎")
-        
         """ Update `self.train_logs` """
         self.train_logs.append(log)
         
@@ -638,7 +635,6 @@ class BaseTrainer:
         self.pbar_n_train.postfix = temp_str
         self.pbar_n_train.refresh()
         # ---------------------------------------------------------------------/
-
 
 
     def _one_epoch_validating(self, epoch:int):
@@ -655,13 +651,14 @@ class BaseTrainer:
         with torch.no_grad():
             for data in self.valid_dataloader:
                 
-                images, labels, crop_names = data
+                images, labels, img_name = data
                 images, labels = images.to(self.device), labels.to(self.device) # move to GPU
                 
                 preds = self.model(images)
                 loss_value = self.loss_fn(preds, labels)
-                accum_loss += loss_value.item() # accumulate current batch loss
-                                                # tensor.item() -> get value of a Tensor
+                
+                """ Accumulate current batch loss """
+                accum_loss += loss_value.item() # tensor.item() -> get value of a Tensor
                 
                 """ Extend `pred_list`, `gt_list` """
                 preds_prob = torch.nn.functional.softmax(preds, dim=1)
@@ -676,11 +673,14 @@ class BaseTrainer:
         calculate_metrics(log, (accum_loss/len(self.valid_dataloader)),
                           pred_list, gt_list, self.class2num_dict)
         
+        """ Update `self.valid_logs` """
+        self.valid_logs.append(log)
+        
         """ Update best record """
-        log["valid_state"] = ""
+        log["best_record"] = ""
         if log[self.score_key] > self.best_val_f1:
             
-            log["valid_state"] = "☆★☆ BEST_VALIDATION_SCORE ☆★☆"
+            log["best_record"] = "☆★☆ BEST_VALIDATION_SCORE ☆★☆"
             self.best_val_f1 = log[self.score_key]
                         
             """ Update `best_val_log` """
@@ -693,9 +693,27 @@ class BaseTrainer:
             
             self.output_string += (f", ☆★☆ BEST_VALIDATION_SCORE ☆★☆"
                                    f", best_val_{self.score_key} = {self.best_val_log[self.score_key]}")
+        # ---------------------------------------------------------------------
         
-        """ Update `self.valid_logs` """
-        self.valid_logs.append(log)
+        """ Check 'EarlyStop' """
+        log["early_stop"] = ""
+        if log["average_loss"] < self.best_val_avg_loss:
+            self.best_val_avg_loss = log["average_loss"]
+            if self.enable_earlystop: self.accum_no_improved = 0
+            
+            self.output_string += (f", ☆★☆ BEST_VALID_LOSS ☆★☆"
+                                   f", best_valid_avg_loss = {self.best_val_avg_loss}")
+        else:
+            tmp_string = "◎㊣◎ VALID_LOSS_NO_IMPROVED ◎㊣◎"
+            log["early_stop"] = tmp_string
+            self.output_string += f", {tmp_string}"
+            
+            if self.enable_earlystop:
+                self.accum_no_improved += 1
+                tmp_string = f", accum_no_improved = {self.accum_no_improved}"
+                log["early_stop"] += tmp_string
+                self.output_string += tmp_string
+        # ---------------------------------------------------------------------
         
         """ Update postfix of `pbar_n_valid` """
         temp_str = f" {'{'} Loss: {log['average_loss']}, "
@@ -703,7 +721,6 @@ class BaseTrainer:
         self.pbar_n_valid.postfix = temp_str
         self.pbar_n_valid.refresh()
         # ---------------------------------------------------------------------/
-
 
 
     def _close_pbars(self):
