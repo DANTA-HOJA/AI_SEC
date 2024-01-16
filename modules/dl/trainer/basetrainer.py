@@ -185,6 +185,7 @@ class BaseTrainer(BaseObject):
         
         dataset_file: Path = src_root.joinpath(self.dataset_classif_strategy,
                                                self.dataset_file_name)
+        
         if not dataset_file.exists():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find target dataset file "
                                     f"run `1.2.create_dataset_file.py` to create it. "
