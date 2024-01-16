@@ -1,6 +1,6 @@
 [instance_desc]
   old = "20231229_manualroi" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
-  new = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  new = "" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
 
 # -----------------------------------------------------------------------------\
 [copy_info]

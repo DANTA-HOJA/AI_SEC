@@ -11,7 +11,7 @@
 
 # -----------------------------------------------------------------------------\
 [data_processed]
-  instance_desc = "20230904_update" # dir_name = {`instance_desc`}_Academia_Sinica_i[num], [num] will determine later.
+  instance_desc = "20231229_manualroi" # dir_name = {`instance_desc`}_Academia_Sinica_i[num], [num] will determine later.
   brightfield_reminder = "autothres_triangle" # dir_name = {`brightfield_reminder`}_BrightField_analyze.
   # Note: `brightfield_reminder` is JUST a reminder; the identity still depends on `instance_desc`.
   #
