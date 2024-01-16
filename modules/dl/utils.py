@@ -1,14 +1,15 @@
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
 from collections import Counter
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
+import numpy as np
 import pandas as pd
 import torch
 from sklearn.metrics import f1_score
 
+from ..assert_fn import *
 from ..plot.utils import plot_in_rgb
 from ..shared.clioutput import CLIOutput
-from ..assert_fn import *
 # -----------------------------------------------------------------------------/
 
 
@@ -77,7 +78,7 @@ def get_fish_class(image_name:str, df_dataset_xlsx:pd.DataFrame):
 
 
 def calculate_metrics(log:Dict, average_loss:float,
-                      predict_list:List[int], groundtruth_list:List[int],
+                      predict_list:list, groundtruth_list:list,
                       class2num_dict:Dict[str, int]):
     """
     """
@@ -92,8 +93,19 @@ def calculate_metrics(log:Dict, average_loss:float,
     if average_loss is not None: log["average_loss"] = round(average_loss, 5)
     else: log["average_loss"] = None
     
-    """ Update `f1-score` """
-    for key, value in class2num_dict.items(): log[f"{key}_f1"] = round(class_f1[value], 5)
+    # deal with `class_f1` ( 很可能會缺其中一種 label, 例如: 'BG' )
+    exist_labels = np.unique(predict_list + groundtruth_list) # np.unique 自帶 sorting
+    if exist_labels.dtype == np.dtype('<U1'): # ndarray 的 element 是 Unicode string
+        tmp_dict = {class2num_dict[label]: f1 for label, f1 in zip(exist_labels, class_f1)}
+    else:
+        tmp_dict = {label: f1 for label, f1 in zip(exist_labels, class_f1)}
+    for key, value in class2num_dict.items():
+        try:
+            log[f"{key}_f1"] = round(tmp_dict[value], 5)
+        except KeyError:
+            log[f"{key}_f1"] = "---"
+    
+    """ Update other `f1-score` """
     log["micro_f1"] = round(micro_f1, 5)
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
