@@ -1,8 +1,8 @@
 import os
-import sys
 import re
+import sys
 from pathlib import Path
-from typing import List, Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import cv2
 import numpy as np
@@ -70,31 +70,31 @@ def gen_dataset_file_name_dict(config:Union[dict, TOMLDocument]) -> Dict[str, st
 
 
 
-def parse_dataset_xlsx_name(dataset_xlsx_name:str) -> dict:
+def parse_dataset_file_name(dataset_file_name:str) -> dict:
     """
     
     Args:
-        dataset_xlsx_name (str): \n
+        dataset_file_name (str): \n
         - `DS_SURF3C_CRPS512_SF14_INT20_DRP100`
-        - `DS_SURF3C_CRPS512_SF14_DYNSELECT`
+        - `DS_SURF3C_CRPS512_SF14_DYNSELECT` (deprecate)
     
     Returns:
         dict:
     """
-    dataset_xlsx_name = dataset_xlsx_name.split(".")[0] # drop 'file_ext'
-    dataset_xlsx_name_split = dataset_xlsx_name.split("_")
+    dataset_file_name = os.path.splitext(dataset_file_name)[0] # drop 'file_ext'
+    dataset_file_name_split = dataset_file_name.split("_")
     
     temp_dict: dict = {}
-    temp_dict["prefix"]        = dataset_xlsx_name_split[0] # DS
-    temp_dict["feature_class"] = dataset_xlsx_name_split[1]
-    temp_dict["crop_size"]     = int(dataset_xlsx_name_split[2].replace("CRPS", ""))
-    temp_dict["shift_region"]  = dataset_xlsx_name_split[3].replace("SF1", "1/")
+    temp_dict["prefix"]        = dataset_file_name_split[0] # DS
+    temp_dict["feature_class"] = dataset_file_name_split[1]
+    temp_dict["crop_size"]     = int(dataset_file_name_split[2].replace("CRPS", ""))
+    temp_dict["shift_region"]  = dataset_file_name_split[3].replace("SF1", "1/")
     
-    if dataset_xlsx_name_split[-1] == "DYNSELECT":
+    if dataset_file_name_split[-1] == "DYNSELECT":
         temp_dict["dynamic_select"] = "DYNSELECT"
     else:
-        temp_dict["intensity"]    = int(dataset_xlsx_name_split[4].replace("INT", ""))
-        temp_dict["drop_ratio"]   = int(dataset_xlsx_name_split[5].replace("DRP", ""))/100
+        temp_dict["intensity"]    = int(dataset_file_name_split[4].replace("INT", ""))
+        temp_dict["drop_ratio"]   = int(dataset_file_name_split[5].replace("DRP", ""))/100
     
     return temp_dict
     # -------------------------------------------------------------------------/
