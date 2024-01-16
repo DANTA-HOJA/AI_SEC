@@ -1,12 +1,12 @@
-note = "[v3.1]"
+note = "[v4.0]"
 
 # -----------------------------------------------------------------------------\
 [dataset]
-  seed_dir = "SEED_2022"
-  name = "{20230904_update}_Academia_Sinica_i831"
-  result_alias = "RGB_HE_fusion"
-  classif_strategy = "KMeansORIG_RND2022"
-  xlsx_name = "DS_SURF3C_CRPS256_SF14_INT30_DRP45"
+  seed_dir = "RND2022"
+  data = "{20231229_manualroi}_Academia_Sinica_i831"
+  palmskin_result = "03_RGB_direct_max_zproj"
+  classif_strategy = "KMeansORIG"
+  file_name = "DS_SURF3C_CRPS512_SF14_INT30_DRP45.csv"
 
 # -----------------------------------------------------------------------------\
 [model]
@@ -44,7 +44,7 @@ note = "[v3.1]"
 
 [train_opts.debug_mode]
   enable = false # if `true`, sample `rand_select` images only
-  rand_select = 100 # samples for debugging
+  rand_select = 30 # samples for debugging
 
 [train_opts.cuda]
   index = 0
