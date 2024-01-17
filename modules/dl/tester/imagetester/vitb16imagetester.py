@@ -33,10 +33,10 @@ class VitB16ImageTester(BaseImageTester):
         resize: int = 224
         
         self.test_set: ImgDataset_v3 = \
-            ImgDataset_v3("test", self.config, self.test_df,
+            ImgDataset_v3("test", self.training_config, self.test_df,
                           self.class2num_dict, resize,
-                          transform=None, dst_root=self.dst_root,
-                          display_on_CLI=True)
+                          transform=None, dst_root=self.history_dir,
+                          debug_mode=self.debug_mode, display_on_CLI=True)
         # ---------------------------------------------------------------------/
 
 
