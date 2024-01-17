@@ -119,6 +119,11 @@ class BaseTrainer(BaseObject):
         """ [train_opts.debug_mode] """
         self.debug_mode: bool = self.config["train_opts"]["debug_mode"]["enable"]
         self.debug_rand_select:int = self.config["train_opts"]["debug_mode"]["rand_select"]
+        if self.debug_mode:
+            self.epochs = 10
+            self.batch_size = 16
+            self._cli_out.write(f"※　: debug mode, force `epochs` = {self.epochs}")
+            self._cli_out.write(f"※　: debug mode, force `batch_size` = {self.batch_size}")
         
         """ [train_opts.cuda] """
         self.cuda_idx: int = self.config["train_opts"]["cuda"]["index"]
@@ -359,7 +364,9 @@ class BaseTrainer(BaseObject):
                 DataLoader(self.valid_set, batch_size=self.batch_size, shuffle=False,
                            pin_memory=True, num_workers=self.num_workers)
             
-        else: 
+            self._cli_out.write(f"※　: multiprocess loading, `num_workers` = {self.num_workers}")
+
+        else:
             self.train_dataloader: DataLoader = \
                 DataLoader(self.train_set, batch_size=self.batch_size, shuffle=True,
                            pin_memory=True)

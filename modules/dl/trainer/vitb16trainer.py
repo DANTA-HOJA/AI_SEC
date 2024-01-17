@@ -95,8 +95,12 @@ class VitB16Trainer(BaseTrainer):
         """
         """
         self.optimizer: optim.AdamW = \
-            optim.AdamW(self.model.parameters(), 
+            optim.AdamW(self.model.parameters(),
                         lr=self.lr, weight_decay=self.weight_decay)
+        
+        # self.optimizer: optim.SGD = \
+        #     optim.SGD(self.model.parameters(), momentum=0.9,
+        #                 lr=self.lr, weight_decay=self.weight_decay)
         # ---------------------------------------------------------------------/
 
 
