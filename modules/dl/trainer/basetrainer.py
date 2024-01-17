@@ -284,6 +284,7 @@ class BaseTrainer(BaseObject):
             self.valid_df = self.valid_df.sample(n=self.debug_rand_select,
                                                  replace=False,
                                                  random_state=self.rand_seed)
+            self._cli_out.write(f"※　: debug mode, reduce to only {self.debug_rand_select} images")
         # ---------------------------------------------------------------------/
 
 
@@ -302,7 +303,7 @@ class BaseTrainer(BaseObject):
         [self._cli_out.write(f"{i} : image_name = {self.train_df.iloc[i]['image_name']}") for i in range(5)]
         
         self._cli_out.write(f"valid_data ({len(self.valid_df)})")
-        [self._cli_out.write(f"{i} : img_path = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
+        [self._cli_out.write(f"{i} : image_name = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
         
         # temp_dict: Dict[str, int] = gen_class_counts_dict(self.training_df, self.num2class_list)
         # self._cli_out.write(f"class_weight of `self.training_df` : {calculate_class_weight(temp_dict)}")
@@ -661,7 +662,7 @@ class BaseTrainer(BaseObject):
         with torch.no_grad():
             for data in self.valid_dataloader:
                 
-                images, labels, img_name = data
+                images, labels, image_names = data
                 images, labels = images.to(self.device), labels.to(self.device) # move to GPU
                 
                 preds = self.model(images)
