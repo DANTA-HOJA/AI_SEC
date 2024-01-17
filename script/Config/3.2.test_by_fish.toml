@@ -1,5 +1,5 @@
 [model_prediction]
-  time_stamp = "20231014_05_23_57_"
+  time_stamp = "20240117_15_35_42_"
   state = "best" # 'best' or 'final' (model.pth)
 
 # -----------------------------------------------------------------------------\
@@ -16,6 +16,6 @@
 # -----------------------------------------------------------------------------\
 [cam]
   enable = true
-  colormap_key = "COLORMAP_JET"
+  colormap = "COLORMAP_JET"
   # - options of colormap:
   #   ref: https://docs.opencv.org/4.6.0/d3/d50/group__imgproc__colormap.html#ga9a805d8262bcbe273f16be9ea2055a65

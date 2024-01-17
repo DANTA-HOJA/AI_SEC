@@ -1,73 +1,110 @@
-import os
-import sys
-import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
-from collections import Counter
 import json
+import os
+import re
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 import cv2
 import numpy as np
+import torch
+from pytorch_grad_cam import (AblationCAM, EigenCAM, FullGrad, GradCAM,
+                              GradCAMPlusPlus, HiResCAM, ScoreCAM, XGradCAM)
 from tqdm.auto import tqdm
 
-import torch
-from pytorch_grad_cam import GradCAM, HiResCAM, ScoreCAM, \
-    GradCAMPlusPlus, AblationCAM, XGradCAM, EigenCAM, FullGrad
-
+from ....shared.utils import (create_new_dir, formatter_padr0,
+                              get_target_str_idx_in_list)
+from ...utils import calculate_metrics
 from ..imagetester.baseimagetester import BaseImageTester
 from ..utils import rename_history_dir
-from ...utils import calculate_metrics
-from ....data.dataset.utils import parse_dataset_xlsx_name
-from ....shared.utils import create_new_dir, formatter_padr0
 # -----------------------------------------------------------------------------/
 
 
 class BaseFishTester(BaseImageTester):
 
-
-    def __init__(self) -> None:
+    def __init__(self, display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
-        super().__init__()
+        super().__init__(display_on_CLI)
         
         # ---------------------------------------------------------------------
         # """ attributes """
         # TODO
+        # ---------------------------------------------------------------------
+        # """ actions """
+        # TODO
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_attrs(self, config_file:Union[str, Path]): # overwrite
+    def _set_attrs(self, config:Union[str, Path]): # extend
         """
         """
-        super()._set_attrs(config_file)
+        super()._set_attrs(config)
         
         """ Initial CAM generator and directory """
         if self.do_cam:
+            self._cli_out.write(f"※　: Do CAM, colormap using '{self.colormap}'")
             self._set_cam_result_root()
-            self._set_cam_generator()
+            self._set_cam_generator() # abstract function
         # ---------------------------------------------------------------------/
 
 
+    def _set_config_attrs(self): # extend
+        """
+        """
+        super()._set_config_attrs()
+        
+        """ [cam] """
+        self.do_cam: bool = self.config["cam"]["enable"]
+        self.colormap: str = self.config["cam"]["colormap"]
+        # ---------------------------------------------------------------------/
 
-    def run(self, config_file:Union[str, Path]="3.2.test_by_fish.toml"):
+
+    def _set_cam_result_root(self):
         """
         """
-        self._cli_out.divide()
-        self._set_attrs(config_file)
+        self.cam_result_root: Path = self.history_dir.joinpath("cam_result")
+        if self.cam_result_root.exists():
+            raise FileExistsError(
+                f"Directory already exists: '{self.cam_result_root}'. "
+                "To re-generate the cam results, "
+                "please delete existing directory.")
+        # ---------------------------------------------------------------------/
+
+
+    def _set_cam_generator(self): # abstract function
+        """
+        """
+        self.cam_generator: GradCAM
+        
+        raise NotImplementedError("This is a base fish tester, \
+            you should create a child class and replace this funtion")
+        # ---------------------------------------------------------------------/
+
+
+    def run(self, config:Union[str, Path]):
+        """
+
+        Args:
+            config (Union[str, Path]): a toml file.
+        """
+        super(BaseImageTester, self).run(config)
+        
+        self._save_testing_amount_file() # save file
         
         """ Testing """
         self._set_testing_attrs()
         self._cli_out.divide()
-        self.pbar_n_test = tqdm(total=len(self.test_dataloader), desc="Test ")
+        self.pbar_n_test = tqdm(total=len(self.test_dataloader),
+                                desc="Test (PredByFish) ")
         
         self._one_epoch_testing()
         
         self.pbar_n_test.close()
-        self._cli_out.new_line()
         
         """ Save files """
         self._save_predict_ans_log() # save file
@@ -83,57 +120,12 @@ class BaseFishTester(BaseImageTester):
         else:
             rename_history_dir(self.history_dir, "Tested_PredByFish",
                                self.model_state, self.test_log, score_key="maweavg_f1")
-        # ---------------------------------------------------------------------/
-
-
-
-    def _set_config_attrs(self): # overwrite
-        """
-        """
-        super()._set_config_attrs()
         
-        """ [cam] """
-        self.do_cam: bool = self.config["cam"]["enable"]
-        self.colormap_key: str = self.config["cam"]["colormap_key"]
-        self.cam_colormap: int = getattr(cv2, self.colormap_key)
+        self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
 
-
-    def _set_train_config_attrs(self): # overwrite
-        """
-        """
-        super()._set_train_config_attrs()
-        
-        self.crop_size: int = parse_dataset_xlsx_name(self.dataset_xlsx_name)["crop_size"]
-        # ---------------------------------------------------------------------/
-
-
-
-    def _set_cam_result_root(self):
-        """
-        """
-        self.cam_result_root: Path = self.history_dir.joinpath("cam_result")
-        assert not self.cam_result_root.exists(), \
-            (f"Directory already exists: '{self.cam_result_root}'. "
-             "To re-generate the cam results, "
-             "please delete existing directory.")
-        # ---------------------------------------------------------------------/
-
-
-
-    def _set_cam_generator(self): # abstract function
-        """
-        """
-        self.cam_generator: GradCAM
-        
-        raise NotImplementedError("This is a base fish tester, \
-            you should create a child class and replace this funtion")
-        # ---------------------------------------------------------------------/
-
-
-
-    def _set_testing_attrs(self): # overwrite
+    def _set_testing_attrs(self): # extend
         """
         """
         super()._set_testing_attrs()
@@ -142,7 +134,6 @@ class BaseFishTester(BaseImageTester):
         self.fish_gt_dict: Dict[str, str] = {}
         self.image_predict_ans_dict: dict = {}
         # ---------------------------------------------------------------------/
-
 
 
     def _one_epoch_testing(self): # overwrite
@@ -158,8 +149,9 @@ class BaseFishTester(BaseImageTester):
             
             preds = self.model(images)
             loss_value = self.loss_fn(preds, labels)
-            accum_loss += loss_value.item() # accumulate current batch loss
-                                            # tensor.item() -> get value of a Tensor
+            
+            """ Accumulate current batch loss """
+            accum_loss += loss_value.item() # tensor.item() -> get value of a Tensor
 
             """ Extend `pred_list`, `gt_list` """
             preds_prob = torch.nn.functional.softmax(preds, dim=1)
@@ -204,14 +196,15 @@ class BaseFishTester(BaseImageTester):
         # ---------------------------------------------------------------------/
 
 
-
     def _update_fish_pred_gt_dict(self, crop_name:str,
                                         pred_hcls:int, label:int):
         """
         """
         crop_name_split: List[str] = crop_name.split("_")
-        fish_dsname: str = "_".join(crop_name_split[:4]) # example_list : ['fish', '1', 'A', 'U', 'crop', '0']
-                                                         # list[:3] = 'fish_1_A', list[:4] = 'fish_1_A_U'
+        target_idx = get_target_str_idx_in_list(crop_name_split, "crop")
+        fish_dsname: str = "_".join(crop_name_split[:target_idx])
+        # Example : ['fish', '1', 'A', 'U', 'crop', '0']
+        # >>> list[:3] = 'fish_1_A'; list[:4] = 'fish_1_A_U'
         
         """ Update `self.fish_gt_dict` """
         fish_class: str = self.num2class_list[label]
@@ -230,19 +223,22 @@ class BaseFishTester(BaseImageTester):
         # ---------------------------------------------------------------------/
 
 
-
     def _save_cam_result(self, crop_name:str, grayscale_cam):
         """
         """
         crop_name_split: List[str] = crop_name.split("_")
-        fish_dsname: str = "_".join(crop_name_split[:4]) # example_list : ['fish', '1', 'A', 'U', 'crop', '0']
-                                                         # list[:3] = 'fish_1_A', list[:4] = 'fish_1_A_U'
-        resize: Tuple[int, int] = (self.crop_size, self.crop_size)
+        target_idx = get_target_str_idx_in_list(crop_name_split, "crop")
+        fish_dsname: str = "_".join(crop_name_split[:target_idx])
+        # Example : ['fish', '1', 'A', 'U', 'crop', '0']
+        # >>> list[:3] = 'fish_1_A'; list[:4] = 'fish_1_A_U'
+        
+        resize: Tuple[int, int] = \
+            (self.test_set.crop_size, self.test_set.crop_size)
         
         """ Gray """
         cam_result_dir = self.cam_result_root.joinpath(fish_dsname, "grayscale_map")
         create_new_dir(cam_result_dir)
-        crop_name_split[4] = "graymap"
+        crop_name_split[target_idx] = "graymap"
         cam_save_path = cam_result_dir.joinpath(f"{'_'.join(crop_name_split)}.tiff")
         grayscale_cam = np.uint8(255 * grayscale_cam)
         cv2.imwrite(str(cam_save_path), \
@@ -251,13 +247,13 @@ class BaseFishTester(BaseImageTester):
         """ Color """
         cam_result_dir = self.cam_result_root.joinpath(fish_dsname, "color_map")
         create_new_dir(cam_result_dir)
-        crop_name_split[4] = "colormap"
+        crop_name_split[target_idx] = "colormap"
         cam_save_path = cam_result_dir.joinpath(f"{'_'.join(crop_name_split)}.tiff")
-        colormap_cam = cv2.applyColorMap(grayscale_cam, self.cam_colormap) # BGR
+        color_cam = cv2.applyColorMap(grayscale_cam,
+                                         getattr(cv2, self.colormap)) # BGR
         cv2.imwrite(str(cam_save_path), \
-                    cv2.resize(colormap_cam, resize, interpolation=cv2.INTER_CUBIC))
+                    cv2.resize(color_cam, resize, interpolation=cv2.INTER_CUBIC))
         # ---------------------------------------------------------------------/
-
 
 
     def _save_predict_ans_log(self):

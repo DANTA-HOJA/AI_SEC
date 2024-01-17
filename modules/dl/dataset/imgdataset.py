@@ -47,7 +47,8 @@ class ImgDataset_v3(BaseObject, Dataset):
         
         self._set_src_root()
         self._set_dataset_param()
-        self.dyn_cropper = dynamic_crop(self.dataset_param["crop_size"])
+        self.crop_size = self.dataset_param["crop_size"]
+        self.dyn_cropper = dynamic_crop(self.crop_size)
         self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
         
         # ---------------------------------------------------------------------
