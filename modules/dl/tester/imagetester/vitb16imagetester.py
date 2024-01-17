@@ -1,15 +1,13 @@
 import torch
-from torch import nn
 import torchvision
+from torch import nn
 
+from ...dataset.imgdataset import ImgDataset_v3
 from .baseimagetester import BaseImageTester
-from ...dataset.imgdataset import ImgDataset
-from ....shared.clioutput import CLIOutput
 # -----------------------------------------------------------------------------/
 
 
 class VitB16ImageTester(BaseImageTester):
-
 
     def __init__(self, display_on_CLI=True) -> None:
         """
@@ -17,15 +15,16 @@ class VitB16ImageTester(BaseImageTester):
         # ---------------------------------------------------------------------
         # """ components """
         
-        super().__init__()
-        self._cli_out = CLIOutput(display_on_CLI, 
-                                  logger_name="Vit_B_16 Image Tester")
+        super().__init__(display_on_CLI)
+        self._cli_out._set_logger("Vit_B_16 Image Tester")
         
         # ---------------------------------------------------------------------
         # """ attributes """
         # TODO
+        # ---------------------------------------------------------------------
+        # """ actions """
+        # TODO
         # ---------------------------------------------------------------------/
-
 
 
     def _set_test_set(self):
@@ -33,12 +32,12 @@ class VitB16ImageTester(BaseImageTester):
         """
         resize: int = 224
         
-        self.test_set: ImgDataset = \
-            ImgDataset("test", self.test_df, self.class2num_dict,
-                       resize, self.use_hsv, transform=None,
-                       display_on_CLI=True)
+        self.test_set: ImgDataset_v3 = \
+            ImgDataset_v3("test", self.config, self.test_df,
+                          self.class2num_dict, resize,
+                          transform=None, dst_root=self.dst_root,
+                          display_on_CLI=True)
         # ---------------------------------------------------------------------/
-
 
 
     def _set_model(self):
@@ -63,11 +62,9 @@ class VitB16ImageTester(BaseImageTester):
         # ---------------------------------------------------------------------/
 
 
-
     def _set_loss_fn(self):
         """
         """
         self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
-        
         self.loss_fn.to(self.device)
         # ---------------------------------------------------------------------/
