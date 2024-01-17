@@ -24,7 +24,7 @@ class ImgDataset_v3(BaseObject, Dataset):
     def __init__(self, mode:str, config:Union[dict, TOMLDocument],
                  df:pd.DataFrame, class2num_dict:Dict[str, int], resize:int,
                  transform:Union[None, iaa.Sequential], dst_root:Path,
-                 display_on_CLI=True) -> None:
+                 debug_mode:bool, display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
@@ -43,12 +43,12 @@ class ImgDataset_v3(BaseObject, Dataset):
         self.resize = (resize, resize)
         self.transform: Union[None, iaa.Sequential] = transform
         self.dst_root: Path = dst_root.joinpath("debug", self.mode)
+        self.debug_mode: bool = debug_mode
         
         self._set_src_root()
         self._set_dataset_param()
         self.dyn_cropper = dynamic_crop(self.dataset_param["crop_size"])
         self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
-        self.debug_mode: bool = config["train_opts"]["debug_mode"]["enable"]
         
         # ---------------------------------------------------------------------
         # """ actions """
@@ -110,7 +110,7 @@ class ImgDataset_v3(BaseObject, Dataset):
         """ Augmentation image on the fly """
         darkratio: float = 0.0
         if self.mode == "test":
-            darkratio = self.df.iloc[index]["darkratio"]
+            darkratio = float(self.df.iloc[index]["darkratio"])
         else:
             img = self.dyn_cropper(image=img)
             

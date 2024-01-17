@@ -43,7 +43,7 @@ class VitB16Trainer(BaseTrainer):
             ImgDataset_v3("train", self.config, self.train_df,
                           self.class2num_dict, resize, 
                           transform=transform, dst_root=self.dst_root,
-                          display_on_CLI=True)
+                          debug_mode=self.debug_mode, display_on_CLI=True)
         # ---------------------------------------------------------------------/
 
 
@@ -56,7 +56,7 @@ class VitB16Trainer(BaseTrainer):
             ImgDataset_v3("valid", self.config, self.valid_df,
                           self.class2num_dict, resize, 
                           transform=None, dst_root=self.dst_root,
-                          display_on_CLI=True)
+                          debug_mode=self.debug_mode, display_on_CLI=True)
         # ---------------------------------------------------------------------/
 
 
