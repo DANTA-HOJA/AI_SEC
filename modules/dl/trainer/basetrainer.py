@@ -320,12 +320,12 @@ class BaseTrainer(BaseObject):
             - `self.time_stamp`: str
             - `self.dst_root`: Path
         """
-        model_library: Path = \
-            self._path_navigator.dbpp.get_one_of_dbpp_roots("model_library")
+        model_history: Path = \
+            self._path_navigator.dbpp.get_one_of_dbpp_roots("model_history")
         self.time_stamp: str = datetime.now().strftime('%Y%m%d_%H_%M_%S')
 
         self.dst_root: Path = \
-            model_library.joinpath(f"Training_{self.time_stamp}")
+            model_history.joinpath(f"Training_{self.time_stamp}")
         # ---------------------------------------------------------------------/
 
 
