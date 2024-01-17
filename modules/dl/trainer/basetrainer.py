@@ -429,7 +429,7 @@ class BaseTrainer(BaseObject):
         super().run(config)
         
         create_new_dir(self.dst_root)
-        dump_config(self.dst_root.joinpath("train_config.toml"), self.config) # save file
+        dump_config(self.dst_root.joinpath("training_config.toml"), self.config) # save file
         self._save_training_amount_file() # save file
         
         """ Create Timer """
@@ -532,6 +532,8 @@ class BaseTrainer(BaseObject):
                 self._cli_out.write(f"Less than One epoch has been completed, "
                                     f"remove directory '{self.dst_root}' ")
                 shutil.rmtree(self.dst_root)
+            
+            self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
 
