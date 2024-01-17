@@ -95,7 +95,7 @@ def calculate_metrics(log:Dict, average_loss:float,
     
     # deal with `class_f1` ( 很可能會缺其中一種 label, 例如: 'BG' )
     exist_labels = np.unique(predict_list + groundtruth_list) # np.unique 自帶 sorting
-    if exist_labels.dtype == np.dtype('<U1'): # ndarray 的 element 是 Unicode string
+    if np.issubdtype(exist_labels.dtype, np.unicode_): # ndarray 是否為 Unicode string
         tmp_dict = {class2num_dict[label]: f1 for label, f1 in zip(exist_labels, class_f1)}
     else:
         tmp_dict = {label: f1 for label, f1 in zip(exist_labels, class_f1)}
