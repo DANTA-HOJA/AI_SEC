@@ -156,8 +156,8 @@ class ImgDataset_v3(BaseObject, Dataset):
         
         # save image
         if self.mode != "test":
-            while True:
-                save_name = f"{fish_class}_{name}_aug_{str(uuid.uuid4().hex)[-8:]}.tiff"
+            while True: # using 'UUID Version 1 (Time-based)'
+                save_name = f"{fish_class}_{name}_aug_{str(uuid.uuid1().hex)[:8]}.tiff"
                 save_path = self.dst_root.joinpath(save_name)
                 if not save_path.exists():
                     break
