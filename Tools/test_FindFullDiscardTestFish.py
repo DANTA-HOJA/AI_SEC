@@ -22,9 +22,9 @@ from modules.shared.utils import get_coupled_config_name
 install()
 # -----------------------------------------------------------------------------/
 
-dataset_xlsx_path = load_config(get_coupled_config_name(__file__))["path"]
-print(f"\nDataset XLSX Path: '{dataset_xlsx_path}'\n")
-dataset_xlsx_df: pd.DataFrame = pd.read_excel(dataset_xlsx_path, engine='openpyxl')
+dataset_file = load_config(get_coupled_config_name(__file__))["path"]
+print(f"\nDataset File: '{dataset_file}'\n")
+dataset_xlsx_df: pd.DataFrame = pd.read_csv(dataset_file, encoding='utf_8_sig')
 
 # all test fish
 test_df = dataset_xlsx_df[(dataset_xlsx_df["dataset"] == "test")]
