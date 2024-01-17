@@ -17,13 +17,14 @@ import pandas as pd
 import torch
 from colorama import Back, Fore, Style
 from torch.cuda.amp import GradScaler, autocast
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from ...shared.baseobject import BaseObject
 from ...shared.config import dump_config
 from ...shared.timer import Timer
 from ...shared.utils import create_new_dir, formatter_padr0
+from ..dataset.imgdataset import ImgDataset_v3
 from ..utils import (calculate_metrics, gen_class2num_dict,
                      gen_class_counts_dict, set_gpu, test_read_image)
 from .utils import (calculate_class_weight, plot_training_trend,
@@ -333,7 +334,7 @@ class BaseTrainer(BaseObject):
     def _set_train_set(self): # abstract function
         """
         """
-        self.train_set: Dataset
+        self.train_set: ImgDataset_v3
         
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
@@ -343,7 +344,7 @@ class BaseTrainer(BaseObject):
     def _set_valid_set(self): # abstract function
         """
         """
-        self.valid_set: Dataset
+        self.valid_set: ImgDataset_v3
         
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")

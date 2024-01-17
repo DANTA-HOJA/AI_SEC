@@ -16,13 +16,14 @@ import torch
 from colorama import Back, Fore, Style
 from sklearn.metrics import classification_report
 from tomlkit.toml_document import TOMLDocument
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from ....assert_fn import assert_0_or_1_history_dir
 from ....shared.baseobject import BaseObject
 from ....shared.config import dump_config, load_config
 from ....shared.utils import formatter_padr0
+from ...dataset.imgdataset import ImgDataset_v3
 from ...trainer.utils import calculate_class_weight
 from ...utils import (calculate_metrics, gen_class2num_dict,
                       gen_class_counts_dict, set_gpu, test_read_image)
@@ -261,7 +262,7 @@ class BaseImageTester(BaseObject):
     def _set_test_set(self): # abstract function
         """
         """
-        self.test_set: Dataset
+        self.test_set: ImgDataset_v3
         
         raise NotImplementedError("This is a base image tester, \
             you should create a child class and replace this funtion")
@@ -312,7 +313,8 @@ class BaseImageTester(BaseObject):
         """ Testing """
         self._set_testing_attrs()
         self._cli_out.divide()
-        self.pbar_n_test = tqdm(total=len(self.test_dataloader), desc="Test ")
+        self.pbar_n_test = tqdm(total=len(self.test_dataloader),
+                                desc="Test (PredByImg) ")
         
         self._one_epoch_testing()
         
