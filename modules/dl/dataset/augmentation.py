@@ -10,7 +10,7 @@ def dynamic_crop(size:int) -> iaa.Sequential:
             iaa.Affine(rotate=(-25, 25)),
         ),
         iaa.CropToFixedSize(width=size, height=size),
-        # iaa.GammaContrast((0.5, 2.0)), # one line for ablation test
+        iaa.GammaContrast((0.5, 2.0)), # one line for ablation test
     ])
     
     return transform

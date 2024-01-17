@@ -4,9 +4,9 @@ note = "[v4.0]"
 [dataset]
   seed_dir = "RND2022"
   data = "{20231229_manualroi}_Academia_Sinica_i831"
-  palmskin_result = "33_RGB_m3d_HE"
+  palmskin_result = "28_RGB_m3d"
   classif_strategy = "KMeansORIG"
-  file_name = "DS_SURF3C_CRPS512_SF14_INT30_DRP55.csv"
+  file_name = "DS_SURF3C_CRPS512_SF14_INT15_DRP55.csv"
 
 # -----------------------------------------------------------------------------\
 [model]
@@ -49,5 +49,5 @@ note = "[v4.0]"
   use_amp = true # Automatic Mixed Precision
 
 [train_opts.cpu]
-  num_workers = 8
+  num_workers = 0
   # Warning: if `num_workers` != 0, may not use `debugpy` correctly in 'vscode jupyter extension'
