@@ -131,7 +131,7 @@ class BaseFishTester(BaseImageTester):
         super()._set_testing_attrs()
         
         self.fish_pred_dict: Dict[str, Counter] = {}
-        self.fish_gt_dict: Dict[str, str] = {}
+        self.fish_gt_dict: Dict[str, Counter] = {}
         self.image_predict_ans_dict: dict = {}
         # ---------------------------------------------------------------------/
 
@@ -187,7 +187,8 @@ class BaseFishTester(BaseImageTester):
             self.pbar_n_test.update(1)
             self.pbar_n_test.refresh()
 
-        for key, value in self.fish_pred_dict.items(): self.fish_pred_dict[key] = value.most_common(1)[0][0]
+        for key, cnt in self.fish_pred_dict.items(): self.fish_pred_dict[key] = cnt.most_common(1)[0][0]
+        for key, cnt in self.fish_gt_dict.items(): self.fish_gt_dict[key] = cnt.most_common(1)[0][0]
         self.pred_list_to_name = [ value for _, value in self.fish_pred_dict.items() ]
         self.gt_list_to_name = [ value for _, value in self.fish_gt_dict.items() ]        
         
@@ -209,7 +210,8 @@ class BaseFishTester(BaseImageTester):
         """ Update `self.fish_gt_dict` """
         fish_class: str = self.num2class_list[label]
         if fish_dsname not in self.fish_gt_dict:
-            self.fish_gt_dict[fish_dsname] = fish_class
+            self.fish_gt_dict[fish_dsname] = Counter() # init a Counter
+        self.fish_gt_dict[fish_dsname].update([fish_class])
         
         """ Update `self.fish_pred_dict` """
         img_pred_class: str = self.num2class_list[pred_hcls]
