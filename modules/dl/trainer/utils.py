@@ -88,8 +88,8 @@ def save_training_logs(save_dir:Path, train_logs:List[dict],
     concat_df = pd.concat([train_logs_df, valid_logs_df], axis=1)
     
     """ Save log """
-    path = save_dir.joinpath(r"{Logs}_training_log.xlsx")
-    concat_df.to_excel(path, engine="openpyxl")
+    path = save_dir.joinpath(r"{Logs}_training_log.csv")
+    concat_df.to_csv(path, encoding='utf_8_sig')
     
     """ best_val_log """
     path = save_dir.joinpath(r"{Logs}_best_valid.log")
