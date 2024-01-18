@@ -136,7 +136,6 @@ class DatasetFileCreator(BaseObject):
         """
         cluster_desc_split = self.cluster_desc.split("_") # ['SURF3C', 'KMeansORIG', 'RND2022']
         classif_strategy: str = "_".join(cluster_desc_split[1:-1]) # 'KMeansORIG'
-        create_new_dir(self.src_root.joinpath(classif_strategy))
         
         name_dict = gen_dataset_file_name_dict(self.config)
         dataset_file_name = "_".join(name_dict.values())
@@ -253,6 +252,7 @@ class DatasetFileCreator(BaseObject):
         """ Save `dataset_xlsx` """
         self._cli_out.divide()
         self._cli_out.write("Saving `dataset_file`... ")
+        create_new_dir(os.path.split(self.dataset_file)[0])
         dataset_df.to_csv(self.dataset_file, encoding='utf_8_sig', index=False)
         self._cli_out.write(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
         self._cli_out.new_line()

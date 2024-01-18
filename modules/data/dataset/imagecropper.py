@@ -124,10 +124,6 @@ class ImageCropper(BaseObject):
             dataset_cropped.joinpath(self.cluster_desc.split("_")[-1],
                                      self._processed_di.instance_name,
                                      os.path.splitext(self.palmskin_result_name)[0])
-        
-        create_new_dir(self.dst_root.joinpath("test"))
-        create_new_dir(self.dst_root.joinpath("train"))
-        create_new_dir(self.dst_root.joinpath("valid"))
         # ---------------------------------------------------------------------/
 
 
@@ -138,6 +134,11 @@ class ImageCropper(BaseObject):
             config (Union[str, Path]): a toml file.
         """
         super().run(config)
+        
+        # create necessary dir
+        create_new_dir(self.dst_root.joinpath("test"))
+        create_new_dir(self.dst_root.joinpath("train"))
+        create_new_dir(self.dst_root.joinpath("valid"))
         
         # checking
         self._check_if_any_crop_dir_exists()

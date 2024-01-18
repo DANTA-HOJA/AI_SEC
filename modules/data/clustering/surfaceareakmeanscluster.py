@@ -131,7 +131,6 @@ class SurfaceAreaKMeansCluster(BaseObject):
         
         desc: str = gen_clustered_desc()
         self.dst_root = self._processed_di.instance_root.joinpath("Clustered_File", desc)
-        create_new_dir(self.dst_root)
         
         self.clustered_file: Path = self.dst_root.joinpath(f"{{{desc}}}_datasplit.csv")
         # ---------------------------------------------------------------------/
@@ -173,6 +172,8 @@ class SurfaceAreaKMeansCluster(BaseObject):
             config (Union[str, Path]): a toml file.
         """
         super().run(config)
+        
+        create_new_dir(self.dst_root)
         self._run_kmeans()
         self._set_cidx_max_area_dict()
         self._set_cidx2clabel()
