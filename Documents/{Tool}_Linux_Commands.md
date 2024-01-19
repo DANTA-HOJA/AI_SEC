@@ -1,9 +1,23 @@
-# SSH Useful Commands / Tools
+# Linux Useful Commands / Tools
 
-## feh (image viewer)
+## General
+
+### tar (pack files)
+
+- Note: 若給定 `abs_path` 打包後的檔案內也會有 `abs_path` 上所有的資料夾
 
 ```shell
-feh --recursive --auto-zoom --scale-down --geometry 800x600 /path/to/your/directory
+# copy file ( 特殊用法，功能同 `cp` ，可顯示傳輸速度 )
+
+tar -cf - [/src] | pv | tar -xf - -C [/dst]
+```
+
+## SSH
+
+### feh (image viewer, X11 forwarding)
+
+```shell
+feh --recursive --auto-zoom --scale-down --geometry 800x600 [/path/to/your/directory]
 ```
 
 ```text
@@ -27,12 +41,12 @@ PS. 右鍵可以開啟 menu 有些功能可以從 menu 設定
 --------------------------------------------------------------------------------
 ```
 
-## pqiv (image viewer)
+### pqiv (image viewer, X11 forwarding)
 
 - 相較於 feh 有自動刷新資料夾的功能
 
 ```shell
-pqiv -z 0.15 --watch-directories -P off /path/to/your/directory
+pqiv -z 0.15 --watch-directories -P off [/path/to/your/directory]
 ```
 
 ``` text
@@ -53,7 +67,7 @@ pqiv -z 0.15 --watch-directories -P off /path/to/your/directory
 --------------------------------------------------------------------------------
 ```
 
-## tmux (keep section)
+### tmux (keep termianl section)
 
 - `<prefix>` (default)
 
