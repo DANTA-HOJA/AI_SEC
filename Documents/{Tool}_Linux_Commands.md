@@ -14,6 +14,18 @@ tar -cf - [/src] | pv | tar -xf - -C [/dst]
 
 ## SSH
 
+### spacefm (file manager, X11 forwarding)
+
+- 可以開多個 pannel，右鍵選單功能較多
+
+### pcmanfm (file manager, X11 forwarding)
+
+- 照片有縮圖
+
+### geeqie (image viewer, X11 forwarding)
+
+- 不支援 recursive search，但有 GUI 可用
+
 ### feh (image viewer, X11 forwarding)
 
 ```shell
