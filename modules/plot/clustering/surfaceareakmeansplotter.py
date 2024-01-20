@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
-import matplotlib; matplotlib.use("agg")
+import matplotlib
 import matplotlib.cm as cm
 import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt

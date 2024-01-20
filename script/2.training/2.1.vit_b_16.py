@@ -8,6 +8,8 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 from modules.dl.trainer.vitb16trainer import VitB16Trainer
 from modules.shared.config import get_batch_config, get_batch_config_arg
 from modules.shared.utils import exclude_tmp_paths, get_repo_root
+
+import matplotlib; matplotlib.use("agg")
 # -----------------------------------------------------------------------------/
 
 """ Detect Repository """

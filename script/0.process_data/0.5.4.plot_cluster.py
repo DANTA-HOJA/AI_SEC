@@ -7,6 +7,8 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.plot.clustering.surfaceareakmeansplotter import SurfaceAreaKMeansPlotter
 from modules.shared.utils import get_repo_root
+
+import matplotlib; matplotlib.use("agg")
 # -----------------------------------------------------------------------------/
 
 """ Detect Repository """
