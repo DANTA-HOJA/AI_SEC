@@ -10,7 +10,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
-import matplotlib; matplotlib.use("agg")
 import imgaug as ia
 import numpy as np
 import pandas as pd
@@ -26,7 +25,7 @@ from ...shared.timer import Timer
 from ...shared.utils import create_new_dir, formatter_padr0
 from ..dataset.imgdataset import ImgDataset_v3
 from ..utils import (calculate_metrics, gen_class2num_dict,
-                     gen_class_counts_dict, set_gpu, test_read_image)
+                     gen_class_counts_dict, set_gpu)
 from .utils import (calculate_class_weight, plot_training_trend,
                     rename_training_dir, save_model, save_training_logs)
 # -----------------------------------------------------------------------------/
@@ -199,10 +198,6 @@ class BaseTrainer(BaseObject):
         
         self.dataset_df: pd.DataFrame = \
             pd.read_csv(dataset_file, encoding='utf_8_sig')
-        
-        if matplotlib.is_interactive():
-            test_img = src_root.joinpath(self.dataset_df.iloc[-1]["path"])
-            test_read_image(test_img, self._cli_out)
         # ---------------------------------------------------------------------/
 
 

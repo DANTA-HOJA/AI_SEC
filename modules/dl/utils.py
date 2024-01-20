@@ -8,7 +8,6 @@ import torch
 from sklearn.metrics import f1_score
 
 from ..assert_fn import *
-from ..plot.utils import plot_in_rgb
 from ..shared.clioutput import CLIOutput
 # -----------------------------------------------------------------------------/
 
@@ -110,15 +109,4 @@ def calculate_metrics(log:Dict, average_loss:float,
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
     log["maweavg_f1"] = round(maweavg_f1, 5)
-    # -------------------------------------------------------------------------/
-
-
-
-def test_read_image(path: Path, cli_out:CLIOutput=None):
-    """
-    """
-    assert_file_exists(path)
-    if cli_out: cli_out.write(f"Read Test: '{path}'")
-    
-    plot_in_rgb(str(path), (512, 512))
     # -------------------------------------------------------------------------/
