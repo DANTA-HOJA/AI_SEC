@@ -1,19 +1,16 @@
-import os
-from pathlib import Path
-from typing import List, Tuple, Optional # Optional[] = Union[ , None]
-import platform
 import io
+import os
+import platform
 import tempfile
 from copy import deepcopy
+from pathlib import Path
+from typing import List, Optional, Tuple  # Optional[] = Union[ , None]
 
-import numpy as np
 import cv2
-from PIL import Image, ImageDraw, ImageFont
-
-from matplotlib import figure
-from matplotlib import font_manager
 import matplotlib.pyplot as plt
-
+import numpy as np
+from matplotlib import figure, font_manager
+from PIL import Image, ImageDraw, ImageFont
 from pytorch_grad_cam.utils.image import show_cam_on_image
 # -----------------------------------------------------------------------------/
 
