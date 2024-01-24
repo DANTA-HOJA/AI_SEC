@@ -285,14 +285,14 @@ class CamGalleryCreator(BaseObject):
                               key=dsname.get_dsname_sortinfo)
         
         self._cli_out.divide()
-        self.progressbar = tqdm(total=len(fish_dsnames), desc=f"[ {self._cli_out.logger_name} ] : ")
+        self._progressbar = tqdm(total=len(fish_dsnames), desc=f"[ {self._cli_out.logger_name} ] : ")
         
         for fish_dsname in fish_dsnames:
-            self.progressbar.desc = f"[ {self._cli_out.logger_name} ] Generating '{fish_dsname}' "
-            self.progressbar.refresh()
+            self._progressbar.desc = f"[ {self._cli_out.logger_name} ] Generating '{fish_dsname}' "
+            self._progressbar.refresh()
             self.gen_single_cam_gallery(fish_dsname)
         
-        self.progressbar.close()
+        self._progressbar.close()
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
@@ -342,8 +342,8 @@ class CamGalleryCreator(BaseObject):
         self._gen_overlay_gallery(fish_dsname, fish_cls)
         
         # >>> update pbar <<<
-        self.progressbar.update(1)
-        self.progressbar.refresh()
+        self._progressbar.update(1)
+        self._progressbar.refresh()
         # ---------------------------------------------------------------------/
 
 
