@@ -25,7 +25,7 @@ def get_dsname_sortinfo(string_with_fish_dsname:Union[str, Path]) -> tuple:
         """ fish_228_A_D  -->  ['fish', '228', 'A', 'D'] """
         return int(fish_dsname_split[1]), fish_dsname_split[2], fish_dsname_split[3]
     elif len(fish_dsname_split) == 5:
-        """ fish_228_A_D  -->  ['fish', '13', 'A', 'crop', '00'] """
+        """ fish_228_A_crop_0  -->  ['fish', '13', 'A', 'crop', '00'] """
         return int(fish_dsname_split[1]), fish_dsname_split[2], int(fish_dsname_split[4])
     elif len(fish_dsname_split) == 6:
         """ fish_228_A_D_crop_0  -->  ['fish', '228', 'A', 'D', 'crop', '00'] """
