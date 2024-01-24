@@ -386,7 +386,16 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
     else: text_color = incorrect_color
     
     # calculate text position
-    text_width, text_height = draw.textsize(gt_text, font=font)
+    pred_text_width, pred_text_height = draw.textsize(pred_text, font=font)
+    gt_text_width, gt_text_height = draw.textsize(gt_text, font=font)
+    if pred_text_height == gt_text_height: text_height = gt_text_height
+    
+    # determine max width
+    if pred_text_width > gt_text_width:
+        text_width = pred_text_width
+    else:
+        text_width = gt_text_width
+    
     gt_w = rgb_image.width - text_width - rgb_image.width*0.05
     gt_h = rgb_image.height  - text_height - rgb_image.height*0.05
     gt_pos = [gt_w, gt_h]
