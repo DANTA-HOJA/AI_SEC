@@ -122,13 +122,13 @@ def get_matplotlib_default_font():
 
 def get_mono_font():
     """ Windows: "consola.ttf"
-        Linux: "UbuntuMono-R.ttf"
+        Linux: "DejaVuSansMono.ttf"
     """
     platform_name = platform.system()
     if platform_name == "Windows":
         return "consola.ttf"
     elif platform_name == "Linux":
-        return "UbuntuMono-R.ttf"
+        return "DejaVuSansMono.ttf"
     else:
         raise NotImplementedError("Please assign a mono font on your system")
     # -------------------------------------------------------------------------/
