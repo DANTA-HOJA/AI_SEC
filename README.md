@@ -4,9 +4,20 @@ MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Post
 
 ## Package Dependencies
 
-```
+```text
 numpy = 1.23.0
 pytorch = 1.13.1 + cu116
+```
+
+## Installation Test (20240122)
+
+```shell
+mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
+pip install -U scikit-image scikit-learn colorama toml tomlkit matplotlib tqdm rich
+mamba install pandas pyimagej openjdk=8 imgaug
+pip install -U albumentations
+pip install grad-cam-1.4.8
+mamba install numpy=1.23.0
 ```
 
 ## Data Information ( *temporarily halt updates* )
