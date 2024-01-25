@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 import sys
 from collections import Counter, OrderedDict
 from copy import deepcopy
@@ -283,6 +284,7 @@ class CamGalleryCreator(BaseObject):
         
         fish_dsnames = sorted(Counter(self.test_df["parent (dsname)"]).keys(),
                               key=dsname.get_dsname_sortinfo)
+        # fish_dsnames = fish_dsnames[:5] # for debug
         
         self._cli_out.divide()
         self._progressbar = tqdm(total=len(fish_dsnames), desc=f"[ {self._cli_out.logger_name} ] : ")
@@ -293,6 +295,7 @@ class CamGalleryCreator(BaseObject):
             self.gen_single_cam_gallery(fish_dsname)
         
         self._progressbar.close()
+        self._del_empty_rank_dirs()
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
@@ -544,4 +547,18 @@ class CamGalleryCreator(BaseObject):
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
+        # ---------------------------------------------------------------------/
+
+
+    def _del_empty_rank_dirs(self):
+        """
+        """
+        num2class_list = sorted(Counter(self.test_df["class"]).keys())
+        
+        for key in num2class_list:
+            for _, value in self.rank_dict.items():
+                rank_dir = self.cam_gallery_dir.joinpath(key, value)
+                pngs = list(rank_dir.glob("**/*.png"))
+                if len(pngs) == 0:
+                    shutil.rmtree(rank_dir)
         # ---------------------------------------------------------------------/
