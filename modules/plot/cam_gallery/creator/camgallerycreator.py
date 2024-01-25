@@ -329,7 +329,8 @@ class CamGalleryCreator(BaseObject):
         # >>> draw on `cam` images <<<
         
         self.correct_cnt: int = 0
-        for (cam_name, cam_img), (preserve_name, preserve_bgr_img) in zip(self.cam_result_img_dict.items(), self.test_preserve_img_dict.items()):
+        for (cam_name, cam_img), (preserve_name, preserve_bgr_img) \
+            in zip(self.cam_result_img_dict.items(), self.test_preserve_img_dict.items()):
             self._draw_on_cam_image(cam_name, cam_img, preserve_name, preserve_bgr_img)
         
         # >>> check which `rank_dir` to store <<<
@@ -353,7 +354,7 @@ class CamGalleryCreator(BaseObject):
         df = self.test_df[(self.test_df["parent (dsname)"] == fish_dsname)]
         
         cnt = Counter(df["class"])
-        fish_cls = list(cnt.keys())[0]
+        fish_cls = cnt.most_common(1)[0][0]
         
         return fish_cls
         # ---------------------------------------------------------------------/
@@ -499,13 +500,19 @@ class CamGalleryCreator(BaseObject):
         sorted_orig_img_dict = OrderedDict(sorted(list(orig_img_dict.items()), key=lambda x: dsname.get_dsname_sortinfo(x[0])))
         orig_img_list = [ img for _, img in sorted_orig_img_dict.items() ]
         
-        # plot with 'Auto Row Calculation'
+        # >>> plot with 'Auto Row Calculation' <<<
+        
+        figtitle = (f"( original ) [{fish_cls}] {fish_dsname} : "
+                    f"{self.dataset_palmskin_result}, "
+                    f"{os.path.splitext(self.dataset_file_name)[0]}")
+        save_path = self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, 
+                                                  f"{fish_dsname}_orig.png")
         kwargs_plot_with_imglist_auto_row = {
             "img_list"   : orig_img_list,
             "column"     : self.column,
             "fig_dpi"    : 200,
-            "figtitle"   : f"( original ) {fish_dsname} : {orig_img_list[-1].shape[:2]}",
-            "save_path"  : self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, f"{fish_dsname}_orig.png"),
+            "figtitle"   : figtitle,
+            "save_path"  : save_path,
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
@@ -520,14 +527,20 @@ class CamGalleryCreator(BaseObject):
         sorted_cam_overlay_img_dict = OrderedDict(sorted(list(cam_overlay_img_dict.items()), key=lambda x: dsname.get_dsname_sortinfo(x[0])))
         cam_overlay_img_list = [ img for _, img in sorted_cam_overlay_img_dict.items() ]
         
-        # plot with 'Auto Row Calculation'
+        # >>> plot with 'Auto Row Calculation' <<<
+        
+        figtitle = (f"( cam overlay ) [{fish_cls}] {fish_dsname} : "
+                    f"{self.dataset_palmskin_result}, "
+                    f"{os.path.splitext(self.dataset_file_name)[0]}, "
+                    f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} ({self.matching_ratio_percent/100})")
+        save_path = self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, 
+                                                  f"{fish_dsname}_overlay.png")
         kwargs_plot_with_imglist_auto_row = {
             "img_list"   : cam_overlay_img_list,
             "column"     : self.column,
             "fig_dpi"    : 200,
-            "figtitle"   : (f"( cam overlay ) {fish_dsname} : {cam_overlay_img_list[-1].shape[:2]}, "
-                            f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} ({self.matching_ratio_percent/100})") ,
-            "save_path"  : self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, f"{fish_dsname}_overlay.png"),
+            "figtitle"   : figtitle,
+            "save_path"  : save_path,
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
