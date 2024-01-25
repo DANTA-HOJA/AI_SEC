@@ -143,7 +143,7 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
     """ Show images in gallery way
 
     Args:
-        img_list (List[np.ndarray]): a list contain several images, channel_order = BGR (default of 'cv2.imread()')
+        img_list (List[np.ndarray]): a list contain several images, channel_order = `BGR` (default of 'cv2.imread()')
         row (int): number of rows of gallery.
         column (int): number of columns of gallery.
         fig_dpi (int): argumnet of matplotlib figure.
@@ -212,7 +212,7 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
 
 def plot_with_imglist_auto_row(img_list:List[np.ndarray], column:int, fig_dpi:int,
                                figtitle:str, subtitle_list:Optional[List[str]]=None,
-                               font_style:Optional[str]=None,
+                               font_style:Optional[str]=None, add_rc_in_title:bool=False,
                                save_path:Optional[Path]=None, use_rgb:bool=False,
                                show_fig:bool=True, verbose:bool=False):
     """
@@ -235,7 +235,10 @@ def plot_with_imglist_auto_row(img_list:List[np.ndarray], column:int, fig_dpi:in
     
     auto_row = int(len(img_list)/column)
     input_args["row"] = auto_row
-    input_args["figtitle"] = " , ".join([input_args["figtitle"], f"( row, column ) = ( {auto_row}, {column} )"])
+    
+    if add_rc_in_title is True:
+        input_args["figtitle"] += f" , ( row, column ) = ( {auto_row}, {column} )"
+    input_args.pop("add_rc_in_title")
     
     # plot
     plot_with_imglist(**input_args)
