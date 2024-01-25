@@ -1,74 +1,74 @@
 import os
-import sys
 import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
+import sys
 import threading
+from pathlib import Path
 from threading import Lock
+from typing import Dict, List, Tuple, Union
 
 from colorama import Fore, Style
 from tqdm.auto import tqdm
 
 from .camgallerycreator import CamGalleryCreator
-from ....shared.clioutput import CLIOutput
-from ....shared.pathnavigator import PathNavigator
 # -----------------------------------------------------------------------------/
 
 
 class MtCamGalleryCreator(CamGalleryCreator):
 
-
-    def __init__(self, max_str_len_dict:int, lock:Lock,
+    def __init__(self, max_str_len_dict:Dict[str, int], lock:Lock,
                  progressbar:tqdm, display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
-        self.lock: Lock = lock
-        self.progressbar: tqdm = progressbar
+        super(CamGalleryCreator, self).__init__(display_on_CLI)
+        self._cli_out._set_logger("Mt Cam Gallery Creator")
         
-        with self.lock:
-            self._path_navigator = PathNavigator()
-        
-        self._cli_out = CLIOutput(display_on_CLI, 
-                                  logger_name="Mt Cam Gallery Creator")
+        self._lock: Lock = lock
+        self._progressbar: tqdm = progressbar
         
         # ---------------------------------------------------------------------
         # """ attributes """
         
         self.max_str_len_dict: Dict[str, int] = max_str_len_dict
-        with self.lock:
-            if len(threading.current_thread().name) > self.max_str_len_dict["thread_name"]:
-                self.max_str_len_dict["thread_name"] = len(threading.current_thread().name)
+        
+        # ---------------------------------------------------------------------
+        # """ actions """
+        
+        if len(threading.current_thread().name) > self.max_str_len_dict["thread_name"]:
+            self.max_str_len_dict["thread_name"] = \
+                                        len(threading.current_thread().name)
         # ---------------------------------------------------------------------/
 
 
+    def mt_run(self, sub_fish_dsnames:List[str], config:Union[str, Path]):
+        """
 
-    def mt_run(self, sub_fish_dsname_list:List[str],
-               config_file:Union[str, Path]="4.make_cam_gallery.toml"):
+        Args:
+            sub_fish_dsname_list (List[str]):
+                a subset of all test dsname, assign by `MtCamGalleryExecutor`
+            config (Union[str, Path]): a toml file.
         """
-        """
-        with self.lock:
-            self._set_attrs(config_file)
-            self.create_rank_dirs()
+        with self._lock: # initial 時會有很多東西動到 File I/O，所以要上鎖
+            self._set_attrs(config)
+            self._create_rank_dirs()
             self._cli_out.write(f"{Fore.MAGENTA}{threading.current_thread().name} "
                                 f"{Fore.BLUE}{threading.current_thread().native_id} "
                                 f"{Fore.GREEN}initial{Style.RESET_ALL} completed")
             self._cli_out.write(f"{self}\n")
         
         
-        for fish_dsname in sub_fish_dsname_list:
-            self.progressbar.desc = (f"Generate {Fore.YELLOW}'{fish_dsname:{self.max_str_len_dict['fish_dsname']}}'{Style.RESET_ALL} "
-                                     f"( {Fore.MAGENTA}{threading.current_thread().name:{self.max_str_len_dict['thread_name']}}{Style.RESET_ALL} ) ")
-            self.progressbar.refresh()
+        for fish_dsname in sub_fish_dsnames:
+            self._progressbar.desc = (f"Generate {Fore.YELLOW}'{fish_dsname:{self.max_str_len_dict['fish_dsname']}}'{Style.RESET_ALL} "
+                                      f"( {Fore.MAGENTA}{threading.current_thread().name:{self.max_str_len_dict['thread_name']}}{Style.RESET_ALL} ) ")
+            self._progressbar.refresh()
             self.gen_single_cam_gallery(fish_dsname)
         # ---------------------------------------------------------------------/
-
 
 
     def _set_cam_gallery_dir(self):
         """ 移除資料夾檢查，改從 `MtCamGalleryExecutor` 檢查
         """
-        self.cam_gallery_dir = self.history_dir.joinpath("!--- CAM Gallery")
+        self.cam_gallery_dir = self.history_dir.joinpath("+---CAM_Gallery")
         # ---------------------------------------------------------------------/
