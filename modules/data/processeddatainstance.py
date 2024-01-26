@@ -415,7 +415,9 @@ class ProcessedDataInstance(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def get_sorted_results_dict(self, image_type:str, result_name:str) -> Tuple[Union[None, str], Dict[str, Path]]:
+    def get_sorted_results_dict(self, image_type:str,
+                                result_name:str,
+                                allow_glob_dir:bool=False) -> Tuple[Union[None, str], Dict[str, Path]]:
         """
 
         Args:
@@ -428,7 +430,8 @@ class ProcessedDataInstance(BaseObject):
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
-        if os.path.splitext(result_name)[1] == "":
+        if (os.path.splitext(result_name)[1] == "") and \
+            (allow_glob_dir is False):
             raise ValueError(f"`{result_name}` should be a file name with extension")
         
         # # """ Assign `target_text` """
@@ -520,7 +523,7 @@ class ProcessedDataInstance(BaseObject):
         """ Scan results """
         rel_path, sorted_results_dict = self.get_sorted_results_dict(image_type, result_name)
         sorted_results = list(sorted_results_dict.values())
-        assert rel_path is not None, "Can't find any result file, `result_name` should be a FULL_NAME (with file extension)"
+        assert rel_path is not None, f"Can't find any '{result_name}'"
         
         """ Get `recollect_dir` """
         if image_type == "palmskin": target_text = "PalmSkin"
