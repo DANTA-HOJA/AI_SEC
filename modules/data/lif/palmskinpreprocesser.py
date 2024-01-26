@@ -210,7 +210,7 @@ class PalmskinPreprocesser(BaseObject):
             """ Set `dst_root`, `metaimg_dir` """
             # dst_root
             if "del" in image_name_list[-1].lower(): # ( image name 尾有 delete 代表該照片品質不佳 )
-                self.dst_root = self.palmskin_processed_dir.joinpath("!~delete", comb_name)
+                self.dst_root = self.palmskin_processed_dir.joinpath("+---delete", comb_name)
             else:
                 self.dst_root = self.palmskin_processed_dir.joinpath(comb_name)
             assert_dir_not_exists(self.dst_root) # 已存在會直接 ERROR，防止誤寫其他二次分析結果
