@@ -2,7 +2,7 @@ import json
 import os
 import re
 import sys
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
@@ -194,7 +194,7 @@ class ProcessedDataInstance(BaseObject):
         dname_dirs_dict = {os.path.split(dname_dir)[-1]: dname_dir 
                                                      for dname_dir in dname_dirs}
         
-        # 使用 exclude_paths() 進行 rm dir (20240126, 測試OK, 穩定後可刪除)
+        # 使用 exclude_paths() 進行 rm dir (20240126, 測試OK, 下方舊版穩定後可刪除)
         
         # for key in list(dname_dirs_dict.keys()):
         #     if key == "+---delete": dname_dirs_dict.pop(key) # rm "+---delete" directory
@@ -428,33 +428,65 @@ class ProcessedDataInstance(BaseObject):
         if image_type not in ["palmskin", "brightfield"]:
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
-        """ Assign `target_text` """
-        if image_type == "palmskin":
-            target_text = "PalmSkin_preprocess"
-        elif image_type == "brightfield":
-            target_text = "BrightField_analyze"
+        if os.path.splitext(result_name)[1] == "":
+            raise ValueError(f"`{result_name}` should be a file name with extension")
         
-        # sorted_results
-        processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
-        found_list = list(processed_dir.glob(f"**/{result_name}"))
-        found_list = exclude_paths(found_list, ["+---delete"])
-        sorted_results = sorted(found_list, key=dname.get_dname_sortinfo)
+        # # """ Assign `target_text` """
+        # if image_type == "palmskin":
+        #     target_text = "PalmSkin_preprocess"
+        # elif image_type == "brightfield":
+        #     target_text = "BrightField_analyze"
         
-        # rel_path
-        if len(sorted_results) > 0:
-            path = sorted_results[0]
-            rel_path_with_dname = path.relative_to(processed_dir)
-            rel_path = os.sep.join(str(rel_path_with_dname).split(os.sep)[1:])
-        else:
-            rel_path = None
+        # # sorted_results
+        # processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
+        # found_list = list(processed_dir.glob(f"**/{result_name}"))
+        # found_list = exclude_paths(found_list, ["+---delete"])
+        # sorted_results = sorted(found_list, key=dname.get_dname_sortinfo)
+
+        # # rel_path
+        # if len(sorted_results) > 0:
+        #     path = sorted_results[0]
+        #     rel_path_with_dname = path.relative_to(processed_dir)
+        #     rel_path = os.sep.join(str(rel_path_with_dname).split(os.sep)[1:])
+        # else:
+        #     rel_path = None
         
-        # sorted_results_dict
-        sorted_results_dict:Dict[str, Path] = {}
-        for path in sorted_results:
-            path_split = str(path).split(os.sep)
-            target_idx = get_target_str_idx_in_list(path_split, f"_{target_text}")
-            palmskin_dname = path_split[target_idx+1]
-            sorted_results_dict[palmskin_dname] = path
+        # # sorted_results_dict
+        # sorted_results_dict:Dict[str, Path] = {}
+        # for path in sorted_results:
+        #     path_split = str(path).split(os.sep)
+        #     target_idx = get_target_str_idx_in_list(path_split, f"_{target_text}")
+        #     palmskin_dname = path_split[target_idx+1]
+        #     sorted_results_dict[palmskin_dname] = path
+        
+        # new context (20240127, 測試OK, 上方舊版穩定後可刪除)
+        
+        sorted_results_dict: Dict[str, Path] = {}
+        rel_path_cnt: Counter[str]  = Counter([None])
+        
+        dname_dirs_dict: dict[str, Path] = getattr(self, f"{image_type}_processed_dname_dirs_dict")
+        for enum, (key, dname_dir) in enumerate(dname_dirs_dict.items()):
+            file_list = list(dname_dir.glob(f"**/{result_name}"))
+            if len(file_list) == 0:
+                pass
+            elif len(file_list) == 1:
+                
+                # >>> sorted_results_dict <<<
+                path = file_list[0]
+                sorted_results_dict[key] = path
+                
+                # >>> rel_path <<<
+                cru_rel_path = str(path.relative_to(dname_dir))
+                rel_path_cnt.update([cru_rel_path])
+                com_rel_path = rel_path_cnt.most_common(1)[0][0]
+                if (cru_rel_path != com_rel_path) and (enum != 0):
+                    raise ValueError(f"Detect different relative path: '{key}'")
+                
+            else:
+                raise ValueError(f"'{dname_dir.parts[-1]}' "
+                                 f"detect {len(file_list)} '{result_name}'")
+        
+        rel_path = rel_path_cnt.most_common(1)[0][0]
         
         return rel_path, sorted_results_dict
         # ---------------------------------------------------------------------/
