@@ -4,7 +4,8 @@
 
 # -----------------------------------------------------------------------------\
 [copy_info]
-  filenames = [
+  image_type = "brightfield" # 'palmskin' or 'brightfield'
+  result_name = [
     "Manual_measured_mask.tif",
     "ManualAnalysis.csv",
     "Manual_cropped_BF--MIX.tif",
@@ -12,3 +13,5 @@
     "UNetAnalysis.csv",
     "UNet_cropped_BF--MIX.tif"
   ]
+  # Note: if `result_name` is a directory,
+  #         will copy a directory tree.
