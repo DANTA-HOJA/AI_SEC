@@ -92,7 +92,13 @@ class BrightfieldUNetAreaMeter(BaseObject):
     def _single_unet_area_measurement(self, dname_dir:Path):
         """
         """
-        mask_file = dname_dir.joinpath("UNet_predict_mask.tif")
+        found_list = list(dname_dir.glob("**/UNet_predict_mask.tif"))
+        if len(found_list) == 1:
+            mask_file = found_list[0]
+        else:
+            raise ValueError(f"'{dname_dir.parts[-1]}' "
+                             f"detect {len(found_list)} 'UNet_predict_mask.tif', "
+                             "one file accept only")
         
         img = self._zfij.ij.IJ.openImage(str(mask_file))
         img.hide()
