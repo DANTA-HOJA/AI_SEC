@@ -466,13 +466,13 @@ class ProcessedDataInstance(BaseObject):
         
         dname_dirs_dict: dict[str, Path] = getattr(self, f"{image_type}_processed_dname_dirs_dict")
         for enum, (key, dname_dir) in enumerate(dname_dirs_dict.items()):
-            file_list = list(dname_dir.glob(f"**/{result_name}"))
-            if len(file_list) == 0:
+            found_list = list(dname_dir.glob(f"**/{result_name}"))
+            if len(found_list) == 0:
                 pass
-            elif len(file_list) == 1:
+            elif len(found_list) == 1:
                 
                 # >>> sorted_results_dict <<<
-                path = file_list[0]
+                path = found_list[0]
                 sorted_results_dict[key] = path
                 
                 # >>> rel_path <<<
@@ -484,7 +484,7 @@ class ProcessedDataInstance(BaseObject):
                 
             else:
                 raise ValueError(f"'{dname_dir.parts[-1]}' "
-                                 f"detect {len(file_list)} '{result_name}'")
+                                 f"detect {len(found_list)} '{result_name}'")
         
         rel_path = rel_path_cnt.most_common(1)[0][0]
         
