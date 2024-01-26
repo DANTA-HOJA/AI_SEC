@@ -50,10 +50,11 @@ def get_dname_sortinfo(string_with_fish_dname:Union[str, Path]) -> Tuple[int, st
     else:
         raise TypeError("unrecognized type of `string_with_fish_dname`. Only `pathlib.Path` or `str` are accepted.")
     
-    fish_name = fish_name.split(".")[0]
+    fish_name = os.path.splitext(fish_name)[0]
     fish_name_split = re.split(" |_|-", fish_name)
-    if "BF" in fish_name: assert len(fish_name_split) == 10, f"len(fish_name_list) = '{len(fish_name_split)}', expect '10' "
-    if "RGB" in fish_name: assert len(fish_name_split) == 11, f"len(fish_name_list) = '{len(fish_name_split)}', expect '11' "
+    if fish_name_split[-1] == "BF": assert len(fish_name_split) == 10, f"len(fish_name_list) = '{len(fish_name_split)}', expect '10' "
+    elif fish_name_split[-1] == "RGB": assert len(fish_name_split) == 11, f"len(fish_name_list) = '{len(fish_name_split)}', expect '11' "
+    else: raise ValueError("Can't not recognize `dname` in given input")
     
     return int(fish_name_split[8]), fish_name_split[9]
     # -------------------------------------------------------------------------/
