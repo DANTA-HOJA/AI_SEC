@@ -187,17 +187,21 @@ class ProcessedDataInstance(BaseObject):
             raise ValueError(f"image_type: '{image_type}', accept 'palmskin' or 'brightfield' only\n")
         
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
-        dname_dirs = processed_dir.glob("*")
+        dname_dirs = list(processed_dir.glob("*"))
+        dname_dirs = exclude_paths(dname_dirs, ["+---delete", ".log", ".toml"])
+        dname_dirs = sorted(dname_dirs, key=dname.get_dname_sortinfo)
         
-        dname_dirs_dict = {str(dname_dir).split(os.sep)[-1]: dname_dir
-                                                         for dname_dir in dname_dirs}
+        dname_dirs_dict = {os.path.split(dname_dir)[-1]: dname_dir 
+                                                     for dname_dir in dname_dirs}
         
-        for key in list(dname_dirs_dict.keys()):
-            if key == "!~delete": dname_dirs_dict.pop(key) # rm "!~delete" directory
-            if ".log" in key: dname_dirs_dict.pop(key) # rm "log" files
-            if ".toml" in key: dname_dirs_dict.pop(key) # rm "toml" file
+        # 使用 exclude_paths() 進行 rm dir (20240126, 測試OK, 穩定後可刪除)
         
-        dname_dirs_dict = OrderedDict(sorted(list(dname_dirs_dict.items()), key=lambda x: dname.get_dname_sortinfo(x[0])))
+        # for key in list(dname_dirs_dict.keys()):
+        #     if key == "+---delete": dname_dirs_dict.pop(key) # rm "+---delete" directory
+        #     if ".log" in key: dname_dirs_dict.pop(key) # rm "log" files
+        #     if ".toml" in key: dname_dirs_dict.pop(key) # rm "toml" file
+        
+        # dname_dirs_dict = OrderedDict(sorted(list(dname_dirs_dict.items()), key=lambda x: dname.get_dname_sortinfo(x[0])))
         
         return dname_dirs_dict
         # ---------------------------------------------------------------------/
@@ -433,7 +437,7 @@ class ProcessedDataInstance(BaseObject):
         # sorted_results
         processed_dir:Path = getattr(self, f"{image_type}_processed_dir")
         found_list = list(processed_dir.glob(f"**/{result_name}"))
-        found_list = exclude_paths(found_list, ["!~delete"])
+        found_list = exclude_paths(found_list, ["+---delete"])
         sorted_results = sorted(found_list, key=dname.get_dname_sortinfo)
         
         # rel_path
