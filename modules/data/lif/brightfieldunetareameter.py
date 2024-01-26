@@ -106,19 +106,19 @@ class BrightfieldUNetAreaMeter(BaseObject):
         micron_per_pixel = self.analyze_param_dict["micron_per_pixel"]
         self._zfij.run(img, "Set Scale...", f"distance=1 known={micron_per_pixel} unit=micron")
         
-        self.convert_to_mask(img)
-        self.zf_measurement(img)
+        self._convert_to_mask(img)
+        self._zf_measurement(img)
         
         self._zfij.roiManager.runCommand("Show All with labels")
         roi_cnt = int(self._zfij.roiManager.getCount())
         if roi_cnt == 1:
-            self.save_measured_result(dname_dir)
+            self._save_measured_result(dname_dir)
         
         self._zfij.reset_all_window()
         # ---------------------------------------------------------------------/
 
 
-    def convert_to_mask(self, img):
+    def _convert_to_mask(self, img):
         """
         """
         self._zfij.ij.prefs.blackBackground = True
@@ -126,7 +126,7 @@ class BrightfieldUNetAreaMeter(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def zf_measurement(self, img):
+    def _zf_measurement(self, img):
         """
         """
         lower_bound = self.analyze_param_dict["measure_range"]["lower_bound"]
@@ -137,7 +137,7 @@ class BrightfieldUNetAreaMeter(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def save_measured_result(self, dname_dir:Path):
+    def _save_measured_result(self, dname_dir:Path):
         """
         """
         save_file = dname_dir.joinpath("UNetAnalysis.csv")
