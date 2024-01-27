@@ -1,0 +1,15 @@
+[data_nasdl]
+  dir = "{20230904_Update}_Zebrafish_AP_strategies"
+  type = "PalmSkin_RAW" # This config is EXCLUSIVE for palmskin images.
+  batches = []
+  # batches = ["Upload_20221209", ...] # directory example
+  #
+  # Note:
+  # - If `batches` is [] (empty list), it will recursively scan and process ALL LIF FILEs on:
+  #     => 'Path(THIS_REPOSITORY)/{Data}_NASDL/`dir`/PalmSkin_RAW/**/*.lif'
+  # - If directories are given, it will handle the given directories only.
+
+# -----------------------------------------------------------------------------\
+[data_processed]
+  instance_desc = "20231229_manualroi" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  palmskin_result_name = "28_RGB_m3d.tif"
