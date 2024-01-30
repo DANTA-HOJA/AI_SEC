@@ -13,4 +13,4 @@ from modules.shared.utils import get_repo_root
 print(f"Repository: '{get_repo_root()}'")
 
 processed_data_instance = ProcessedDataInstance()
-processed_data_instance.collect_results("0.4.collect_results.toml")
+processed_data_instance.collect_results("0.4.1.collect_results.toml")
