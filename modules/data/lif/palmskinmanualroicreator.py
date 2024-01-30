@@ -324,6 +324,6 @@ class PalmskinManualROICreator(BaseObject):
         
         # save result
         orig_name = os.path.splitext(Path(rel_path).parts[-1])[0]
-        orig_name = f"{orig_name}.manualroi.tif"
-        self._zfij.save_as_tiff(img, str(self.metaimg_dir.joinpath(orig_name)))
+        new_name = f"{orig_name}.manualroi.tif"
+        self._zfij.save_as_tiff(img, str(self.metaimg_dir.joinpath(new_name)))
         # ---------------------------------------------------------------------/
