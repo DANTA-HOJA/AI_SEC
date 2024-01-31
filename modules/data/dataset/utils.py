@@ -175,6 +175,7 @@ def gen_crop_img_v2(img:np.ndarray, config:Union[dict, TOMLDocument]) -> List[np
     # NOTE: 改善 v1 只能應對 crop_size 整數倍的問題 (20240131, 測試OK, 上方舊版 v1 穩定後可刪除)
     
     img_size = img.shape
+    # print(img.shape, "\n")
     
     """ Get config variables """
     crop_size: int = config["param"]["crop_size"]
@@ -184,34 +185,44 @@ def gen_crop_img_v2(img:np.ndarray, config:Union[dict, TOMLDocument]) -> List[np
     assert (len(fraction) == 2) and (int(fraction[0]) == 1), ("Invalid format, `shift_region` expect '1/[denominator]', "
                                                               f"but got {shift_region}")
     DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
-    interval = crop_size/DIV_PIECES
-    # print(DIV_PIECES, "\n")
+    interval = int(crop_size/DIV_PIECES)
+    # print(f"interval (shift pixel) = {interval}", "\n")
     
+    # >>> Calculate cropping step using `crop_size` <<<
     
-    """ Calculate cropping step using `crop_size` """
     # Height
-    quotient_h = int(img_size[0]/interval) # Height Quotient
-    remainder_h = img_size[0]%crop_size # Height Remainder
+    remainder_h = img_size[0]%interval # Height Remainder
+    if remainder_h > 0: remainder_h -= 1
     h_st_idx = remainder_h # 除不盡的部分從上方捨棄 ( image 上方為黑色 )
-    h_crop_idxs = [int(h_st_idx + interval*i)
-                           for i in range(quotient_h+1)]
+    # print(f"remainder_h = {remainder_h}, h_st_idx = {h_st_idx}")
+    
+    quotient_h = int(img_size[0]/interval) # Height Quotient
+    h_crop_idxs = []
+    for i in range(quotient_h):
+        st = h_st_idx+i*interval
+        if st + crop_size <= img_size[0]:
+            h_crop_idxs.append(st)
     # print(f"h_crop_idxs = {h_crop_idxs}", f"len = {len(h_crop_idxs)}", "\n")
     
     # Width
-    quotient_w = int(img_size[1]/interval) # Width Quotient
-    remainder_w = img_size[1]%crop_size # Width Remainder
+    remainder_w = img_size[1]%interval # Width Remainder
     w_st_idx = int(remainder_w/2) # 除不盡的部分兩側平分捨棄 ( image 左右都有黑色，平分 )
-    w_crop_idxs = [int(w_st_idx + interval*i)
-                           for i in range(quotient_w+1)]
+    # print(f"remainder_w = {remainder_w}, w_st_idx = {w_st_idx}")
+    
+    quotient_w = int(img_size[1]/interval) # Width Quotient
+    w_crop_idxs = []
+    for i in range(quotient_w):
+        st = w_st_idx+i*interval
+        if st + crop_size <= img_size[1]:
+            w_crop_idxs.append(st)
     # print(f"w_crop_idxs = {w_crop_idxs}", f"len = {len(w_crop_idxs)}", "\n")
     
-    
-    """ Crop images """
+    # >>> Crop images <<<
     crop_img_list = []
-    for i in range(len(h_crop_idxs)-DIV_PIECES):
-        for j in range(len(w_crop_idxs)-DIV_PIECES):
-            # print(h_crop_idxs[i], h_crop_idxs[i+DIV_PIECES], "\n", w_crop_idxs[j], w_crop_idxs[j+DIV_PIECES], "\n")
-            crop_img_list.append(img[h_crop_idxs[i]:h_crop_idxs[i+DIV_PIECES], w_crop_idxs[j]:w_crop_idxs[j+DIV_PIECES], :])
+    for i in h_crop_idxs:
+        for j in w_crop_idxs:
+            # print(f"[{i}:{i+crop_size}, {j}:{j+crop_size}, :]")
+            crop_img_list.append(img[i:i+crop_size, j:j+crop_size, :])
     
     return crop_img_list
     # -------------------------------------------------------------------------/
