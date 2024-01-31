@@ -225,7 +225,7 @@ class ImageCropper(BaseObject):
             save_path = dsname_dir.joinpath(f"{fish_dsname}.tiff")
             if not save_path.exists():
                 create_new_dir(dsname_dir)
-                cv2.imwrite(str(), part_img)
+                cv2.imwrite(str(save_path), part_img)
             
             self._pbar.update(horizcut_task, advance=1)
             self._pbar.refresh()
