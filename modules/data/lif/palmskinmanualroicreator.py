@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
-from ...assert_fn import *
+from ...assert_fn import assert_file_ext
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir
 from ..ij.zfij import ZFIJ
@@ -67,6 +67,7 @@ class PalmskinManualROICreator(BaseObject):
         
         """ [data_processed] """
         self.palmskin_result_name: str = self.config["data_processed"]["palmskin_result_name"]
+        assert_file_ext(self.palmskin_result_name, ".tif")
         # ---------------------------------------------------------------------/
 
 

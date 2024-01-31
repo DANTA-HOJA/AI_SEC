@@ -11,9 +11,8 @@ import numpy as np
 import pandas as pd
 from colorama import Back, Fore, Style
 
-from ..assert_fn import *
 from ..assert_fn import (assert_0_or_1_processed_dir,
-                         assert_0_or_1_recollect_dir)
+                         assert_0_or_1_recollect_dir, assert_file_ext)
 from ..shared.baseobject import BaseObject
 from ..shared.config import load_config
 from ..shared.utils import (create_new_dir, exclude_paths, exclude_tmp_paths,
@@ -723,6 +722,7 @@ class ProcessedDataInstance(BaseObject):
         
         """ Get variable """
         palmskin_result_name = self.config["data_processed"]["palmskin_result_name"]
+        assert_file_ext(palmskin_result_name, ".tif")
         
         """ Get dnames record in CSV  """
         if self.tabular_file is None:

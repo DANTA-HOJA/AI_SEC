@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Union
 
 import cv2
 
-from ...assert_fn import *
+from ...assert_fn import assert_file_ext
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir
 from ..processeddatainstance import ProcessedDataInstance
@@ -52,6 +52,7 @@ class PalmskinFixedROICreator(BaseObject):
         """
         """ [data_processed] """
         self.palmskin_result_name: str = self.config["data_processed"]["palmskin_result_name"]
+        assert_file_ext(self.palmskin_result_name, ".tif")
         # ---------------------------------------------------------------------/
 
 

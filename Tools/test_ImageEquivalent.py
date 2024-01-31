@@ -13,6 +13,7 @@ abs_module_path = Path("./../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
+from modules.assert_fn import assert_file_ext
 from modules.data import dname
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
@@ -28,6 +29,7 @@ old_ins = config["instance_desc"]["old"]
 new_ins = config["instance_desc"]["new"]
 image_type = config["image_info"]["image_type"]
 result_name = config["image_info"]["result_name"]
+assert_file_ext(result_name, ".tif")
 
 # init `ProcessedDataInstance`
 old_di = ProcessedDataInstance()

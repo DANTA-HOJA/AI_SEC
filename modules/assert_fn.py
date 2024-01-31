@@ -149,3 +149,18 @@ def assert_0_or_1_history_dir(found_list:List[Path], time_stamp:str, state:str=N
     assert len(found_list) <= 1, (f"Found {len(found_list)} possible directories, "
                                   f"'dirname' combine with {temp_str} in config is not unique. "
                                   f"Directories: {json.dumps([str(path) for path in found_list], indent=2)}")
+    # -------------------------------------------------------------------------/
+
+
+
+def assert_file_ext(file_name:str, target_ext: str):
+    """
+
+    Args:
+        file_name (str): a file name with extension
+        target_ext (str): the file extension to check, example: ".jpg"
+    """    
+    file_ext = os.path.splitext(Path(file_name).parts[-1])[1]
+    
+    assert file_ext == target_ext, (f"'{file_name}' is not a '{target_ext}' file")
+    # -------------------------------------------------------------------------/
