@@ -158,6 +158,66 @@ def gen_crop_img(img:np.ndarray, config:Union[dict, TOMLDocument]) -> List[np.nd
 
 
 
+def gen_crop_img_v2(img:np.ndarray, config:Union[dict, TOMLDocument]) -> List[np.ndarray]:
+    """ Generate the crop images using `crop_size` and `shift_region`
+
+    Args:
+        img (np.ndarray): The source image to generate its crop images
+    
+    config:
+        crop_size (int): Size/shape of cropped image
+        shift_region (str): Offset distance between cropped images, \
+                            e.g. if `shift_region` = '1/3', the overlap region of each cropped image is '2/3'
+
+    Returns:
+        List[np.ndarray]
+    """
+    # NOTE: 改善 v1 只能應對 crop_size 整數倍的問題 (20240131, 測試OK, 上方舊版 v1 穩定後可刪除)
+    
+    img_size = img.shape
+    
+    """ Get config variables """
+    crop_size: int = config["param"]["crop_size"]
+    shift_region: str = config["param"]["shift_region"]
+    
+    fraction = shift_region.split("/")
+    assert (len(fraction) == 2) and (int(fraction[0]) == 1), ("Invalid format, `shift_region` expect '1/[denominator]', "
+                                                              f"but got {shift_region}")
+    DIV_PIECES = int(fraction[1]) # DIV_PIECES, abbr. of 'divide pieces'
+    interval = crop_size/DIV_PIECES
+    # print(DIV_PIECES, "\n")
+    
+    
+    """ Calculate cropping step using `crop_size` """
+    # Height
+    quotient_h = int(img_size[0]/interval) # Height Quotient
+    remainder_h = img_size[0]%crop_size # Height Remainder
+    h_st_idx = remainder_h # 除不盡的部分從上方捨棄 ( image 上方為黑色 )
+    h_crop_idxs = [int(h_st_idx + interval*i)
+                           for i in range(quotient_h+1)]
+    # print(f"h_crop_idxs = {h_crop_idxs}", f"len = {len(h_crop_idxs)}", "\n")
+    
+    # Width
+    quotient_w = int(img_size[1]/interval) # Width Quotient
+    remainder_w = img_size[1]%crop_size # Width Remainder
+    w_st_idx = int(remainder_w/2) # 除不盡的部分兩側平分捨棄 ( image 左右都有黑色，平分 )
+    w_crop_idxs = [int(w_st_idx + interval*i)
+                           for i in range(quotient_w+1)]
+    # print(f"w_crop_idxs = {w_crop_idxs}", f"len = {len(w_crop_idxs)}", "\n")
+    
+    
+    """ Crop images """
+    crop_img_list = []
+    for i in range(len(h_crop_idxs)-DIV_PIECES):
+        for j in range(len(w_crop_idxs)-DIV_PIECES):
+            # print(h_crop_idxs[i], h_crop_idxs[i+DIV_PIECES], "\n", w_crop_idxs[j], w_crop_idxs[j+DIV_PIECES], "\n")
+            crop_img_list.append(img[h_crop_idxs[i]:h_crop_idxs[i+DIV_PIECES], w_crop_idxs[j]:w_crop_idxs[j+DIV_PIECES], :])
+    
+    return crop_img_list
+    # -------------------------------------------------------------------------/
+
+
+
 def drop_too_dark(crop_img_list:List[np.ndarray], config:Union[dict, TOMLDocument]) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """ Drop the image which too many dark pixels
 
