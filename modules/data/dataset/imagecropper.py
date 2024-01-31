@@ -14,7 +14,7 @@ from ...data import dname
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir, formatter_padr0
 from ..processeddatainstance import ProcessedDataInstance
-from .utils import gen_crop_img, gen_dataset_file_name_dict
+from .utils import gen_crop_img_v2, gen_dataset_file_name_dict
 # -----------------------------------------------------------------------------/
 
 
@@ -164,7 +164,7 @@ class ImageCropper(BaseObject):
             
             for palmskin_dname in palmskin_dnames:
                 palmskin_result_file = sorted_results_dict.pop(palmskin_dname)
-                self.crop_single_image(palmskin_result_file)
+                self._crop_single_image(palmskin_result_file)
                 self._pbar.update(main_task, advance=1)
                 self._pbar.refresh()
         
@@ -201,45 +201,61 @@ class ImageCropper(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def crop_single_image(self, img_path:Path):
+    def _crop_single_image(self, img_path:Path):
         """
         """
         img = cv2.imread(str(img_path))
+        img_dict = {
+            "U": img[:512,:,:],
+            "D": img[512:,:,:]
+        }
+        horizcut_task = self._pbar.add_task("[magenta][TBA]: ", total=len(img_dict))
         
-        """ Extract info """
-        fish_id, fish_pos = dname.get_dname_sortinfo(img_path)
-        fish_dsname = f"fish_{fish_id}_{fish_pos}"
-        fish_dataset = self.id2dataset_dict[fish_id]
-        
-        # copy file
-        dsname_dir = self.dst_root.joinpath(fish_dataset, fish_dsname)
-        cp_file = dsname_dir.joinpath(f"{fish_dsname}.tiff")
-        if not cp_file.exists():
-            create_new_dir(dsname_dir)
-            shutil.copy(img_path, cp_file)
-        
-        # create `crop_dir`
-        crop_dir = dsname_dir.joinpath(self.crop_dir_name)
-        create_new_dir(crop_dir)
-        
-        # cropping
-        crop_img_list = gen_crop_img(img, self.config)
-        
-        """ Sub Task """
-        sub_task = self._pbar.add_task("[cyan][TBA]: ", total=len(crop_img_list))
-        
-        for i, cropped_img in enumerate(crop_img_list):
+        for part_abbr, part_img in img_dict.items():
             
-            cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
-            
-            self._pbar.update(sub_task, description=f"[cyan]{cropped_name} : ")
+            # extract info
+            fish_id, fish_pos = dname.get_dname_sortinfo(img_path)
+            fish_dataset = self.id2dataset_dict[fish_id]
+            fish_dsname = f"fish_{fish_id}_{fish_pos}_{part_abbr}"
+            self._pbar.update(horizcut_task, description=f"[magenta]{fish_dsname} : ")
             self._pbar.refresh()
             
-            save_path = crop_dir.joinpath(f"{cropped_name}.tiff")
-            cv2.imwrite(str(save_path), cropped_img)
+            # save horizcut image
+            dsname_dir = self.dst_root.joinpath(fish_dataset, fish_dsname)
+            save_path = dsname_dir.joinpath(f"{fish_dsname}.tiff")
+            if not save_path.exists():
+                create_new_dir(dsname_dir)
+                cv2.imwrite(str(), part_img)
             
-            self._pbar.update(sub_task, advance=1)
+            self._pbar.update(horizcut_task, advance=1)
             self._pbar.refresh()
+            
+            # >>> Crop Task <<<
+            
+            if fish_dataset == "test":
+                
+                # cropping
+                crop_img_list = gen_crop_img_v2(part_img, self.config)
+                crop_task = self._pbar.add_task("[cyan][TBA]: ", total=len(crop_img_list))
+                
+                for i, cropped_img in enumerate(crop_img_list):
+                    
+                    cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
+                    self._pbar.update(crop_task, description=f"[cyan]{cropped_name} : ")
+                    self._pbar.refresh()
+                    
+                    # create `crop_dir`
+                    crop_dir = dsname_dir.joinpath(self.crop_dir_name)
+                    create_new_dir(crop_dir)
+                    
+                    # save cropped images
+                    save_path = crop_dir.joinpath(f"{cropped_name}.tiff")
+                    cv2.imwrite(str(save_path), cropped_img)
+                    
+                    self._pbar.update(crop_task, advance=1)
+                    self._pbar.refresh()
+                
+                self._pbar.remove_task(crop_task)
         
-        self._pbar.remove_task(sub_task)
+        self._pbar.remove_task(horizcut_task)
         # ---------------------------------------------------------------------/
