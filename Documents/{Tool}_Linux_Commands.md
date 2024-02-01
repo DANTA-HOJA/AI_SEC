@@ -29,7 +29,7 @@ tar -cf - [/src] | pv | tar -xf - -C [/dst]
 ### feh (image viewer, X11 forwarding)
 
 ```shell
-feh --recursive --auto-zoom --scale-down --geometry 800x600 [/path/to/your/directory]
+feh --recursive --auto-zoom --scale-down --geometry 800x600 -B white [/path/to/your/directory]
 ```
 
 ```text
@@ -39,6 +39,7 @@ feh --recursive --auto-zoom --scale-down --geometry 800x600 [/path/to/your/direc
 --auto-zoom   : image < window 會自動放大
 --scale-down  : image < window 會自動縮小
 --geometry    : 指定初始 window size + 停用切換照片時根據圖片大小重新設定 winodw size
+-B            : 指定背景顏色，預設透明
 
 --------------------------------------------------------------------------------
 # Control / Keyboard 快捷鍵
