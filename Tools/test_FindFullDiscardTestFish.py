@@ -16,8 +16,7 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from modules.data.dataset import dsname
-from modules.shared.config import load_config
-from modules.shared.utils import get_coupled_config_name
+from modules.shared.config import get_coupled_config_name, load_config
 
 install()
 # -----------------------------------------------------------------------------/

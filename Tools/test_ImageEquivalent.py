@@ -17,8 +17,7 @@ from modules.assert_fn import assert_file_ext
 from modules.data import dname
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
-from modules.shared.config import load_config
-from modules.shared.utils import get_coupled_config_name
+from modules.shared.config import get_coupled_config_name, load_config
 # -----------------------------------------------------------------------------/
 
 # set variables

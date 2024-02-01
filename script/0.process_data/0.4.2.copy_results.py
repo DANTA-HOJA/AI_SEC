@@ -12,9 +12,8 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
-from modules.shared.config import load_config
-from modules.shared.utils import (create_new_dir, get_coupled_config_name,
-                                  get_repo_root)
+from modules.shared.config import get_coupled_config_name, load_config
+from modules.shared.utils import create_new_dir, get_repo_root
 # -----------------------------------------------------------------------------/
 
 """ Detect Repository """

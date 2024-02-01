@@ -14,7 +14,7 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from modules.data.processeddatainstance import ProcessedDataInstance
-from modules.shared.utils import get_coupled_config_name
+from modules.shared.config import get_coupled_config_name
 
 install()
 # -----------------------------------------------------------------------------/

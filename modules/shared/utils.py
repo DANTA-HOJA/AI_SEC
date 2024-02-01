@@ -177,11 +177,3 @@ def exclude_tmp_paths(found_list:List[Path]):
     """
     return exclude_paths(found_list, ["tmp", "temp", "Tmp", "Temp"])
     # -------------------------------------------------------------------------/
-
-
-
-def get_coupled_config_name(file:str):
-    """
-    """
-    return f"{os.path.split(os.path.splitext(file)[0])[-1]}.toml"
-    # -------------------------------------------------------------------------/

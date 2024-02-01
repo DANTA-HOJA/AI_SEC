@@ -93,3 +93,11 @@ def get_batch_config_arg():
     
     return args
     # -------------------------------------------------------------------------/
+
+
+
+def get_coupled_config_name(file:str):
+    """
+    """
+    return f"{os.path.split(os.path.splitext(file)[0])[-1]}.toml"
+    # -------------------------------------------------------------------------/
