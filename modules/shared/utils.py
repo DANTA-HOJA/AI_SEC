@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
@@ -42,7 +43,7 @@ def get_target_str_idx_in_list(source_list:List[str], target_str:str) -> Union[i
 
 
 
-def get_repo_root(repo_name:str="ZebraFish_AP_POS", cli_out:CLIOutput=None) -> Path:
+def get_repo_root(cli_out:CLIOutput=None) -> Path:
     """ Get repository root path on local machine
 
     Args:
@@ -52,12 +53,23 @@ def get_repo_root(repo_name:str="ZebraFish_AP_POS", cli_out:CLIOutput=None) -> P
         Path: repository root
     """
     """ Analyze """
-    path_split = os.path.abspath(".").split(os.sep)
-    target_idx = get_target_str_idx_in_list(path_split, repo_name)
-    assert_run_under_repo_root(target_idx)
+    zebrafish_series = ["ZebraFish_AP_POS",
+                        "Zebrafish_Cell_Count"]
+    
+    path_split = list(Path(__file__).parts)
+    
+    target_idx = None
+    for repo_name in zebrafish_series:
+        target_idx = get_target_str_idx_in_list(path_split, repo_name)
+        if target_idx is not None: break
+    assert_run_under_repo_root(target_idx, zebrafish_series)
     
     """ Generate path """
-    repo_root = os.sep.join(path_split[:target_idx+1])
+    repo_root = Path(os.sep.join(path_split[:target_idx+1]))
+    
+    """ add sys.path """
+    if (repo_root.exists()) and (str(repo_root) not in sys.path):
+        sys.path.insert(0, str(repo_root)) # add path to scan customized module
     
     """ CLI output """
     if cli_out: cli_out.write(f"Repository: '{repo_root}'")

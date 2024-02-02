@@ -25,14 +25,15 @@ def assert_only_1_config(found_list:List[Path], config_name:str):
 
 
 
-def assert_run_under_repo_root(target_idx:Union[int, None]):
+def assert_run_under_repo_root(target_idx:Union[int, None], zebrafish_series:list[str]):
     """ This assertion is for `get_repo_root()` only.
 
     Args:
         target_idx (_type_): A result after running `get_target_str_idx_in_list()`
     """
-    assert target_idx is not None, ("Please switch your `WORKING_DIR` under this repository before run, "
-                                    "and don't modify the name of this repository")
+    assert target_idx is not None, ("Please switch your `WORKING_DIR` under "
+                                    f"one of {zebrafish_series} repositories before run, "
+                                    "and don't modify the name of these repositories")
     # -------------------------------------------------------------------------/
 
 
