@@ -1,9 +1,9 @@
 import sys
 from pathlib import Path
 
-abs_module_path = Path("./../../").resolve()
-if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
-    sys.path.append(str(abs_module_path)) # add path to scan customized module
+lib_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
+if (lib_dir.exists()) and (str(lib_dir) not in sys.path):
+    sys.path.insert(0, str(lib_dir)) # add path to scan customized module
 
 from modules.dl.trainer.vitb16trainer import VitB16Trainer
 from modules.shared.config import get_batch_config, get_batch_config_arg
