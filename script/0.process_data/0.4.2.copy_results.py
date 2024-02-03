@@ -6,9 +6,9 @@ from pathlib import Path
 from rich import print
 from rich.progress import *
 
-abs_module_path = Path("./../../").resolve()
-if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
-    sys.path.append(str(abs_module_path)) # add path to scan customized module
+pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
+if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
+    sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
