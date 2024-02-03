@@ -316,33 +316,33 @@ class CamGalleryCreator(BaseObject):
         """
         fish_cls = self._get_fish_cls(fish_dsname)
         
-        test_preserve_paths, \
-            test_discard_paths, \
+        tested_paths, \
+            untest_paths, \
                 cam_result_paths = self._get_path_lists(fish_dsname)
         
-        self._read_images_as_dict(test_preserve_paths, # --> self.test_preserve_img_dict
-                                  test_discard_paths,  # --> self.test_discard_img_dict
+        self._read_images_as_dict(tested_paths, # --> self.tested_img_dict
+                                  untest_paths,  # --> self.untest_img_dict
                                   cam_result_paths)    # --> self.cam_result_img_dict
         
-        # >>> draw on 'discard' images <<<
+        # >>> draw on 'untest' images <<<
         
-        for name, bgr_img in self.test_discard_img_dict.items():
+        for name, bgr_img in self.untest_img_dict.items():
             self._draw_on_drop_image(name, bgr_img)
         
         # >>> draw on `cam` images <<<
         
         self.correct_cnt: int = 0
-        for (cam_name, cam_img), (preserve_name, preserve_bgr_img) \
-            in zip(self.cam_result_img_dict.items(), self.test_preserve_img_dict.items()):
-            self._draw_on_cam_image(cam_name, cam_img, preserve_name, preserve_bgr_img)
+        for (cam_name, cam_img), (tested_name, tested_bgr_img) \
+            in zip(self.cam_result_img_dict.items(), self.tested_img_dict.items()):
+            self._draw_on_cam_image(cam_name, cam_img, tested_name, tested_bgr_img)
         
         # >>> check which `rank_dir` to store <<<
         self._calculate_correct_rank()
         
-        # >>> orig: `test_preserve_img_dict`, `test_discard_img_dict` <<<
+        # >>> orig: `tested_img_dict` + `untest_img_dict` <<<
         self._gen_orig_gallery(fish_dsname, fish_cls)
         
-        # >>> overlay: `cam_result_img_dict`, `test_discard_img_dict` <<<
+        # >>> overlay: `cam_result_img_dict` + `untest_img_dict` <<<
         self._gen_overlay_gallery(fish_dsname, fish_cls)
         
         # >>> update pbar <<<
@@ -366,7 +366,7 @@ class CamGalleryCreator(BaseObject):
     def _get_path_lists(self, fish_dsname:str)-> Tuple[list, list, list]:
         """
         """   
-        # >>> cam result <<<
+        # >>> cam result (tested) <<<
         
         cam_result_paths: list[Path] = []
         if self.replace_cam_color:
@@ -385,33 +385,33 @@ class CamGalleryCreator(BaseObject):
             {dsname.get_dsname_sortinfo(path)[-1]: \
                 self.src_root.joinpath(path) for path in df["path"]}
         
-        # >>> Seperate 'predict' / 'not predict' ( without CAM ) <<<
+        # >>> Seperate 'tested' / 'untest' (without CAM) <<<
         
-        # predict (preserve)
-        test_preserve_paths: list[Path] = []
-        for num in cam_dict.keys():
-            test_preserve_paths.append(tmp_dict.pop(num))
+        # tested (predict)
+        tested_paths: list[Path] = []
+        for crop_sn in cam_dict.keys():
+            tested_paths.append(tmp_dict.pop(crop_sn))
         
-        # not predict (discard)
-        test_discard_paths: list[Path] = list(tmp_dict.values())
+        # untest (not predict)
+        untest_paths: list[Path] = list(tmp_dict.values())
         
         # >>> return <<<
-        return test_preserve_paths, test_discard_paths, cam_result_paths
+        return tested_paths, untest_paths, cam_result_paths
         # ---------------------------------------------------------------------/
 
 
-    def _read_images_as_dict(self, test_preserve_paths:list, 
-                                  test_discard_paths:list, 
+    def _read_images_as_dict(self, tested_paths:list,
+                                  untest_paths:list,
                                   cam_result_paths:list):
         """
         """
-        self.test_preserve_img_dict: dict[str, np.ndarray] = \
+        self.tested_img_dict: dict[str, np.ndarray] = \
             { os.path.split(os.path.splitext(path)[0])[-1]: \
-                cv2.imread(str(path)) for path in test_preserve_paths }
+                cv2.imread(str(path)) for path in tested_paths }
         
-        self.test_discard_img_dict: dict[str, np.ndarray] = \
+        self.untest_img_dict: dict[str, np.ndarray] = \
             { os.path.split(os.path.splitext(path)[0])[-1]: \
-                cv2.imread(str(path)) for path in test_discard_paths }
+                cv2.imread(str(path)) for path in untest_paths }
         
         self.cam_result_img_dict: dict[str, np.ndarray] = \
             { os.path.split(os.path.splitext(path)[0])[-1]: \
@@ -426,34 +426,34 @@ class CamGalleryCreator(BaseObject):
         rgb_img = np.uint8(rgb_img * 0.5) # suppress brightness
         rgb_img = Image.fromarray(rgb_img) # convert to pillow image before drawing
         draw_x_on_image(rgb_img, self.line_color, self.line_width)
-        self.test_discard_img_dict[name] = cv2.cvtColor(np.array(rgb_img), cv2.COLOR_RGB2BGR)
+        self.untest_img_dict[name] = cv2.cvtColor(np.array(rgb_img), cv2.COLOR_RGB2BGR)
         # ---------------------------------------------------------------------/
 
 
     def _draw_on_cam_image(self, cam_name:str, cam_img: np.ndarray,
-                                preserve_name:str, preserve_bgr_img: np.ndarray):
+                                 tested_name:str, tested_bgr_img: np.ndarray):
         """
         """
         # >>> preparing `cam_img` <<<
-        
-        if self.replace_cam_color: cam_bgr_img = cv2.applyColorMap(cam_img, self.replaced_colormap) # BGR
+        if self.replace_cam_color:
+            cam_bgr_img = cv2.applyColorMap(cam_img, self.replaced_colormap) # BGR
         else: cam_bgr_img = cam_img
         cam_rgb_img = cv2.cvtColor(cam_bgr_img, cv2.COLOR_BGR2RGB)
         
-        # >>> preparing `preserve_img` <<<
-        preserve_rgb_img = cv2.cvtColor(preserve_bgr_img, cv2.COLOR_BGR2RGB)
+        # >>> preparing `tested_img` <<<
+        tested_rgb_img = cv2.cvtColor(tested_bgr_img, cv2.COLOR_BGR2RGB)
         
-        # >>> overlay `cam_img` on `preserve_img` <<<
+        # >>> overlay `cam_img` on `tested_img` <<<
         
         cam_overlay = ((cam_rgb_img/255) * self.cam_weight + 
-                       (preserve_rgb_img/255) * (1 - self.cam_weight))
+                       (tested_rgb_img/255) * (1 - self.cam_weight))
         cam_overlay = np.uint8(255 * cam_overlay)
         
         # >>> if the prediction is wrong, add answer on image <<<
         
         # get param for `draw_predict_ans_on_image`
-        gt_cls = self.predict_ans_dict[preserve_name]['gt']
-        pred_cls = self.predict_ans_dict[preserve_name]['pred']
+        gt_cls = self.predict_ans_dict[tested_name]['gt']
+        pred_cls = self.predict_ans_dict[tested_name]['pred']
         
         if gt_cls != pred_cls:
             # create a red mask
@@ -498,8 +498,8 @@ class CamGalleryCreator(BaseObject):
     def _gen_orig_gallery(self, fish_dsname:str, fish_cls):
         """
         """
-        orig_img_dict: dict = deepcopy(self.test_preserve_img_dict)
-        orig_img_dict.update(self.test_discard_img_dict)
+        orig_img_dict: dict = deepcopy(self.tested_img_dict)
+        orig_img_dict.update(self.untest_img_dict)
         sorted_orig_img_dict = OrderedDict(sorted(list(orig_img_dict.items()), key=lambda x: dsname.get_dsname_sortinfo(x[0])))
         orig_img_list = [ img for _, img in sorted_orig_img_dict.items() ]
         
@@ -526,7 +526,7 @@ class CamGalleryCreator(BaseObject):
         """
         """
         cam_overlay_img_dict: dict = deepcopy(self.cam_result_img_dict)
-        cam_overlay_img_dict.update(self.test_discard_img_dict)
+        cam_overlay_img_dict.update(self.untest_img_dict)
         sorted_cam_overlay_img_dict = OrderedDict(sorted(list(cam_overlay_img_dict.items()), key=lambda x: dsname.get_dsname_sortinfo(x[0])))
         cam_overlay_img_list = [ img for _, img in sorted_cam_overlay_img_dict.items() ]
         
