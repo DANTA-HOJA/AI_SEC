@@ -1,11 +1,14 @@
 import os
-import sys
 import re
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
+import sys
 from collections import Counter
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 from ...assert_fn import *
+from ...assert_fn import assert_0_or_1_history_dir
+from ...shared.pathnavigator import PathNavigator
+from ...shared.utils import exclude_tmp_paths
 # -----------------------------------------------------------------------------/
 
 
@@ -89,4 +92,47 @@ def reshape_transform(tensor, height=14, width=14):
     result = result.transpose(2, 3).transpose(1, 2)
     
     return result
+    # -------------------------------------------------------------------------/
+
+
+
+def get_history_dir(path_navigator:PathNavigator, time_stamp:str, state:str):
+    """
+    """
+    if state not in ["best", "final"]:
+        raise ValueError(f"(config) `model_prediction.state`: "
+                            f"'{state}', accept 'best' or 'final' only\n")
+    
+    model_prediction: Path = \
+        path_navigator.dbpp.get_one_of_dbpp_roots("model_prediction")
+    best_found = []
+    final_found = []
+    
+    # scan dir
+    found_list = list(model_prediction.glob(f"**/{time_stamp}*"))
+    found_list = exclude_tmp_paths(found_list)
+    tmp_dict = {i: path for i, path in enumerate(found_list)}
+    
+    # assort dir
+    for i, path in enumerate(found_list):
+        if f"{{best}}" in str(path): best_found.append(tmp_dict.pop(i))
+        elif f"{{final}}" in str(path): final_found.append(tmp_dict.pop(i))
+    found_list = list(tmp_dict.values())
+    
+    # best mark
+    if state == "best" and best_found:
+        assert_0_or_1_history_dir(best_found, time_stamp, state)
+        return best_found[0]
+    
+    # final mark
+    if state == "final" and final_found:
+        assert_0_or_1_history_dir(final_found, time_stamp, state)
+        return final_found[0]
+    
+    # unset ( original )
+    assert_0_or_1_history_dir(found_list, time_stamp, state)
+    if found_list:
+        return found_list[0]
+    else:
+        raise ValueError("No `history_dir` matches the provided config")
     # -------------------------------------------------------------------------/

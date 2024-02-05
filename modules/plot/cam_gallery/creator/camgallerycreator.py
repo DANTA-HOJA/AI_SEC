@@ -16,9 +16,9 @@ from PIL import Image
 from tomlkit.toml_document import TOMLDocument
 from tqdm.auto import tqdm
 
-from ....assert_fn import assert_0_or_1_history_dir
 from ....data.dataset import dsname
 from ....data.dataset.utils import parse_dataset_file_name
+from ....dl.tester.utils import get_history_dir
 from ....shared.baseobject import BaseObject
 from ....shared.config import load_config
 from ....shared.utils import create_new_dir
@@ -100,42 +100,9 @@ class CamGalleryCreator(BaseObject):
     def _set_history_dir(self):
         """
         """
-        if self.model_state not in ["best", "final"]:
-            raise ValueError(f"(config) `model_prediction.state`: "
-                             f"'{self.model_state}', accept 'best' or 'final' only\n")
-        
-        model_prediction: Path = \
-            self._path_navigator.dbpp.get_one_of_dbpp_roots("model_prediction")
-        
-        # assort dir
-        best_found = []
-        final_found = []
-        found_list = list(model_prediction.glob(f"{self.model_time_stamp}*"))
-        tmp_dict = {i: path for i, path in enumerate(found_list)}
-        for i, path in enumerate(found_list):
-            if f"{{best}}" in str(path): best_found.append(tmp_dict.pop(i))
-            elif f"{{final}}" in str(path): final_found.append(tmp_dict.pop(i))
-        found_list = list(tmp_dict.values())
-        
-        # best mark
-        if self.model_state == "best" and best_found:
-            assert_0_or_1_history_dir(best_found, self.model_time_stamp, self.model_state)
-            self.history_dir = best_found[0]
-            return
-        
-        # final mark
-        if self.model_state == "final" and final_found:
-            assert_0_or_1_history_dir(final_found, self.model_time_stamp, self.model_state)
-            self.history_dir = final_found[0]
-            return
-        
-        # unset ( original )
-        assert_0_or_1_history_dir(found_list, self.model_time_stamp, self.model_state)
-        if found_list:
-            self.history_dir = found_list[0]
-            return
-        else:
-            raise ValueError("No `history_dir` matches the provided config")
+        self.history_dir = get_history_dir(self._path_navigator,
+                                           self.model_time_stamp,
+                                           self.model_state)
         # ---------------------------------------------------------------------/
 
 
