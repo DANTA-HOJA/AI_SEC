@@ -1,0 +1,37 @@
+[state_mark]
+  found = "\u2713" # "\u2713" == ✓
+  not_found = "\u2717" # "\u2717" == ✗
+  empty_cell = "---"
+
+# -----------------------------------------------------------------------------\
+[possible_item]
+  "(INFO) Time"         = "{ training time }_{ * sec }"
+  "(INFO) TrainingData" = "{ dataset_* }_{ train_* }_{ valid_* }"
+  "(INFO) TestData"     = "{ datatest_* }_{ test_* }"
+  # ---------------------------------------------------------------------------
+  "(TOML) Config"     = "training_config.toml"
+  "(LOG) Train"       = "{Logs}_train.xlsx" # (1 in 2 files) old training log
+  "(LOG) Valid"       = "{Logs}_valid.xlsx" # (2 in 2 files) old training log
+  "(LOG) Training"    = "{Logs}_training_log.csv" # (1 files) new training log (train + valid)
+  "(LOG) Best_Valid"  = "{Logs}_best_valid.log"
+  "(MODEL) Best"      = "best_model.pth"
+  "(MODEL) Final"     = "final_model.pth"
+  "(FIG) Average_F1"  = "training_trend_average_f1.png" # (old 1) training_trend, average_f1 = (micro + macro)/2
+  "(FIG) Weighted_F1" = "training_trend_weighted_f1.png" # (old 2) training_trend
+  "(FIG) Maweavg_F1"  = "training_trend_maweavg_f1.png" # (new) training_trend, maweavg_f1 = (macro + weighted)/2
+  # ---------------------------------------------------------------------------
+  "(Report) TestByImg" = "{Report}_PredByImg.log"
+  "(SCORE) TestByImg"  = "{Logs}_PredByImg_maweavg_f1_*.toml"
+  # ---------------------------------------------------------------------------
+  "(Report) TestByFish" = "{Report}_PredByFish.log"
+  "(LOOKUP) TestByFish" = "{Logs}_PredByFish_predict_ans.log"
+  "(SCORE) TestByFish"  = "{Logs}_PredByFish_maweavg_f1_*.toml"
+  # ---------------------------------------------------------------------------
+  "(DIR) CAM_Result"  = "cam_result"
+  "(DIR) CAM_Gallery" = "+---CAM_Gallery"
+
+# -----------------------------------------------------------------------------\
+[alt_name]
+  "(TOML) Config"     = ["train_config.toml"]
+  "(LOG) Training"    = ["{Logs}_training_log.xlsx"]
+  "(DIR) CAM_Gallery" = ["!--- CAM Gallery"]
