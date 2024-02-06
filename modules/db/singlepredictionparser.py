@@ -60,16 +60,6 @@ class SinglePredictionParser(BaseObject):
         # ---------------------------------------------------------------------
         # """ attributes """
         
-        # self.prediction_dir_split = str(prediction_dir).split(os.sep)
-        # self.prediction_dir_name = self.prediction_dir_split[-1] # e.g. "20230426_05_50_33_{Tested_PredByFish_CAM}_{69_epochs_AugOnFly}_{best}_{maweavg_f1_0.83707}"
-        # self.model_prediction_dir_idx = None
-        # self.find_model_prediction_dir_in_path()
-
-        # self.zebrafish_db_root = Path(os.sep.join(self.prediction_dir_split[:self.model_prediction_dir_idx]))
-        # self.data_processed_dir = self.zebrafish_db_root.joinpath(r"{Data}_Preprocessed")
-        # self.dataset_cropped_dir = self.zebrafish_db_root.joinpath(r"{Dataset}_Cropped")
-        # self.model_cmd_dir = self.zebrafish_db_root.joinpath(r"{Model}_CMD")
-        # self.model_prediction_dir = self.zebrafish_db_root.joinpath(r"{Model}_Prediction")
         self._config = load_config("6.update_db_xlsx.toml")
         self._state_mark: dict[str, str] = self._config["state_mark"]
         self._possible_item_dict: dict[str, str] = \
@@ -83,7 +73,6 @@ class SinglePredictionParser(BaseObject):
             if len(key) > max_length:
                 max_length = len(key)
         self.key_max_length = max_length+1
-        
         # ---------------------------------------------------------------------/
 
 
@@ -158,7 +147,7 @@ class SinglePredictionParser(BaseObject):
         """
         key, name = item
         found_list = list(self._prediction_dir.glob(name))
-
+        
         if len(found_list) > 1:
             raise ValueError(f"'{name}' should be a unique item in each prediction folder, "
                              f"but found {len(found_list)} same items")
@@ -261,7 +250,7 @@ class SinglePredictionParser(BaseObject):
             self._parsed_dict[k] = v
         
         # TODO:  key 在不同版本下，需額外處理
-        # -----------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------/
 
 
     def _handle_score(self, key:str):
