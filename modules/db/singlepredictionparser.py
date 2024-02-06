@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-from collections import Counter
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
@@ -9,7 +8,8 @@ from typing import Dict, List, Tuple, Union
 import pandas as pd
 from colorama import Fore, Style
 
-from ..db.utils import flatten_dict
+from ..assert_fn import assert_is_pathobj
+from ..db.utils import flatten_dict, render_excel_hyperlink
 from ..shared.baseobject import BaseObject
 from ..shared.config import load_config
 # -----------------------------------------------------------------------------/
@@ -60,7 +60,7 @@ class SinglePredictionParser(BaseObject):
         # ---------------------------------------------------------------------
         # """ attributes """
         
-        self._config = load_config("6.update_db_xlsx.toml")
+        self._config = load_config("6.update_db_excel.toml")
         self._state_mark: dict[str, str] = self._config["state_mark"]
         self._possible_item_dict: dict[str, str] = \
                                         self._config["possible_item"]
@@ -72,7 +72,7 @@ class SinglePredictionParser(BaseObject):
         for key in self._possible_item_dict.keys():
             if len(key) > max_length:
                 max_length = len(key)
-        self.key_max_length = max_length+1
+        self._key_max_length = max_length+1
         # ---------------------------------------------------------------------/
 
 
@@ -117,9 +117,11 @@ class SinglePredictionParser(BaseObject):
     def _handle_prediction_dir(self, prediction_dir:Path):
         """
         """
-        if isinstance(prediction_dir, Path): 
+        try:
+            assert_is_pathobj(prediction_dir)
             self._prediction_dir = prediction_dir
-        else: raise TypeError(f"`prediction_dir` should be a `Path` object, please using `from pathlib import Path`")
+        except TypeError as e:
+            raise TypeError(str(e).replace("The given path", "`prediction_dir`"))
         
         if not self._prediction_dir.exists():
             raise FileNotFoundError(f"Can't reach the folder '{self._prediction_dir}'")
@@ -129,7 +131,19 @@ class SinglePredictionParser(BaseObject):
                             f"{Style.RESET_ALL}'")
         
         name_split = re.split("{|}", prediction_dir.parts[-1])
-        self._parsed_dict["Prediction ID"] = f"{name_split[0]} | {name_split[5]}"
+        
+        # col: Prediction_ID
+        self._parsed_dict["Prediction_ID"] = f"{name_split[0]} | {name_split[5]}"
+        
+        # col: Version
+        model_prediction: Path = \
+            self._path_navigator.dbpp.get_one_of_dbpp_roots("model_prediction")
+        rel_path = prediction_dir.relative_to(model_prediction).parts[0]
+        self._parsed_dict["Version"] = rel_path.split("_")[0]
+        
+        # col: (HyperLink) Local_Path
+        self._parsed_dict["Local_Path"] = \
+                        render_excel_hyperlink("local_path", prediction_dir)
         # ---------------------------------------------------------------------/
 
 
@@ -172,7 +186,7 @@ class SinglePredictionParser(BaseObject):
             if path is None:
                 path_dict[k] = None
                 self._parsed_dict[k] = self._state_mark["empty_cell"]
-                self._cli_out.write(f"{Fore.BLACK}{k:{self.key_max_length}}: "
+                self._cli_out.write(f"{Fore.BLACK}{k:{self._key_max_length}}: "
                                     f"[ {self._state_mark['not_found']} ] "
                                     f"{self._state_mark['empty_cell']}"
                                     f"{Style.RESET_ALL}")
@@ -180,7 +194,7 @@ class SinglePredictionParser(BaseObject):
                 self._found_files_cnt += 1
                 path_dict[k] = path
                 self._parsed_dict[k] = self._state_mark["found"]
-                self._cli_out.write(f"{k:{self.key_max_length}}: "
+                self._cli_out.write(f"{k:{self._key_max_length}}: "
                                     f"[ {self._state_mark['found']} ] "
                                     f"{path.parts[-1]}")
         

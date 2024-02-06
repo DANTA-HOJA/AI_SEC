@@ -1,4 +1,6 @@
-# TODO: 
+from pathlib import Path
+
+from ..assert_fn import assert_is_pathobj
 # -----------------------------------------------------------------------------/
 
 
@@ -30,4 +32,14 @@ def flatten_dict(_dict:dict[str, any], parent_key:str="", sep:str="."):
                 new_dict[flatten_key] = v
     
     return new_dict
+    # -------------------------------------------------------------------------/
+
+
+
+def render_excel_hyperlink(display_text:str, path:Path):
+    """
+    """
+    assert_is_pathobj(path)
+    
+    return '=HYPERLINK("{}", "{}")'.format(path, display_text)
     # -------------------------------------------------------------------------/
