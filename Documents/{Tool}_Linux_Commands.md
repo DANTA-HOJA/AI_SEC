@@ -80,6 +80,14 @@ pqiv -z 0.15 --watch-directories -P off [/path/to/your/directory]
 --------------------------------------------------------------------------------
 ```
 
+### Open Office (X11 forwarding)
+
+installation guide: <https://www.openoffice.org/download/common/instructions.html>
+
+By default, this will install/update Apache OpenOffice in your /opt directory.
+
+to run openoffic, execute the file: `/opt/openoffice4/program/soffice`
+
 ### tmux (keep termianl section)
 
 - `<prefix>` (default)
