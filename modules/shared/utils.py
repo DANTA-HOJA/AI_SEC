@@ -56,8 +56,8 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
     zebrafish_series = ["ZebraFish_AP_POS",
                         "Zebrafish_Cell_Count"]
     
-    path_split = list(Path(__file__).parts)
-    
+    path_split = list(Path(__file__).parts) # 使用 `__file__` 時，
+                                            # `assert_run_under_repo_root` 無效
     target_idx = None
     for repo_name in zebrafish_series:
         target_idx = get_target_str_idx_in_list(path_split, repo_name)
@@ -65,7 +65,7 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
     assert_run_under_repo_root(target_idx, zebrafish_series)
     
     """ Generate path """
-    repo_root = Path(os.sep.join(path_split[:target_idx+1]))
+    repo_root = Path(*path_split[:target_idx+1]) # construct path
     
     """ add sys.path """
     if (repo_root.exists()) and (str(repo_root) not in sys.path):
