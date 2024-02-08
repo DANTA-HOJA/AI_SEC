@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple, Union
 
 from ...assert_fn import *
 from ...assert_fn import assert_0_or_1_history_dir
+from ...shared.clioutput import CLIOutput
 from ...shared.pathnavigator import PathNavigator
 from ...shared.utils import exclude_tmp_paths
 # -----------------------------------------------------------------------------/
@@ -96,9 +97,17 @@ def reshape_transform(tensor, height=14, width=14):
 
 
 
-def get_history_dir(path_navigator:PathNavigator, time_stamp:str, state:str):
+def get_history_dir(path_navigator:PathNavigator, time_stamp:str, state:str,
+                    cli_out:CLIOutput=None):
     """
     """
+    def print_history_dir(history_dir):
+        """
+        """
+        if cli_out is not None:
+            cli_out.write(f"History Dir: '{history_dir}'")
+        # ---------------------------------------------------------------------
+    
     if state not in ["best", "final"]:
         raise ValueError(f"(config) `model_prediction.state`: "
                             f"'{state}', accept 'best' or 'final' only\n")
@@ -122,17 +131,19 @@ def get_history_dir(path_navigator:PathNavigator, time_stamp:str, state:str):
     # best mark
     if state == "best" and best_found:
         assert_0_or_1_history_dir(best_found, time_stamp, state)
-        return best_found[0]
+        path = best_found[0]; print_history_dir(path)
+        return path
     
     # final mark
     if state == "final" and final_found:
         assert_0_or_1_history_dir(final_found, time_stamp, state)
-        return final_found[0]
+        path = final_found[0]; print_history_dir(path)
+        return path
     
     # unset ( original )
-    assert_0_or_1_history_dir(found_list, time_stamp, state)
     if found_list:
-        return found_list[0]
+        path = found_list[0]; print_history_dir(path)
+        return path
     else:
         raise ValueError("No `history_dir` matches the provided config")
     # -------------------------------------------------------------------------/

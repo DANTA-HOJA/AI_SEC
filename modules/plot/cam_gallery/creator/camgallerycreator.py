@@ -102,7 +102,8 @@ class CamGalleryCreator(BaseObject):
         """
         self.history_dir = get_history_dir(self._path_navigator,
                                            self.model_time_stamp,
-                                           self.model_state)
+                                           self.model_state,
+                                           cli_out=self._cli_out)
         # ---------------------------------------------------------------------/
 
 
