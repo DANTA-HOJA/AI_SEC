@@ -54,12 +54,13 @@ def confusion_matrix_with_class(prediction:List[str], ground_truth:List[str]):
 
 
 def rename_history_dir(orig_history_dir:Path, test_desc:str,
-                       model_state:str, test_log:dict, score_key:str):
+                       model_state:str, test_log:dict, score_key:str,
+                       cli_out:CLIOutput=None):
     """
     """
     assert_is_pathobj(orig_history_dir)
     
-    history_dir_split = str(orig_history_dir).split(os.sep)
+    history_dir_split = list(orig_history_dir.parts)
     dir_name_split = re.split("{|}", history_dir_split[-1])
     
     new_name: str = ""
@@ -70,8 +71,11 @@ def rename_history_dir(orig_history_dir:Path, test_desc:str,
     new_name += f"{{{score_key}_{test_log[f'{score_key}']}}}"
     
     history_dir_split[-1] = new_name # replace `dir_name`
-    new_history_dir = Path(os.sep.join(history_dir_split)) # reconstruct path
+    new_history_dir = Path(*history_dir_split) # reconstruct path
     os.rename(orig_history_dir, new_history_dir)
+    
+    if cli_out is not None:
+        cli_out.write(f"Renamed History Dir: '{new_history_dir}'")
     # -------------------------------------------------------------------------/
 
 

@@ -105,6 +105,7 @@ class BaseFishTester(BaseImageTester):
         self._one_epoch_testing()
         
         self.pbar_n_test.close()
+        self._cli_out.new_line()
         
         """ Save files """
         self._save_predict_ans_log() # save file
@@ -116,10 +117,12 @@ class BaseFishTester(BaseImageTester):
         # example : '20230630_04_39_25_{Tested_PredByFish}_{100_epochs_AugOnFly}_{best}_{maweavg_f1_0.90208}'
         if self.do_cam:
             rename_history_dir(self.history_dir, "Tested_PredByFish_CAM",
-                               self.model_state, self.test_log, score_key="maweavg_f1")
+                               self.model_state, self.test_log, score_key="maweavg_f1",
+                               cli_out=self._cli_out)
         else:
             rename_history_dir(self.history_dir, "Tested_PredByFish",
-                               self.model_state, self.test_log, score_key="maweavg_f1")
+                               self.model_state, self.test_log, score_key="maweavg_f1",
+                               cli_out=self._cli_out)
         
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/

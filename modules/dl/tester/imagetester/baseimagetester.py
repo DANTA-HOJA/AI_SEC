@@ -282,6 +282,7 @@ class BaseImageTester(BaseObject):
         self._one_epoch_testing()
         
         self.pbar_n_test.close()
+        self._cli_out.new_line()
         
         """ Save files """
         self._save_test_log(test_desc="PredByImg", score_key="maweavg_f1") # save file
@@ -291,7 +292,8 @@ class BaseImageTester(BaseObject):
         # new_name_format : {time_stamp}_{test_desc}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score_key}
         # example : '20230630_04_39_25_{Tested_PredByImg}_{100_epochs_AugOnFly}_{best}_{maweavg_f1_0.90208}'
         rename_history_dir(self.history_dir, "Tested_PredByImg",
-                           self.model_state, self.test_log, score_key="maweavg_f1")
+                           self.model_state, self.test_log, score_key="maweavg_f1",
+                           cli_out=self._cli_out)
         
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
