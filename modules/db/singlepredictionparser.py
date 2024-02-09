@@ -9,7 +9,7 @@ import pandas as pd
 from colorama import Fore, Style
 
 from ..assert_fn import assert_is_pathobj
-from ..db.utils import flatten_dict, render_excel_hyperlink
+from ..db.utils import create_path_hyperlink, flatten_dict
 from ..shared.baseobject import BaseObject
 from ..shared.config import load_config
 # -----------------------------------------------------------------------------/
@@ -103,6 +103,7 @@ class SinglePredictionParser(BaseObject):
         self._handle_score("TestByImg")
         self._handle_score("TestByFish")
         
+        self._parsed_dict["Files"] = self._found_files_cnt
         if self._found_files_cnt > 1:
             self._cli_out.write(f"{Fore.YELLOW}Done "
                                 f"( {self._found_files_cnt} targets are found )\n"
@@ -127,13 +128,17 @@ class SinglePredictionParser(BaseObject):
             raise FileNotFoundError(f"Can't reach the folder '{self._prediction_dir}'")
         
         self._cli_out.write(f"{Fore.MAGENTA}Parsing{Style.RESET_ALL} "
-                            f"'{Fore.GREEN}{self._prediction_dir}"
-                            f"{Style.RESET_ALL}'")
+                            f"'{Fore.GREEN}{self._prediction_dir}'"
+                            f"{Style.RESET_ALL}")
         
         name_split = re.split("{|}", prediction_dir.parts[-1])
+        time_stamp = name_split[0] # e.g.: '20240203_22_12_56_'
+        final_epoch = name_split[3].split("_")[0] # e.g.: '69_epochs_AugOnFly'
+        model_state = name_split[5] # e.g.: 'best'
         
         # col: Prediction_ID
-        self._parsed_dict["Prediction_ID"] = f"{name_split[0]} | {name_split[5]}"
+        self._parsed_dict["Prediction_ID"] = \
+                (f"{time_stamp} | {model_state:5} | {final_epoch}_epoch")
         
         # col: Version
         model_prediction: Path = \
@@ -141,13 +146,22 @@ class SinglePredictionParser(BaseObject):
         rel_path = prediction_dir.relative_to(model_prediction).parts[0]
         self._parsed_dict["Version"] = rel_path.split("_")[0]
         
+        # col: state
+        self._parsed_dict["State"] = model_state
+        
         # col: (HyperLink) Local_Path
         self._parsed_dict["Local_Path"] = \
-                        render_excel_hyperlink("local_path", prediction_dir)
+                        create_path_hyperlink("local_path", prediction_dir)
+        
+        # col: TrainingConfig.Note (move column forward)
+        self._parsed_dict["Files"] = ""
+        self._parsed_dict["TrainingConfig.Note"] = ""
+        self._parsed_dict["TestByImg.Maweavg_f1"] = 0.0
+        self._parsed_dict["TestByFish.Maweavg_f1"] = 0.0
         # ---------------------------------------------------------------------/
 
 
-    def _get_item_path(self, item:tuple[str, str]):    
+    def _get_item_path(self, item:tuple[str, str]):
         """
 
         Args:
@@ -244,7 +258,8 @@ class SinglePredictionParser(BaseObject):
         
         if path:
             with open(path, mode="r") as f_reader:
-                self._parsed_dict["Training.Time"] = float(f_reader.readline())
+                self._parsed_dict["Training.Time"] = \
+                            round(float(f_reader.readline()), 5)
         else:
             self._parsed_dict["Training.Time"] = self._state_mark['empty_cell']
         # ---------------------------------------------------------------------/
