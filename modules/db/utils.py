@@ -1,10 +1,11 @@
 from pathlib import Path
+from typing import Dict, List, Tuple, Union, Any
 
 from ..assert_fn import assert_is_pathobj
 # -----------------------------------------------------------------------------/
 
 
-def flatten_dict(_dict:dict[str, any], parent_key:str="", sep:str="."):
+def flatten_dict(_dict:dict[str, Any], parent_key:str="", sep:str="."):
     """ flatten a dict. Concat all of keys become a "name chain" before it meet a value,
         return `new_dict = {"name chain": value}`
 
@@ -36,10 +37,26 @@ def flatten_dict(_dict:dict[str, any], parent_key:str="", sep:str="."):
 
 
 
-def render_excel_hyperlink(display_text:str, path:Path):
+def create_path_hyperlink(display_text:str, path:Path) -> str:
     """
     """
     assert_is_pathobj(path)
     
-    return '=HYPERLINK("{}", "{}")'.format(path, display_text)
+    return '=HYPERLINK("file://{}", "{}")'.format(path, display_text)
+    # -------------------------------------------------------------------------/
+
+
+
+def resolve_path_hyperlink(excel_hyperlink:str) \
+                            -> Union[tuple[None, None], tuple[str, Path]]:
+    """
+    """
+    if isinstance(excel_hyperlink, str):
+        if excel_hyperlink.startswith("=HYPERLINK("):
+            str_split = excel_hyperlink.split('"')
+            text = str_split[3]
+            path = str_split[1].replace("file://", "")
+            return text, Path(path)
+    
+    return None, None
     # -------------------------------------------------------------------------/
