@@ -39,17 +39,16 @@ class DBFileUpdater(BaseObject):
 
     def _reset_attrs(self):
         """ Reset below attributes
-            >>> self.unpredicted_history_dirs: list[Path]
-            >>> self.dirs_state: dict[str, list[Path]]
+            >>> self.dirs_state: dict[str, list[Union[Path, tuple[str, dict], str]]]
             >>> self._current_db: Union[None, pd.DataFrame]
             >>> self._csv_path: Path
             >>> self._excel_path: Path
         """
-        self.unpredicted_history_dirs: list[Path] = []
-        self.dirs_state: dict[str, list[Path]] = {}
-        self.dirs_state["New Prediction Dir"] = []
-        self.dirs_state["Updated Prediction Dir"] = []
-        self.dirs_state["Deleted Prediction Dir"] = []
+        self.dirs_state: dict[str, list[Union[Path, tuple[str, dict], str]]] = {}
+        self.dirs_state["Unpredicted History Dir"] = [] # list[path]
+        self.dirs_state["Updated Prediction Dir"] = [] # list[(index, changed_col_dict)]
+        self.dirs_state["New Prediction Dir"] = [] # list[index]
+        self.dirs_state["Deleted Prediction Dir"] = [] # list[index]
         # ↑ above `dirs` objects are printed at the end of process
         
         self._current_db: Union[None, pd.DataFrame] = None
@@ -127,7 +126,7 @@ class DBFileUpdater(BaseObject):
                 
             else:
                 # Unpredicted History Dir
-                self.unpredicted_history_dirs.append(prediction_dir)
+                self.dirs_state["Unpredicted History Dir"].append(prediction_dir)
         
         # set dict as attr
         self._prediction_dirs_dict = prediction_dirs_dict
@@ -182,12 +181,16 @@ class DBFileUpdater(BaseObject):
                 row: pd.Series = current_db.loc[index]
                 previous_row: pd.Series = previous_db.loc[index]
                 
-                if row.equals(previous_row):
+                changed_col_dict = \
+                    {col: col for col in row.compare(previous_row).index}
+                
+                if len(changed_col_dict) == 0:
                     """ unchanged """
                     pass
                 else:
                     """ updated """
-                    self.dirs_state["Updated Prediction Dir"].append(index)
+                    self.dirs_state["Updated Prediction Dir"].append(
+                                                    (index, changed_col_dict))
                 
                 previous_db.drop(index, inplace=True)
             else:
@@ -204,28 +207,47 @@ class DBFileUpdater(BaseObject):
         """
         changed_cnt = 0
         
-        # >>> Update <<<
+        # >>> Updated <<<
         if len(self.dirs_state["Updated Prediction Dir"]) > 0:
             changed_cnt += 1
             # display once
             self._cli_out.divide()
             print("[yellow]*** Updated Prediction ***\n")
             
-            for index in self.dirs_state["Updated Prediction Dir"]:
+            for index, changed_col_dict in self.dirs_state["Updated Prediction Dir"]:
                 
                 link = self._previous_db.loc[index, "Local_Path"]
                 _, path = resolve_path_hyperlink(link)
-                path_cnt = int(self._previous_db.loc[index, "Files"])
                 
                 new_link = self._current_db.loc[index, "Local_Path"]
                 _, new_path = resolve_path_hyperlink(new_link)
-                new_path_cnt = int(self._current_db.loc[index, "Files"])
                 
-                if new_path_cnt == path_cnt: update_flag = "Rename Only"
-                elif new_path_cnt > path_cnt: update_flag = f"Upgrade"
-                else: update_flag = "Downgrade"
+                # path state
+                path_state = ""
+                if path != new_path:
+                    changed_col_dict.pop("Local_Path")
+                    if path.parent == new_path.parent:
+                        path_state = "Rename Dir, "
+                    else:
+                        path_state = "Move Dir, "
                 
-                print(f"{update_flag}: [#2596be]'{path}'\n [#FFFFFF]--> [#be4d25]'{new_path}'\n")
+                # content state
+                content_state = ""
+                if len(changed_col_dict) != 0:
+                    # Content Changed
+                    path_cnt = int(self._previous_db.loc[index, "Files"])
+                    new_path_cnt = int(self._current_db.loc[index, "Files"])
+                    
+                    if new_path_cnt == path_cnt:
+                        content_state = "Content Changed Only, "
+                    elif new_path_cnt > path_cnt:
+                        content_state = f"Add {new_path_cnt - path_cnt} items, "
+                    else:
+                        content_state = f"Remove {path_cnt - new_path_cnt} items, "
+                
+                # CLI Output
+                print(f"{path_state}{content_state}changed_column: {list(changed_col_dict.values())}")
+                print(f"Dir: [#2596be]'{path}'\n [#FFFFFF]--> [#be4d25]'{new_path}'\n")
         
         
         # >>> New <<<
@@ -258,11 +280,11 @@ class DBFileUpdater(BaseObject):
         
         
         # >>> Unpredicted <<<
-        if len(self.unpredicted_history_dirs) > 0:
+        if len(self.dirs_state["Unpredicted History Dir"]) > 0:
             # display once
             self._cli_out.divide()
             print("[yellow]*** Unpredicted History ***\n")
             
-            for path in self.unpredicted_history_dirs:
+            for path in self.dirs_state["Unpredicted History Dir"]:
                 print(f"Dir: [orange1]'{path}'")
         # ---------------------------------------------------------------------/
