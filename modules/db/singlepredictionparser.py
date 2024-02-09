@@ -154,10 +154,10 @@ class SinglePredictionParser(BaseObject):
                         create_path_hyperlink("local_path", prediction_dir)
         
         # col: TrainingConfig.Note (move column forward)
-        self._parsed_dict["Files"] = ""
         self._parsed_dict["TrainingConfig.Note"] = ""
         self._parsed_dict["TestByImg.Maweavg_f1"] = 0.0
         self._parsed_dict["TestByFish.Maweavg_f1"] = 0.0
+        self._parsed_dict["Files"] = ""
         # ---------------------------------------------------------------------/
 
 
@@ -207,7 +207,8 @@ class SinglePredictionParser(BaseObject):
             else:
                 self._found_files_cnt += 1
                 path_dict[k] = path
-                self._parsed_dict[k] = self._state_mark["found"]
+                self._parsed_dict[k] = \
+                    create_path_hyperlink(self._state_mark["found"], path)
                 self._cli_out.write(f"{k:{self._key_max_length}}: "
                                     f"[ {self._state_mark['found']} ] "
                                     f"{path.parts[-1]}")
