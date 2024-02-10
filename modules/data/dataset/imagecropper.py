@@ -7,10 +7,12 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
 import cv2
+import numpy as np
 import pandas as pd
 from colorama import Back, Fore, Style
 
 from ...data import dname
+from ...dl.dataset.augmentation import crop_base_size
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir, formatter_padr0
 from ..processeddatainstance import ProcessedDataInstance
@@ -55,6 +57,7 @@ class ImageCropper(BaseObject):
         """
         super()._set_attrs(config)
         self._processed_di.parse_config(config)
+        self._base_size_cropper = crop_base_size(*self.base_size)
         
         self._set_crop_dir_name()
         self._set_clustered_df()
@@ -65,12 +68,16 @@ class ImageCropper(BaseObject):
 
     def _set_config_attrs(self):
         """ Set below attributes
-            - `self.palmskin_result_name`: str
-            - `self.cluster_desc`: str
+            >>> self.palmskin_result_name: str
+            >>> self.cluster_desc: str
+            >>> self.base_size: tuple[int, int]
         """
         """ [data_processed] """
         self.palmskin_result_name: str = self.config["data_processed"]["palmskin_result_name"]
         self.cluster_desc: str = self.config["data_processed"]["cluster_desc"]
+        
+        """ [param] """
+        self.base_size: tuple[int, int] = self.config["param"]["base_size"]
         # ---------------------------------------------------------------------/
 
 
@@ -121,9 +128,10 @@ class ImageCropper(BaseObject):
             self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
         
         self.dst_root: Path = \
-            dataset_cropped.joinpath(self.cluster_desc.split("_")[-1],
+            dataset_cropped.joinpath(self.cluster_desc.split("_")[-1], # RND[xxx]
                                      self._processed_di.instance_name,
-                                     os.path.splitext(self.palmskin_result_name)[0])
+                                     os.path.splitext(self.palmskin_result_name)[0],
+                                     f"W{self.base_size[0]}_H{self.base_size[1]}")
         # ---------------------------------------------------------------------/
 
 
@@ -164,14 +172,18 @@ class ImageCropper(BaseObject):
             
             for palmskin_dname in palmskin_dnames:
                 palmskin_result_file = sorted_results_dict.pop(palmskin_dname)
-                self._crop_single_image(palmskin_result_file)
+                self._create_single_basesize_imgset(palmskin_result_file)
                 self._pbar.update(main_task, advance=1)
                 self._pbar.refresh()
         
         # count dir
         self._cli_out.divide()
         for dir in ["test", "train", "valid"]:
-            self._cli_out.write(f"{dir}: {len(list(self.dst_root.joinpath(dir).glob('*')))}")
+            dsname_cnt = len(list(self.dst_root.joinpath(dir).glob("*")))
+            img_cnt = len(list(self.dst_root.joinpath(dir).glob(f"**/{self.crop_dir_name}/*.tiff")))
+            self._cli_out.write(f"{dir:5}, "
+                                f"# of dsnames: {dsname_cnt:{len(str(len(palmskin_dnames)))}}, "
+                                f"# of cropped images: {img_cnt}")
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
@@ -201,8 +213,12 @@ class ImageCropper(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _crop_single_image(self, img_path:Path):
-        """
+    def _create_single_hhc_imgset(self, img_path:Path):
+        """ [deprecate] Actions:
+            1. divide one `Anterior / Posterior` image into `UP(U) / Donw(D)` part
+            2. crop image to dataset required format
+            
+            - hhc = abbr(horizontal half cut)
         """
         img = cv2.imread(str(img_path))
         img_dict = {
@@ -231,31 +247,61 @@ class ImageCropper(BaseObject):
             self._pbar.refresh()
             
             # >>> Crop Task <<<
-            
-            if fish_dataset == "test":
-                
-                # cropping
-                crop_img_list = gen_crop_img_v2(part_img, self.config)
-                crop_task = self._pbar.add_task("[cyan][TBA]: ", total=len(crop_img_list))
-                
-                for i, cropped_img in enumerate(crop_img_list):
-                    
-                    cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
-                    self._pbar.update(crop_task, description=f"[cyan]{cropped_name} : ")
-                    self._pbar.refresh()
-                    
-                    # create `crop_dir`
-                    crop_dir = dsname_dir.joinpath(self.crop_dir_name)
-                    create_new_dir(crop_dir)
-                    
-                    # save cropped images
-                    save_path = crop_dir.joinpath(f"{cropped_name}.tiff")
-                    cv2.imwrite(str(save_path), cropped_img)
-                    
-                    self._pbar.update(crop_task, advance=1)
-                    self._pbar.refresh()
-                
-                self._pbar.remove_task(crop_task)
+            if fish_dataset != "train":
+                self._crop_single_image(part_img, dsname_dir, fish_dsname)
         
         self._pbar.remove_task(horizcut_task)
+        # ---------------------------------------------------------------------/
+
+
+    def _create_single_basesize_imgset(self, img_path:Path):
+        """
+        """
+        img = cv2.imread(str(img_path))
+        base_size_img = self._base_size_cropper(image=img)
+        
+        # extract info
+        fish_id, fish_pos = dname.get_dname_sortinfo(img_path)
+        fish_dataset = self.id2dataset_dict[fish_id]
+        fish_dsname = f"fish_{fish_id}_{fish_pos}"
+        
+        # >>> Save `base_size_img` <<<
+        dsname_dir = self.dst_root.joinpath(fish_dataset, fish_dsname)
+        save_path = dsname_dir.joinpath(f"{fish_dsname}.tiff")
+        if not save_path.exists():
+            create_new_dir(dsname_dir)
+            cv2.imwrite(str(save_path), base_size_img)
+        
+        # >>> Crop Task <<<
+        if fish_dataset != "train":
+            self._crop_single_image(base_size_img, dsname_dir, fish_dsname)
+        # ---------------------------------------------------------------------/
+
+
+    def _crop_single_image(self, img:np.ndarray, dsname_dir:Path,
+                            fish_dsname:str):
+        """
+        """
+        # cropping
+        crop_img_list = gen_crop_img_v2(img, self.config)
+        crop_task = self._pbar.add_task("[cyan][TBA]: ", total=len(crop_img_list))
+        
+        # create `crop_dir`
+        crop_dir = dsname_dir.joinpath(self.crop_dir_name)
+        create_new_dir(crop_dir)
+        
+        for i, cropped_img in enumerate(crop_img_list):
+            
+            cropped_name = f"{fish_dsname}_crop_{i:{formatter_padr0(crop_img_list)}}"
+            self._pbar.update(crop_task, description=f"[cyan]{cropped_name} : ")
+            self._pbar.refresh()
+            
+            # save cropped images
+            save_path = crop_dir.joinpath(f"{cropped_name}.tiff")
+            cv2.imwrite(str(save_path), cropped_img)
+            
+            self._pbar.update(crop_task, advance=1)
+            self._pbar.refresh()
+        
+        self._pbar.remove_task(crop_task)
         # ---------------------------------------------------------------------/

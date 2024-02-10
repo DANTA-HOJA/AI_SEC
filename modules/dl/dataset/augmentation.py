@@ -2,6 +2,15 @@ from imgaug import augmenters as iaa
 # -----------------------------------------------------------------------------/
 
 
+def crop_base_size(width, height):
+    """
+    """
+    return iaa.CropToFixedSize(width=width, height=height,
+                               position="center")
+    # -------------------------------------------------------------------------/
+
+
+
 def dynamic_crop(size:int) -> iaa.Sequential:
     """ rotate -> random crop -> return
     """
