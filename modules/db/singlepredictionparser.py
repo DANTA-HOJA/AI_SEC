@@ -289,14 +289,10 @@ class SinglePredictionParser(BaseObject):
         path = self._item_path_dict[f"(SCORE) {key}"]
         
         if path:
-            score_dict = load_config(path)
-            self._parsed_dict[f"{key}.L_f1"] = float(score_dict["L_f1"])
-            self._parsed_dict[f"{key}.M_f1"] = float(score_dict["M_f1"])
-            self._parsed_dict[f"{key}.S_f1"] = float(score_dict["S_f1"])
-            self._parsed_dict[f"{key}.Micro_f1"]    = float(score_dict["micro_f1"])
-            self._parsed_dict[f"{key}.Macro_f1"]    = float(score_dict["macro_f1"])
-            self._parsed_dict[f"{key}.Weighted_f1"] = float(score_dict["weighted_f1"])
-            self._parsed_dict[f"{key}.Maweavg_f1"]  = float(score_dict["maweavg_f1"])
+            score_dict: dict[str, float] = load_config(path)
+            for k, v in score_dict.items():
+                if k == "average_loss": continue
+                self._parsed_dict[f"{key}.{k.capitalize()}"] = float(v)
         else:
             self._parsed_dict[f"{key}.L_f1"] = self._state_mark['empty_cell']
             self._parsed_dict[f"{key}.M_f1"] = self._state_mark['empty_cell']

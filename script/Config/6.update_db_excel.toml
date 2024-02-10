@@ -1,3 +1,6 @@
+"column_version" = "v4.0_Introduce_BG_Class_without_HHC"
+
+# -----------------------------------------------------------------------------\
 [state_mark]
   found = "\u2713" # "\u2713" == ✓
   not_found = "\u2717" # "\u2717" == ✗
