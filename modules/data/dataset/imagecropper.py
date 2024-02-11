@@ -273,8 +273,7 @@ class ImageCropper(BaseObject):
             cv2.imwrite(str(save_path), base_size_img)
         
         # >>> Crop Task <<<
-        if fish_dataset != "train":
-            self._crop_single_image(base_size_img, dsname_dir, fish_dsname)
+        self._crop_single_image(base_size_img, dsname_dir, fish_dsname)
         # ---------------------------------------------------------------------/
 
 
