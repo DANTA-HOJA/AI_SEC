@@ -10,7 +10,7 @@ import pandas as pd
 from colorama import Back, Fore, Style
 
 from ...shared.baseobject import BaseObject
-from ...shared.utils import create_new_dir, get_target_str_idx_in_list
+from ...shared.utils import create_new_dir, exclude_tmp_paths
 from .. import dname
 from ..processeddatainstance import ProcessedDataInstance
 from . import dsname
@@ -67,12 +67,15 @@ class DatasetFileCreator(BaseObject):
 
     def _set_config_attrs(self):
         """ Set below attributes
-            - `self.palmskin_result_name`: str
-            - `self.cluster_desc`: str
+            >>> self.palmskin_result_name: str
+            >>> self.cluster_desc: str
         """
         """ [data_processed] """
         self.palmskin_result_name: str = self.config["data_processed"]["palmskin_result_name"]
         self.cluster_desc: str = self.config["data_processed"]["cluster_desc"]
+        
+        """ [param] """
+        self.base_size: tuple[int, int] = self.config["param"]["base_size"]
         
         self.palmskin_result_name = os.path.splitext(self.palmskin_result_name)[0]
         # ---------------------------------------------------------------------/
@@ -125,9 +128,10 @@ class DatasetFileCreator(BaseObject):
             self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
         
         self.src_root: Path = \
-            dataset_cropped.joinpath(self.cluster_desc.split("_")[-1],
+            dataset_cropped.joinpath(self.cluster_desc.split("_")[-1], # RND[xxx]
                                      self._processed_di.instance_name,
-                                     self.palmskin_result_name)
+                                     self.palmskin_result_name,
+                                     f"W{self.base_size[0]}_H{self.base_size[1]}")
         # ---------------------------------------------------------------------/
 
 
@@ -157,19 +161,24 @@ class DatasetFileCreator(BaseObject):
         super().run(config)
         
         # checking
-        self._check_if_save_dirs_exist()
+        self._check_if_target_dirs_exist()
         
         # get images
         test_img_paths = list(self.src_root.glob(f"test/*/{self.crop_dir_name}/*.tiff"))
-        train_img_paths = list(self.src_root.glob(f"train/*/*.tiff"))
-        valid_img_paths = list(self.src_root.glob(f"valid/*/*.tiff"))
+        test_img_paths = exclude_tmp_paths(test_img_paths)
+        self._cli_out.write(f"test: {len(test_img_paths)} images")
+        
+        train_img_paths = list(self.src_root.glob(f"train/**/*.tiff"))
+        train_img_paths = exclude_tmp_paths(train_img_paths)
+        self._cli_out.write(f"train: {len(train_img_paths)} images")
+        
+        valid_img_paths = list(self.src_root.glob(f"valid/*/{self.crop_dir_name}/*.tiff"))
+        valid_img_paths = exclude_tmp_paths(valid_img_paths)
+        self._cli_out.write(f"valid: {len(valid_img_paths)} images")
+        
+        # collect all image
         img_paths = sorted(test_img_paths + train_img_paths + valid_img_paths,
                            key=dsname.get_dsname_sortinfo)
-        
-        # display image count
-        self._cli_out.write(f"test: {len(test_img_paths)} images")
-        self._cli_out.write(f"train: {len(train_img_paths)} images")
-        self._cli_out.write(f"valid: {len(valid_img_paths)} images")
         
         """ Main Task """
         dataset_df: Union[None, pd.DataFrame] = None
@@ -184,19 +193,20 @@ class DatasetFileCreator(BaseObject):
             
             for path in img_paths:
                 
-                """ Get `parent_dsname` ( without `_crop_[idx]` ) """
-                path_split = str(path).split(os.sep)
-                target_idx = get_target_str_idx_in_list(path_split,
-                                                        self.palmskin_result_name)
-                fish_dataset = path_split[target_idx+1]
-                parent_dsname = path_split[target_idx+2]
+                """ Get Get `fish info` """
+                rel_path: Path = path.relative_to(self.src_root)
+                fish_dataset = rel_path.parts[0]
+                parent_dsname = rel_path.parts[1] # without `_crop_[idx]`
+                img_name = rel_path.stem
                 
-                """ Get `fish info` """
-                img_name = os.path.basename(path)
-                img_name = os.path.splitext(img_name)[0]
-                temp_list = dsname.get_dsname_sortinfo(img_name)
-                fish_id     = temp_list[0]
-                fish_pos    = temp_list[1]
+                parent_dsname_info = dsname.get_dsname_sortinfo(parent_dsname)
+                img_name_info = dsname.get_dsname_sortinfo(img_name)
+                if len(img_name_info) != len(parent_dsname_info):
+                     img_size = "crop"
+                else: img_size = "base"
+                
+                fish_id = img_name_info[0]
+                fish_pos = img_name_info[1]
                 fish_class = self.id2cls_dict[fish_id]
                 
                 # update pbar
@@ -205,40 +215,39 @@ class DatasetFileCreator(BaseObject):
                 self._pbar.refresh()
                 
                 """ preserve / discard """
+                dark_ratio = "---"
                 state = "preserve"
-                darkratio = "---"
-                if fish_dataset == "test":
+                if img_size == "crop":
                     
                     img = cv2.imread(str(path))
-                    
                     select, drop = drop_too_dark([img], self.config)
-                    if select is None: assert drop, "Either `select` or `drop` needs to be empty"
-                    if drop is None: assert select, "Either `select` or `drop` needs to be empty"
                     
-                    if select:
+                    if len(select) > 0:
+                        assert len(drop) == 0, "Either `select` or `drop` needs to be empty"
+                        dark_ratio = select[0][2]
                         state = "preserve"
-                        darkratio = select[0][2]
                     
-                    if drop:
+                    if len(drop) > 0:
+                        assert len(select) == 0, "Either `select` or `drop` needs to be empty"
+                        dark_ratio = drop[0][2]
                         state = "discard"
-                        darkratio = drop[0][2]
-                        fish_class = "BG"
                 
                 """ Create `temp_dict` """
                 temp_dict = {}
                 # -------------------------------------------------------
                 temp_dict["image_name"] = img_name
                 temp_dict["class"] = fish_class
+                temp_dict["image_size"] = img_size
                 # -------------------------------------------------------
                 temp_dict["parent (dsname)"] = parent_dsname
                 temp_dict["fish_id"] = fish_id
                 temp_dict["fish_pos"] = fish_pos
                 # -------------------------------------------------------
                 temp_dict["dataset"] = fish_dataset
-                temp_dict["darkratio"] = darkratio
+                temp_dict["dark_ratio"] = dark_ratio
                 temp_dict["state"] = state
                 # -------------------------------------------------------
-                temp_dict["path"] = path.relative_to(self.src_root)
+                temp_dict["path"] = rel_path
                 # -------------------------------------------------------
                 temp_df = pd.DataFrame(temp_dict, index=[0])
                 
@@ -252,14 +261,14 @@ class DatasetFileCreator(BaseObject):
         """ Save `dataset_xlsx` """
         self._cli_out.divide()
         self._cli_out.write("Saving `dataset_file`... ")
-        create_new_dir(os.path.split(self.dataset_file)[0])
+        create_new_dir(self.dataset_file.parent)
         dataset_df.to_csv(self.dataset_file, encoding='utf_8_sig', index=False)
         self._cli_out.write(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
 
-    def _check_if_save_dirs_exist(self):
+    def _check_if_target_dirs_exist(self):
         """
         """
         for dir in ["test", "train", "valid"]:
