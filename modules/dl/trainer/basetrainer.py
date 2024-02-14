@@ -151,12 +151,12 @@ class BaseTrainer(BaseObject):
 
 
     def _set_training_reproducibility(self):
-        """ Set below attributes
-            - `self.rand_seed`: int
-        
-        Pytorch reproducibility
+        """ Pytorch reproducibility
             - ref: https://clay-atlas.com/us/blog/2021/08/24/pytorch-en-set-seed-reproduce/?amp=1
             - ref: https://pytorch.org/docs/stable/notes/randomness.html
+        
+        Set below attributes
+            >>> self.rand_seed: int
         """
         self.rand_seed: int = int(self.dataset_seed_dir.replace("RND", ""))
         
@@ -220,8 +220,8 @@ class BaseTrainer(BaseObject):
 
     def _set_mapping_attrs(self):
         """ Set below attributes
-            - `self.num2class_list`: list
-            - `self.class2num_dict`: Dict[str, int]
+            >>> self.num2class_list: list
+            >>> self.class2num_dict: Dict[str, int]
         
         Example :
         >>> num2class_list = ['L', 'M', 'S']
@@ -285,8 +285,8 @@ class BaseTrainer(BaseObject):
 
     def _set_train_valid_df(self):
         """ Set below attributes
-            - `self.train_df`: pd.DataFrame
-            - `self.valid_df`: pd.DataFrame
+            >>> self.train_df: pd.DataFrame
+            >>> self.valid_df: pd.DataFrame
         """
         self.train_df: pd.DataFrame = \
                 self.dataset_df[(self.dataset_df["dataset"] == "train")]
@@ -354,8 +354,8 @@ class BaseTrainer(BaseObject):
 
     def _set_dst_root(self):
         """ Set below attributes
-            - `self.time_stamp`: str
-            - `self.dst_root`: Path
+            >>> self.time_stamp: str
+            >>> self.dst_root: Path
         """
         model_history: Path = \
             self._path_navigator.dbpp.get_one_of_dbpp_roots("model_history")
@@ -388,8 +388,8 @@ class BaseTrainer(BaseObject):
 
     def _set_dataloaders(self):
         """ Set below attributes
-            - `self.train_dataloader`: DataLoader
-            - `self.valid_dataloader`: DataLoader
+            >>> self.train_dataloader: DataLoader
+            >>> self.valid_dataloader: DataLoader
         """
         if self.num_workers > 0:
             self.train_dataloader: DataLoader = \
