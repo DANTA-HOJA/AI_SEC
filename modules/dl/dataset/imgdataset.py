@@ -50,6 +50,8 @@ class ImgDataset_v3(BaseObject, Dataset):
         self.crop_size = self.dataset_param["crop_size"]
         self.dyn_cropper = dynamic_crop(self.crop_size)
         self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
+        self.add_bg_class: bool = config["train_opts"]["data"]["add_bg_class"]
+        self.random_crop: bool = config["train_opts"]["data"]["random_crop"]
         
         # ---------------------------------------------------------------------
         # """ actions """
@@ -73,12 +75,13 @@ class ImgDataset_v3(BaseObject, Dataset):
         seed_dir: str = self.config["dataset"]["seed_dir"]
         data: str = self.config["dataset"]["data"]
         palmskin_result: str = self.config["dataset"]["palmskin_result"]
+        base_size: str = self.config["dataset"]["base_size"]
         
         dataset_cropped: Path = \
             self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
         
         self.src_root = \
-            dataset_cropped.joinpath(seed_dir, data, palmskin_result)
+            dataset_cropped.joinpath(seed_dir, data, palmskin_result, base_size)
         # ---------------------------------------------------------------------/
 
 
@@ -108,26 +111,38 @@ class ImgDataset_v3(BaseObject, Dataset):
         img: np.ndarray = cv2.imread(str(path))
         fish_class: str = self.df.iloc[index]["class"]
         
-        """ Augmentation image on the fly """
-        darkratio: float = 0.0
-        if self.mode == "test":
-            darkratio = float(self.df.iloc[index]["darkratio"])
-        else:
+        # >>> Apply different config settings to image <<<
+        
+        # random crop
+        dark_ratio: float = 0.0
+        state: str = ""
+        if (self.random_crop) and (self.mode == "train"):
+            # random crop
             img = self.dyn_cropper(image=img)
-            
+            # detect too dark
             select, drop = drop_too_dark([img], {"param": self.dataset_param})
-            if select:
-                darkratio = select[0][2]
-            if drop:
-                darkratio = drop[0][2]
-                fish_class = "BG"
-            
-            if self.transform is not None:
-                img = self.transform(image=img)
+            if len(select) > 0:
+                dark_ratio = select[0][2]
+                state = "preserve"
+            if len(drop) > 0:
+                dark_ratio = drop[0][2]
+                state = "discard"
+        else:
+            dark_ratio = float(self.df.iloc[index]["dark_ratio"])
+            state = self.df.iloc[index]["state"]
+        
+        # replace BG (background) class
+        if (self.add_bg_class) and (state == "discard"):
+            fish_class = "BG"
+        
+        # augmentation on the fly
+        if (self.transform is not None) and (self.mode == "train"):
+            img = self.transform(image=img)
+        
         
         """ Choosing the color space, 'RGB' or 'HSV' """
         img = img[:,:,::-1] # BGR -> RGB
-        if self.debug_mode: self._save_meta_img(img, darkratio, name, fish_class)
+        if self.debug_mode: self._save_meta_img(img, dark_ratio, name, fish_class)
         if self.use_hsv is True: img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL) # BGR -> HSV
         
         """ Prepare image """
@@ -144,7 +159,7 @@ class ImgDataset_v3(BaseObject, Dataset):
         # ---------------------------------------------------------------------/
 
 
-    def _save_meta_img(self, rgb_image:np.ndarray, darkratio:float,
+    def _save_meta_img(self, rgb_image:np.ndarray, dark_ratio:float,
                        name:str, fish_class:str):
         """
         """
@@ -152,11 +167,11 @@ class ImgDataset_v3(BaseObject, Dataset):
         
         draw_drop_info_on_image(rgb_image=img,
                                 intensity=self.dataset_param["intensity"],
-                                dark_ratio=darkratio,
+                                dark_ratio=dark_ratio,
                                 drop_ratio=self.dataset_param["drop_ratio"])
         
         # save image
-        if self.mode != "test":
+        if self.mode == "train":
             while True: # using 'UUID Version 1 (Time-based)'
                 save_name = f"{fish_class}_{name}_aug_{str(uuid.uuid1().hex)[:8]}.tiff"
                 save_path = self.dst_root.joinpath(save_name)
@@ -165,5 +180,6 @@ class ImgDataset_v3(BaseObject, Dataset):
         else:
             save_path = self.dst_root.joinpath(f"{fish_class}_{name}.tiff")
         
-        img.save(save_path)
+        if not save_path.exists():
+            img.save(save_path)
         # ---------------------------------------------------------------------/
