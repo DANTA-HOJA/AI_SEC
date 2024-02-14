@@ -156,7 +156,7 @@ class BaseTrainer(BaseObject):
             - ref: https://pytorch.org/docs/stable/notes/randomness.html
         
         Set below attributes
-            >>> self.rand_seed: int
+        >>> self.rand_seed: int
         """
         self.rand_seed: int = int(self.dataset_seed_dir.replace("RND", ""))
         
