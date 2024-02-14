@@ -19,6 +19,8 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
+from ...data.dataset.utils import parse_dataset_file_name
+from ...data.processeddatainstance import ProcessedDataInstance
 from ...shared.baseobject import BaseObject
 from ...shared.config import dump_config
 from ...shared.timer import Timer
@@ -33,13 +35,19 @@ from .utils import (calculate_class_weight, plot_training_trend,
 
 class BaseTrainer(BaseObject):
 
-    def __init__(self, display_on_CLI=True) -> None:
+    def __init__(self, processed_data_instance:ProcessedDataInstance=None,
+                 display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
         super().__init__(display_on_CLI)
+        
+        if processed_data_instance:
+            self._processed_di = processed_data_instance
+        else:
+            self._processed_di = ProcessedDataInstance()
         
         # ---------------------------------------------------------------------
         # """ attributes """
@@ -63,6 +71,7 @@ class BaseTrainer(BaseObject):
         self._set_dataset_df()
         self._set_mapping_attrs()
         self._set_train_valid_df()
+        self._set_class_counts_dict()
         self._print_trainingset_informations()
         self._set_dst_root()
         
@@ -84,6 +93,7 @@ class BaseTrainer(BaseObject):
         self.dataset_seed_dir: str = self.config["dataset"]["seed_dir"]
         self.dataset_data: str = self.config["dataset"]["data"]
         self.dataset_palmskin_result: str = self.config["dataset"]["palmskin_result"]
+        self.dataset_base_size: str = self.config["dataset"]["base_size"]
         self.dataset_classif_strategy: str = self.config["dataset"]["classif_strategy"]
         self.dataset_file_name: str = self.config["dataset"]["file_name"]
         
@@ -91,9 +101,26 @@ class BaseTrainer(BaseObject):
         self.model_name: str = self.config["model"]["name"]
         self.model_pretrain: str = self.config["model"]["pretrain"]
         
+        """ [train_opts.cpu] """
+        self.num_workers: int = self.config["train_opts"]["cpu"]["num_workers"]
+        
+        """ [train_opts.cuda] """
+        self.cuda_idx: int = self.config["train_opts"]["cuda"]["index"]
+        self.use_amp: bool = self.config["train_opts"]["cuda"]["use_amp"]
+        
+        """ [train_opts.debug_mode] """
+        self.debug_mode: bool = self.config["train_opts"]["debug_mode"]["enable"]
+        self.debug_rand_select:int = self.config["train_opts"]["debug_mode"]["rand_select"]
+        
+        """ [train_opts.data] """
+        self.use_hsv: bool = self.config["train_opts"]["data"]["use_hsv"]
+        self.forcing_balance: bool = self.config["train_opts"]["data"]["forcing_balance"]
+        self.forcing_sample_amount:int = self.config["train_opts"]["data"]["forcing_sample_amount"]
+        self.random_crop: bool = self.config["train_opts"]["data"]["random_crop"]
+        self.add_bg_class: bool = self.config["train_opts"]["data"]["add_bg_class"]
+        self.aug_on_fly: bool = self.config["train_opts"]["data"]["aug_on_fly"]
+        
         """ [train_opts] """
-        # self.train_ratio: float = self.config["train_opts"]["train_ratio"]
-        # self.rand_seed: int = self.config["train_opts"]["random_seed"]
         self.epochs: int = self.config["train_opts"]["epochs"]
         self.batch_size: int = self.config["train_opts"]["batch_size"]
         
@@ -110,27 +137,16 @@ class BaseTrainer(BaseObject):
         self.enable_earlystop: bool = self.config["train_opts"]["earlystop"]["enable"]
         self.max_no_improved: int = self.config["train_opts"]["earlystop"]["max_no_improved"]
         
-        """ [train_opts.data] """
-        self.use_hsv: bool = self.config["train_opts"]["data"]["use_hsv"]
-        self.aug_on_fly: bool = self.config["train_opts"]["data"]["aug_on_fly"]
-        self.forcing_balance: bool = self.config["train_opts"]["data"]["forcing_balance"]
-        self.forcing_sample_amount:int = self.config["train_opts"]["data"]["forcing_sample_amount"]
+        if (self.random_crop) and (not self.add_bg_class):
+            raise AttributeError(f"Can't set `random_crop` = {self.random_crop} "
+                                 f"if `add_bg_class` = {self.add_bg_class}, "
+                                 "random crop may generate a discard image")
         
-        """ [train_opts.debug_mode] """
-        self.debug_mode: bool = self.config["train_opts"]["debug_mode"]["enable"]
-        self.debug_rand_select:int = self.config["train_opts"]["debug_mode"]["rand_select"]
         if self.debug_mode:
             self.epochs = 10
             self.batch_size = 16
             self._cli_out.write(f"※　: debug mode, force `epochs` = {self.epochs}")
             self._cli_out.write(f"※　: debug mode, force `batch_size` = {self.batch_size}")
-        
-        """ [train_opts.cuda] """
-        self.cuda_idx: int = self.config["train_opts"]["cuda"]["index"]
-        self.use_amp: bool = self.config["train_opts"]["cuda"]["use_amp"]
-        
-        """ [train_opts.cpu] """
-        self.num_workers: int = self.config["train_opts"]["cpu"]["num_workers"]
         # ---------------------------------------------------------------------/
 
 
@@ -186,7 +202,8 @@ class BaseTrainer(BaseObject):
         
         src_root = dataset_cropped.joinpath(self.dataset_seed_dir,
                                             self.dataset_data,
-                                            self.dataset_palmskin_result)
+                                            self.dataset_palmskin_result,
+                                            self.dataset_base_size)
         
         dataset_file: Path = src_root.joinpath(self.dataset_classif_strategy,
                                                self.dataset_file_name)
@@ -210,7 +227,12 @@ class BaseTrainer(BaseObject):
         >>> num2class_list = ['L', 'M', 'S']
         >>> class2num_dict = {'L': 0, 'M': 1, 'S': 2}
         """
-        self.num2class_list: list = sorted(Counter(self.dataset_df["class"]).keys())
+        cls_list = list(Counter(self.dataset_df["class"]).keys())
+        
+        if self.add_bg_class:
+            cls_list.append("BG")
+        
+        self.num2class_list: list = sorted(cls_list)
         self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
         
         self._cli_out.write(f"num2class_list = {self.num2class_list}, "
@@ -272,6 +294,15 @@ class BaseTrainer(BaseObject):
         self.valid_df: pd.DataFrame = \
                 self.dataset_df[(self.dataset_df["dataset"] == "valid")]
         
+        if self.random_crop:
+            self.train_df = self.train_df[(self.train_df["image_size"] == "base")]
+        else:
+            self.train_df = self.train_df[(self.train_df["image_size"] == "crop")]
+        
+        if not self.add_bg_class:
+            self.train_df = self.train_df[(self.train_df["state"] == "preserve")]
+            self.valid_df = self.valid_df[(self.valid_df["state"] == "preserve")]
+        
         # debug: sampleing for faster speed
         if self.debug_mode:
             self.train_df = self.train_df.sample(n=self.debug_rand_select,
@@ -284,11 +315,20 @@ class BaseTrainer(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_class_counts_dict(self): # NOTE: deprecate
-        """ WARNING: deprecate: (class) BG 是動態產生的，無法得知 class weight
+    def _set_class_counts_dict(self):
+        """ use processed data `clustered_file` to calculate `self.class_counts_dict`
         """
-        # self.class_counts_dict: Dict[str, int] = \
-        #     gen_class_counts_dict(self.train_df, self.num2class_list)
+        instance_desc = re.split("{|}", self.dataset_data)[1]
+        temp_dict = {"data_processed": {"instance_desc": instance_desc}}
+        self._processed_di.parse_config(temp_dict)
+        
+        feature_class = parse_dataset_file_name(self.dataset_file_name)["feature_class"]
+        cluster_desc = f"{feature_class}_{self.dataset_classif_strategy}_{self.dataset_seed_dir}"
+        clustered_file = self._processed_di.clustered_files_dict[cluster_desc]
+        df = pd.read_csv(clustered_file, encoding='utf_8_sig')
+        
+        self.class_counts_dict: dict[str, int] = \
+            gen_class_counts_dict(df, self.num2class_list) # 感覺因為 train_df 是 df.sample 抽的所以會和 train_df 差不多
         # ---------------------------------------------------------------------/
 
 
@@ -302,13 +342,13 @@ class BaseTrainer(BaseObject):
         [self._cli_out.write(f"{i} : image_name = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
         
         # temp_dict: Dict[str, int] = gen_class_counts_dict(self.training_df, self.num2class_list)
-        # self._cli_out.write(f"class_weight of `self.training_df` : {calculate_class_weight(temp_dict)}")
+        self._cli_out.write(f"class_weight of `self._processed_di.clustered_file` : {calculate_class_weight(self.class_counts_dict)}")
         
-        # temp_dict = gen_class_counts_dict(self.train_df, self.num2class_list)
-        # self._cli_out.write(f"class_weight of `self.train_df` : {calculate_class_weight(temp_dict)}")
+        temp_dict = gen_class_counts_dict(self.train_df, self.num2class_list)
+        self._cli_out.write(f"class_weight of `self.train_df` : {calculate_class_weight(temp_dict)}")
         
-        # temp_dict = gen_class_counts_dict(self.valid_df, self.num2class_list)
-        # self._cli_out.write(f"class_weight of `self.valid_df` : {calculate_class_weight(temp_dict)}")
+        temp_dict = gen_class_counts_dict(self.valid_df, self.num2class_list)
+        self._cli_out.write(f"class_weight of `self.valid_df` : {calculate_class_weight(temp_dict)}")
         # ---------------------------------------------------------------------/
 
 

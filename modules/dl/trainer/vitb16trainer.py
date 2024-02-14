@@ -17,7 +17,7 @@ class VitB16Trainer(BaseTrainer):
         # ---------------------------------------------------------------------
         # """ components """
         
-        super().__init__(display_on_CLI)
+        super().__init__(display_on_CLI=display_on_CLI)
         self._cli_out._set_logger("Vit_B_16 Trainer")
         
         # ---------------------------------------------------------------------
@@ -78,15 +78,15 @@ class VitB16Trainer(BaseTrainer):
 
 
     def _set_loss_fn(self):
-        """ WARNING: deprecate: (class) BG 是動態產生的，無法得知 class weight
         """
-        # if self.forcing_balance is True:
-        #     self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
-        # else: # `loss_function` with `class_weight`
-        #     self.loss_fn: nn.CrossEntropyLoss = \
-        #         nn.CrossEntropyLoss(weight=calculate_class_weight(self.class_counts_dict))
+        """
+        if self.forcing_balance is True:
+            self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
+        else: # `loss_function` with `class_weight`
+            self.loss_fn: nn.CrossEntropyLoss = \
+                nn.CrossEntropyLoss(weight=calculate_class_weight(self.class_counts_dict))
         
-        self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
+        # self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
         self.loss_fn.to(self.device)
         # ---------------------------------------------------------------------/
 

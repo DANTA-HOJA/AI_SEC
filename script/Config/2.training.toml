@@ -5,8 +5,9 @@ note = "[v4.0]"
   seed_dir = "RND2022"
   data = "{20231229_manualroi}_Academia_Sinica_i831"
   palmskin_result = "28_RGB_m3d"
+  base_size = "W512_H1024"
   classif_strategy = "KMeansORIG"
-  file_name = "DS_SURF3C_CRPS512_SF14_INT15_DRP55.csv"
+  file_name = "DS_SURF3C_CRPS256_SF14_INT15_DRP65.csv"
 
 # -----------------------------------------------------------------------------\
 [model]
@@ -17,6 +18,30 @@ note = "[v4.0]"
 [train_opts]
   epochs = 200
   batch_size = 128
+
+[train_opts.cpu]
+  num_workers = 0
+  # Warning: if `num_workers` != 0, may not use `debugpy` correctly in 'vscode jupyter extension'
+
+[train_opts.cuda]
+  index = 0
+  use_amp = true # Automatic Mixed Precision
+
+[train_opts.debug_mode]
+  enable = false # if `true`, sample `rand_select` images only
+  rand_select = 30 # samples for debugging
+
+[train_opts.data]
+  use_hsv = false # using 'HSV' color models when getting item from the Dataset
+  forcing_balance = false # if `false` will apply `class_weight` to Loss function
+  forcing_sample_amount = 2800 # (NotImplemented) set constant number of images for each class
+  random_crop = true # `train_set` only, if `false` will use `train_set pre-crop` image
+  add_bg_class = true # preserve the `discard` images but replace its class to "BG" (background)
+  aug_on_fly = true # `train_set` only, do augmentation when getting image from the Dataset immediately
+  # Note: 'forcing_sample_amount' isn't Implemented, do NOT set `forcing_balance` to false
+  # Note: Can't not set `random_crop` = true if `add_bg_class` = false,
+  #         random crop may generate a discard image
+  # Note: 'pre-augmentation' is deprecated, do NOT set `aug_on_fly` to false
 
 [train_opts.optimizer]
   learning_rate = 1e-5
@@ -29,25 +54,4 @@ note = "[v4.0]"
 
 [train_opts.earlystop]
   enable = true
-  max_no_improved = 20
-
-[train_opts.data]
-  use_hsv = false # using 'HSV' color models when getting item from the Dataset
-  aug_on_fly = true # do augmentation when getting item from the Dataset immediately
-  forcing_balance = false
-  forcing_sample_amount = 2800 # (NotImplemented) set constant number of images for each class
-  # Note: `aug_on_fly` should be `true` if not doing 'pre-augmentation'
-  # Note: if `forcing_balance` is `false` will apply `class_weight`
-  #         to Loss function as a 'auto balance strategy'
-
-[train_opts.debug_mode]
-  enable = false # if `true`, sample `rand_select` images only
-  rand_select = 30 # samples for debugging
-
-[train_opts.cuda]
-  index = 0
-  use_amp = true # Automatic Mixed Precision
-
-[train_opts.cpu]
-  num_workers = 0
-  # Warning: if `num_workers` != 0, may not use `debugpy` correctly in 'vscode jupyter extension'
+  max_no_improved = 50
