@@ -50,8 +50,8 @@ class ImgDataset_v3(BaseObject, Dataset):
         self.crop_size = self.dataset_param["crop_size"]
         self.dyn_cropper = dynamic_crop(self.crop_size)
         self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
-        self.add_bg_class: bool = config["train_opts"]["data"]["add_bg_class"]
         self.random_crop: bool = config["train_opts"]["data"]["random_crop"]
+        self.add_bg_class: bool = config["train_opts"]["data"]["add_bg_class"]
         
         # ---------------------------------------------------------------------
         # """ actions """
