@@ -143,14 +143,14 @@ class ImageCropper(BaseObject):
         """
         super().run(config)
         
+        # checking
+        self._check_if_any_crop_dir_exists()
+        self._processed_di.check_palmskin_images_condition(config)
+        
         # create necessary dir
         create_new_dir(self.dst_root.joinpath("test"))
         create_new_dir(self.dst_root.joinpath("train"))
         create_new_dir(self.dst_root.joinpath("valid"))
-        
-        # checking
-        self._check_if_any_crop_dir_exists()
-        self._processed_di.check_palmskin_images_condition(config)
         
         # get dict
         _, sorted_results_dict = \
