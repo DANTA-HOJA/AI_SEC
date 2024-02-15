@@ -255,7 +255,7 @@ class BaseFishTester(BaseImageTester):
         crop_name_split[target_idx] = "colormap"
         cam_save_path = cam_result_dir.joinpath(f"{'_'.join(crop_name_split)}.tiff")
         color_cam = cv2.applyColorMap(grayscale_cam,
-                                         getattr(cv2, self.colormap)) # BGR
+                                        getattr(cv2, self.colormap)) # BGR
         cv2.imwrite(str(cam_save_path), \
                     cv2.resize(color_cam, resize, interpolation=cv2.INTER_CUBIC))
         # ---------------------------------------------------------------------/

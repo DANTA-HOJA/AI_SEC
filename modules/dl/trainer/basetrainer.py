@@ -700,7 +700,7 @@ class BaseTrainer(BaseObject):
         with torch.no_grad():
             for data in self.valid_dataloader:
                 
-                images, labels, image_names = data
+                images, labels, crop_names = data
                 images, labels = images.to(self.device), labels.to(self.device) # move to GPU
                 
                 preds = self.model(images)
