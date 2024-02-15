@@ -119,21 +119,25 @@ class BaseImageTester(BaseObject):
         self.dataset_seed_dir: str = self.training_config["dataset"]["seed_dir"]
         self.dataset_data: str = self.training_config["dataset"]["data"]
         self.dataset_palmskin_result: str = self.training_config["dataset"]["palmskin_result"]
+        self.dataset_base_size: str = self.training_config["dataset"]["base_size"]
         self.dataset_classif_strategy: str = self.training_config["dataset"]["classif_strategy"]
         self.dataset_file_name: str = self.training_config["dataset"]["file_name"]
         
         """ [model] """
         self.model_name: str = self.training_config["model"]["name"]
+        
+        """ [train_opts.data] """
+        self.add_bg_class: bool = self.training_config["train_opts"]["data"]["add_bg_class"]
         # ---------------------------------------------------------------------/
 
 
     def _set_testing_reproducibility(self):
-        """ Set below attributes
-            - `self.rand_seed`: int
-        
-        Pytorch reproducibility
+        """ Pytorch reproducibility
             - ref: https://clay-atlas.com/us/blog/2021/08/24/pytorch-en-set-seed-reproduce/?amp=1
             - ref: https://pytorch.org/docs/stable/notes/randomness.html
+        
+        Set below attributes
+        >>> self.rand_seed: int
         """
         self.rand_seed: int = int(self.dataset_seed_dir.replace("RND", ""))
         
@@ -157,7 +161,8 @@ class BaseImageTester(BaseObject):
         
         src_root = dataset_cropped.joinpath(self.dataset_seed_dir,
                                             self.dataset_data,
-                                            self.dataset_palmskin_result)
+                                            self.dataset_palmskin_result,
+                                            self.dataset_base_size)
         
         dataset_file: Path = src_root.joinpath(self.dataset_classif_strategy,
                                                self.dataset_file_name)
@@ -174,14 +179,19 @@ class BaseImageTester(BaseObject):
 
     def _set_mapping_attrs(self):
         """ Set below attributes
-            - `self.num2class_list`: list
-            - `self.class2num_dict`: Dict[str, int]
+            >>> self.num2class_list: list
+            >>> self.class2num_dict: Dict[str, int]
         
         Example :
         >>> num2class_list = ['L', 'M', 'S']
         >>> class2num_dict = {'L': 0, 'M': 1, 'S': 2}
         """
-        self.num2class_list: list = sorted(Counter(self.dataset_df["class"]).keys())
+        cls_list = list(Counter(self.dataset_df["class"]).keys())
+        
+        if self.add_bg_class:
+            cls_list.append("BG")
+        
+        self.num2class_list: list = sorted(cls_list)
         self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
         
         self._cli_out.write(f"num2class_list = {self.num2class_list}, "
@@ -194,6 +204,9 @@ class BaseImageTester(BaseObject):
         """
         self.test_df: pd.DataFrame = \
                 self.dataset_df[(self.dataset_df["dataset"] == "test")]
+        
+        if not self.add_bg_class:
+            self.test_df = self.test_df[(self.test_df["state"] == "preserve")]
         
         # debug: sampleing for faster speed
         if self.debug_mode:
