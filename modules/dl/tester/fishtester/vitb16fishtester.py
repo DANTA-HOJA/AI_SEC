@@ -4,7 +4,6 @@ from pytorch_grad_cam import (AblationCAM, EigenCAM, FullGrad, GradCAM,
                               GradCAMPlusPlus, HiResCAM, ScoreCAM, XGradCAM)
 from torch import nn
 
-from ....shared.clioutput import CLIOutput
 from ...dataset.imgdataset import ImgDataset_v3
 from ...tester.utils import reshape_transform
 from .basefishtester import BaseFishTester
