@@ -6,12 +6,12 @@
 [test_opts]
   batch_size = 64
 
+[test_opts.cuda]
+  index = 0
+
 [test_opts.debug_mode]
   enable = false # if `true`, sample `rand_select` images only
   rand_select = 100 # samples for debugging
-
-[test_opts.cuda]
-  index = 0
 
 # -----------------------------------------------------------------------------\
 [cam]
