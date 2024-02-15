@@ -16,11 +16,11 @@ note = "[v4.0]"
 
 # -----------------------------------------------------------------------------\
 [train_opts]
-  epochs = 200
+  epochs = 500
   batch_size = 128
 
 [train_opts.cpu]
-  num_workers = 0
+  num_workers = 4 # Linux only
   # Warning: if `num_workers` != 0, may not use `debugpy` correctly in 'vscode jupyter extension'
 
 [train_opts.cuda]
@@ -29,7 +29,7 @@ note = "[v4.0]"
 
 [train_opts.debug_mode]
   enable = false # if `true`, sample `rand_select` images only
-  rand_select = 30 # samples for debugging
+  rand_select = 100 # samples for debugging
 
 [train_opts.data]
   use_hsv = false # using 'HSV' color models when getting item from the Dataset
