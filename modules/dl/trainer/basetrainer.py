@@ -489,6 +489,11 @@ class BaseTrainer(BaseObject):
                 self._one_epoch_training(epoch)
                 self._one_epoch_validating(epoch)
                 
+                """ Save logs (convert to Dataframe) """
+                save_training_logs(self.dst_root, self.train_logs, self.valid_logs,
+                                   self.best_val_log) # save file*2
+                
+                """ Save plot """
                 plot_training_trend_kwargs = {
                     "save_dir"   : self.dst_root,
                     "loss_key"   : "average_loss",
@@ -543,9 +548,6 @@ class BaseTrainer(BaseObject):
                     If `best_val_log["epoch"]` > 0,
                     all of `logs` and `state_dict` are not empty.
                 """
-                
-                """ Save logs (convert to Dataframe) """
-                save_training_logs(self.dst_root, self.train_logs, self.valid_logs, self.best_val_log) # save file*2
                 
                 """ Save model """
                 save_model("best", self.dst_root, self.best_model_state_dict, self.best_optimizer_state_dict) # save file
