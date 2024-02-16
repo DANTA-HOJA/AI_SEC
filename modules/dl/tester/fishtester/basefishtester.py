@@ -211,20 +211,20 @@ class BaseFishTester(BaseImageTester):
         # >>> list[:3] = 'fish_1_A'; list[:4] = 'fish_1_A_U'
         
         """ Update `self.fish_gt_dict` """
-        fish_class: str = self.num2class_list[label]
+        gt_class: str = self.num2class_list[label]
         if fish_dsname not in self.fish_gt_dict:
             self.fish_gt_dict[fish_dsname] = Counter() # init a Counter
-        self.fish_gt_dict[fish_dsname].update([fish_class])
+        self.fish_gt_dict[fish_dsname].update([gt_class])
         
         """ Update `self.fish_pred_dict` """
-        img_pred_class: str = self.num2class_list[pred_hcls]
+        pred_class: str = self.num2class_list[pred_hcls]
         if fish_dsname not in self.fish_pred_dict:
             self.fish_pred_dict[fish_dsname] = Counter() # init a Counter
-        self.fish_pred_dict[fish_dsname].update([img_pred_class])
+        self.fish_pred_dict[fish_dsname].update([pred_class])
         
         """ Store result for each crop image in `self.image_predict_ans_dict` ( for gallery ) """
-        self.image_predict_ans_dict[crop_name] = { "gt": fish_class,
-                                                   "pred": img_pred_class }
+        self.image_predict_ans_dict[crop_name] = { "gt": gt_class,
+                                                   "pred": pred_class }
         # ---------------------------------------------------------------------/
 
 
