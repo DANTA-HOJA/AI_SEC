@@ -19,11 +19,13 @@ from tqdm.auto import tqdm
 from ....data.dataset import dsname
 from ....data.dataset.utils import parse_dataset_file_name
 from ....dl.tester.utils import get_history_dir
+from ....dl.utils import gen_class2num_dict
 from ....shared.baseobject import BaseObject
 from ....shared.config import load_config
 from ....shared.utils import create_new_dir
 from ...utils import (draw_predict_ans_on_image, draw_x_on_image,
                       get_mono_font, plot_with_imglist_auto_row)
+from .utils import get_gallery_column
 # -----------------------------------------------------------------------------/
 
 
@@ -57,6 +59,7 @@ class CamGalleryCreator(BaseObject):
         
         self._set_src_root()
         self._set_test_df()
+        self._set_mapping_attrs()
         self._set_predict_ans_dict()
         self._set_cam_result_root()
         
@@ -124,8 +127,12 @@ class CamGalleryCreator(BaseObject):
         self.dataset_seed_dir: str = self.training_config["dataset"]["seed_dir"]
         self.dataset_data: str = self.training_config["dataset"]["data"]
         self.dataset_palmskin_result: str = self.training_config["dataset"]["palmskin_result"]
+        self.dataset_base_size: str = self.training_config["dataset"]["base_size"]
         self.dataset_classif_strategy: str = self.training_config["dataset"]["classif_strategy"]
         self.dataset_file_name: str = self.training_config["dataset"]["file_name"]
+        
+        """ [train_opts.data] """
+        self.add_bg_class: bool = self.training_config["train_opts"]["data"]["add_bg_class"]
         # ---------------------------------------------------------------------/
 
 
@@ -134,9 +141,8 @@ class CamGalleryCreator(BaseObject):
         """
         """ [layout] """
         if not self.column:
-            crop_size = parse_dataset_file_name(self.dataset_file_name)["crop_size"]
-            if crop_size == 512: self.column = 5
-            elif crop_size == 256: self.column = 13
+            self.column = get_gallery_column(self.dataset_base_size,
+                                                self.dataset_file_name)
         
         """ [draw.drop_image.line] """
         if not self.line_color: self.line_color = (180, 160, 0)
@@ -164,7 +170,8 @@ class CamGalleryCreator(BaseObject):
         
         self.src_root = dataset_cropped.joinpath(self.dataset_seed_dir,
                                                  self.dataset_data,
-                                                 self.dataset_palmskin_result)
+                                                 self.dataset_palmskin_result,
+                                                 self.dataset_base_size)
         # ---------------------------------------------------------------------/
 
 
@@ -185,6 +192,28 @@ class CamGalleryCreator(BaseObject):
         
         self.test_df: pd.DataFrame = \
             dataset_df[(dataset_df["dataset"] == "test")]
+        # ---------------------------------------------------------------------/
+
+
+    def _set_mapping_attrs(self):
+        """ Set below attributes
+            >>> self.num2class_list: list
+            >>> self.class2num_dict: Dict[str, int]
+        
+        Example :
+        >>> num2class_list = ['L', 'M', 'S']
+        >>> class2num_dict = {'L': 0, 'M': 1, 'S': 2}
+        """
+        cls_list = list(Counter(self.test_df["class"]).keys())
+        
+        if self.add_bg_class:
+            cls_list.append("BG")
+        
+        self.num2class_list: list = sorted(cls_list)
+        self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
+        
+        self._cli_out.write(f"num2class_list = {self.num2class_list}, "
+                            f"class2num_dict = {self.class2num_dict}")
         # ---------------------------------------------------------------------/
 
 
@@ -271,9 +300,7 @@ class CamGalleryCreator(BaseObject):
     def _create_rank_dirs(self):
         """
         """
-        num2class_list = sorted(Counter(self.test_df["class"]).keys())
-        
-        for key in num2class_list:
+        for key in self.num2class_list:
             for _, value in self.rank_dict.items():
                 create_new_dir(self.cam_gallery_dir.joinpath(key, value))
         # ---------------------------------------------------------------------/
@@ -324,8 +351,15 @@ class CamGalleryCreator(BaseObject):
         """
         df = self.test_df[(self.test_df["parent (dsname)"] == fish_dsname)]
         
-        cnt = Counter(df["class"])
-        fish_cls = cnt.most_common(1)[0][0]
+        # get original class
+        class_cnt = Counter(df["class"])
+        fish_cls = class_cnt.most_common(1)[0][0]
+        
+        # whether class should be replaced by "BG"
+        if self.add_bg_class:
+            discard_cnt = Counter(df["state"])
+            if discard_cnt.most_common(1)[0][0] == "discard":
+                fish_cls = "BG"
         
         return fish_cls
         # ---------------------------------------------------------------------/
@@ -521,9 +555,7 @@ class CamGalleryCreator(BaseObject):
     def _del_empty_rank_dirs(self):
         """
         """
-        num2class_list = sorted(Counter(self.test_df["class"]).keys())
-        
-        for key in num2class_list:
+        for key in self.num2class_list:
             for _, value in self.rank_dict.items():
                 rank_dir = self.cam_gallery_dir.joinpath(key, value)
                 pngs = list(rank_dir.glob("**/*.png"))

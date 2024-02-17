@@ -47,6 +47,7 @@ class MtCamGalleryExecutor(CamGalleryCreator):
         
         self._set_src_root()
         self._set_test_df()
+        self._set_mapping_attrs()
         self._set_cam_result_root()
         
         self._set_cam_gallery_dir()

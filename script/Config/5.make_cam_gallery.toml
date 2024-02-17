@@ -13,7 +13,7 @@
 # - fonts: support `ttf` font file only.
 
 [layout]
-  column = []  # default: CRPS512=5, CRPS256=13
+  column = [] # default: auto calculate
 
 [draw.drop_image.line]
   color = []  # default: (180, 160,  0 )
