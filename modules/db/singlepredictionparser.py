@@ -60,7 +60,7 @@ class SinglePredictionParser(BaseObject):
         # ---------------------------------------------------------------------
         # """ attributes """
         
-        self._config = load_config("6.update_db_excel.toml")
+        self._config = load_config("6.update_db_file.toml")
         self._state_mark: dict[str, str] = self._config["state_mark"]
         self._possible_item_dict: dict[str, str] = \
                                         self._config["possible_item"]

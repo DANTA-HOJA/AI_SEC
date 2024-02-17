@@ -32,7 +32,7 @@ class DBFileUpdater(BaseObject):
         # ---------------------------------------------------------------------
         # """ attributes """
         
-        self._config = load_config("6.update_db_excel.toml")
+        self._config = load_config("6.update_db_file.toml")
         self._col_version = self._config["column_version"]
         self._state_mark: dict[str, str] = self._config["state_mark"]
         self._possible_item_dict: dict[str, str] = \
@@ -66,7 +66,7 @@ class DBFileUpdater(BaseObject):
         ver_test_dir = \
             list(self.model_prediction.glob(f"{self._col_version}/.ver_test/*"))[-1]
         print(f"Latest Version Test Dir: '{ver_test_dir}'")
-         # ↑ always build column with latest (final) version test directory
+        # ↑ always build column with latest (final) version test directory
         self._current_db: pd.DataFrame = \
             self._single_pred_parser.parse(ver_test_dir).set_index("Prediction_ID")
         self._current_db.index.values[0] = 'std_col' # reset index for easily delete later
