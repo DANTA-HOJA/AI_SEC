@@ -1,4 +1,4 @@
-note = "[v4.0]"
+note = "[v4.1]"
 
 # -----------------------------------------------------------------------------\
 [dataset]
@@ -38,7 +38,7 @@ note = "[v4.0]"
   random_crop = true # `train_set` only, if `false` will use `train_set pre-crop` image
   add_bg_class = true # preserve the `discard` images but replace its class to "BG" (background)
   aug_on_fly = true # `train_set` only, do augmentation when getting image from the Dataset immediately
-  # Note: 'forcing_sample_amount' isn't Implemented, do NOT set `forcing_balance` to false
+  # Note: 'forcing_sample_amount' isn't Implemented, do NOT set `forcing_balance` to true
   # Note: Can't not set `random_crop` = true if `add_bg_class` = false,
   #         random crop may generate a discard image
   # Note: 'pre-augmentation' is deprecated, do NOT set `aug_on_fly` to false
