@@ -375,8 +375,11 @@ class PalmskinPreprocesser(BaseObject):
         """
         img_dict = {}
         
-        m3d           = self.z_projection(self.median3D(ch_img), "max", f"ch_{ch_name}_m3d", self.metaimg_dir)
-        mm3d          = self.z_projection(self.mean3D(m3d), "max", f"ch_{ch_name}_mm3d", self.metaimg_dir)
+        m3d_stack = self.median3D(ch_img) # 3D stack
+        mm3d_stack = self.mean3D(m3d_stack) # 3D stack
+        
+        m3d           = self.z_projection(m3d_stack, "max", f"ch_{ch_name}_m3d", self.metaimg_dir)
+        mm3d          = self.z_projection(mm3d_stack, "max", f"ch_{ch_name}_mm3d", self.metaimg_dir)
         mm3d_kuwahara = self.kuwahara_filter(mm3d, f"ch_{ch_name}_mm3d_kuwahara", self.metaimg_dir)
         fusion        = self.average_fusion(mm3d, mm3d_kuwahara, f"ch_{ch_name}_fusion", self.dst_root)
         
