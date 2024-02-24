@@ -17,7 +17,6 @@ from tomlkit.toml_document import TOMLDocument
 from tqdm.auto import tqdm
 
 from ....data.dataset import dsname
-from ....data.dataset.utils import parse_dataset_file_name
 from ....dl.tester.utils import get_history_dir
 from ....dl.utils import gen_class2num_dict
 from ....shared.baseobject import BaseObject
@@ -198,7 +197,7 @@ class CamGalleryCreator(BaseObject):
     def _set_mapping_attrs(self):
         """ Set below attributes
             >>> self.num2class_list: list
-            >>> self.class2num_dict: Dict[str, int]
+            >>> self.class2num_dict: dict[str, int]
         
         Example :
         >>> num2class_list = ['L', 'M', 'S']
@@ -210,7 +209,7 @@ class CamGalleryCreator(BaseObject):
             cls_list.append("BG")
         
         self.num2class_list: list = sorted(cls_list)
-        self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
+        self.class2num_dict: dict[str, int] = gen_class2num_dict(self.num2class_list)
         
         self._cli_out.write(f"num2class_list = {self.num2class_list}, "
                             f"class2num_dict = {self.class2num_dict}")
@@ -329,7 +328,9 @@ class CamGalleryCreator(BaseObject):
         self.correct_cnt: int = 0
         for (cam_name, cam_img), (tested_name, tested_bgr_img) \
             in zip(self.cam_result_img_dict.items(), self.tested_img_dict.items()):
-            self._draw_on_cam_image(cam_name, cam_img, tested_name, tested_bgr_img)
+            self._draw_on_cam_image(cam_name, cam_img,
+                                    tested_name, tested_bgr_img,
+                                    fish_cls)
         
         # >>> check which `rank_dir` to store <<<
         self._calculate_correct_rank()
@@ -351,21 +352,20 @@ class CamGalleryCreator(BaseObject):
         """
         df = self.test_df[(self.test_df["parent (dsname)"] == fish_dsname)]
         
-        # get original class
-        class_cnt = Counter(df["class"])
-        fish_cls = class_cnt.most_common(1)[0][0]
+        # get voted class
+        class_cnt: Counter = Counter()
+        for crop_name in df["image_name"]:
+            try:
+                # if image is tested
+                class_cnt.update([self.predict_ans_dict[crop_name]["gt"]])
+            except KeyError:
+                pass
         
-        # whether class should be replaced by "BG"
-        if self.add_bg_class:
-            discard_cnt = Counter(df["state"])
-            if discard_cnt.most_common(1)[0][0] == "discard":
-                fish_cls = "BG"
-        
-        return fish_cls
+        return class_cnt.most_common(1)[0][0]
         # ---------------------------------------------------------------------/
 
 
-    def _get_path_lists(self, fish_dsname:str)-> Tuple[list, list, list]:
+    def _get_path_lists(self, fish_dsname:str)-> tuple[list, list, list]:
         """
         """   
         # >>> cam result (tested) <<<
@@ -403,8 +403,8 @@ class CamGalleryCreator(BaseObject):
 
 
     def _read_images_as_dict(self, tested_paths:list,
-                                  untest_paths:list,
-                                  cam_result_paths:list):
+                                   untest_paths:list,
+                                   cam_result_paths:list):
         """
         """
         self.tested_img_dict: dict[str, np.ndarray] = \
@@ -432,8 +432,9 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _draw_on_cam_image(self, cam_name:str, cam_img: np.ndarray,
-                                 tested_name:str, tested_bgr_img: np.ndarray):
+    def _draw_on_cam_image(self, cam_name:str, cam_img:np.ndarray,
+                                 tested_name:str, tested_bgr_img:np.ndarray,
+                                 fish_cls:str):
         """
         """
         # >>> preparing `cam_img` <<<
@@ -473,8 +474,7 @@ class CamGalleryCreator(BaseObject):
             cam_overlay = np.array(mask_overlay)
         else:
             self.correct_cnt += 1
-            # show correct 'BG'
-            if gt_cls == "BG":
+            if gt_cls != fish_cls:
                 cam_overlay = Image.fromarray(cam_overlay)
                 draw_predict_ans_on_image(cam_overlay, pred_cls, gt_cls,
                                           self.text_font_style, self.text_font_size,
@@ -497,7 +497,7 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _gen_orig_gallery(self, fish_dsname:str, fish_cls):
+    def _gen_orig_gallery(self, fish_dsname:str, fish_cls:str):
         """
         """
         orig_img_dict: dict = deepcopy(self.tested_img_dict)
@@ -524,7 +524,7 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _gen_overlay_gallery(self, fish_dsname, fish_cls):
+    def _gen_overlay_gallery(self, fish_dsname:str, fish_cls:str):
         """
         """
         cam_overlay_img_dict: dict = deepcopy(self.cam_result_img_dict)
