@@ -203,10 +203,11 @@ class BaseImageTester(BaseObject):
         """
         """
         self.test_df: pd.DataFrame = \
-                self.dataset_df[(self.dataset_df["dataset"] == "test")]
+                self.dataset_df[(self.dataset_df["dataset"] == "test") &
+                                    (self.dataset_df["state"] == "preserve")]
         
-        if not self.add_bg_class:
-            self.test_df = self.test_df[(self.test_df["state"] == "preserve")]
+        # if not self.add_bg_class:
+        #     self.test_df = self.test_df[(self.test_df["state"] == "preserve")]
         
         # debug: sampleing for faster speed
         if self.debug_mode:

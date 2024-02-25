@@ -137,10 +137,10 @@ class BaseTrainer(BaseObject):
         self.enable_earlystop: bool = self.config["train_opts"]["earlystop"]["enable"]
         self.max_no_improved: int = self.config["train_opts"]["earlystop"]["max_no_improved"]
         
-        if (self.random_crop) and (not self.add_bg_class):
-            raise AttributeError(f"Can't set `random_crop` = {self.random_crop} "
-                                 f"if `add_bg_class` = {self.add_bg_class}, "
-                                 "random crop may generate a discard image")
+        # if (self.random_crop) and (not self.add_bg_class):
+        #     raise AttributeError(f"Can't set `random_crop` = {self.random_crop} "
+        #                          f"if `add_bg_class` = {self.add_bg_class}, "
+        #                          "random crop may generate a discard image")
         
         if self.debug_mode:
             self.epochs = 10
@@ -292,16 +292,17 @@ class BaseTrainer(BaseObject):
                 self.dataset_df[(self.dataset_df["dataset"] == "train")]
         
         self.valid_df: pd.DataFrame = \
-                self.dataset_df[(self.dataset_df["dataset"] == "valid")]
+                self.dataset_df[(self.dataset_df["dataset"] == "valid") & 
+                                    (self.dataset_df["state"] == "preserve")]
         
         if self.random_crop:
             self.train_df = self.train_df[(self.train_df["image_size"] == "base")]
         else:
             self.train_df = self.train_df[(self.train_df["image_size"] == "crop")]
         
-        if not self.add_bg_class:
-            self.train_df = self.train_df[(self.train_df["state"] == "preserve")]
-            self.valid_df = self.valid_df[(self.valid_df["state"] == "preserve")]
+        # if not self.add_bg_class:
+        #     self.train_df = self.train_df[(self.train_df["state"] == "preserve")]
+        #     self.valid_df = self.valid_df[(self.valid_df["state"] == "preserve")]
         
         # debug: sampleing for faster speed
         if self.debug_mode:
@@ -318,17 +319,20 @@ class BaseTrainer(BaseObject):
     def _set_class_counts_dict(self):
         """ use processed data `clustered_file` to calculate `self.class_counts_dict`
         """
-        instance_desc = re.split("{|}", self.dataset_data)[1]
-        temp_dict = {"data_processed": {"instance_desc": instance_desc}}
-        self._processed_di.parse_config(temp_dict)
+        # instance_desc = re.split("{|}", self.dataset_data)[1]
+        # temp_dict = {"data_processed": {"instance_desc": instance_desc}}
+        # self._processed_di.parse_config(temp_dict)
         
-        feature_class = parse_dataset_file_name(self.dataset_file_name)["feature_class"]
-        cluster_desc = f"{feature_class}_{self.dataset_classif_strategy}_{self.dataset_seed_dir}"
-        clustered_file = self._processed_di.clustered_files_dict[cluster_desc]
-        df = pd.read_csv(clustered_file, encoding='utf_8_sig')
+        # feature_class = parse_dataset_file_name(self.dataset_file_name)["feature_class"]
+        # cluster_desc = f"{feature_class}_{self.dataset_classif_strategy}_{self.dataset_seed_dir}"
+        # clustered_file = self._processed_di.clustered_files_dict[cluster_desc]
+        # df = pd.read_csv(clustered_file, encoding='utf_8_sig')
+        
+        # self.class_counts_dict: dict[str, int] = \
+        #     gen_class_counts_dict(df, self.num2class_list) # 感覺因為 train_df 是 df.sample 抽的所以會和 train_df 差不多
         
         self.class_counts_dict: dict[str, int] = \
-            gen_class_counts_dict(df, self.num2class_list) # 感覺因為 train_df 是 df.sample 抽的所以會和 train_df 差不多
+            gen_class_counts_dict(self.train_df, self.num2class_list)
         # ---------------------------------------------------------------------/
 
 
@@ -342,7 +346,7 @@ class BaseTrainer(BaseObject):
         [self._cli_out.write(f"{i} : image_name = {self.valid_df.iloc[i]['image_name']}") for i in range(5)]
         
         # temp_dict: Dict[str, int] = gen_class_counts_dict(self.training_df, self.num2class_list)
-        self._cli_out.write(f"class_weight of `self._processed_di.clustered_file` : {calculate_class_weight(self.class_counts_dict)}")
+        # self._cli_out.write(f"class_weight of `self._processed_di.clustered_file` : {calculate_class_weight(self.class_counts_dict)}")
         
         temp_dict = gen_class_counts_dict(self.train_df, self.num2class_list)
         self._cli_out.write(f"class_weight of `self.train_df` : {calculate_class_weight(temp_dict)}")

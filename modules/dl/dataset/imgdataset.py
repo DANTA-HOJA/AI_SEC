@@ -15,7 +15,7 @@ from ...data.dataset.utils import drop_too_dark, parse_dataset_file_name
 from ...plot.utils import draw_drop_info_on_image
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir
-from .augmentation import dynamic_crop
+from .augmentation import dynamic_crop, fake_autofluorescence
 # -----------------------------------------------------------------------------/
 
 
@@ -49,6 +49,7 @@ class ImgDataset_v3(BaseObject, Dataset):
         self._set_dataset_param()
         self.crop_size = self.dataset_param["crop_size"]
         self.dyn_cropper = dynamic_crop(self.crop_size)
+        self.fake_autofluor = fake_autofluorescence()
         self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
         self.random_crop: bool = config["train_opts"]["data"]["random_crop"]
         self.add_bg_class: bool = config["train_opts"]["data"]["add_bg_class"]
@@ -113,13 +114,19 @@ class ImgDataset_v3(BaseObject, Dataset):
         
         # >>> Apply different config settings to image <<<
         
-        # random crop
+        # rotate + random crop
+        if (self.mode == "train"):
+            img = self.dyn_cropper(image=img) # 只有 img 大於 crop size 時才會 crop
+        
+        # augmentation on the fly
+        if (self.mode == "train") and (self.transform is not None):
+            img = self.transform(image=img)
+        
+        # get image state ("too dark" detection)
         dark_ratio: float = 0.0
         state: str = ""
-        if (self.random_crop) and (self.mode == "train"):
-            # random crop
-            img = self.dyn_cropper(image=img)
-            # detect too dark
+        if (self.mode == "train"):
+            # realtime calculate
             select, drop = drop_too_dark([img], {"param": self.dataset_param})
             if len(select) > 0:
                 dark_ratio = select[0][2]
@@ -128,16 +135,21 @@ class ImgDataset_v3(BaseObject, Dataset):
                 dark_ratio = drop[0][2]
                 state = "discard"
         else:
+            # look up value
             dark_ratio = float(self.df.iloc[index]["dark_ratio"])
             state = self.df.iloc[index]["state"]
         
-        # replace BG (background) class
-        if (self.add_bg_class) and (state == "discard"):
-            fish_class = "BG"
         
-        # augmentation on the fly
-        if (self.transform is not None) and (self.mode == "train"):
-            img = self.transform(image=img)
+        # replace BG (background) class
+        if (self.mode == "train"):
+            if (self.add_bg_class):
+                if (state == "discard"):
+                    img = self._set_brightpx_to_zero(img, self.dataset_param["intensity"])
+                    # img = self.fake_autofluor(image=img)
+                    fish_class = "BG"
+            else:
+                img = self._set_darkpx_to_zero(img, self.dataset_param["intensity"])
+                # img = self.fake_autofluor(image=img)
         
         
         """ Choosing the color space, 'RGB' or 'HSV' """
@@ -182,4 +194,32 @@ class ImgDataset_v3(BaseObject, Dataset):
         
         if not save_path.exists():
             img.save(save_path)
+        # ---------------------------------------------------------------------/
+
+
+    def _set_darkpx_to_zero(self, bgr_img:np.ndarray, threshold:int) -> np.ndarray:
+        """ set the pixel value which under `threshold` to zero
+        """
+        hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV_FULL)
+        ch_brightness = hsv_img[:,:,2]
+        mask = ch_brightness <= threshold # create mask
+        ch_brightness[mask] = 0
+        hsv_img[:,:,2] = ch_brightness
+        thres_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL)
+        
+        return thres_img
+        # ---------------------------------------------------------------------/
+
+
+    def _set_brightpx_to_zero(self, bgr_img:np.ndarray, threshold:int) -> np.ndarray:
+        """ set the pixel value which under `threshold` to zero
+        """
+        hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV_FULL)
+        ch_brightness = hsv_img[:,:,2]
+        mask = ch_brightness > threshold # create mask
+        ch_brightness[mask] = 0
+        hsv_img[:,:,2] = ch_brightness
+        thres_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL)
+        
+        return thres_img
         # ---------------------------------------------------------------------/
