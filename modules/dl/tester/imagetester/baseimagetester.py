@@ -159,12 +159,12 @@ class BaseImageTester(BaseObject):
         dataset_cropped: Path = \
             self._path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
         
-        src_root = dataset_cropped.joinpath(self.dataset_seed_dir,
+        self.src_root = dataset_cropped.joinpath(self.dataset_seed_dir,
                                             self.dataset_data,
                                             self.dataset_palmskin_result,
                                             self.dataset_base_size)
         
-        dataset_file: Path = src_root.joinpath(self.dataset_classif_strategy,
+        dataset_file: Path = self.src_root.joinpath(self.dataset_classif_strategy,
                                                self.dataset_file_name)
         
         if not dataset_file.exists():

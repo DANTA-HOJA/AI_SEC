@@ -34,18 +34,6 @@ def dynamic_crop(size:int) -> iaa.Sequential:
 
 
 
-# _cloud = iaa.CloudLayer(intensity_mean=[100,170],
-#                         intensity_freq_exponent=[-2.5, -1.5],
-#                         intensity_coarse_scale=[0,5],
-#                         alpha_min=0.0,
-#                         alpha_multiplier=[0.3, 1.0],
-#                         alpha_freq_exponent=[-4.0, -1.5],
-#                         sparsity=1.0,
-#                         density_multiplier=[0.5, 1.5],
-#                         alpha_size_px_max=3)
-
-
-
 def composite_aug() -> iaa.Sequential:
     """
     """
@@ -63,13 +51,13 @@ def composite_aug() -> iaa.Sequential:
             # iaa.Sometimes(0.1, iaa.WithChannels([1], iaa.Clouds())), # ch_G
             # iaa.Sometimes(0.1, iaa.WithChannels([0, 1], iaa.Clouds())), # ch_B, ch_G
             # iaa.Sometimes(0.3, iaa.Cartoon()),
-            iaa.Sometimes(0.2, [
+            iaa.Sometimes(0.3, [
                 iaa.OneOf([
                     iaa.GammaContrast((0.5, 2.0)), # 可能會調得更暗，暫時取消
                     iaa.SigmoidContrast(gain=(3, 10), cutoff=(0.4, 0.6)),
                 ])
             ]),
-            iaa.Sometimes(0.2, [
+            iaa.Sometimes(0.3, [
                 iaa.OneOf([
                     iaa.GaussianBlur(), # default sigma is (0, 3)
                     iaa.Sharpen()
@@ -83,12 +71,25 @@ def composite_aug() -> iaa.Sequential:
     # -------------------------------------------------------------------------/
 
 
+
+# _cloud = iaa.CloudLayer(intensity_mean=[100,170],
+#                         intensity_freq_exponent=[-2.5, -1.5],
+#                         intensity_coarse_scale=[0,5],
+#                         alpha_min=0.0,
+#                         alpha_multiplier=[0.3, 1.0],
+#                         alpha_freq_exponent=[-4.0, -1.5],
+#                         sparsity=1.0,
+#                         density_multiplier=[0.5, 1.5],
+#                         alpha_size_px_max=3)
+
+
+
 def fake_autofluorescence():
     """
     """
     aug = iaa.Sequential([
         iaa.Sometimes(0.1, iaa.WithChannels([0, 1], iaa.Clouds())), # ch_B, ch_G
-        iaa.Dropout2d(p=0.2, nb_keep_channels=2),
+        # iaa.Dropout2d(p=0.2, nb_keep_channels=2),
     ])
     
     return aug

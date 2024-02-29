@@ -142,13 +142,12 @@ class ImgDataset_v3(BaseObject, Dataset):
         
         # replace BG (background) class
         if (self.mode == "train"):
-            if (self.add_bg_class):
-                if (state == "discard"):
-                    img = self._set_brightpx_to_zero(img, self.dataset_param["intensity"])
+            if (self.add_bg_class) and (state == "discard"):
+                    img = self._adjust_bright_pixel(img, 1, self.dataset_param["intensity"])
                     # img = self.fake_autofluor(image=img)
                     fish_class = "BG"
             else:
-                img = self._set_darkpx_to_zero(img, self.dataset_param["intensity"])
+                img = self._adjust_dark_pixel(img, 0, self.dataset_param["intensity"])
                 # img = self.fake_autofluor(image=img)
         
         
@@ -197,13 +196,14 @@ class ImgDataset_v3(BaseObject, Dataset):
         # ---------------------------------------------------------------------/
 
 
-    def _set_darkpx_to_zero(self, bgr_img:np.ndarray, threshold:int) -> np.ndarray:
-        """ set the pixel value which under `threshold` to zero
+    def _adjust_dark_pixel(self, bgr_img:np.ndarray, value:int,
+                           threshold:int) -> np.ndarray:
+        """ change all dark pixel (value <= `threshold`) to another value
         """
         hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV_FULL)
         ch_brightness = hsv_img[:,:,2]
         mask = ch_brightness <= threshold # create mask
-        ch_brightness[mask] = 0
+        ch_brightness[mask] = value
         hsv_img[:,:,2] = ch_brightness
         thres_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL)
         
@@ -211,13 +211,14 @@ class ImgDataset_v3(BaseObject, Dataset):
         # ---------------------------------------------------------------------/
 
 
-    def _set_brightpx_to_zero(self, bgr_img:np.ndarray, threshold:int) -> np.ndarray:
-        """ set the pixel value which under `threshold` to zero
+    def _adjust_bright_pixel(self, bgr_img:np.ndarray, value:int,
+                             threshold:int) -> np.ndarray:
+        """ change all bright pixel (value > `threshold`) to another value
         """
         hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV_FULL)
         ch_brightness = hsv_img[:,:,2]
         mask = ch_brightness > threshold # create mask
-        ch_brightness[mask] = 0
+        ch_brightness[mask] = value
         hsv_img[:,:,2] = ch_brightness
         thres_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL)
         
