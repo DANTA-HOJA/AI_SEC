@@ -1,13 +1,13 @@
-note = "[v4.1]"
+note = "[v4.1] loss=CE+MSE, Dropout2d off, inner `Sequential` p=0.3, aug -> drop_too_dark -> regx(set_[.*]px_to_[.*])"
 
 # -----------------------------------------------------------------------------\
 [dataset]
   seed_dir = "RND2022"
-  data = "{20231229_manualroi}_Academia_Sinica_i831"
-  palmskin_result = "28_RGB_m3d"
+  data = "{20240219_fixmm3d}_Academia_Sinica_i722"
+  palmskin_result = "03_RGB_direct_max_zproj"
   base_size = "W512_H1024"
   classif_strategy = "KMeansORIG"
-  file_name = "DS_SURF3C_CRPS256_SF14_INT15_DRP65.csv"
+  file_name = "DS_SURF3C_CRPS256_SF14_INT30_DRP65.csv"
 
 # -----------------------------------------------------------------------------\
 [model]
@@ -17,7 +17,7 @@ note = "[v4.1]"
 # -----------------------------------------------------------------------------\
 [train_opts]
   epochs = 500
-  batch_size = 128
+  batch_size = 64
 
 [train_opts.cpu]
   num_workers = 4 # Linux only
@@ -35,13 +35,13 @@ note = "[v4.1]"
   use_hsv = false # using 'HSV' color models when getting item from the Dataset
   forcing_balance = false # if `false` will apply `class_weight` to Loss function
   forcing_sample_amount = 2800 # (NotImplemented) set constant number of images for each class
-  random_crop = true # `train_set` only, if `false` will use `train_set pre-crop` image
-  add_bg_class = true # preserve the `discard` images but replace its class to "BG" (background)
+  random_crop = true # `train_set` only, if `false` will use pre-crop `train_set` image
+  add_bg_class = false # (Deprecated) preserve the `discard` images but replace its class to "BG" (background)
   aug_on_fly = true # `train_set` only, do augmentation when getting image from the Dataset immediately
-  # Note: 'forcing_sample_amount' isn't Implemented, do NOT set `forcing_balance` to true
-  # Note: Can't not set `random_crop` = true if `add_bg_class` = false,
-  #         random crop may generate a discard image
-  # Note: 'pre-augmentation' is deprecated, do NOT set `aug_on_fly` to false
+  # Notification:
+  # - `forcing_sample_amount` isn't Implemented, do NOT set `forcing_balance` to true
+  # - Can't set `random_crop` = true if `add_bg_class` = false, cause random crop may generate a discard image
+  # - Pre-augmentation action is removed from workflow, do NOT set `aug_on_fly` to false
 
 [train_opts.optimizer]
   learning_rate = 1e-5

@@ -1,6 +1,6 @@
 [data_processed]
-  instance_desc = "20231229_manualroi" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
-  palmskin_result_name = "28_RGB_m3d.tif"
+  instance_desc = "20240219_fixmm3d" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  palmskin_result_name = "03_RGB_direct_max_zproj.tif"
   cluster_desc = "SURF3C_KMeansORIG_RND2022"
   # clustered file: Clustered_File/`cluster_desc`/{`cluster_desc`}_datasplit.csv'
 
@@ -10,6 +10,6 @@
   crop_size    = 256  # size to crop the `base_size` image.
   shift_region = "1/4"    # offset (overlapping region) between the cropped images,
                           # e.g. `shift_region` = 1/3, the overlapping region for each cropped image is 2/3.
-  intensity    = 15   # threshold to define pixels is too dark or not.
+  intensity    = 30   # threshold to define pixels is too dark or not.
   drop_ratio   = 0.65     # threshold to decide the cropped image 'preserve' or 'discard',
                           # e.g. if (too_dark_pixels / all_pixels) > `drop_ratio`, discard the cropped image.

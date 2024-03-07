@@ -147,7 +147,7 @@ class BaseFishTester(BaseImageTester):
         self.model.eval() # set to evaluation mode
         for batch, data in enumerate(self.test_dataloader):
             
-            images, labels, crop_names = data
+            images, _, labels, crop_names = data
             images, labels = images.to(self.device), labels.to(self.device) # move to GPU
             
             preds = self.model(images)

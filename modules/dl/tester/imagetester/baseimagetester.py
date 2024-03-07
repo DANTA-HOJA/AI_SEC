@@ -344,7 +344,7 @@ class BaseImageTester(BaseObject):
         with torch.no_grad():
             for batch, data in enumerate(self.test_dataloader):
                 
-                images, labels, crop_names = data
+                images, _, labels, crop_names = data
                 images, labels = images.to(self.device), labels.to(self.device) # move to GPU
                 
                 preds = self.model(images)

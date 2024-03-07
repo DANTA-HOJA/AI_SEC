@@ -1,7 +1,11 @@
 import torch
 import torchvision
-from pytorch_grad_cam import (AblationCAM, EigenCAM, FullGrad, GradCAM,
-                              GradCAMPlusPlus, HiResCAM, ScoreCAM, XGradCAM)
+from pytorch_grad_cam import (AblationCAM, DeepFeatureFactorization, EigenCAM,
+                              EigenGradCAM, FullGrad, GradCAM,
+                              GradCAMElementWise, GradCAMPlusPlus, HiResCAM,
+                              LayerCAM, ScoreCAM, XGradCAM)
+from pytorch_grad_cam.ablation_layer import AblationLayerVit
+from pytorch_grad_cam.utils.image import show_factorization_on_image
 from torch import nn
 
 from ...dataset.imgdataset import ImgDataset_v3
@@ -84,13 +88,22 @@ class VitB16FishTester(BaseFishTester):
 
         # Note
         1. 使用 torch.hub.load('facebookresearch/deit:main','deit_tiny_patch16_224', pretrained=True) 時 target_layers = [model.blocks[-1].norm1]
-        2. 透過 print(model) 比較後 `torchvision` 的 `vit_b_16` 應使用 target_layers = [model.encoder.layers.encoder_layer_10.ln_1]
+        2. 透過 print(model) 比較後 `torchvision` 的 `vit_b_16` 應使用 target_layers = [model.encoder.layers.encoder_layer_11.ln_1]
         """
-        target_layers = [self.model.encoder.layers.encoder_layer_10.ln_1]
+        target_layers = [self.model.encoder.layers.encoder_layer_11.ln_1]
+        
+        # # 11 LayerNorm (very slow)
+        # target_layers = []
+        # for i in range(len(self.model.encoder.layers)):
+        #     target_layers.append(getattr(self.model.encoder.layers, f"encoder_layer_{i}").ln_1)
         
         self.cam_generator: GradCAM = \
             GradCAM(model=self.model, target_layers=target_layers,
                     use_cuda=True, reshape_transform=reshape_transform)
+        
+        # self.cam_generator: XGradCAM = \
+        #     XGradCAM(model=self.model, target_layers=target_layers,
+        #              use_cuda=True, reshape_transform=reshape_transform)
         
         self.cam_generator.batch_size = self.batch_size
         # ---------------------------------------------------------------------/

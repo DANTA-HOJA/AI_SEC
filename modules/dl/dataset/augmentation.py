@@ -60,11 +60,11 @@ def composite_aug() -> iaa.Sequential:
             iaa.Sometimes(0.3, [
                 iaa.OneOf([
                     iaa.GaussianBlur(), # default sigma is (0, 3)
-                    iaa.Sharpen()
+                    iaa.Sharpen(),
                 ])
             ]),
         ], random_order=True),
-        iaa.Dropout2d(p=0.2, nb_keep_channels=2),
+        # iaa.Dropout2d(p=0.2, nb_keep_channels=2),
     ])
     
     return transform

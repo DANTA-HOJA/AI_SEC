@@ -36,7 +36,9 @@ class VitB16Trainer(BaseTrainer):
         
         if self.aug_on_fly is True: 
             transform: iaa.Sequential = composite_aug()
-        else: 
+        else:
+            raise ValueError("Detect error settings in config: "
+                             f"train_opts.data.aug_on_fly = {self.aug_on_fly}")
             transform = None
         
         self.train_set: ImgDataset_v3 = \
@@ -67,6 +69,9 @@ class VitB16Trainer(BaseTrainer):
         model_construct_fn: function = getattr(torchvision.models, self.model_name)
         self.model: nn.Module = model_construct_fn(weights=self.model_pretrain)
         
+        # for param in self.model.parameters():
+        #     param.requires_grad = False
+        
         """ Modify model structure """
         self.model.heads.head = nn.Linear(in_features=768, out_features=len(self.class2num_dict), bias=True)
         self.model.to(self.device)
@@ -81,13 +86,17 @@ class VitB16Trainer(BaseTrainer):
         """
         """
         if self.forcing_balance is True:
-            self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
+            raise ValueError("Detect error settings in config: "
+                             f"train_opts.data.forcing_balance = {self.forcing_balance}")
+            self.ce_loss: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
         else: # `loss_function` with `class_weight`
-            self.loss_fn: nn.CrossEntropyLoss = \
+            self.ce_loss: nn.CrossEntropyLoss = \
                 nn.CrossEntropyLoss(weight=calculate_class_weight(self.class_counts_dict))
         
-        # self.loss_fn: nn.CrossEntropyLoss = nn.CrossEntropyLoss()
-        self.loss_fn.to(self.device)
+        self.mse_loss: nn.MSELoss = nn.MSELoss()
+        
+        self.ce_loss.to(self.device)
+        self.mse_loss.to(self.device)
         # ---------------------------------------------------------------------/
 
 

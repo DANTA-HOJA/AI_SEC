@@ -1,4 +1,5 @@
 import uuid
+from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
@@ -121,6 +122,7 @@ class ImgDataset_v3(BaseObject, Dataset):
         # augmentation on the fly
         if (self.mode == "train") and (self.transform is not None):
             img = self.transform(image=img)
+            # img = self.fake_autofluor(image=img)
         
         # get image state ("too dark" detection)
         dark_ratio: float = 0.0
@@ -140,41 +142,63 @@ class ImgDataset_v3(BaseObject, Dataset):
             state = self.df.iloc[index]["state"]
         
         
-        # replace BG (background) class
+        # adjust pixel value
+        img_for_mse = deepcopy(img)
         if (self.mode == "train"):
             if (self.add_bg_class) and (state == "discard"):
-                    img = self._adjust_bright_pixel(img, 1, self.dataset_param["intensity"])
-                    # img = self.fake_autofluor(image=img)
-                    fish_class = "BG"
+                # deprecated
+                raise ValueError("Detect error settings in config: "
+                                 f"train_opts.data.add_bg_class = {self.add_bg_class}")
+                fish_class = "BG"
+                img = self._adjust_bright_pixel(img, 0, self.dataset_param["intensity"])
+                img_for_mse = self._adjust_bright_pixel(img_for_mse, 255, self.dataset_param["intensity"])
             else:
                 img = self._adjust_dark_pixel(img, 0, self.dataset_param["intensity"])
-                # img = self.fake_autofluor(image=img)
+                img_for_mse = self._adjust_dark_pixel(img_for_mse, 255, self.dataset_param["intensity"])
+        
+        # if self.mode != "train":
+        #     assert np.array_equal(img, img_for_mse), "img != img_for_mse"
         
         
-        """ Choosing the color space, 'RGB' or 'HSV' """
-        img = img[:,:,::-1] # BGR -> RGB
-        if self.debug_mode: self._save_meta_img(img, dark_ratio, name, fish_class)
+        # save meta images (debugging)
+        if self.debug_mode:
+            self._save_meta_img(img_for_mse, dark_ratio, name, fish_class)
+        
+        # >>> Prepare images <<<
+        img = self._cvt_model_format(img)
+        img_for_mse = self._cvt_model_format(img_for_mse)
+        
+        # >>> Prepare label <<<
+        cls_idx: int = self.class2num_dict[fish_class]
+        cls_idx = torch.tensor(cls_idx) # To `Tensor` (64-bit int), e.g. [0]
+        
+        return img, img_for_mse, cls_idx, name
+        # ---------------------------------------------------------------------/
+
+
+    def _cvt_model_format(self, bgr_img:np.ndarray):
+        """
+        """
+        img = bgr_img[:,:,::-1] # BGR -> RGB
+        
+        # choosing the color model, 'RGB' or 'HSV'
         if self.use_hsv is True: img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL) # BGR -> HSV
         
-        """ Prepare image """
+        # convert format
         img = cv2.resize(img, self.resize, interpolation=cv2.INTER_CUBIC)
         img = img / 255.0 # normalize to 0~1
         img = np.moveaxis(img, -1, 0) # img_dims == 3: (H, W, C) -> (C, H, W)
         img = torch.from_numpy(img).float() # To `Tensor` (32-bit float)
         
-        """ Prepare label """
-        cls_idx: int = self.class2num_dict[fish_class]
-        cls_idx = torch.tensor(cls_idx) # To `Tensor` (64-bit int), e.g. [0]
-        
-        return img, cls_idx, name
+        return img
         # ---------------------------------------------------------------------/
 
 
-    def _save_meta_img(self, rgb_image:np.ndarray, dark_ratio:float,
+    def _save_meta_img(self, bgr_img:np.ndarray, dark_ratio:float,
                        name:str, fish_class:str):
         """
         """
-        img = Image.fromarray(rgb_image)
+        img = Image.fromarray(cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB))
         
         draw_drop_info_on_image(rgb_image=img,
                                 intensity=self.dataset_param["intensity"],
@@ -203,11 +227,10 @@ class ImgDataset_v3(BaseObject, Dataset):
         hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV_FULL)
         ch_brightness = hsv_img[:,:,2]
         mask = ch_brightness <= threshold # create mask
-        ch_brightness[mask] = value
-        hsv_img[:,:,2] = ch_brightness
-        thres_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL)
+        bgr_img2 = deepcopy(bgr_img)
+        bgr_img2[mask, :] = value
         
-        return thres_img
+        return bgr_img2
         # ---------------------------------------------------------------------/
 
 
@@ -218,9 +241,8 @@ class ImgDataset_v3(BaseObject, Dataset):
         hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV_FULL)
         ch_brightness = hsv_img[:,:,2]
         mask = ch_brightness > threshold # create mask
-        ch_brightness[mask] = value
-        hsv_img[:,:,2] = ch_brightness
-        thres_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR_FULL)
+        bgr_img2 = deepcopy(bgr_img)
+        bgr_img2[mask, :] = value
         
-        return thres_img
+        return bgr_img2
         # ---------------------------------------------------------------------/
