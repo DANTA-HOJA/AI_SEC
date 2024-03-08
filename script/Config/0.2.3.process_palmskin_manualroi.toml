@@ -11,5 +11,5 @@
 
 # -----------------------------------------------------------------------------\
 [data_processed]
-  instance_desc = "20231229_manualroi" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
-  palmskin_result_name = "28_RGB_m3d.tif"
+  instance_desc = "20240219_fixmm3d" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  palmskin_result_name = "03_RGB_direct_max_zproj.tif"
