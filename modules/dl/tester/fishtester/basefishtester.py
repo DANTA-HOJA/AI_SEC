@@ -9,8 +9,9 @@ from typing import Dict, List, Tuple, Union
 import cv2
 import numpy as np
 import torch
-from pytorch_grad_cam import (AblationCAM, EigenCAM, FullGrad, GradCAM,
-                              GradCAMPlusPlus, HiResCAM, ScoreCAM, XGradCAM)
+from pytorch_grad_cam import (AblationCAM, DeepFeatureFactorization, EigenCAM,
+                              FullGrad, GradCAM, GradCAMPlusPlus, HiResCAM,
+                              ScoreCAM, XGradCAM)
 from tqdm.auto import tqdm
 
 from ....shared.utils import (create_new_dir, formatter_padr0,
@@ -84,6 +85,16 @@ class BaseFishTester(BaseImageTester):
         raise NotImplementedError("This is a base fish tester, \
             you should create a child class and replace this funtion")
         # ---------------------------------------------------------------------/
+
+
+    # def _set_dff(self): # abstract function
+    #     """
+    #     """
+    #     self.dff: DeepFeatureFactorization
+        
+    #     raise NotImplementedError("This is a base fish tester, \
+    #         you should create a child class and replace this funtion")
+    #     # ---------------------------------------------------------------------/
 
 
     def run(self, config:Union[str, Path]):
@@ -168,6 +179,30 @@ class BaseFishTester(BaseImageTester):
                 grayscale_cam_batch = \
                     self.cam_generator(input_tensor=images, targets=None, 
                                        aug_smooth=True, eigen_smooth=True)
+            
+            # # # Deep Feature Factorizations
+            # from pytorch_grad_cam.utils.image import show_factorization_on_image
+            # from copy import deepcopy
+            # from PIL import Image
+            # self._set_dff()
+            # tmp_df = deepcopy(self.test_df).set_index("image_name")
+            # for image, name, pred, label in zip(images, crop_names, preds_hcls, labels):
+            #     print(f"name, pred, label = {name, pred, label}")
+            #     image = image.unsqueeze(0).cpu()
+            #     self.model.to("cpu")
+            #     concepts, batch_explanations, concept_outputs = self.dff(image, 3)
+            #     concept_outputs = torch.softmax(torch.from_numpy(concept_outputs), axis=-1).numpy()
+            #     concept_label_strings = self.create_labels(concept_outputs, top_k=1)
+                
+            #     img = np.array(Image.open(self.src_root.joinpath(tmp_df.loc[name, "path"])).resize((224, 224)))
+            #     rgb_img_float = np.float32(img) / 255
+            #     visualization = show_factorization_on_image(rgb_img_float, 
+            #                                                 batch_explanations[0],
+            #                                                 image_weight=0.3,
+            #                                                 concept_labels=concept_label_strings)
+            #     result = np.hstack((img, visualization))
+            #     Image.fromarray(result).save(self.history_dir.joinpath("dff.png"))
+            # self.model.to(self.device)
             
             """ Update 'predict_class' according to 'fish_dsname' """
             preds_hcls_list: list = preds_hcls.cpu().numpy().tolist()
@@ -269,3 +304,22 @@ class BaseFishTester(BaseImageTester):
         with open(save_path, mode="w") as f_writer:
             json.dump(self.image_predict_ans_dict, f_writer, indent=4)
         # ---------------------------------------------------------------------/
+
+
+    # def create_labels(self, concept_scores, top_k=2):
+    #     """ Deep Feature Factorizations
+        
+    #         Create a list with the image-net category names of the top scoring categories
+    #     """
+    #     concept_categories = np.argsort(concept_scores, axis=1)[:, ::-1][:, :top_k]
+    #     concept_labels_topk = []
+    #     for concept_index in range(concept_categories.shape[0]):
+    #         categories = concept_categories[concept_index, :]
+    #         concept_labels = []
+    #         for category in categories:
+    #             score = concept_scores[concept_index, category]
+    #             label = f"{self.num2class_list[category]}: {score:.2f}"
+    #             concept_labels.append(label)
+    #         concept_labels_topk.append("\n".join(concept_labels))
+    #     return concept_labels_topk
+    #     # ---------------------------------------------------------------------/

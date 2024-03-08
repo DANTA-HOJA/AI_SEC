@@ -107,3 +107,16 @@ class VitB16FishTester(BaseFishTester):
         
         self.cam_generator.batch_size = self.batch_size
         # ---------------------------------------------------------------------/
+
+
+    # def _set_dff(self):
+    #     """
+    #     """
+    #     target_layers = self.model.encoder.layers.encoder_layer_11
+        
+    #     self.dff = \
+    #         DeepFeatureFactorization(model=self.model,
+    #                                  target_layer=target_layers,
+    #                                  computation_on_concepts=self.model.heads.head,
+    #                                  reshape_transform=reshape_transform)
+    #     # ---------------------------------------------------------------------/
