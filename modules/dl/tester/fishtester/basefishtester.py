@@ -206,8 +206,10 @@ class BaseFishTester(BaseImageTester):
             
             """ Update 'predict_class' according to 'fish_dsname' """
             preds_hcls_list: list = preds_hcls.cpu().numpy().tolist()
-            for crop_name, pred_hcls, label in zip(crop_names, preds_hcls_list, labels):
-                self._update_fish_pred_gt_dict(crop_name, pred_hcls, label)
+            preds_prob_array: np.ndarray = preds_prob.cpu().detach().numpy()
+            for crop_name, pred_prob, pred_hcls, label in \
+                    zip(crop_names, preds_prob_array, preds_hcls_list, labels):
+                self._update_fish_pred_gt_dict(crop_name, pred_prob, pred_hcls, label)
             
             """ Save cam result ( both of grayscale, color ) """
             if self.do_cam:
@@ -235,7 +237,7 @@ class BaseFishTester(BaseImageTester):
         # ---------------------------------------------------------------------/
 
 
-    def _update_fish_pred_gt_dict(self, crop_name:str,
+    def _update_fish_pred_gt_dict(self, crop_name:str, pred_prob: np.ndarray,
                                         pred_hcls:int, label:int):
         """
         """
@@ -259,7 +261,8 @@ class BaseFishTester(BaseImageTester):
         
         """ Store result for each crop image in `self.image_predict_ans_dict` ( for gallery ) """
         self.image_predict_ans_dict[crop_name] = { "gt": gt_class,
-                                                   "pred": pred_class }
+                                                   "pred": pred_class,
+                                                   "pred_prob": round(float(pred_prob[pred_hcls]), 5)}
         # ---------------------------------------------------------------------/
 
 
