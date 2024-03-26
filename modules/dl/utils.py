@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Union
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, r2_score
 
 from ..assert_fn import *
 from ..shared.clioutput import CLIOutput
@@ -109,4 +109,17 @@ def calculate_metrics(log:Dict, average_loss:float,
     log["macro_f1"] = round(macro_f1, 5)
     log["weighted_f1"] = round(weighted_f1, 5)
     log["maweavg_f1"] = round(maweavg_f1, 5)
+    # -------------------------------------------------------------------------/
+
+
+def calculate_r_squared(log:Dict, average_loss:float,
+                        predict_list:list, groundtruth_list:list):
+    """
+    """
+    """ Update `average_loss` """
+    if average_loss is not None: log["average_loss"] = round(average_loss, 5)
+    else: log["average_loss"] = None
+    
+    score = r2_score(groundtruth_list, predict_list)
+    log["r_squared"] = round(score, 5)
     # -------------------------------------------------------------------------/

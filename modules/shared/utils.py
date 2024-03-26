@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
+import numpy as np
+
 from ..assert_fn import *
 from ..assert_fn import assert_run_under_repo_root
 from .clioutput import CLIOutput
@@ -188,4 +190,12 @@ def exclude_tmp_paths(found_list:List[Path]):
     """
     """
     return exclude_paths(found_list, ["tmp", "temp", "Tmp", "Temp"])
+    # -------------------------------------------------------------------------/
+
+
+
+def log(base, x):
+    """
+    """
+    return np.log(x) / np.log(base)
     # -------------------------------------------------------------------------/
