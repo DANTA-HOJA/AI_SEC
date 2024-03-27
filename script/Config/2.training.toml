@@ -13,6 +13,7 @@ note = "[v4.1] loss=CE+MSE, Dropout2d off, inner `Sequential` p=0.3, aug -> drop
 [model]
   name = "vit_b_16"
   pretrain = "IMAGENET1K_V1"
+  # model options: vit_b_16, resnet50
 
 # -----------------------------------------------------------------------------\
 [train_opts]
