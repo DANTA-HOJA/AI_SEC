@@ -292,7 +292,7 @@ class SinglePredictionParser(BaseObject):
             score_dict: dict[str, float] = load_config(path)
             for k, v in score_dict.items():
                 if k == "average_loss": continue
-                self._parsed_dict[f"{key}.{k.capitalize()}"] = float(v)
+                self._parsed_dict[f"{key}.{k.capitalize()}"] = v
         else:
             self._parsed_dict[f"{key}.L_f1"] = self._state_mark['empty_cell']
             self._parsed_dict[f"{key}.M_f1"] = self._state_mark['empty_cell']
