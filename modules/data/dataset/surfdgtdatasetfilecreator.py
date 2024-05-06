@@ -28,7 +28,7 @@ class SurfDGTDatasetFileCreator(BaseObject):
         # """ components """
         
         super().__init__(display_on_CLI)
-        self._cli_out._set_logger("SurfaceGT Dataset File Creator")
+        self._cli_out._set_logger("SurfDGT Dataset File Creator")
         
         if processed_data_instance:
             self._processed_di = processed_data_instance
