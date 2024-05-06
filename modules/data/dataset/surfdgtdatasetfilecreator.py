@@ -42,7 +42,7 @@ class SurfDGTDatasetFileCreator(BaseObject):
         self.cluster_desc: str # self._set_config_attrs()
         self.crop_dir_name: str # self._set_crop_dir_name()
         self.clustered_df: pd.DataFrame # self._set_clustered_df()
-        self.id2area_dict: Dict[int, float] # self._set_id2cls_dict()
+        self.id2area_dict: Dict[int, float] # self._set_id2area_dict()
         self.dataset_file: Path # self._set_dataset_file()
         
         # ---------------------------------------------------------------------
