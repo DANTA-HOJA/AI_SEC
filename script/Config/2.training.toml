@@ -1,4 +1,4 @@
-note = "[v4.1] loss=CE+MSE, Dropout2d off, inner `Sequential` p=0.3, aug -> drop_too_dark -> regx(set_[.*]px_to_[.*])"
+note = "[v4.3] loss=CE+MSE, Dropout2d off, inner `Sequential` p=0.3, aug -> drop_too_dark -> regx(set_[.*]px_to_[.*])"
 
 # -----------------------------------------------------------------------------\
 [dataset]
