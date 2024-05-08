@@ -43,6 +43,7 @@ class SurfDGTDatasetFileCreator(BaseObject):
         self.crop_dir_name: str # self._set_crop_dir_name()
         self.clustered_df: pd.DataFrame # self._set_clustered_df()
         self.id2area_dict: Dict[int, float] # self._set_id2area_dict()
+        self.id2cls_dict: Dict[int, str] # self._set_id2cls_dict()
         self.dataset_file: Path # self._set_dataset_file()
         
         # ---------------------------------------------------------------------
@@ -60,6 +61,7 @@ class SurfDGTDatasetFileCreator(BaseObject):
         self._set_crop_dir_name()
         self._set_clustered_df()
         self._set_id2area_dict()
+        self._set_id2cls_dict()
         self._set_src_root()
         self._set_dataset_file()
         # ---------------------------------------------------------------------/
@@ -118,6 +120,15 @@ class SurfDGTDatasetFileCreator(BaseObject):
         self.id2area_dict: dict = \
             { fish_id: area for fish_id, area in \
                 zip(self.clustered_df["fish_id"], self.clustered_df["Trunk surface area, SA (um2)"])}
+        # ---------------------------------------------------------------------/
+
+
+    def _set_id2cls_dict(self):
+        """
+        """
+        self.id2cls_dict: dict = \
+            { fish_id: cls for fish_id, cls in \
+                zip(self.clustered_df["fish_id"], self.clustered_df["class"])}
         # ---------------------------------------------------------------------/
 
 
@@ -207,6 +218,7 @@ class SurfDGTDatasetFileCreator(BaseObject):
                 fish_id = img_name_info[0]
                 fish_pos = img_name_info[1]
                 fish_area = self.id2area_dict[fish_id]
+                fish_class = self.id2cls_dict[fish_id]
                 
                 # update pbar
                 dyn_desc = f"[yellow][ {self._cli_out.logger_name} ] ({fish_dataset}) {img_name} : "
@@ -236,6 +248,7 @@ class SurfDGTDatasetFileCreator(BaseObject):
                 # -------------------------------------------------------
                 temp_dict["image_name"] = img_name
                 temp_dict["area"] = fish_area
+                temp_dict["class"] = fish_class
                 temp_dict["image_size"] = img_size
                 # -------------------------------------------------------
                 temp_dict["parent (dsname)"] = parent_dsname
