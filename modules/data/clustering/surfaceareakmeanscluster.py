@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import sys
@@ -6,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
+import joblib
 import pandas as pd
 from colorama import Back, Fore, Style
 from sklearn.cluster import KMeans
@@ -180,6 +182,8 @@ class SurfaceAreaKMeansCluster(BaseObject):
         self._gen_clustered_df()
         self._save_clustered_df()
         self._save_kmeans_centers()
+        self._save_kmeans_model()
+        self._save_kmeans_mapping()
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
@@ -283,4 +287,21 @@ class SurfaceAreaKMeansCluster(BaseObject):
         
         path = self.dst_root.joinpath("kmeans_centers.toml")
         dump_config(path, save_dict)
+        # ---------------------------------------------------------------------/
+
+
+    def _save_kmeans_model(self):
+        """
+        """
+        path = self.dst_root.joinpath("kmeans_model.joblib")
+        joblib.dump(self.kmeans, path)
+        # ---------------------------------------------------------------------/
+
+
+    def _save_kmeans_mapping(self):
+        """
+        """
+        path = self.dst_root.joinpath("kmeans_mapping.json")
+        with open(path, mode="w") as f_writer:
+            json.dump(self.cidx2clabel, f_writer, indent=4)
         # ---------------------------------------------------------------------/
