@@ -319,3 +319,83 @@ class SurfDGTImgDataset_v3(ImgDataset_v3):
         
         return img, img_for_mse, area, name
         # ---------------------------------------------------------------------/
+
+
+
+class NoCropImgDataset_v3(ImgDataset_v3):
+
+    def __init__(self, mode:str, config:Union[dict, TOMLDocument],
+                 df:pd.DataFrame, class2num_dict:Dict[str, int], resize:int, intensity_thres: int,
+                 transform:Union[None, iaa.Sequential], dst_root:Path,
+                 debug_mode:bool, display_on_CLI=True) -> None:
+        """
+        """
+        # ---------------------------------------------------------------------
+        # """ components """
+        
+        super(ImgDataset_v3, self).__init__(display_on_CLI)
+        self._cli_out._set_logger(f"NoCrop {mode.capitalize()} Dataset")
+        
+        # ---------------------------------------------------------------------
+        # """ attributes """
+        
+        self.mode = mode
+        self.config: Union[dict, TOMLDocument] = config
+        self.df: pd.DataFrame = df
+        self.class2num_dict: Dict[str, int] = class2num_dict
+        self.resize = (resize, resize)
+        self.intensity_thres = intensity_thres
+        self.transform: Union[None, iaa.Sequential] = transform
+        self.dst_root: Path = dst_root.joinpath("debug", self.mode)
+        self.debug_mode: bool = debug_mode
+        
+        self._set_src_root()
+        self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
+        
+        # ---------------------------------------------------------------------
+        # """ actions """
+        
+        if self.use_hsv is True:
+            self._cli_out.write("※　: using 'HSV' when getting images from the dataset")
+        
+        if self.transform is not None:
+            self._cli_out.write("※　: applying augmentation on the fly")
+        
+        if self.debug_mode:
+            self._cli_out.write("※　: debug mode, all runtime image will save")
+            create_new_dir(self.dst_root)
+        # ---------------------------------------------------------------------/
+
+    def __getitem__(self, index):
+        """
+        """
+        """ Get name """
+        name: str = self.df.iloc[index]["image_name"]
+        
+        """ Read image """
+        path: Path = self.src_root.joinpath(self.df.iloc[index]["path"])
+        img: np.ndarray = cv2.imread(str(path))
+        fish_class: str = self.df.iloc[index]["class"]
+        
+        # >>> Apply different config settings to image <<<
+        
+        # augmentation on the fly
+        if (self.mode == "train") and (self.transform is not None):
+            img = self.transform(image=img)
+        
+        # adjust pixel value
+        img_for_mse = deepcopy(img)
+        if (self.mode == "train"):
+            img = self._adjust_dark_pixel(img, 0, self.intensity_thres)
+            img_for_mse = self._adjust_dark_pixel(img_for_mse, 255, self.intensity_thres)
+        
+        # >>> Prepare images <<<
+        img = self._cvt_model_format(img)
+        img_for_mse = self._cvt_model_format(img_for_mse)
+        
+        # >>> Prepare label <<<
+        cls_idx: int = self.class2num_dict[fish_class]
+        cls_idx = torch.tensor(cls_idx) # To `Tensor` (64-bit int), e.g. [0]
+        
+        return img, img_for_mse, cls_idx, name
+        # ---------------------------------------------------------------------/
