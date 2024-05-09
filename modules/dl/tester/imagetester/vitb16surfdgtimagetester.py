@@ -16,7 +16,7 @@ class VitB16SurfDGTImageTester(BaseSurfDGTImageTester):
         # ---------------------------------------------------------------------
         # """ components """
         
-        super().__init__(display_on_CLI)
+        super().__init__(display_on_CLI=display_on_CLI)
         self._cli_out._set_logger("Vit_B_16 SurfDGT Image Tester")
         
         # ---------------------------------------------------------------------

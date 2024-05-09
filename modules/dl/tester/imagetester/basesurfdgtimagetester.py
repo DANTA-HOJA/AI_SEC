@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import re
@@ -8,6 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
 import imgaug as ia
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -15,11 +17,13 @@ import seaborn as sns
 import tomlkit
 import torch
 from colorama import Back, Fore, Style
+from sklearn.cluster import KMeans
 from sklearn.metrics import classification_report
 from tomlkit.toml_document import TOMLDocument
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
+from ....data.processeddatainstance import ProcessedDataInstance
 from ....shared.baseobject import BaseObject
 from ....shared.config import dump_config, load_config
 from ....shared.utils import formatter_padr0
@@ -34,13 +38,19 @@ from ..utils import confusion_matrix_with_class, rename_history_dir
 
 class BaseSurfDGTImageTester(BaseObject):
 
-    def __init__(self, display_on_CLI=True) -> None:
+    def __init__(self, processed_data_instance:ProcessedDataInstance=None,
+                 display_on_CLI=True) -> None:
         """
         """
         # ---------------------------------------------------------------------
         # """ components """
         
         super().__init__(display_on_CLI)
+        
+        if processed_data_instance:
+            self._processed_di = processed_data_instance
+        else:
+            self._processed_di = ProcessedDataInstance()
         
         # ---------------------------------------------------------------------
         # """ attributes """
@@ -63,9 +73,10 @@ class BaseSurfDGTImageTester(BaseObject):
         self._set_testing_reproducibility()
         
         self._set_dataset_df()
-        # self._set_mapping_attrs()
+        self._set_mapping_attrs()
         self._set_test_df()
         self._print_testset_informations()
+        self._set_kmeans_attrs()
         
         """ Preparing DL components """
         self._set_test_set() # abstract function
@@ -179,26 +190,26 @@ class BaseSurfDGTImageTester(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    # def _set_mapping_attrs(self):
-    #     """ Set below attributes
-    #         >>> self.num2class_list: list
-    #         >>> self.class2num_dict: Dict[str, int]
+    def _set_mapping_attrs(self):
+        """ Set below attributes
+            >>> self.num2class_list: list
+            >>> self.class2num_dict: Dict[str, int]
         
-    #     Example :
-    #     >>> num2class_list = ['L', 'M', 'S']
-    #     >>> class2num_dict = {'L': 0, 'M': 1, 'S': 2}
-    #     """
-    #     cls_list = list(Counter(self.dataset_df["class"]).keys())
+        Example :
+        >>> num2class_list = ['L', 'M', 'S']
+        >>> class2num_dict = {'L': 0, 'M': 1, 'S': 2}
+        """
+        cls_list = list(Counter(self.dataset_df["class"]).keys())
         
-    #     if self.add_bg_class:
-    #         cls_list.append("BG")
+        if self.add_bg_class:
+            cls_list.append("BG")
         
-    #     self.num2class_list: list = sorted(cls_list)
-    #     self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
+        self.num2class_list: list = sorted(cls_list)
+        self.class2num_dict: Dict[str, int] = gen_class2num_dict(self.num2class_list)
         
-    #     self._cli_out.write(f"num2class_list = {self.num2class_list}, "
-    #                         f"class2num_dict = {self.class2num_dict}")
-    #     # ---------------------------------------------------------------------/
+        self._cli_out.write(f"num2class_list = {self.num2class_list}, "
+                            f"class2num_dict = {self.class2num_dict}")
+        # ---------------------------------------------------------------------/
 
 
     def _set_test_df(self):
@@ -235,6 +246,26 @@ class BaseSurfDGTImageTester(BaseObject):
         
         # temp_dict: Dict[str, int] = gen_class_counts_dict(self.test_df, self.num2class_list)
         # self._cli_out.write(f"class_weight of `self.test_df` : {calculate_class_weight(temp_dict)}")
+        # ---------------------------------------------------------------------/
+
+
+    def _set_kmeans_attrs(self):
+        """
+        """
+        temp_dict = {"data_processed": {"instance_desc": re.split("{|}", self.dataset_data)[1]}}
+        self._processed_di.parse_config(temp_dict)
+
+        feature_class = f"SURF{len(Counter(self.test_df['class']))}C"
+        cluster_desc = f"{feature_class}_{self.dataset_classif_strategy}_{self.dataset_seed_dir}"
+        
+        # kmeans_model
+        path = self._processed_di.clustered_file_dir.joinpath(cluster_desc, "kmeans_model.joblib")
+        self.kmeans: KMeans = joblib.load(path)
+        
+        # kmeans_mapping
+        path = self._processed_di.clustered_file_dir.joinpath(cluster_desc, "kmeans_mapping.json")
+        with open(path, mode="r") as f_reader:
+            self.kmeans_mapping: dict[int, str] = json.load(f_reader)
         # ---------------------------------------------------------------------/
 
 
@@ -302,7 +333,7 @@ class BaseSurfDGTImageTester(BaseObject):
         
         """ Save files """
         self._save_test_log(test_desc="PredByImg", score_key="r_squared") # save file
-        # self._save_report(test_desc="PredByImg") # save file
+        self._save_report(test_desc="PredByImg") # save file
         self._save_r2_figure()
         
         """ Rename `history_dir` """
@@ -331,7 +362,9 @@ class BaseSurfDGTImageTester(BaseObject):
         """
         """
         self.test_log: dict = {}
-        self.pred_list_to_ori_scale: List[str] = []
+        self.pred_list_to_ori_scale: List[float] = []
+        self.pred_list_to_name: List[str] = []
+        self.gt_list_to_name: List[str] = list(self.test_df["class"])
         # ---------------------------------------------------------------------/
 
 
@@ -377,6 +410,14 @@ class BaseSurfDGTImageTester(BaseObject):
         
         calculate_r_squared(self.test_log, (accum_loss/len(self.test_dataloader)),
                             self.pred_list_to_ori_scale, list(self.test_df["area"]))
+        
+        # apply KMeans to predicted surface area
+        self.pred_list_to_name = self.kmeans.predict(np.array(self.pred_list_to_ori_scale)[:, None])
+        self.pred_list_to_name = \
+            [self.kmeans_mapping[str(cidx)] for cidx in self.pred_list_to_name.squeeze()]
+        
+        calculate_metrics(self.test_log, (accum_loss/len(self.test_dataloader)),
+                          self.pred_list_to_name, self.gt_list_to_name, self.class2num_dict)
         # ---------------------------------------------------------------------/
 
 
@@ -408,32 +449,32 @@ class BaseSurfDGTImageTester(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    # def _save_report(self, test_desc:str):
-    #     """
-    #     """
-    #     file_name = f"{{Report}}_{test_desc}.log"
-    #     path = self.history_dir.joinpath(file_name)
-    #     with open(path, mode="w") as f_writer:
+    def _save_report(self, test_desc:str):
+        """
+        """
+        file_name = f"{{Report}}_{test_desc}.log"
+        path = self.history_dir.joinpath(file_name)
+        with open(path, mode="w") as f_writer:
             
-    #         """ Write `config` """
-    #         config_in_report = deepcopy(self.config["model_prediction"])
-    #         f_writer.write("[ model_prediction ]\n")
-    #         f_writer.write(f"{tomlkit.dumps(config_in_report)}\n")
+            """ Write `config` """
+            config_in_report = deepcopy(self.config["model_prediction"])
+            f_writer.write("[ model_prediction ]\n")
+            f_writer.write(f"{tomlkit.dumps(config_in_report)}\n")
             
-    #         config_in_report = deepcopy(self.training_config["dataset"])
-    #         f_writer.write("[ dataset ]\n")
-    #         f_writer.write(f"{tomlkit.dumps(config_in_report)}\n")
+            config_in_report = deepcopy(self.training_config["dataset"])
+            f_writer.write("[ dataset ]\n")
+            f_writer.write(f"{tomlkit.dumps(config_in_report)}\n")
             
-    #         f_writer.write(f"※ For more detail info please refer to its 'training_config' file...\n\n\n")
+            f_writer.write(f"※ For more detail info please refer to its 'training_config' file...\n\n\n")
             
-    #         """ Write `classification_report` """
-    #         cls_report = classification_report(y_true=self.gt_list_to_name,
-    #                                            y_pred=self.pred_list_to_name, digits=5)
-    #         f_writer.write("Classification Report:\n\n")
-    #         f_writer.write(f"{cls_report}\n\n")
+            """ Write `classification_report` """
+            cls_report = classification_report(y_true=self.gt_list_to_name,
+                                               y_pred=self.pred_list_to_name, digits=5)
+            f_writer.write("Classification Report:\n\n")
+            f_writer.write(f"{cls_report}\n\n")
             
-    #         """ Write `confusion_matrix` """
-    #         _, confusion_matrix = confusion_matrix_with_class(prediction=self.pred_list_to_name,
-    #                                                           ground_truth=self.gt_list_to_name)
-    #         f_writer.write(f"{confusion_matrix}\n")
-    #     # ---------------------------------------------------------------------/
+            """ Write `confusion_matrix` """
+            _, confusion_matrix = confusion_matrix_with_class(prediction=self.pred_list_to_name,
+                                                              ground_truth=self.gt_list_to_name)
+            f_writer.write(f"{confusion_matrix}\n")
+        # ---------------------------------------------------------------------/
