@@ -19,7 +19,7 @@ class VitB16AOnlySurfDGTTrainer(VitB16SurfDGTTrainer):
         # ---------------------------------------------------------------------
         # """ components """
         
-        super().__init__(display_on_CLI=display_on_CLI)
+        super(VitB16SurfDGTTrainer, self).__init__(display_on_CLI=display_on_CLI)
         self._cli_out._set_logger("Vit_B_16 AOnly SurfDGT Trainer")
         
         # ---------------------------------------------------------------------
