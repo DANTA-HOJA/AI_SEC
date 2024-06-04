@@ -27,6 +27,10 @@ mamba install numpy=1.23.0
 mamba install mkl==2024.0
 ```
 
+## Hardware (20240603)
+
+- i9-13900KS + RTX 4090
+
 ## Notification (20240603)
 
 Create dataset on SSD to get a reasonable process time
