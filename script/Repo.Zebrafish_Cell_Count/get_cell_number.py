@@ -88,6 +88,7 @@ if __name__ == '__main__':
     cli_out.divide()
     print(f"Q2 Cell Number = {np.quantile(cell_number, 0.5)}")
     print(f"Avg Cell Number = {np.mean(cell_number)} ± {np.std(cell_number)}")
+    print(f"(round) Avg Cell Number = {round(np.mean(cell_number), 1)} ± {round(np.std(cell_number), 1)}")
     
     sns.displot(cell_number)
     plt.show()
