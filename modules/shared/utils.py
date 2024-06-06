@@ -56,7 +56,7 @@ def get_repo_root(cli_out:CLIOutput=None) -> Path:
     """
     """ Analyze """
     zebrafish_series = ["ZebraFish_AP_POS",
-                        "Zebrafish_Cell_Count"]
+                        "Zebrafish_ML"]
     
     path_split = list(Path(__file__).parts) # 使用 `__file__` 時，
                                             # `assert_run_under_repo_root` 無效
