@@ -166,7 +166,7 @@ if __name__ == '__main__':
             create_new_dir(slic_dir)
             
             print(f"[ {dname_dir.parts[-1]} : '{slic_dir}' ]")
-            dump_config(slic_dir.joinpath(f"{{copy}}_{Path(__file__).stem}.toml"), config)
+            dump_config(slic_dir.joinpath(r"{copy}_get_cell_feature.toml"), config)
             
             # SLIC
             cell_seg, patch_seg = run_single_slic_analysis(slic_dir, path,
