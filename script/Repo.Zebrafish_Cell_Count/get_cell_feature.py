@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     # load config
     # `dark` and `merge` are two parameters as color space distance, determined by experiences
-    config = load_config(get_coupled_config_name(__file__))
+    config = load_config("get_cell_feature.toml")
     # [dataset]
     dataset_seed_dir: str = config["dataset"]["seed_dir"]
     dataset_data: str = config["dataset"]["data"]

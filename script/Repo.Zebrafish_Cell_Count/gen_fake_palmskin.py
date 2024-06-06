@@ -50,11 +50,11 @@ if __name__ == '__main__':
     print(f"Repository: '{get_repo_root()}'")
     
     """ Init components """
-    path_navigator = PathNavigator()
     processed_di = ProcessedDataInstance()
+    path_navigator = PathNavigator()
     cli_out = CLIOutput()
     cli_out.divide()
-    
+
     # load config
     # `dark` and `merge` are two parameters as color space distance, determined by experiences
     config = load_config("get_cell_feature.toml")
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     debug_mode: bool = config["SLIC"]["debug_mode"]
     print("", Pretty(config, expand_all=True))
     cli_out.divide()
-    
+
     """ Colloct image file names """
     dataset_cropped: Path = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
     src_root = dataset_cropped.joinpath(dataset_seed_dir,
