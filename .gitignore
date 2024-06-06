@@ -25,4 +25,4 @@ ipynb_playground/tensorboardx/**
 !ipynb_playground/yaml/sample_config.yaml
 
 !script/Config/*.toml
-!script/Repo.Zebrafish_Cell_Count/*.toml
+!script/7.additional_analysis/*.toml
