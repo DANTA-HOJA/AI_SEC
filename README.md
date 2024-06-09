@@ -19,7 +19,7 @@ grad-cam = 1.4.8
 ```shell
 mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
 pip install scikit-image==0.22.0 scikit-learn==1.4.0
-pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn
+pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn imagecodecs
 mamba install pandas pyimagej openjdk=8 imgaug=0.4.0
 pip install albumentations==1.3.1
 pip install grad-cam==1.4.8
