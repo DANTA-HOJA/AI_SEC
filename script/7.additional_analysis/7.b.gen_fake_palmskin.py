@@ -22,7 +22,7 @@ from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
-from modules.shared.utils import get_repo_root
+from modules.shared.utils import create_new_dir, get_repo_root
 
 install()
 # -----------------------------------------------------------------------------/
@@ -115,8 +115,10 @@ if __name__ == '__main__':
             fake_tp2 = gen_fake_palmskin(seg, 0.5, (1.0, 1.0, 1.0)) # border white, cytosol gray, and black background
             fake_tp3 = gen_fake_palmskin(seg, 1.0, (1.0, 1.0, 1.0)) # border white, cytosol white, and black background
 
+            fakeimg_dir = dpath.joinpath(f"FakeImage/{dataset_palmskin_result}_{{dark_{dark}}}")
+            create_new_dir(fakeimg_dir)
             for enum, img in enumerate([fake_tp1, fake_tp2, fake_tp3], start=1):
-                save_path = dpath.joinpath(f"{37+enum}_Fake_Type{enum}.tif")
+                save_path = fakeimg_dir.joinpath(f"{dataset_palmskin_result}.faketype{enum}.tif")
                 ski.io.imsave(save_path, img)
                 print(f"Fake_Type{enum} : '{save_path}'")
             cli_out.new_line()
