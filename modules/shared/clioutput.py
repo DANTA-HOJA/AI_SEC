@@ -46,11 +46,32 @@ class CLIOutput():
 
 
 
-    def divide(self):
+    def divide(self, title:str=None,
+                    length:int=100, characters:str="="):
         """
         """
         if self._display_on_CLI:
-            tqdm.write(f"\n{Fore.GREEN}{'='*100}{Style.RESET_ALL}\n")
+            
+            div_length = length
+            char = characters
+            text = f"{Fore.GREEN}{char*div_length}{Style.RESET_ALL}"
+            
+            if title is not None:
+                
+                # trucate title
+                if len(title) >= (div_length-10):
+                    title = f"{title[:46]} ..."
+                
+                # calculate spacing
+                center = f" {title} "
+                rest = div_length - len(center)
+                left = int(rest/2)
+                right = rest - left
+                text = (f"{Fore.GREEN}{char*left}"
+                        f"{Fore.YELLOW}{center}"
+                        f"{Fore.GREEN}{char*right}{Style.RESET_ALL}")
+            
+            tqdm.write(f"\n{text}\n")
         # ---------------------------------------------------------------------/
 
 
