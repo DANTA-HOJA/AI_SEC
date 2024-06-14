@@ -1,0 +1,15 @@
+[model_prediction]
+  time_stamp = "20240304_06_09_03_"
+  state = "best" # 'best' or 'final' (model.pth)
+
+# -----------------------------------------------------------------------------\
+[cam_analysis]
+  threshold = 120
+  top_n_area = 1
+
+[cam_analysis.test]
+  target = "fish_16_P_crop_14"
+
+  # Samples for Figure6:
+  # (S) fish_16_P_crop_14
+  # (L) fish_166_A_crop_06
