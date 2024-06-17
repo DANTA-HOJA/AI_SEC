@@ -18,9 +18,8 @@ pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
-from m_cam_analysis import calc_thresed_cam_area_on_cell
-
 from modules.data.dataset.utils import parse_dataset_file_name
+from modules.dl.cam.analysis import calc_thresed_cam_area_on_cell
 from modules.dl.tester.utils import get_history_dir
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
