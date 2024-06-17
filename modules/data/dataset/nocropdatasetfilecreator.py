@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import skimage as ski
 from colorama import Back, Fore, Style
+from rich.traceback import install
 
 from ...dl.cam.analysis import create_brightness_mask
 from ...shared.baseobject import BaseObject
@@ -18,6 +19,8 @@ from .. import dname
 from ..processeddatainstance import ProcessedDataInstance
 from . import dsname
 from .utils import drop_too_dark, gen_dataset_file_name_dict
+
+install()
 # -----------------------------------------------------------------------------/
 
 
@@ -79,6 +82,8 @@ class NoCropDatasetFileCreator(BaseObject):
         
         """ [param] """
         self.base_size: tuple[int, int] = self.config["param"]["base_size"]
+        self.intensity: int = self.config["param"]["intensity"]
+        assert self.intensity == 30, "`config.param.intensity` must be 30"
         
         self.palmskin_result_name = os.path.splitext(self.palmskin_result_name)[0]
         # ---------------------------------------------------------------------/
@@ -240,7 +245,7 @@ class NoCropDatasetFileCreator(BaseObject):
                 if img_size == "base":
                     img_dict["orig"] = ski.io.imread(path)
                     _, dark_ratio = \
-                        create_brightness_mask(img_dict["orig"], self.config["param"]["intensity"],
+                        create_brightness_mask(img_dict["orig"], self.intensity,
                                                erode_kernel=img_dict["kernel_ones2x2"],
                                                erode_iter=1,
                                                dilate_kernel=img_dict["kernel_ones2x2"],
