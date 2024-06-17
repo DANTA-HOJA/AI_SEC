@@ -167,7 +167,7 @@ def calc_thresed_cam_area_on_cell(orig_img:np.ndarray,
     
     # create_brightness_mask()
     br_mask, _ = create_brightness_mask(orig_img, br_thres,
-                                        erode_kernel=img_dict["kernel_ones3x3"],
+                                        erode_kernel=img_dict["kernel_ones2x2"],
                                         erode_iter=1,
                                         dilate_kernel=img_dict["kernel_ones2x2"],
                                         dilate_iter=1)
