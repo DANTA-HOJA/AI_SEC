@@ -6,9 +6,12 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
 import cv2
+import numpy as np
 import pandas as pd
+import skimage as ski
 from colorama import Back, Fore, Style
 
+from ...dl.cam.analysis import create_brightness_mask
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir, exclude_tmp_paths
 from .. import dname
@@ -181,6 +184,9 @@ class NoCropDatasetFileCreator(BaseObject):
         
         """ Main Task """
         dataset_df: Union[None, pd.DataFrame] = None
+        img_dict: dict[str, np.ndarray] = {}
+        img_dict["kernel_ones2x2"] = np.ones((2, 2), dtype=np.uint8)
+        img_dict["kernel_ones3x3"] = np.ones((3, 3), dtype=np.uint8)
         
         self._cli_out.divide()
         self._reset_pbar()
@@ -230,6 +236,15 @@ class NoCropDatasetFileCreator(BaseObject):
                         assert len(select) == 0, "Either `select` or `drop` needs to be empty"
                         dark_ratio = drop[0][2]
                         state = "discard"
+                
+                if img_size == "base":
+                    img_dict["orig"] = ski.io.imread(path)
+                    _, dark_ratio = \
+                        create_brightness_mask(img_dict["orig"], self.config["param"]["intensity"],
+                                               erode_kernel=img_dict["kernel_ones2x2"],
+                                               erode_iter=1,
+                                               dilate_kernel=img_dict["kernel_ones2x2"],
+                                               dilate_iter=1)
                 
                 """ Create `temp_dict` """
                 temp_dict = {}
