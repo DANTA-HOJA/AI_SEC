@@ -1,21 +1,5 @@
-from collections import Counter
-
-import cv2
-import numpy as np
 import pandas as pd
-import torch
-import torchvision
-from pytorch_grad_cam import (AblationCAM, DeepFeatureFactorization, EigenCAM,
-                              EigenGradCAM, FullGrad, GradCAM,
-                              GradCAMElementWise, GradCAMPlusPlus, HiResCAM,
-                              LayerCAM, ScoreCAM, XGradCAM)
-from pytorch_grad_cam.ablation_layer import AblationLayerVit
-from pytorch_grad_cam.utils.image import show_factorization_on_image
-from torch import nn
 
-from ....shared.utils import create_new_dir, get_target_str_idx_in_list
-from ...dataset.imgdataset import NoCropImgDataset_v3
-from ...tester.utils import reshape_transform
 from .vitb16fishtester import VitB16FishTester
 from .vitb16nocropfishtester import VitB16NoCropFishTester
 # -----------------------------------------------------------------------------/
