@@ -126,7 +126,7 @@ class BaseFishTester(BaseImageTester):
         """ Rename `history_dir` """
         # new_name_format : {time_stamp}_{test_desc}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score}
         # example : '20230630_04_39_25_{Tested_PredByFish}_{100_epochs_AugOnFly}_{best}_{maweavg_f1_0.90208}'
-        if self.do_cam:
+        if (self.do_cam) or (self.history_dir.joinpath("cam_result").exists()):
             rename_history_dir(self.history_dir, "Tested_PredByFish_CAM",
                                self.model_state, self.test_log, score_key="maweavg_f1",
                                cli_out=self._cli_out)
