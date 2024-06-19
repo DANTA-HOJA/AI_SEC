@@ -260,9 +260,12 @@ class BaseFishTester(BaseImageTester):
         self.fish_pred_dict[fish_dsname].update([pred_class])
         
         """ Store result for each crop image in `self.image_predict_ans_dict` ( for gallery ) """
+        tmp_dict = {}
+        for k, v in self.class2num_dict.items():
+            tmp_dict[k] = round(float(pred_prob[v]), 5)
         self.image_predict_ans_dict[crop_name] = { "gt": gt_class,
                                                    "pred": pred_class,
-                                                   "pred_prob": round(float(pred_prob[pred_hcls]), 5)}
+                                                   "pred_prob": tmp_dict}
         # ---------------------------------------------------------------------/
 
 
