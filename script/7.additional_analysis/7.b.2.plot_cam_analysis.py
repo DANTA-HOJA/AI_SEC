@@ -70,7 +70,7 @@ if __name__ == '__main__':
     # get `prob_thres`
     probs = []
     for k, v in pred_ans_dict.items():
-        probs.append(v["pred_prob"])
+        probs.append(v["pred_prob"][v["pred"]])
 
     print("( min, q1, q2, q3, max ) = (",
             np.min(probs),
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     for k, v in pred_ans_dict.items():
         
-        if (v["pred_prob"] > prob_thres):
+        if (v["pred_prob"][v["pred"]] > prob_thres):
             try:
                 # method1 (area > q3)
                 # q3 = np.quantile(v["thresed_cam_area_on_cell"], 0.75)
