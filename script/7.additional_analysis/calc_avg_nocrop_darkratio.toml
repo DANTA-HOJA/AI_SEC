@@ -1,0 +1,8 @@
+[model_prediction]
+  time_stamp = "20240508_04_54_20_"
+  state = "best" # 'best' or 'final' (model.pth)
+
+# -----------------------------------------------------------------------------\
+[col_filter]
+  fish_pos = [] # A, P
+  dataset = ["train"] # train, valid, test
