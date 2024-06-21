@@ -29,11 +29,15 @@ mamba install mkl==2024.0
 
 ## Hardware (20240603)
 
-- i9-13900KS + RTX 4090
+- OS: Ubuntu 22.04
+- CPU: i9-13900KS
+- GPU: RTX 4090
+- RAM: 64 GB DDR5
 
 ## Notification (20240603)
 
-Create dataset on SSD to get a reasonable process time
+- palmskin_raw_lif : ```[ Ch1, Ch2, Ch3, Ch4 ] -> [ B, G, R, (BF) ]```
+- create dataset on SSD to get a reasonable process time
 
 ## Data Information ( *temporarily halt updates* )
 
@@ -62,7 +66,6 @@ Create dataset on SSD to get a reasonable process time
     - 20221125_AI005_palmskin_10dpf : ```[ 179, (BF_185) ]``` (2)
 
 - ```[4, 7, 68, 109, 110, 156]``` 因為 Bright Field + palmskin RGB ( Auto Fluorescence ) 狀況不好予以刪除
-- palmskin_raw_lif : ```[ Ch1, Ch2, Ch3, Ch4 ] -> [ B, G, R, (BF) ]```
 
 ## Log ( by date )
 
@@ -174,4 +177,8 @@ Create dataset on SSD to get a reasonable process time
 
 ### 2023/10/13
 
-- 新增 Brightfield Segmentation model : [ZebraFish_BF_Seg](https://github.com/DANTA-HOJA/ZebraFish_BF_Seg)
+- 新增 Brightfield Segmentation (UNet) : [ZebraFish_BF_Seg](https://github.com/DANTA-HOJA/ZebraFish_BF_Seg)
+
+### 2023/11/05
+
+- 新增 ML pipeline : [Zebrafish_ML](https://github.com/DANTA-HOJA/Zebrafish_ML)
