@@ -19,10 +19,13 @@ __pycache__
 *.zip
 *.ckpt
 
-ipynb_playground/**/*.png
-ipynb_playground/tensorboardx/**
-!ipynb_playground/tensorboardx/**/*.ipynb
-!ipynb_playground/yaml/sample_config.yaml
+.sensitive_info
 
-!script/Config/*.toml
-!script/7.additional_analysis/*.toml
+dev/ipynb_playground/**/*.png
+dev/ipynb_playground/tensorboardx/**
+!dev/ipynb_playground/tensorboardx/**/*.ipynb
+!dev/ipynb_playground/yaml/sample_config.yaml
+
+!test.toml
+!script/**/*.toml
+script/2.training/batch_config
