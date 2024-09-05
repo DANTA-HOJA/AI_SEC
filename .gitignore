@@ -19,7 +19,7 @@ __pycache__
 *.zip
 *.ckpt
 
-.sensitive_info
+dev/.sensitive_info
 
 dev/ipynb_playground/**/*.png
 dev/ipynb_playground/tensorboardx/**
