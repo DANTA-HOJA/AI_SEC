@@ -12,6 +12,7 @@ from rich import print
 from rich.console import Console
 from rich.pretty import Pretty
 from rich.traceback import install
+from scipy.stats import ttest_ind
 
 pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
@@ -86,18 +87,20 @@ if __name__ == '__main__':
 
     for k, v in pred_ans_dict.items():
         
-        if (v["pred_prob"][v["pred"]] > prob_thres):
-            try:
-                # method1 (area > q3)
-                # q3 = np.quantile(v["thresed_cam_area_on_cell"], 0.75)
-                # data_filtered = [x for x in v["thresed_cam_area_on_cell"] if x > q3]
-                
-                # method2 (top_n_area)
-                data_filtered = v["thresed_cam_area_on_cell"][:cam_top_n_area]
-                
-            except IndexError:
-                pass
-            thres_area_dict[v["pred"]].extend(data_filtered)
+        if v["pred"] == v["gt"]:
+            if (v["pred_prob"][v["pred"]] > prob_thres):
+                data_filtered = []
+                try:
+                    # method1 (area > q3)
+                    # q3 = np.quantile(v["thresed_cam_area_on_cell"], 0.75)
+                    # data_filtered = [x for x in v["thresed_cam_area_on_cell"] if x > q3]
+                    
+                    # method2 (top_n_area)
+                    data_filtered = v["thresed_cam_area_on_cell"][:cam_top_n_area]
+                    
+                except IndexError:
+                    pass
+                thres_area_dict[v["pred"]].extend(data_filtered)
     
     
     """ Generate violin plot """
@@ -108,7 +111,11 @@ if __name__ == '__main__':
     
     plt.title(f"Violinplot of different size, top {cam_top_n_area} area")
     plt.xlabel("Groups")
-    plt.ylabel("Values")
+    plt.ylabel("Pixels")
+    
+    # p value
+    t_stat, p_val = ttest_ind(thres_area_dict["S"], thres_area_dict["L"])
+    print(f"T-statistic: {t_stat}, P-value: {p_val}")
 
     # set y-axis limit
     q1 = np.max([np.quantile(thres_area_dict['S'], 0.25),
