@@ -1,0 +1,27 @@
+ZebraFish_DB = "" # absolute path of "ZebraFish_DB" on this computer
+
+[misc]
+  img = "example_cat.jpg"
+
+[data_processed]
+  instance_desc = "20240219_fixmm3d" # dir_name = {`instance_desc`}_Academia_Sinica_i[num]
+  palmskin_result_name = "03_RGB_direct_max_zproj.tif"
+
+[palmskin_dname_dir]
+  root = "{Data}_Processed/{20231229_manualroi}_Academia_Sinica_i831/{m113_m222_ku15}_PalmSkin_preprocess/20221125_AI005_palmskin_10dpf - Series001_fish_165_A_RGB"
+  03 = "{Data}_Processed/{20231229_manualroi}_Academia_Sinica_i831/{m113_m222_ku15}_PalmSkin_preprocess/20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB/03_RGB_direct_max_zproj.tif"
+  03_FixedROI = "{Data}_Processed/{20231229_manualroi}_Academia_Sinica_i831/{m113_m222_ku15}_PalmSkin_preprocess/20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB/FixedROI/03_RGB_direct_max_zproj.fixedroi.tif"
+
+[palmskin_dsname_dir]
+  root = ""
+  03 = "{Dataset}_Cropped_v3/RND2022/{20240219_fixmm3d}_Academia_Sinica_i722/03_RGB_direct_max_zproj/W512_H1024/test/fish_16_A/fish_16_A.tiff"
+  03Gray = "{Dataset}_Cropped_v3/RND2022/{20240219_fixmm3d}_Academia_Sinica_i722/03_RGB_direct_max_zproj2Gray/W512_H1024/test/fish_16_A/fish_16_A.tiff"
+  03_SubCrop = "{Dataset}_Cropped_v3/RND2022/{20231229_manualroi}_Academia_Sinica_i831/03_RGB_direct_max_zproj/W512_H1024/train/fish_33_A/CRPS256_SF14/fish_33_A_crop_01.tiff"
+  36_SubCrop = "{Dataset}_Cropped_v3/RND2022/{20231229_manualroi}_Academia_Sinica_i831/36_RGB_HE_fusion/W512_H1024/test/fish_13_A/CRPS256_SF14/fish_13_A_crop_00.tiff"
+
+[single_prediction_dir]
+  root = "{Model}_Prediction/v4.0.a_Intro_BG.Class_with_HorizHalfCut/20240203_22_12_56_{Tested_PredByFish}_{69_epochs_AugOnFly}_{best}_{maweavg_f1_0.81524}"
+  cam_gallery_dir = "{Model}_Prediction/v4.2_Intro_HybridLoss_and_AugAblation/20240304_06_09_03_{Tested_PredByFish_CAM}_{167_epochs_AugOnFly}_{best}_{maweavg_f1_0.89198}/+---CAM_Gallery"
+  time_log = "{Model}_Prediction/v4.0.b_Intro_BG.Class_without_HorizHalfCut/20240117_15_35_42_{Tested_PredByFish_CAM}_{63_epochs_AugOnFly}_{best}_{maweavg_f1_0.85774}/{ training time }_{ 507.9115 sec }"
+  predict_ans_log = "{Model}_Prediction/v4.1_Intro_BaseSize_and_BG.Class/20240215_09_28_48_{Tested_PredByFish_CAM}_{125_epochs_AugOnFly}_{best}_{maweavg_f1_0.87605}/{Logs}_PredByFish_predict_ans.log"
+  db_out = "db_test.xlsx"
