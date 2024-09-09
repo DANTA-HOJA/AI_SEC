@@ -22,7 +22,7 @@ def dynamic_crop(size:int) -> iaa.Sequential:
     """
     transform = iaa.Sequential([
         iaa.Sometimes(0.5, 
-            iaa.Affine(rotate=(-30, 30)),
+            iaa.Affine(rotate=(-90, 90)),
         ),
         iaa.CropToFixedSize(width=size, height=size),
         # iaa.GammaContrast((0.5, 2.0)),
