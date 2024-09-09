@@ -1,4 +1,4 @@
-# ZebraFish_AP_POS
+# ZebraFish_DL
 
 MD705 cooperation project ( zebrafish size classifier by ```Anterior```, ```Posterior``` )
 
