@@ -25,7 +25,7 @@ pip install albumentations==1.3.1
 pip install grad-cam==1.4.8
 mamba install numpy=1.23.0
 mamba install mkl==2024.0
-pip install umap-learn
+pip install umap-learn==0.5.6
 ```
 
 ## Hardware (20240603)
