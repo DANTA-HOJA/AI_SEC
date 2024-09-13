@@ -113,6 +113,10 @@ class BrightfieldUNetAreaMeter(BaseObject):
         roi_cnt = int(self._zfij.roiManager.getCount())
         if roi_cnt == 1:
             self._save_measured_result(dname_dir)
+        else:
+            self._cli_out.write("Warning: number of ROIs != 1, "
+                                "the measurement file won't be saved, "
+                                f"`mask_file`: '{mask_file}'")
         
         self._zfij.reset_all_window()
         # ---------------------------------------------------------------------/
