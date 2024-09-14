@@ -169,6 +169,7 @@ class BaseTrainer(BaseObject):
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
         ia.seed(self.rand_seed)
+        # torch.use_deterministic_algorithms(mode=True) # may let code run very slow
         
         """ DataLoader """
         self.g: torch.Generator = torch.Generator()
