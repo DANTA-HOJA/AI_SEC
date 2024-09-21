@@ -45,20 +45,22 @@ class VitB16ImageTester(BaseImageTester):
             - ref: https://github.com/pytorch/vision/issues/7397
         """
         model_construct_fn: function = getattr(torchvision.models, self.model_name)
-        self.model: nn.Module = model_construct_fn(weights=None)
+        
+        model_pretrain = self.training_config["model"]["pretrain"]
+        self.model: nn.Module = model_construct_fn(weights=model_pretrain)
         
         """ Modify model structure """
         self.model.heads.head = nn.Linear(in_features=768, out_features=len(self.class2num_dict), bias=True)
         self.model.to(self.device)
         
         """ Load `model_state_dict` """
-        model_path = self.history_dir.joinpath(f"{self.model_state}_model.pth")
-        pth_file = torch.load(model_path, map_location=self.device) # unpack to device directly
-        self.model.load_state_dict(pth_file["model_state_dict"])
+        # model_path = self.history_dir.joinpath(f"{self.model_state}_model.pth")
+        # pth_file = torch.load(model_path, map_location=self.device) # unpack to device directly
+        # self.model.load_state_dict(pth_file["model_state_dict"])
         
         self._cli_out.write(f"Load model from `torchvision`, "
                             f"name: '{self.model_name}', "
-                            f"weights: '{model_path}'")
+                            f"weights: '{model_pretrain}'")
         # ---------------------------------------------------------------------/
 
 
