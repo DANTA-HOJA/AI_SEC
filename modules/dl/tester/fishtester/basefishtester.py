@@ -122,6 +122,7 @@ class BaseFishTester(BaseImageTester):
         self._save_predict_ans_log() # save file
         self._save_test_log(test_desc="PredByFish", score_key="maweavg_f1") # save file
         self._save_report(test_desc="PredByFish") # save file
+        self._save_confusion_matrix_display(test_desc="PredByFish") # save file
         
         """ Rename `history_dir` """
         # new_name_format : {time_stamp}_{test_desc}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score}

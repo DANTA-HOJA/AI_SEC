@@ -8,12 +8,13 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
 import imgaug as ia
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tomlkit
 import torch
 from colorama import Back, Fore, Style
-from sklearn.metrics import classification_report
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report
 from tomlkit.toml_document import TOMLDocument
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
@@ -302,6 +303,7 @@ class BaseImageTester(BaseObject):
         """ Save files """
         self._save_test_log(test_desc="PredByImg", score_key="maweavg_f1") # save file
         self._save_report(test_desc="PredByImg") # save file
+        self._save_confusion_matrix_display(test_desc="PredByImg") # save file
         
         """ Rename `history_dir` """
         # new_name_format : {time_stamp}_{test_desc}_{target_epochs_with_ImgLoadOptions}_{model_state}_{score_key}
@@ -419,4 +421,20 @@ class BaseImageTester(BaseObject):
             _, confusion_matrix = confusion_matrix_with_class(prediction=self.pred_list_to_name,
                                                               ground_truth=self.gt_list_to_name)
             f_writer.write(f"{confusion_matrix}\n")
+        # ---------------------------------------------------------------------/
+
+
+    def _save_confusion_matrix_display(self, test_desc:str):
+        """
+        """
+        ConfusionMatrixDisplay.from_predictions(self.gt_list_to_name,
+                                                self.pred_list_to_name)
+        plt.tight_layout()
+        plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.png"))
+        
+        ConfusionMatrixDisplay.from_predictions(self.gt_list_to_name,
+                                                self.pred_list_to_name,
+                                                normalize="true")
+        plt.tight_layout()
+        plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.normgt.png"))
         # ---------------------------------------------------------------------/
