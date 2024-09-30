@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
 import matplotlib
+import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
@@ -24,6 +25,9 @@ from ...data.processeddatainstance import ProcessedDataInstance
 from ...shared.baseobject import BaseObject
 from ...shared.config import load_config
 from ...shared.utils import create_new_dir
+
+new_rc_params = {'text.usetex': False, "svg.fonttype": 'none'}
+mpl.rcParams.update(new_rc_params)
 # -----------------------------------------------------------------------------/
 
 
@@ -490,6 +494,7 @@ class SurfaceAreaKMeansPlotter(BaseObject):
         # save figure
         self.fig_file_name = f"{{{self.clustered_desc}}}{'_kde' if self.x_axis_log_scale else ''}"
         self.fig.savefig(self.dst_root.joinpath(f"{self.fig_file_name}.png"))
+        self.fig.savefig(self.dst_root.joinpath(f"{self.fig_file_name}.svg"))
         # ---------------------------------------------------------------------/
 
 
