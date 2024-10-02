@@ -434,6 +434,8 @@ class BaseImageTester(BaseObject):
         ConfusionMatrixDisplay.from_predictions(y_true=self.gt_list_to_name,
                                                 y_pred=self.pred_list_to_name)
         plt.tight_layout()
+        plt.ylabel("Ground truth")
+        plt.xlabel("Prediction")
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.png"))
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.svg"))
         
@@ -442,6 +444,8 @@ class BaseImageTester(BaseObject):
                                                 normalize="true",
                                                 im_kw={"vmin":0.0, "vmax":1.0})
         plt.tight_layout()
+        plt.ylabel("Ground truth")
+        plt.xlabel("Prediction")
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.normgt.png"))
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.normgt.svg"))
         # ---------------------------------------------------------------------/
