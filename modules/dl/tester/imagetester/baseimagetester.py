@@ -427,14 +427,15 @@ class BaseImageTester(BaseObject):
     def _save_confusion_matrix_display(self, test_desc:str):
         """
         """
-        ConfusionMatrixDisplay.from_predictions(self.gt_list_to_name,
-                                                self.pred_list_to_name)
+        ConfusionMatrixDisplay.from_predictions(y_true=self.gt_list_to_name,
+                                                y_pred=self.pred_list_to_name)
         plt.tight_layout()
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.png"))
         
-        ConfusionMatrixDisplay.from_predictions(self.gt_list_to_name,
-                                                self.pred_list_to_name,
-                                                normalize="true")
+        ConfusionMatrixDisplay.from_predictions(y_true=self.gt_list_to_name,
+                                                y_pred=self.pred_list_to_name,
+                                                normalize="true",
+                                                im_kw={"vmin":0.0, "vmax":1.0})
         plt.tight_layout()
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.normgt.png"))
         # ---------------------------------------------------------------------/
