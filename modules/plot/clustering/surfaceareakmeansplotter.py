@@ -7,7 +7,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
-import matplotlib
 import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.patheffects as path_effects
