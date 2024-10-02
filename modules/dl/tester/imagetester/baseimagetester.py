@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
 import imgaug as ia
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -28,6 +29,9 @@ from ...trainer.utils import calculate_class_weight
 from ...utils import (calculate_metrics, gen_class2num_dict,
                       gen_class_counts_dict, set_gpu)
 from ..utils import confusion_matrix_with_class, rename_history_dir
+
+new_rc_params = {'text.usetex': False, "svg.fonttype": 'none'}
+mpl.rcParams.update(new_rc_params)
 # -----------------------------------------------------------------------------/
 
 
@@ -431,6 +435,7 @@ class BaseImageTester(BaseObject):
                                                 y_pred=self.pred_list_to_name)
         plt.tight_layout()
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.png"))
+        plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.svg"))
         
         ConfusionMatrixDisplay.from_predictions(y_true=self.gt_list_to_name,
                                                 y_pred=self.pred_list_to_name,
@@ -438,4 +443,5 @@ class BaseImageTester(BaseObject):
                                                 im_kw={"vmin":0.0, "vmax":1.0})
         plt.tight_layout()
         plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.normgt.png"))
+        plt.savefig(self.history_dir.joinpath(f"{{CMDisplay}}_{test_desc}.normgt.svg"))
         # ---------------------------------------------------------------------/
