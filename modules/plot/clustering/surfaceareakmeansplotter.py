@@ -274,7 +274,7 @@ class SurfaceAreaKMeansPlotter(BaseObject):
         df_col_name = attr_prefix.replace("fish_", "")
         ordered_list = self._get_ordered_list(df_col_name)
         
-        colormap = matplotlib.colormaps[getattr(self, f"{attr_prefix}_cmap")]
+        colormap = mpl.colormaps[getattr(self, f"{attr_prefix}_cmap")]
         colors = colormap(np.linspace(0, 1, len(ordered_list)))
         
         scatter_list:list = []
