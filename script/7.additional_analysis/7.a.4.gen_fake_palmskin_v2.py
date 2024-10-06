@@ -13,7 +13,6 @@ from rich import print
 from rich.pretty import Pretty
 from rich.progress import Progress
 from rich.traceback import install
-from skimage.color import label2rgb
 from skimage.segmentation import mark_boundaries
 
 pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
