@@ -124,6 +124,9 @@ if __name__ == '__main__':
     print("", Pretty(config, expand_all=True))
     cli_out.divide()
 
+    # set `random seed`
+    random.seed(int(dataset_seed_dir.replace("RND", "")))
+    
     """ Colloct image file names """
     dataset_cropped: Path = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
     src_root = dataset_cropped.joinpath(dataset_seed_dir,
@@ -179,6 +182,8 @@ if __name__ == '__main__':
                 colored_seg1[seg1 == label] = float_rgb
                 label2hexrgb[label] = hex_rgb
             fake_imgs["random_color2"] = colored_seg1
+            # draw border
+            fake_imgs["random_color2b"] = mark_boundaries(colored_seg1, seg1, color=(1.0, 1.0, 1.0))
             
             """Random color #1: load `clone_seg` (seg2, with clonal information)"""
             seg2_pkl = dname_dir.joinpath(f"SLIC/{result_name}_{{dark_{dark}}}/{result_name}.seg2.pkl")
@@ -194,6 +199,8 @@ if __name__ == '__main__':
             for label in unique_labels:
                 colored_seg2[seg2 == label] = color_pool[label2hexrgb[label]]
             fake_imgs["random_color1"] = colored_seg2
+            # draw border
+            fake_imgs["random_color1b"] = mark_boundaries(colored_seg2, seg1, color=(1.0, 1.0, 1.0))
             
             """Color-less: palmskin (border white, cytosol 50%gray, assume no shading and background)"""
             fake_imgs["color_less"] = \
