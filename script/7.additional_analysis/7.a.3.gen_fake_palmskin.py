@@ -28,19 +28,20 @@ install()
 # -----------------------------------------------------------------------------/
 
 
-def gen_fake_palmskin(seg:np.ndarray,
-                      cytosol_gray: float,
-                      border_color: tuple[float, float, float]) -> np.ndarray:
+def gen_singlecolor_palmskin(seg:np.ndarray,
+                             cytosol_color: tuple[float, float, float]=(0.5, 0.5, 0.5),
+                             border_color: tuple[float, float, float]=(1.0, 1.0, 1.0),
+                             bg_color: tuple[float, float, float]=None,
+                             ) -> np.ndarray:
     """
     """
-    # labels = np.unique(seg)
+    fake_palmskin = np.full((*seg.shape, 3), cytosol_color, dtype=np.float64)
     
-    fake_palmskin = np.zeros_like(seg, dtype=np.uint8)
-    fake_palmskin[seg > 0] = int(cytosol_gray*np.iinfo(np.uint8).max)
+    if bg_color is not None:
+        fake_palmskin[seg == 0] = bg_color
     
     fake_palmskin = mark_boundaries(fake_palmskin, seg, color=border_color)
-    fake_palmskin = np.uint8(fake_palmskin*255)
-    
+
     return fake_palmskin
     # -------------------------------------------------------------------------/
 
@@ -111,15 +112,15 @@ if __name__ == '__main__':
                 seg = pkl.load(f_reader)
 
             # generate fake palmskin images
-            fake_tp1 = gen_fake_palmskin(seg, 0.0, (1.0, 1.0, 1.0)) # border white, cytosol black, and black background
-            fake_tp2 = gen_fake_palmskin(seg, 0.5, (1.0, 1.0, 1.0)) # border white, cytosol gray, and black background
-            fake_tp3 = gen_fake_palmskin(seg, 1.0, (1.0, 1.0, 1.0)) # border white, cytosol white, and black background
+            fake_tp1 = gen_singlecolor_palmskin(seg, 0.0, 1.0, 0.0) # border white, cytosol black, and black background
+            fake_tp2 = gen_singlecolor_palmskin(seg, 0.5, 1.0, 0.0) # border white, cytosol gray, and black background
+            fake_tp3 = gen_singlecolor_palmskin(seg, 1.0, 1.0, 0.0) # border white, cytosol white, and black background
 
             fakeimg_dir = dpath.joinpath(f"FakeImage/{dataset_palmskin_result}_{{dark_{dark}}}")
             create_new_dir(fakeimg_dir)
             for enum, img in enumerate([fake_tp1, fake_tp2, fake_tp3], start=1):
                 save_path = fakeimg_dir.joinpath(f"{dataset_palmskin_result}.faketype{enum}.tif")
-                ski.io.imsave(save_path, img)
+                ski.io.imsave(save_path, np.uint8(img*255)) # float to 8-bit image
                 print(f"Fake_Type{enum} : '{save_path}'")
             cli_out.new_line()
             
