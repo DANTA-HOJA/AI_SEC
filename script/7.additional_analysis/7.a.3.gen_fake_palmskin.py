@@ -105,16 +105,15 @@ if __name__ == '__main__':
             assert config == load_config(verify_cfg), f"`verify_cfg` not match, '{verify_cfg}'"
             
             # load `patch_seg` (seg2)
-            seg_file = dname_dir.joinpath(f"SLIC/{result_name}_{{dark_{dark}}}/{result_name}.seg2.pkl")
-            print(f"[ {dname_dir.parts[-1]} : '{seg_file}' ]")
-            
-            with open(seg_file, mode="rb") as f_reader:
-                seg = pkl.load(f_reader)
+            seg2_pkl = dname_dir.joinpath(f"SLIC/{result_name}_{{dark_{dark}}}/{result_name}.seg2.pkl")
+            print(f"[ {seg2_pkl.parts[-1]} : '{seg2_pkl}' ]")
+            with open(seg2_pkl, mode="rb") as f_reader:
+                seg2 = pkl.load(f_reader)
 
             # generate fake palmskin images
-            fake_tp1 = gen_singlecolor_palmskin(seg, 0.0, 1.0, 0.0) # border white, cytosol black, and black background
-            fake_tp2 = gen_singlecolor_palmskin(seg, 0.5, 1.0, 0.0) # border white, cytosol gray, and black background
-            fake_tp3 = gen_singlecolor_palmskin(seg, 1.0, 1.0, 0.0) # border white, cytosol white, and black background
+            fake_tp1 = gen_singlecolor_palmskin(seg2, 0.0, 1.0, 0.0) # border white, cytosol black, and black background
+            fake_tp2 = gen_singlecolor_palmskin(seg2, 0.5, 1.0, 0.0) # border white, cytosol gray, and black background
+            fake_tp3 = gen_singlecolor_palmskin(seg2, 1.0, 1.0, 0.0) # border white, cytosol white, and black background
 
             fakeimg_dir = dpath.joinpath(f"FakeImage/{dataset_palmskin_result}_{{dark_{dark}}}")
             create_new_dir(fakeimg_dir)
