@@ -1,4 +1,5 @@
 __pycache__
+batch_config
 
 .vscode
 *.code-workspace
@@ -28,4 +29,3 @@ dev/ipynb_playground/tensorboardx/**
 
 !test.toml
 !script/**/*.toml
-script/2.training/batch_config
