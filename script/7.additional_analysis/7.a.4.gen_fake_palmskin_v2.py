@@ -73,27 +73,20 @@ def gen_unique_random_color_pool(n_labels:list,
     # -------------------------------------------------------------------------/
 
 
-def gen_colorless_palmskin(seg:np.ndarray, cytosol_gray: float=0.5,
-                           border_color: tuple[float, float, float]=(1.0, 1.0, 1.0)) -> np.ndarray:
+def gen_singlecolor_palmskin(seg:np.ndarray,
+                             cytosol_color: tuple[float, float, float]=(0.5, 0.5, 0.5),
+                             border_color: tuple[float, float, float]=(1.0, 1.0, 1.0),
+                             bg_color: tuple[float, float, float]=None,
+                             ) -> np.ndarray:
     """
     """
-    fake_palmskin = np.full_like(seg,
-                                 int(cytosol_gray*np.iinfo(np.uint8).max),
-                                 dtype=np.uint8)
+    fake_palmskin = np.full((*seg.shape, 3), cytosol_color, dtype=np.float64)
+    
+    if bg_color is not None:
+        fake_palmskin[seg == 0] = bg_color
     
     fake_palmskin = mark_boundaries(fake_palmskin, seg, color=border_color)
-    
-    return fake_palmskin
-    # -------------------------------------------------------------------------/
 
-
-def gen_cellless_palmskin(seg:np.ndarray,
-                          cytosol_gray: float=0.5) -> np.ndarray:
-    """
-    """
-    fake_palmskin = np.zeros_like(seg, dtype=np.float64)
-    fake_palmskin[seg > 0] = cytosol_gray
-    
     return fake_palmskin
     # -------------------------------------------------------------------------/
 
@@ -183,7 +176,8 @@ if __name__ == '__main__':
                 label2hexrgb[label] = hex_rgb
             fake_imgs["random_color2"] = colored_seg1
             # draw border
-            fake_imgs["random_color2b"] = mark_boundaries(colored_seg1, seg1, color=(1.0, 1.0, 1.0))
+            fake_imgs["random_color2b"] = \
+                mark_boundaries(colored_seg1, seg1, color=(1.0, 1.0, 1.0))
             
             """Random color #1: load `clone_seg` (seg2, with clonal information)"""
             seg2_pkl = dname_dir.joinpath(f"SLIC/{result_name}_{{dark_{dark}}}/{result_name}.seg2.pkl")
@@ -195,26 +189,34 @@ if __name__ == '__main__':
             # 確認所有唯一的 label
             unique_labels = np.unique(seg2)[1:] # 排除 `background` (0), 應少於 seg1
             
-            # 參照 seg1 的 "label 顏色映射" 進行上顏色
+            # 參照 seg1 的 "label 顏色映射" 進行上色
             for label in unique_labels:
                 colored_seg2[seg2 == label] = color_pool[label2hexrgb[label]]
             fake_imgs["random_color1"] = colored_seg2
             # draw border
-            fake_imgs["random_color1b"] = mark_boundaries(colored_seg2, seg1, color=(1.0, 1.0, 1.0))
-            
-            """Color-less: palmskin (border white, cytosol 50%gray, assume no shading and background)"""
-            fake_imgs["color_less"] = \
-                gen_colorless_palmskin(seg1, cytosol_gray=0.5, border_color=(1.0, 1.0, 1.0))
-            
-            """Cell-less: palmskin (background and shading are `black`)"""
-            fake_imgs["cell_less"] = gen_cellless_palmskin(seg1, cytosol_gray=0.5)
+            fake_imgs["random_color1b"] = \
+                mark_boundaries(colored_seg2, seg1, color=(1.0, 1.0, 1.0))
 
+            """Color-less: palmskin (background and shading are `black`, cytosol `50%gray`, with `white` border)"""
+            fake_imgs["color_less"] = \
+                gen_singlecolor_palmskin(seg1, cytosol_color=0.5,
+                                         border_color=1.0, bg_color=0.0)
+            # assume no background, shading, abbr(without background): wobg
+            fake_imgs["color_less_wobg"] = \
+                gen_singlecolor_palmskin(seg1, cytosol_color=0.5,
+                                         border_color=1.0)
+            
+            """Cell-less: palmskin (background and shading are `black`, cytosol `50%gray`, without border)"""
+            fake_imgs["cell_less"] = \
+                gen_singlecolor_palmskin(seg1, cytosol_color=0.5,
+                                         border_color=0.5, bg_color=0.0)
+            
             """Save images"""
             fakeimg_dir = dpath.joinpath(f"FakeImage_v2/{dataset_palmskin_result}_{{dark_{dark}}}")
             create_new_dir(fakeimg_dir)
             for key, img in fake_imgs.items():
                 save_path = fakeimg_dir.joinpath(f"{dataset_palmskin_result}.{key}.tif")
-                assert img.dtype == np.float64 # make sure image is present in float format
+                assert img.dtype == np.float64 # make sure image pixels are present in float
                 ski.io.imsave(save_path, np.uint8(img*255)) # float to 8-bit image
                 print(f"{key} : '{save_path}'")
             cli_out.new_line()
