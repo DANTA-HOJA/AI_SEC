@@ -29,14 +29,14 @@ install()
 
 
 def gen_fake_palmskin(seg:np.ndarray,
-                      cytosol_color: float,
+                      cytosol_gray: float,
                       border_color: tuple[float, float, float]) -> np.ndarray:
     """
     """
     # labels = np.unique(seg)
     
     fake_palmskin = np.zeros_like(seg, dtype=np.uint8)
-    fake_palmskin[seg > 0] = int(cytosol_color*np.iinfo(np.uint8).max)
+    fake_palmskin[seg > 0] = int(cytosol_gray*np.iinfo(np.uint8).max)
     
     fake_palmskin = mark_boundaries(fake_palmskin, seg, color=border_color)
     fake_palmskin = np.uint8(fake_palmskin*255)
