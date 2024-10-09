@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.traceback import install
 
-abs_module_path = Path("./../").resolve()
+abs_module_path = Path("./../../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 

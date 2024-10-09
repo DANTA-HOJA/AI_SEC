@@ -9,7 +9,7 @@ from rich import print
 from rich.pretty import Pretty
 from rich.progress import *
 
-abs_module_path = Path("./../").resolve()
+abs_module_path = Path("./../../").resolve()
 if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
