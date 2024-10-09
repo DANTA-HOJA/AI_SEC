@@ -24,6 +24,8 @@ from modules.shared.config import get_coupled_config_name, load_config
 cli_out = CLIOutput()
 cli_out._set_logger("Image Equivalent")
 config = load_config(get_coupled_config_name(__file__))
+print(Pretty(config, expand_all=True))
+
 old_ins = config["instance_desc"]["old"]
 new_ins = config["instance_desc"]["new"]
 image_type = config["image_info"]["image_type"]
