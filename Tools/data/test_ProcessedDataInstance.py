@@ -14,10 +14,14 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
     sys.path.append(str(abs_module_path)) # add path to scan customized module
 
 from modules.data.processeddatainstance import ProcessedDataInstance
-from modules.shared.config import get_coupled_config_name
+from modules.shared.config import get_coupled_config_name, load_config
 
 install()
 # -----------------------------------------------------------------------------/
+config = load_config(get_coupled_config_name(__file__))
+print(Pretty(config, expand_all=True))
+image_type = config["target"]["image_type"]
+result_name = config["target"]["result_name"]
 
 # init `ProcessedDataInstance`
 processed_data_instance = ProcessedDataInstance()
@@ -43,7 +47,8 @@ print(">>> Palmskin Preprocess Config: ")
 print(Panel(Pretty(temp_dict, expand_all=True)), "\n")
 
 # target results
-rel_path, sorted_results_dict = processed_data_instance.get_sorted_results_dict("palmskin", "31_RGB_fusion.tif")
+rel_path, sorted_results_dict = \
+    processed_data_instance.get_sorted_results_dict(image_type, result_name)
 result_paths = list(sorted_results_dict.values())
 print(">>> Relative Path to `dname_dir`: {} [ found {} items ]".format(rel_path, len(result_paths)))
 print(Panel(Pretty(result_paths, expand_all=True)), "\n")
