@@ -17,12 +17,33 @@ if (abs_module_path.exists()) and (str(abs_module_path) not in sys.path):
 
 from modules.data.dataset import dsname
 from modules.shared.config import load_config
+from modules.shared.pathnavigator import PathNavigator
 
 install()
 # -----------------------------------------------------------------------------/
 
-dataset_file = Path(load_config("tool-com.toml")["file"])
-print(f"\nDataset File: '{dataset_file}'\n")
+# load config
+config = load_config("dataset.toml")
+print(Pretty(config, expand_all=True))
+
+dataset_seed_dir: str = config["dataset"]["seed_dir"]
+dataset_data: str = config["dataset"]["data"]
+dataset_palmskin_result: str = config["dataset"]["palmskin_result"]
+dataset_base_size: str = config["dataset"]["base_size"]
+dataset_classif_strategy: str = config["dataset"]["classif_strategy"]
+dataset_file_name: str = config["dataset"]["file_name"]
+
+# read dataset file (.csv)
+path_navigator = PathNavigator()
+dataset_cropped = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
+
+dataset_file = dataset_cropped.joinpath(dataset_seed_dir,
+                                        dataset_data,
+                                        dataset_palmskin_result,
+                                        dataset_base_size,
+                                        dataset_classif_strategy,
+                                        dataset_file_name)
+
 dataset_xlsx_df: pd.DataFrame = pd.read_csv(dataset_file, encoding='utf_8_sig')
 
 # all test fish
