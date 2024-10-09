@@ -6,11 +6,20 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
 from modules.dl.tester.imagetester.vitb16imagetester import VitB16ImageTester
-from modules.shared.utils import get_repo_root
+from modules.shared.config import get_batch_config, get_batch_config_arg
+from modules.shared.utils import exclude_tmp_paths, get_repo_root
 # -----------------------------------------------------------------------------/
 
 """ Detect Repository """
 print(f"Repository: '{get_repo_root()}'")
 
 vit_b_16_image_tester = VitB16ImageTester()
-vit_b_16_image_tester.run("3.test_by_image.toml")
+args = get_batch_config_arg()
+
+if args.batch_mode == True:
+    
+    config_paths = sorted(exclude_tmp_paths(get_batch_config(__file__)))
+    for config_path in config_paths:
+        vit_b_16_image_tester.run(config_path)
+
+else: vit_b_16_image_tester.run("3.test_by_image.toml")
