@@ -8,13 +8,15 @@ from typing import Dict, List, Tuple, Union
 import cv2
 import pandas as pd
 from colorama import Back, Fore, Style
+from rich.progress import track
 
 from ...shared.baseobject import BaseObject
-from ...shared.utils import create_new_dir, exclude_tmp_paths
+from ...shared.utils import (create_new_dir, exclude_tmp_paths,
+                             get_target_str_idx_in_list)
 from .. import dname
 from ..processeddatainstance import ProcessedDataInstance
 from . import dsname
-from .utils import drop_too_dark, gen_dataset_file_name_dict
+from .utils import drop_too_dark, gen_crop_img_v2, gen_dataset_file_name_dict
 # -----------------------------------------------------------------------------/
 
 
@@ -75,7 +77,8 @@ class DatasetFileCreator(BaseObject):
         self.cluster_desc: str = self.config["data_processed"]["cluster_desc"]
         
         """ [param] """
-        self.base_size: tuple[int, int] = self.config["param"]["base_size"]
+        self.base_size: tuple[int, int] = tuple(self.config["param"]["base_size"])
+        self.crop_size: tuple[int, int] = tuple([self.config["param"]["crop_size"]]*2)
         
         self.palmskin_result_name = os.path.splitext(self.palmskin_result_name)[0]
         # ---------------------------------------------------------------------/
@@ -160,25 +163,7 @@ class DatasetFileCreator(BaseObject):
         """
         super().run(config)
         
-        # checking
-        self._check_if_target_dirs_exist()
-        
-        # get images
-        test_img_paths = list(self.src_root.glob(f"test/*/{self.crop_dir_name}/*.tiff"))
-        test_img_paths = exclude_tmp_paths(test_img_paths)
-        self._cli_out.write(f"test: {len(test_img_paths)} images")
-        
-        train_img_paths = list(self.src_root.glob(f"train/**/*.tiff"))
-        train_img_paths = exclude_tmp_paths(train_img_paths)
-        self._cli_out.write(f"train: {len(train_img_paths)} images")
-        
-        valid_img_paths = list(self.src_root.glob(f"valid/*/{self.crop_dir_name}/*.tiff"))
-        valid_img_paths = exclude_tmp_paths(valid_img_paths)
-        self._cli_out.write(f"valid: {len(valid_img_paths)} images")
-        
-        # collect all image
-        img_paths = sorted(test_img_paths + train_img_paths + valid_img_paths,
-                           key=dsname.get_dsname_sortinfo)
+        img_paths = self._collect_and_check_target_images()
         
         """ Main Task """
         dataset_df: Union[None, pd.DataFrame] = None
@@ -262,17 +247,63 @@ class DatasetFileCreator(BaseObject):
         self._cli_out.divide()
         self._cli_out.write("Saving `dataset_file`... ")
         create_new_dir(self.dataset_file.parent)
+        self._cli_out.write(f"Save Dir: {self.dataset_file.parent}")
         dataset_df.to_csv(self.dataset_file, encoding='utf_8_sig', index=False)
         self._cli_out.write(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
 
-    def _check_if_target_dirs_exist(self):
+    def _collect_and_check_target_images(self):
         """
         """
+        """Get base size images"""
+        img_paths = list(self.src_root.glob(f"train/*/*.tiff"))
+        self._cli_out.write(f"train, size={self.base_size}: {len(img_paths)} images")
+        
+        """Get number of crops"""
+        tmp_img = cv2.imread(str(img_paths[0]))
+        num_of_crops = len(gen_crop_img_v2(tmp_img, self.config))
+        
+        """Collect sub-crops in each set"""
         for dir in ["test", "train", "valid"]:
-            if not self.src_root.joinpath(dir).exists():
-                raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find directories, "
-                                        f"run `1.1.crop_images.py` before create dataset file. {Style.RESET_ALL}\n")
+            
+            tmp_list = list(self.src_root.glob(f"{dir}/*/{self.crop_dir_name}/*.tiff"))
+            tmp_list = exclude_tmp_paths(tmp_list)
+            
+            # get number of fish in current set
+            num_of_fish = len(self.clustered_df[(self.clustered_df["dataset"] == f"{dir}")])
+            
+            # check number of cropped images
+            if len(tmp_list) == (num_of_fish*2*num_of_crops):
+                self._cli_out.write(f"{dir}, size={self.crop_size}: {len(tmp_list)} images")
+            else:
+                raise ValueError(f"{Fore.RED} Number of sub-crops in '{dir}' set incorrect, "
+                                 f"should be {(num_of_fish*num_of_crops)}, "
+                                 f"but only {len(tmp_list)} detected. "
+                                 "Please re-execute `1.1.crop_images.py` to fix the problem."
+                                 f"{Style.RESET_ALL}\n")
+            
+            # add to list
+            img_paths.extend(tmp_list)
+        
+        """Sort images"""
+        img_paths = sorted(img_paths, key=dsname.get_dsname_sortinfo)
+        
+        """Check images"""
+        read_failed = 0
+        for img_path in track(img_paths,  transient=True,
+                              description=f"[yellow]Check Image Condition: "):
+            if cv2.imread(str(img_path)) is None:
+                read_failed += 1
+                target_str = get_target_str_idx_in_list(img_path.parts, f"W{self.base_size[0]}_H{self.base_size[1]}")
+                self._cli_out.write(f"{Fore.RED}{Back.BLACK}Can't read '{img_path.parts[-1]}' "
+                                    f"in '{img_path.parts[target_str+1]}' set {Style.RESET_ALL}")
+        
+        if read_failed == 0: self._cli_out.write(f"Check Image Condition: {Fore.GREEN}Passed{Style.RESET_ALL}")
+        else: raise RuntimeError(f"{Fore.RED} Due to broken images, the process has been halted. "
+                                 "Please re-execute `1.1.crop_images.py` to fix the problem."
+                                 f"{Style.RESET_ALL}\n")
+        
+        return img_paths
         # ---------------------------------------------------------------------/
