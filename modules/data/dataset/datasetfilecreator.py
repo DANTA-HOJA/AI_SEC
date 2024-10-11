@@ -254,11 +254,25 @@ class DatasetFileCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
+    def _check_if_target_dirs_exist(self):
+        """
+        """
+        for dir in ["test", "train", "valid"]:
+            if not self.src_root.joinpath(dir).exists():
+                raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find directories, "
+                                        "run `1.1.crop_images.py` before create dataset file."
+                                        f"{Style.RESET_ALL}\n")
+        # ---------------------------------------------------------------------/
+
+
     def _collect_and_check_target_images(self):
         """
         """
+        self._check_if_target_dirs_exist()
+        
         """Get base size images"""
         img_paths = list(self.src_root.glob(f"train/*/*.tiff"))
+        img_paths = exclude_tmp_paths(img_paths)
         self._cli_out.write(f"train, size={self.base_size}: {len(img_paths)} images")
         
         """Get number of crops"""
