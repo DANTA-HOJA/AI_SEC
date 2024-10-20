@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import skimage as ski
 from rich import print
 from rich.pretty import Pretty
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     dataset_seed_dir: str = config["dataset"]["seed_dir"]
     dataset_data: str = config["dataset"]["data"]
     dataset_palmskin_result: str = config["dataset"]["palmskin_result"]
-    dataset_base_size: str = config["dataset"]["base_size"]
+    dataset_base_size: str = "W512_H1024"
     # [SLIC]
     n_segments: int  = config["SLIC"]["n_segments"]
     dark: int        = config["SLIC"]["dark"]
@@ -85,17 +86,21 @@ if __name__ == '__main__':
     instance_desc = re.split("{|}", dataset_data)[1]
     temp_dict = {"data_processed": {"instance_desc": instance_desc}}
     processed_di.parse_config(temp_dict)
-    palmskin_processed_dname_dirs = processed_di.palmskin_processed_dname_dirs_dict
+    csv_path = processed_di.instance_root.joinpath("data.csv")
+    df: pd.DataFrame = pd.read_csv(csv_path, encoding='utf_8_sig')
+    palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"],
+                                        df["Palmskin Posterior (SP8)"]]),
+                            key=get_dname_sortinfo)
     
     """ Apply SLIC on each image """
     cli_out.divide()
     with Progress() as pbar:
         task = pbar.add_task("[cyan]Processing...", total=len(paths))
         
-        for path, dpath in zip(paths, palmskin_processed_dname_dirs.values()):
+        for path, dname in zip(paths, palmskin_dnames):
             
             # check dsname, dname is match
-            assert get_dsname_sortinfo(path) == get_dname_sortinfo(dpath), "dsname, dname not match"
+            assert get_dsname_sortinfo(path) == get_dname_sortinfo(dname), "dsname, dname not match"
             
             result_name = path.stem
             dname_dir = path.parents[0]
@@ -115,6 +120,8 @@ if __name__ == '__main__':
             fake_tp2 = gen_singlecolor_palmskin(seg2, 0.5, 1.0, 0.0) # border white, cytosol gray, and black background
             fake_tp3 = gen_singlecolor_palmskin(seg2, 1.0, 1.0, 0.0) # border white, cytosol white, and black background
 
+            """Save images"""
+            dpath = processed_di.palmskin_processed_dname_dirs_dict[dname]
             fakeimg_dir = dpath.joinpath(f"FakeImage/{dataset_palmskin_result}_{{dark_{dark}}}")
             create_new_dir(fakeimg_dir)
             for enum, img in enumerate([fake_tp1, fake_tp2, fake_tp3], start=1):
