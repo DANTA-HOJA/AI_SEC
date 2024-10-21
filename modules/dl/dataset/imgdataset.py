@@ -13,10 +13,11 @@ from tomlkit.toml_document import TOMLDocument
 from torch.utils.data import Dataset
 
 from ...data.dataset.utils import drop_too_dark, parse_dataset_file_name
+from ...data.processeddatainstance import ProcessedDataInstance
 from ...plot.utils import draw_drop_info_on_image
 from ...shared.baseobject import BaseObject
 from ...shared.utils import create_new_dir
-from .augmentation import dynamic_crop, fake_autofluorescence
+from .augmentation import aug_rotate, dynamic_crop, fake_autofluorescence
 # -----------------------------------------------------------------------------/
 
 
@@ -398,4 +399,89 @@ class NoCropImgDataset_v3(ImgDataset_v3):
         cls_idx = torch.tensor(cls_idx) # To `Tensor` (64-bit int), e.g. [0]
         
         return img, img_for_mse, cls_idx, name
+        # ---------------------------------------------------------------------/
+
+
+class NormBFImgDataset_v3(ImgDataset_v3):
+
+    def __init__(self, mode:str, config:Union[dict, TOMLDocument],
+                 df:pd.DataFrame, class2num_dict:Dict[str, int],
+                 resize:int, processed_di: ProcessedDataInstance,
+                 transform:Union[None, iaa.Sequential],
+                 dst_root:Path, debug_mode:bool, display_on_CLI=True) -> None:
+        """
+        """
+        # ---------------------------------------------------------------------
+        # """ components """
+        
+        super(ImgDataset_v3, self).__init__(display_on_CLI)
+        self._cli_out._set_logger(f"Norm BF {mode.capitalize()} Dataset")
+        
+        # ---------------------------------------------------------------------
+        # """ attributes """
+        
+        self.mode = mode
+        self.config: Union[dict, TOMLDocument] = config
+        self.df: pd.DataFrame = df
+        self.class2num_dict: Dict[str, int] = class2num_dict
+        self.resize:tuple[int, int] = (resize, resize)
+        self.processed_di: ProcessedDataInstance = processed_di
+        self.transform: Union[None, iaa.Sequential] = transform
+        self.dst_root: Path = dst_root.joinpath("debug", self.mode)
+        self.debug_mode: bool = debug_mode
+        
+        self.use_hsv: bool = config["train_opts"]["data"]["use_hsv"]
+        self.aug_rotate = aug_rotate((-90, 90))
+        
+        # ---------------------------------------------------------------------
+        # """ actions """
+        
+        if self.use_hsv is True:
+            self._cli_out.write("※　: using 'HSV' when getting images from the dataset")
+        
+        if self.transform is not None:
+            self._cli_out.write("※　: applying augmentation on the fly")
+        
+        if self.debug_mode:
+            self._cli_out.write("※　: debug mode, all runtime image will save")
+            create_new_dir(self.dst_root)
+        # ---------------------------------------------------------------------/
+
+    def __getitem__(self, index):
+        """
+        """
+        """ Get name """
+        dname: str = self.df.iloc[index]["Brightfield"]
+        
+        """ Read image """
+        path: Path = self.processed_di.brightfield_processed_dname_dirs_dict[dname]
+        img: np.ndarray = cv2.imread(str(path.joinpath("Norm_BF.tif")))
+        img = cv2.resize(img, self.resize, interpolation=cv2.INTER_LANCZOS4)
+        fish_class: str = self.df.iloc[index]["class"]
+        
+        # >>> Apply different config settings to image <<<
+        
+        # rotate
+        if (self.mode == "train"):
+            img = self.aug_rotate(image=img) # 只有 img 大於 crop size 時才會 crop
+        
+        # augmentation on the fly
+        if (self.mode == "train") and (self.transform is not None):
+            img = self.transform(image=img)
+        
+        # adjust pixel value
+        img_for_mse = deepcopy(img)
+        # if (self.mode == "train"):
+        #     img = self._adjust_dark_pixel(img, 0, self.intensity_thres)
+        #     img_for_mse = self._adjust_dark_pixel(img_for_mse, 255, self.intensity_thres)
+        
+        # >>> Prepare images <<<
+        img = self._cvt_model_format(img)
+        img_for_mse = self._cvt_model_format(img_for_mse)
+        
+        # >>> Prepare label <<<
+        cls_idx: int = self.class2num_dict[fish_class]
+        cls_idx = torch.tensor(cls_idx) # To `Tensor` (64-bit int), e.g. [0]
+        
+        return img, img_for_mse, cls_idx, dname
         # ---------------------------------------------------------------------/
