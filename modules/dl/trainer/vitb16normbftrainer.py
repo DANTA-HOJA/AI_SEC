@@ -18,7 +18,7 @@ class VitB16NormBFTrainer(BaseNormBFTrainer):
         # """ components """
         
         super().__init__(display_on_CLI=display_on_CLI)
-        self._cli_out._set_logger("Vit_B_16 Norm BF Trainer")
+        self._cli_out._set_logger("Vit_B_16 NormBF Trainer")
         
         # ---------------------------------------------------------------------
         # """ attributes """
