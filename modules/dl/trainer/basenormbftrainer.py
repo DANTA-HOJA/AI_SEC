@@ -25,7 +25,7 @@ from ...shared.baseobject import BaseObject
 from ...shared.config import dump_config
 from ...shared.timer import Timer
 from ...shared.utils import create_new_dir, formatter_padr0
-from ..dataset.imgdataset import ImgDataset_v3
+from ..dataset.imgdataset import NormBFImgDataset_v3
 from ..utils import (calculate_metrics, gen_class2num_dict,
                      gen_class_counts_dict, set_gpu)
 from .utils import (calculate_class_weight, plot_training_trend,
@@ -382,7 +382,7 @@ class BaseNormBFTrainer(BaseObject):
     def _set_train_set(self): # abstract function
         """
         """
-        self.train_set: ImgDataset_v3
+        self.train_set: NormBFImgDataset_v3
         
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
@@ -392,7 +392,7 @@ class BaseNormBFTrainer(BaseObject):
     def _set_valid_set(self): # abstract function
         """
         """
-        self.valid_set: ImgDataset_v3
+        self.valid_set: NormBFImgDataset_v3
         
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
