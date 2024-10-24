@@ -13,6 +13,7 @@ from pytorch_grad_cam.ablation_layer import AblationLayerVit
 from pytorch_grad_cam.utils.image import show_factorization_on_image
 from torch import nn
 
+from ....shared.config import dump_config
 from ....shared.utils import create_new_dir, get_target_str_idx_in_list
 from ...dataset.imgdataset import NormBFImgDataset_v3
 from ...tester.utils import reshape_transform
@@ -142,6 +143,9 @@ class VitB16NormBFFishTester(BaseNormBFFishTester):
         path = self._processed_di.brightfield_processed_dname_dirs_dict[median_fish]
         img = cv2.imread(str(path.joinpath("Norm_BF.tif")))
         self.img_size = tuple(img.shape[1::-1])
+        
+        path = self.history_dir.joinpath("median_image_size.toml")
+        dump_config(path, {"image_size": self.img_size})
         # ---------------------------------------------------------------------/
 
 
