@@ -96,7 +96,7 @@ class BaseNormBFTrainer(BaseObject):
         assert self.config["dataset"]["base_size"] == "", "`dataset.base_size` in config should be empty (\"\")"
         self.dataset_classif_strategy: str = self.config["dataset"]["classif_strategy"]
         self.dataset_file_name: str = self.config["dataset"]["file_name"]
-        assert self.dataset_file_name == "DS_SURF3C_NORMBF.xxx", "`dataset.file_name` in config should be `DS_SURF3C_NORMBF.xxx`"
+        assert self.dataset_file_name == "DS_SURF3C_NORMBF.xxx", "`dataset.file_name` in config should be 'DS_SURF3C_NORMBF.xxx'"
         
         """ [model] """
         self.model_name: str = self.config["model"]["name"]
