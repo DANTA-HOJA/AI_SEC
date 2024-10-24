@@ -95,7 +95,7 @@ class BaseNormBFTrainer(BaseObject):
         self.dataset_palmskin_result: str = self.config["dataset"]["palmskin_result"]
         assert self.config["dataset"]["base_size"] == "", "`dataset.base_size` in config should be empty (\"\")"
         self.dataset_classif_strategy: str = self.config["dataset"]["classif_strategy"]
-        assert self.config["dataset"]["file_name"] == "", "`dataset.file_name` in config should be `DS_SURF3C_NORMBF.xxx`"
+        assert self.config["dataset"]["file_name"] == "DS_SURF3C_NORMBF.xxx", "`dataset.file_name` in config should be `DS_SURF3C_NORMBF.xxx`"
         
         """ [model] """
         self.model_name: str = self.config["model"]["name"]
