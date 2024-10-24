@@ -92,7 +92,7 @@ class BaseNormBFTrainer(BaseObject):
         """ [dataset] """
         self.dataset_seed_dir: str = self.config["dataset"]["seed_dir"]
         self.dataset_data: str = self.config["dataset"]["data"]
-        self.dataset_palmskin_result: str = self.config["dataset"]["palmskin_result"]
+        assert self.config["dataset"]["palmskin_result"] == "", "`dataset.palmskin_result` in config should be empty (\"\")"
         assert self.config["dataset"]["base_size"] == "", "`dataset.base_size` in config should be empty (\"\")"
         self.dataset_classif_strategy: str = self.config["dataset"]["classif_strategy"]
         self.dataset_file_name: str = self.config["dataset"]["file_name"]
