@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import torch
 from imgaug import augmenters as iaa
+from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from PIL import Image
 from tomlkit.toml_document import TOMLDocument
 from torch.utils.data import Dataset
@@ -456,25 +457,31 @@ class NormBFImgDataset_v3(ImgDataset_v3):
         
         """ Read image """
         path: Path = self.processed_di.brightfield_processed_dname_dirs_dict[dname]
+        # BF
         img: np.ndarray = cv2.imread(str(path.joinpath("Norm_BF.tif")))
         img = cv2.resize(img, self.resize, interpolation=cv2.INTER_LANCZOS4)
+        # Mask
+        mask: np.ndarray = cv2.imread(str(path.joinpath("Norm_Mask.tif")), -1)
+        mask = cv2.resize(mask, self.resize, interpolation=cv2.INTER_LANCZOS4)
+        mask = SegmentationMapsOnImage(mask, shape=img.shape)
+        
+        """ Get class """
         fish_class: str = self.df.iloc[index]["class"]
         
         # >>> Apply different config settings to image <<<
         
         # rotate
         if (self.mode == "train"):
-            img = self.aug_rotate(image=img) # 只有 img 大於 crop size 時才會 crop
+            img, mask = self.aug_rotate(image=img, segmentation_maps=mask)
         
         # augmentation on the fly
         if (self.mode == "train") and (self.transform is not None):
-            img = self.transform(image=img)
+            img, mask = self.transform(image=img, segmentation_maps=mask)
         
         # adjust pixel value
         img_for_mse = deepcopy(img)
-        # if (self.mode == "train"):
-        #     img = self._adjust_dark_pixel(img, 0, self.intensity_thres)
-        #     img_for_mse = self._adjust_dark_pixel(img_for_mse, 255, self.intensity_thres)
+        if (self.mode == "train"):
+            img_for_mse[mask.get_arr() < 127] = 127
         
         # >>> Prepare images <<<
         img = self._cvt_model_format(img)

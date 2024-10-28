@@ -445,7 +445,7 @@ class BaseNormBFTrainer(BaseObject):
         """
         """
         self.ce_loss: torch.nn.CrossEntropyLoss
-        # self.mse_loss: torch.nn.MSELoss
+        self.mse_loss: torch.nn.MSELoss
         
         raise NotImplementedError("This is a base trainer, \
             you should create a child class and replace this funtion")
@@ -656,13 +656,13 @@ class BaseNormBFTrainer(BaseObject):
             if self.use_amp:
                 with autocast():
                     preds = self.model(images)
-                    # preds2 = self.model(images2)
+                    preds2 = self.model(images2)
                     
                     # hybrid loss
                     loss_ce = self.ce_loss(preds, labels)
-                    # loss_mse = self.mse_loss(preds, preds2)
-                    # loss_value = loss_ce + loss_mse
-                    loss_value = loss_ce
+                    loss_mse = self.mse_loss(preds, preds2)
+                    loss_value = loss_ce + loss_mse
+                    # loss_value = loss_ce
                     
                 self.scaler.scale(loss_value).backward() # 計算並縮放損失的梯度
                 self.scaler.step(self.optimizer) # 更新模型參數
@@ -670,13 +670,13 @@ class BaseNormBFTrainer(BaseObject):
                 
             else:
                 preds = self.model(images)
-                # preds2 = self.model(images2)
+                preds2 = self.model(images2)
                 
                 # hybrid loss
                 loss_ce = self.ce_loss(preds, labels)
-                # loss_mse = self.mse_loss(preds, preds2)
-                # loss_value = loss_ce + loss_mse
-                loss_value = loss_ce
+                loss_mse = self.mse_loss(preds, preds2)
+                loss_value = loss_ce + loss_mse
+                # loss_value = loss_ce
                 
                 loss_value.backward() # update model_parameters by backpropagation
                 self.optimizer.step()
@@ -733,13 +733,13 @@ class BaseNormBFTrainer(BaseObject):
                     images.to(self.device), images2.to(self.device), labels.to(self.device) # move to GPU
                 
                 preds = self.model(images)
-                # preds2 = self.model(images2)
+                preds2 = self.model(images2)
                 
                 # hybrid loss
                 loss_ce = self.ce_loss(preds, labels)
-                # loss_mse = self.mse_loss(preds, preds2)
-                # loss_value = loss_ce + loss_mse
-                loss_value = loss_ce
+                loss_mse = self.mse_loss(preds, preds2)
+                loss_value = loss_ce + loss_mse
+                # loss_value = loss_ce
                 
                 """ Accumulate current batch loss """
                 accum_loss += loss_value.item() # tensor.item() -> get value of a Tensor
