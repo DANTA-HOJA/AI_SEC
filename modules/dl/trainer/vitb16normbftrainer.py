@@ -93,10 +93,10 @@ class VitB16NormBFTrainer(BaseNormBFTrainer):
             self.ce_loss: nn.CrossEntropyLoss = \
                 nn.CrossEntropyLoss(weight=calculate_class_weight(self.class_counts_dict))
         
-        # self.mse_loss: nn.MSELoss = nn.MSELoss()
+        self.mse_loss: nn.MSELoss = nn.MSELoss()
         
         self.ce_loss.to(self.device)
-        # self.mse_loss.to(self.device)
+        self.mse_loss.to(self.device)
         # ---------------------------------------------------------------------/
 
 
