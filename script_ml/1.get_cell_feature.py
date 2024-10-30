@@ -18,11 +18,11 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.dl.dataset.augmentation import crop_base_size
+from modules.ml.slic_labeling import run_single_slic_analysis
+from modules.ml.utils import get_slic_param_name
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import dump_config, load_config
 from modules.shared.utils import create_new_dir, get_repo_root
-from modules.ml.slic_labeling import run_single_slic_analysis
-from modules.ml.utils import get_slic_param_name
 
 install()
 # -----------------------------------------------------------------------------/
