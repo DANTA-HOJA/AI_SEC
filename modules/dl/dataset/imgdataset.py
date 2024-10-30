@@ -481,7 +481,8 @@ class NormBFImgDataset_v3(ImgDataset_v3):
         # adjust pixel value
         img_for_mse = deepcopy(img)
         if (self.mode == "train"):
-            img_for_mse[mask.get_arr() < 127] = 127
+            img[mask.get_arr() < 127] = 0
+            img_for_mse[mask.get_arr() < 127] = 255
         
         # >>> Prepare images <<<
         img = self._cvt_model_format(img)
