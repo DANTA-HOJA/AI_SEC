@@ -20,7 +20,7 @@
   #                        2. Store the processed files into the existing folder.
   #
   # - CREATE MODE: If `instance_desc` is NOT an existing folder,
-  #                it will 1. CREATE a NEW directory with the name '{`instance_desc`}_Academia_Sinica_iTBA';
+  #                it will 1. CREATE a NEW directory with the name '{`instance_desc`}_Academia_Sinica_iTBD';
   #                        2. Use [param] in this config to process the RAW files;
   #                        3. Store the processed files into the NEW directory.
   #

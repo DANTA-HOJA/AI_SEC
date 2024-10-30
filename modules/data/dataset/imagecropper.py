@@ -203,7 +203,7 @@ class ImageCropper(BaseObject):
             existing_crop_dir.extend(temp_list)
 
         if existing_crop_dir:
-            if replace: # (config varname TBA)
+            if replace: # (config varname TBD)
                 self._cli_out.write(f"Deleting {len(existing_crop_dir)} '{self.crop_dir_name}' directories... ")
                 for dir in existing_crop_dir: shutil.rmtree(dir)
                 self._cli_out.write(f"{Fore.GREEN}{Back.BLACK} Done! {Style.RESET_ALL}")
@@ -225,7 +225,7 @@ class ImageCropper(BaseObject):
             "U": img[:512,:,:],
             "D": img[512:,:,:]
         }
-        horizcut_task = self._pbar.add_task("[magenta][TBA]: ", total=len(img_dict))
+        horizcut_task = self._pbar.add_task("[magenta][TBD]: ", total=len(img_dict))
         
         for part_abbr, part_img in img_dict.items():
             
@@ -283,7 +283,7 @@ class ImageCropper(BaseObject):
         """
         # cropping
         crop_img_list = gen_crop_img_v2(img, self.config)
-        crop_task = self._pbar.add_task("[cyan][TBA]: ", total=len(crop_img_list))
+        crop_task = self._pbar.add_task("[cyan][TBD]: ", total=len(crop_img_list))
         
         # create `crop_dir`
         crop_dir = dsname_dir.joinpath(self.crop_dir_name)

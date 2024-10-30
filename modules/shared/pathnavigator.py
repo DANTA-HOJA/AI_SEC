@@ -129,7 +129,7 @@ class _ProcessedDataPath:
         if found_list:
             instance_root = found_list[0]
         else:
-            instance_root = data_processed_root.joinpath(f"{{{instance_desc}}}_Academia_Sinica_iTBA")
+            instance_root = data_processed_root.joinpath(f"{{{instance_desc}}}_Academia_Sinica_iTBD")
         
         """ CLI output """
         if cli_out: cli_out.write(f"Instance Root: '{instance_root}'")
