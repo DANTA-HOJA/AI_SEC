@@ -21,11 +21,12 @@ batch_config
 *.ckpt
 
 dev/.sensitive_info
-
 dev/ipynb_playground/**/*.png
 dev/ipynb_playground/tensorboardx/**
 !dev/ipynb_playground/tensorboardx/**/*.ipynb
 !dev/ipynb_playground/yaml/sample_config.yaml
 
+script_ml/data**
+
 !test.toml
-!script/**/*.toml
+!script*/**/*.toml
