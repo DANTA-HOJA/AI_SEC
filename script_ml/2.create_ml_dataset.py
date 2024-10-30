@@ -1,0 +1,96 @@
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
+
+import pandas as pd
+from rich import print
+from rich.pretty import Pretty
+from rich.traceback import install
+
+pkg_dir = Path(__file__).parents[1] # `dir_depth` to `repo_root`
+if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
+    sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
+
+from modules.data import dname
+from modules.data.processeddatainstance import ProcessedDataInstance
+from modules.ml.utils import get_slic_param_name
+from modules.shared.clioutput import CLIOutput
+from modules.shared.config import load_config
+from modules.shared.utils import create_new_dir, get_repo_root
+
+install()
+# -----------------------------------------------------------------------------/
+
+
+if __name__ == '__main__':
+    
+    repo_root = get_repo_root()
+    print(f"Repository: '{repo_root}'")
+    
+    """ Init components """
+    cli_out = CLIOutput()
+    processed_di = ProcessedDataInstance()
+    processed_di.parse_config("ml_analysis.toml")
+    # load config
+    config = load_config("ml_analysis.toml")
+    palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
+    cluster_desc: str = config["data_processed"]["cluster_desc"]
+    topn_patch = config["ML"]["topn_patch"]
+    print("", Pretty(config, expand_all=True))
+    cli_out.divide()
+    
+    # get `slic_dirname`
+    slic_param_name = get_slic_param_name(config)
+    slic_dirname = f"{palmskin_result_name.stem}.{slic_param_name}"
+    
+    # load `clustered file`
+    csv_path = processed_di.clustered_files_dict[cluster_desc]
+    clustered_df: pd.DataFrame = pd.read_csv(csv_path, encoding='utf_8_sig', index_col=[0])
+    clustered_df["fish_id"] = clustered_df["Brightfield"].apply(lambda x: dname.get_dname_sortinfo(x)[0])
+    clustered_df = clustered_df.set_index("fish_id")
+    palmskin_dnames = sorted(pd.concat([clustered_df["Palmskin Anterior (SP8)"],
+                                        clustered_df["Palmskin Posterior (SP8)"]]), key=dname.get_dname_sortinfo)
+    
+    # collect informations
+    dataset_df = pd.DataFrame()
+    for palmskin_dname in palmskin_dnames:
+        # prepare
+        path = processed_di.palmskin_processed_dir.joinpath(palmskin_dname)
+        slic_analysis = path.joinpath("SLIC", slic_dirname,
+                                      f"{slic_dirname}.ana.toml")
+        slic_analysis = load_config(slic_analysis)
+        fish_id = dname.get_dname_sortinfo(palmskin_dname)[0]
+        
+        # >>> Create `temp_dict` <<<
+        temp_dict = {}
+        # -------------------------------------------------------
+        temp_dict["palmskin_dname"] = palmskin_dname
+        temp_dict["class"] = clustered_df.loc[fish_id, "class"]
+        temp_dict["dataset"] = clustered_df.loc[fish_id, "dataset"]
+        # -------------------------------------------------------
+        for k, v in slic_analysis.items():
+            if k == f"patch_sizes": continue
+            temp_dict[k] = v
+        
+        for i, patch_size in enumerate(slic_analysis[f"patch_sizes"], start=1):
+            temp_dict[f"top{i}_patch"] = patch_size
+            if i == topn_patch: break
+        # -------------------------------------------------------
+        
+        temp_df = pd.DataFrame(temp_dict, index=[0])
+        if dataset_df.empty: dataset_df = temp_df.copy()
+        else: dataset_df = pd.concat([dataset_df, temp_df], ignore_index=True)
+    
+    # drop columns if any NAN values
+    dataset_df = dataset_df.dropna(axis=1)
+    
+    # save Dataframe as a CSV file
+    save_path = Path(__file__).parent.joinpath("data/generated/ML",
+                                               processed_di.instance_name,
+                                               cluster_desc, slic_dirname,
+                                               f"ml_dataset.csv")
+    create_new_dir(save_path.parent)
+    dataset_df.to_csv(save_path, encoding='utf_8_sig', index=False)
+    print(f"ML_table: '{save_path}'\n")
+    # -------------------------------------------------------------------------/
