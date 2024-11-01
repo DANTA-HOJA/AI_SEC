@@ -66,6 +66,13 @@ if __name__ == '__main__':
         seg_param_name = "model_id" # TBD
     seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
     
+    """ Processed Data Instance """
+    csv_path = processed_di.instance_root.joinpath("data.csv")
+    df: pd.DataFrame = pd.read_csv(csv_path, encoding='utf_8_sig')
+    palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"],
+                                        df["Palmskin Posterior (SP8)"]]),
+                            key=get_dname_sortinfo)
+    
     """ Colloct image file (dsname.tiff) """
     dataset_cropped: Path = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
     src_root = dataset_cropped.joinpath(cluster_desc.split("_")[-1], # e.g. RND2022
@@ -75,13 +82,6 @@ if __name__ == '__main__':
     ds_imgs = sorted(src_root.glob("*/*/*.tiff"), key=get_dsname_sortinfo)
     print(f"Total files: {len(ds_imgs)}")
     
-    """ Processed Data Instance """
-    csv_path = processed_di.instance_root.joinpath("data.csv")
-    df: pd.DataFrame = pd.read_csv(csv_path, encoding='utf_8_sig')
-    palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"],
-                                        df["Palmskin Posterior (SP8)"]]),
-                            key=get_dname_sortinfo)
-
     """ Main Process: Crop Segment Results """
     cli_out.divide()
     with Progress() as pbar:
