@@ -1,6 +1,5 @@
 import os
 import pickle
-import re
 import sys
 from copy import deepcopy
 from pathlib import Path
