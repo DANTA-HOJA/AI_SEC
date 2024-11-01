@@ -53,9 +53,9 @@ def save_seg_on_img(save_path:Path, img:np.ndarray, seg:np.ndarray):
     # -------------------------------------------------------------------------/
 
 
-def run_single_slic_analysis(dir:Path, img_path:Path,
-                             n_segments:int, dark:int, merge:int,
-                             debug_mode:bool=False):
+def single_slic_labeling(dir:Path, img_path:Path,
+                         n_segments:int, dark:int, merge:int,
+                         debug_mode:bool=False):
     """
     """
     result_name = img_path.stem.split(".")[0]
@@ -155,6 +155,13 @@ def run_single_slic_analysis(dir:Path, img_path:Path,
     # -------------------------------------------------------------------------/
 
 
+def single_cellpose_prediction():
+    """ Function name TBD
+    Place holder for running Cellpose prediction
+    """
+    # -------------------------------------------------------------------------/
+
+
 if __name__ == '__main__':
 
     # colloct image file names
@@ -173,9 +180,9 @@ if __name__ == '__main__':
     debug_mode = True
 
     for img_path in img_paths:
-        seg_result = run_single_slic_analysis(img_dir, img_path,
-                                              n_segments, dark, merge,
-                                              debug_mode)
+        seg_result = single_slic_labeling(img_dir, img_path,
+                                          n_segments, dark, merge,
+                                          debug_mode)
         cell_count = len(np.unique(seg_result))-1  # 估計的細胞數量。 P.S. -1 是因為 label 0 是 background
         with open(img_dir.joinpath(f"cell_count_{cell_count}"), mode="w") as f_writer: pass
     # -------------------------------------------------------------------------/

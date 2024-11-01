@@ -18,7 +18,7 @@ from modules.ml.calc_seg_feat import (count_area, count_average_size,
                                       count_element, get_patch_sizes,
                                       update_ana_toml_file,
                                       update_seg_analysis_dict)
-from modules.ml.slic_labeling import run_single_slic_analysis
+from modules.ml.seg_genertor import single_slic_labeling
 from modules.ml.utils import get_slic_param_name
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
@@ -81,9 +81,9 @@ if __name__ == '__main__':
                 cv2.imwrite(str(target_path), tmp_img)
             
             # slic
-            cell_seg, patch_seg = run_single_slic_analysis(slic_dir, target_path,
-                                                            n_segments, dark, merge,
-                                                            debug_mode)
+            cell_seg, patch_seg = single_slic_labeling(slic_dir, target_path,
+                                                       n_segments, dark, merge,
+                                                       debug_mode)
             
             # update
             analysis_dict = {}
