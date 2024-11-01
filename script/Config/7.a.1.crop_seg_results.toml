@@ -1,3 +1,5 @@
+seg_desc = "SLIC" # 'SLIC' or 'Cellpose'
+
 [dataset]
   seed_dir = "RND2022"
   data = "{20240219_fixmm3d}_Academia_Sinica_i722"
