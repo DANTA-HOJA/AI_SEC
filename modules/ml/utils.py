@@ -11,6 +11,36 @@ mpl.rcParams.update(new_rc_params)
 # -----------------------------------------------------------------------------/
 
 
+def get_seg_desc(config: dict) -> str:
+    """
+    """
+    seg_desc = config["seg_results"]["seg_desc"]
+    accept_str = ["SLIC", "Cellpose"]
+    if seg_desc not in accept_str:
+        raise ValueError(f"`config.seg_desc`, only accept {accept_str}\n")
+    
+    return seg_desc
+    # -------------------------------------------------------------------------/
+
+
+def parse_base_size(config: dict) -> tuple[int, int]:
+    """
+    """
+    base_size: str = config["seg_results"]["base_size"]
+    size: list[str] = base_size.split("_")
+    
+    # width
+    size_w = int(size[0].replace("W", ""))
+    assert size_w <= 512, "Maximum support `width` is 512"
+    
+    # height
+    size_h = int(size[1].replace("H", ""))
+    assert size_h <= 1024, "Maximum support `height` is 1024"
+    
+    return size_w, size_h
+    # -------------------------------------------------------------------------/
+
+
 def get_slic_param_name(config: dict) -> str:
     """
     """

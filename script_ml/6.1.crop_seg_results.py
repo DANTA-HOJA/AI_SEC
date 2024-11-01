@@ -25,7 +25,7 @@ from modules.ml.calc_seg_feat import (count_area, count_average_size,
                                       count_element, get_patch_sizes,
                                       update_ana_toml_file,
                                       update_seg_analysis_dict)
-from modules.ml.utils import get_slic_param_name
+from modules.ml.utils import get_seg_desc, get_slic_param_name, parse_base_size
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
@@ -44,51 +44,40 @@ if __name__ == '__main__':
     cli_out.divide()
     path_navigator = PathNavigator()
     processed_di = ProcessedDataInstance()
+    processed_di.parse_config("ml_analysis.toml")
     
     """ Load config """
     # `dark` and `merge` are two parameters as color space distance, determined by experiences
-    config = load_config("7.a.1.crop_seg_results.toml")
-    # 
-    seg_desc = config["seg_desc"]
-    accept_str = ["SLIC", "Cellpose"]
-    if seg_desc not in accept_str:
-        raise ValueError(f"`config.seg_desc`, only accept {accept_str}\n")
-    # [dataset]
-    dataset_seed_dir: str = config["dataset"]["seed_dir"]
-    dataset_data: str = config["dataset"]["data"]
-    dataset_palmskin_result: str = config["dataset"]["palmskin_result"]
-    dataset_base_size: str = config["dataset"]["base_size"]
+    config = load_config("ml_analysis.toml")
+    # [data_processed]
+    palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
+    cluster_desc: str = config["data_processed"]["cluster_desc"]
+    # [seg_results]
+    seg_desc = get_seg_desc(config)
+    dataset_base_size = config["seg_results"]["base_size"]
     print("", Pretty(config, expand_all=True))
     cli_out.divide()
     
     # base size cropper
-    size: list[str] = dataset_base_size.split("_")
-    size_w = int(size[0].replace("W", ""))
-    assert size_w <= 512, "Maximum support `width` is 512"
-    size_h = int(size[1].replace("H", ""))
-    assert size_h <= 1024, "Maximum support `height` is 1024"
-    base_size_cropper = crop_base_size(size_w, size_h)
+    base_size_cropper = crop_base_size(*parse_base_size(config))
     
     # get `seg_dirname`
     if seg_desc == "SLIC":
         seg_param_name = get_slic_param_name(config)
     elif seg_desc == "Cellpose":
         seg_param_name = "model_id" # TBD
-    seg_dirname = f"{dataset_palmskin_result}.{seg_param_name}"
+    seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
     
     """ Colloct image file (dsname.tiff) """
     dataset_cropped: Path = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_cropped_v3")
-    src_root = dataset_cropped.joinpath(dataset_seed_dir,
-                                        dataset_data,
-                                        dataset_palmskin_result,
+    src_root = dataset_cropped.joinpath(cluster_desc.split("_")[-1], # e.g. RND2022
+                                        processed_di.instance_name,
+                                        palmskin_result_name.stem,
                                         dataset_base_size)
     ds_imgs = sorted(src_root.glob("*/*/*.tiff"), key=get_dsname_sortinfo)
     print(f"Total files: {len(ds_imgs)}")
     
     """ Processed Data Instance """
-    instance_desc = re.split("{|}", dataset_data)[1]
-    temp_dict = {"data_processed": {"instance_desc": instance_desc}}
-    processed_di.parse_config(temp_dict)
     csv_path = processed_di.instance_root.joinpath("data.csv")
     df: pd.DataFrame = pd.read_csv(csv_path, encoding='utf_8_sig')
     palmskin_dnames = sorted(pd.concat([df["Palmskin Anterior (SP8)"],
