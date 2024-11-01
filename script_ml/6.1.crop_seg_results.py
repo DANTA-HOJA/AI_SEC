@@ -47,7 +47,6 @@ if __name__ == '__main__':
     processed_di.parse_config("ml_analysis.toml")
     
     """ Load config """
-    # `dark` and `merge` are two parameters as color space distance, determined by experiences
     config = load_config("ml_analysis.toml")
     # [data_processed]
     palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])

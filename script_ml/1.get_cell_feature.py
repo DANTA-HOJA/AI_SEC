@@ -37,12 +37,12 @@ if __name__ == '__main__':
     cli_out.divide()
     processed_di = ProcessedDataInstance()
     processed_di.parse_config("ml_analysis.toml")
-    w512h1024_cropper = crop_base_size(512, 1024)
 
-    # load config
-    # `dark` and `merge` are two parameters as color space distance, determined by experiences
+    """ Load config """
     config = load_config("ml_analysis.toml")
+    # [data_processed]
     palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
+    # [SLIC]
     n_segments: int  = config["SLIC"]["n_segments"]
     dark: int        = config["SLIC"]["dark"]
     merge: int       = config["SLIC"]["merge"]
@@ -50,6 +50,9 @@ if __name__ == '__main__':
     print("", Pretty(config, expand_all=True))
     cli_out.divide()
 
+    # 'W512_H1024' cropper
+    w512h1024_cropper = crop_base_size(512, 1024)
+    
     # get `slic_dirname`
     slic_param_name = get_slic_param_name(config)
     slic_dirname = f"{palmskin_result_name.stem}.{slic_param_name}"

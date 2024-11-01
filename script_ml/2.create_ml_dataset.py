@@ -25,17 +25,20 @@ install()
 
 if __name__ == '__main__':
     
-    repo_root = get_repo_root()
-    print(f"Repository: '{repo_root}'")
-    
+    print(f"Repository: '{get_repo_root()}'")
+
     """ Init components """
     cli_out = CLIOutput()
+    cli_out.divide()
     processed_di = ProcessedDataInstance()
     processed_di.parse_config("ml_analysis.toml")
-    # load config
+
+    """ Load config """
     config = load_config("ml_analysis.toml")
+    # [data_processed]
     palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
     cluster_desc: str = config["data_processed"]["cluster_desc"]
+    # [ML]
     topn_patch = config["ML"]["topn_patch"]
     print("", Pretty(config, expand_all=True))
     cli_out.divide()

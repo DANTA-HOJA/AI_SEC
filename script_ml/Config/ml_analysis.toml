@@ -15,6 +15,8 @@
   dark = 40
   merge = 12
   debug_mode = false
+  # `dark` and `merge` are two parameters as color space distance, \
+  #   determined by experiences
 
 # params from 'Academia_Sinica'
 #  palmskin_result_alias = "RGB_direct_max_zproj"
