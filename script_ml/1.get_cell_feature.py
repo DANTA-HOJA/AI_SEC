@@ -95,7 +95,7 @@ def get_patch_sizes(seg:np.ndarray) -> tuple[list[int], str]:
     # -------------------------------------------------------------------------/
 
 
-def update_slic_analysis_dict(analysis_dict:dict[str, Any], value:Any, key:str) -> dict[str, Any]:
+def update_seg_analysis_dict(analysis_dict:dict[str, Any], value:Any, key:str) -> dict[str, Any]:
     """
     """
     analysis_dict = deepcopy(analysis_dict)
@@ -178,12 +178,12 @@ if __name__ == '__main__':
             
             # update
             analysis_dict = {}
-            analysis_dict = update_slic_analysis_dict(analysis_dict, *count_area(cell_seg))
-            analysis_dict = update_slic_analysis_dict(analysis_dict, *count_element(cell_seg, "cell"))
-            analysis_dict = update_slic_analysis_dict(analysis_dict, *count_element(patch_seg, "patch"))
-            analysis_dict = update_slic_analysis_dict(analysis_dict, *count_average_size(analysis_dict, "cell"))
-            analysis_dict = update_slic_analysis_dict(analysis_dict, *count_average_size(analysis_dict, "patch"))
-            analysis_dict = update_slic_analysis_dict(analysis_dict, *get_patch_sizes(patch_seg))
+            analysis_dict = update_seg_analysis_dict(analysis_dict, *count_area(cell_seg))
+            analysis_dict = update_seg_analysis_dict(analysis_dict, *count_element(cell_seg, "cell"))
+            analysis_dict = update_seg_analysis_dict(analysis_dict, *count_element(patch_seg, "patch"))
+            analysis_dict = update_seg_analysis_dict(analysis_dict, *count_average_size(analysis_dict, "cell"))
+            analysis_dict = update_seg_analysis_dict(analysis_dict, *count_average_size(analysis_dict, "patch"))
+            analysis_dict = update_seg_analysis_dict(analysis_dict, *get_patch_sizes(patch_seg))
             cli_out.new_line()
             
             # update info to toml file
