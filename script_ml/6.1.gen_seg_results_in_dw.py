@@ -146,8 +146,8 @@ if __name__ == '__main__':
             cli_out.new_line()
             
             # update info to toml file
-            toml_file = ds_seg_dir.joinpath(f"{seg_dirname}.ana.toml")
-            update_ana_toml_file(toml_file, analysis_dict)
+            ana_toml_file = ds_seg_dir.joinpath(f"{seg_dirname}.ana.toml")
+            update_ana_toml_file(ana_toml_file, analysis_dict)
             
             # update pbar
             pbar.advance(task)
