@@ -9,8 +9,19 @@ from pathlib import Path
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from rich import print
+from rich.console import Console
+from rich.pretty import Pretty
+from rich.traceback import install
 from scipy.ndimage import binary_dilation as dila
 from skimage.segmentation import mark_boundaries, slic
+
+from ..shared.config import load_config
+from ..shared.utils import create_new_dir
+from .calc_seg_feat import count_element, update_seg_analysis_dict
+from .utils import get_seg_desc, get_slic_param_name
+
+install()
 # -----------------------------------------------------------------------------/
 
 
@@ -67,17 +78,17 @@ def single_slic_labeling(dir:Path, img_path:Path,
     
     """ run SLIC """
     seg0 = slic(cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
-                    n_segments = n_segments,
-                    channel_axis=-1,
-                    convert2lab=True,
-                    enforce_connectivity=True,
-                    slic_zero=False, compactness=30,
-                    max_num_iter=100,
-                    sigma = [1.7,1.7],
-                    spacing=[1,1], # 3D: z, y, x; 2D: y, x
-                    min_size_factor=0.4,
-                    max_size_factor=3,
-                    start_label=0)
+                n_segments = n_segments,
+                channel_axis=-1,
+                convert2lab=True,
+                enforce_connectivity=True,
+                slic_zero=False, compactness=30,
+                max_num_iter=100,
+                sigma = [1.7,1.7],
+                spacing=[1,1], # 3D: z, y, x; 2D: y, x
+                min_size_factor=0.4,
+                max_size_factor=3,
+                start_label=0)
         # parameters can refer to https://scikit-image.org/docs/stable/api/skimage.segmentation.html#skimage.segmentation.slic
 
     """ save original `seg_result` ( without merge ) """
@@ -159,30 +170,67 @@ def single_cellpose_prediction():
     """ Function name TBD
     Place holder for running Cellpose prediction
     """
+    pass
     # -------------------------------------------------------------------------/
 
 
 if __name__ == '__main__':
 
+    """ Init components """
+    console = Console()
+    console.print(f"\nPy Module: '{Path(__file__)}'\n")
+    
     # colloct image file names
-    img_dir = Path('./') # directory of input images, images extension: .tif / .tiff
+    img_dir = Path(r"") # directory of input images, images extension: .tif / .tiff
 
-    # scan files
-    img_paths = img_dir.glob("*.tif*")
-    img_paths = [str(path) for path in img_paths]
-    print(f"Total files: {len(img_paths)}")
+    # scan TIFF files
+    img_paths = list(img_dir.glob("*.tif*"))
+    console.print(f"Found {len(img_paths)} TIFF files.")
+    console.rule()
 
-    """ slic each image """
-    # `dark` and `merge` are two parameters as color space distance, determined by experiences
-    n_segments = 250
-    dark  = 40
-    merge = 12
-    debug_mode = True
-
+    """ Load config """
+    config_name: str = "ml_analysis.toml"
+    config = load_config(config_name)
+    # [SLIC]
+    n_segments: int  = config["SLIC"]["n_segments"]
+    dark: int        = config["SLIC"]["dark"]
+    merge: int       = config["SLIC"]["merge"]
+    debug_mode: bool = config["SLIC"]["debug_mode"]
+    # [seg_results]
+    seg_desc = get_seg_desc(config)
+    console.print(f"Config : '{config_name}'\n",
+                    Pretty(config, expand_all=True))
+    console.rule()
+    
     for img_path in img_paths:
-        seg_result = single_slic_labeling(img_dir, img_path,
-                                          n_segments, dark, merge,
-                                          debug_mode)
-        cell_count = len(np.unique(seg_result))-1  # 估計的細胞數量。 P.S. -1 是因為 label 0 是 background
-        with open(img_dir.joinpath(f"cell_count_{cell_count}"), mode="w") as f_writer: pass
+        
+        # get `seg_dirname`
+        if seg_desc == "SLIC":
+            seg_param_name = get_slic_param_name(config)
+        elif seg_desc == "Cellpose":
+            seg_param_name = "model_id" # TBD
+        seg_dirname = f"{img_path.stem}.{seg_param_name}"
+        
+        seg_dir = img_path.parent.joinpath(f"{seg_desc}/{seg_dirname}")
+        create_new_dir(seg_dir)
+        
+        # generate cell segmentation
+        if seg_desc == "SLIC":
+            seg1, seg2 = single_slic_labeling(seg_dir, img_path,
+                                              n_segments, dark, merge,
+                                              debug_mode)
+        elif seg_desc == "Cellpose":
+            seg1, seg2 = single_cellpose_prediction()
+        # Note : `seg1` is 1st merge (background), `seg2` is 2nd merge (color)
+        
+        # save cell segmentation feature
+        analysis_dict = {}
+        analysis_dict = update_seg_analysis_dict(analysis_dict, *count_element(seg1, "cell"))
+        save_path = seg_dir.joinpath(f"cell_count_{analysis_dict['cell_count']}")
+        with open(save_path, mode="w") as f_writer: pass # empty file
+        
+        console.print(f"'{seg_desc}' of '{img_path.name}' save to : '{save_path.parent}'")
+    
+    console.line()
+    console.print("[green]Done! \n")
     # -------------------------------------------------------------------------/
