@@ -18,7 +18,7 @@ from modules.ml.calc_seg_feat import (count_area, count_average_size,
                                       count_element, get_patch_sizes,
                                       update_ana_toml_file,
                                       update_seg_analysis_dict)
-from modules.ml.seg_genertor import single_slic_labeling
+from modules.ml.seg_generate import single_slic_labeling
 from modules.ml.utils import get_slic_param_name
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
