@@ -79,17 +79,17 @@ def get_average_rgb(mask: np.ndarray, rgb_img: np.ndarray,
     
     # vars
     ch_order = {"R":0, "G":1, "B":2}
-    avg_rgb = {"R":np.uint8, "G":np.uint8, "B":np.uint8}
+    avg_rgb_dict = {"R":float, "G":float, "B":float}
     
     for k, v in ch_order.items():
         pixels = np.sort(rgb_img[mask, v])[::-1]
         area = len(pixels)
         # average with only half pixels
-        pixel_avg = int(np.average(pixels[:int(area*avg_ratio)]))
+        pixel_avg = np.average(pixels[:int(area*avg_ratio)])
         # update `avg_rgb`
-        avg_rgb[k] = pixel_avg
+        avg_rgb_dict[k] = pixel_avg
     
-    return avg_rgb
+    return avg_rgb_dict, np.array(list(avg_rgb_dict.values()))
     # -------------------------------------------------------------------------/
 
 
@@ -105,8 +105,8 @@ def average_rgb_coloring(seg: np.ndarray, rgb_img: np.ndarray):
     for label in labels:
         if label == 0: continue # skip background
         mask = (seg == label)
-        avg_rgb = get_average_rgb(mask, rgb_img, avg_ratio=0.5)
-        avgcolor_img[mask] = np.array(list(avg_rgb.values()))
+        _, avg_rgb = get_average_rgb(mask, rgb_img, avg_ratio=0.5)
+        avgcolor_img[mask] = np.uint8(avg_rgb)
     
     # check and return
     assert id(avgcolor_img) != id(rgb_img)
@@ -130,14 +130,14 @@ def merge_similar_rgb(seg: np.ndarray, rgb_img: np.ndarray,
         if label == 0: continue # skip background
         mask = (merge_seg == label)
         if np.sum(mask) > 0: # merge 後會跳號， mask 可能會沒東西
-            color = np.array(list(get_average_rgb(mask, rgb_img, avg_ratio=0.5).values())) # get self color
+            color = get_average_rgb(mask, rgb_img, avg_ratio=0.5)[1] # get self color
             mask_dila = dila(mask, iterations=2) # find neighbor
             nlabels = np.unique(merge_seg[mask_dila]) # self + neighbor's labels
             for nlabel in nlabels:
                 if nlabel == 0: continue # skip background
                 elif nlabel > label: # avoid repeated merging
                     nmask = (merge_seg == nlabel)
-                    ncolor = np.array(list(get_average_rgb(nmask, rgb_img, avg_ratio=0.5).values())) # neighbor's color
+                    ncolor = get_average_rgb(nmask, rgb_img, avg_ratio=0.5)[1] # neighbor's color
                     delta_e = deltaE_ciede94(rgb2lab(color/255.0), rgb2lab(ncolor/255.0))
                     delta_e_dict[f"{label}_cmp_{nlabel}"] = delta_e # for debugger
                     if delta_e <= merge:
@@ -238,7 +238,7 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     for label in labels:
         mask = (seg1 == label)
         if np.sum(mask) > 0: # SLIC 生成的 labels 會跳號， mask 可能會沒東西
-            color = bwRGB(mask, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            color = get_average_rgb(mask, img, avg_ratio=1.0)[1]
             color_dist = col_dis(color, (0, 0, 0)) # compare with 'background'
             if color_dist <= dark:
                 seg1[mask] = 0 # background on `seg1` is set to 0
