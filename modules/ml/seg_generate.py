@@ -227,7 +227,7 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     save_path = dst_dir.joinpath(f"{img_name}.seg0.pkl")
     save_segment_result(save_path, seg0)
     # Mark `seg0` on `img`
-    seg0_on_img = np.uint8(mark_boundaries(img, seg0, (0, 1, 1))*255)
+    seg0_on_img = np.uint8(mark_boundaries(img, seg0)*255)
     save_path = dst_dir.joinpath(f"{img_name}.seg0.png")
     ski.io.imsave(save_path, seg0_on_img)
 
@@ -271,7 +271,7 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
         seg2_on_img = deepcopy(v)/255.0
         for label in relabeling.values():
             mask = (seg2 == label)
-            seg2_on_img = mark_boundaries(seg2_on_img, mask, color=(0, 1, 1))
+            seg2_on_img = mark_boundaries(seg2_on_img, mask)
         seg2_on_img = draw_label_on_image(seg1, np.uint8(seg2_on_img*255), relabeling=relabeling)
         save_path = dst_dir.joinpath(f"{img_name}.seg2{k}.png")
         ski.io.imsave(save_path, seg2_on_img)
