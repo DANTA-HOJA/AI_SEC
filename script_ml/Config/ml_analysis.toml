@@ -13,7 +13,7 @@
 [SLIC]
   n_segments = 200
   dark = 40
-  merge = 12
+  merge = 10
   debug_mode = false
   # `dark` and `merge` are two parameters as color space distance, \
   #   determined by experiences
