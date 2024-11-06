@@ -9,6 +9,7 @@ from pathlib import Path
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import skimage as ski
 from PIL import Image, ImageDraw, ImageFont
 from rich import print
 from rich.console import Console
@@ -128,7 +129,7 @@ def merge_similar_rgb(seg: np.ndarray, rgb_img: np.ndarray,
     for label in labels:
         if label == 0: continue # skip background
         mask = (merge_seg == label)
-        if np.sum(mask) > 0: # merge 後會出現跳號，bw 可能會沒東西
+        if np.sum(mask) > 0: # merge 後會跳號， mask 可能會沒東西
             color = np.array(list(get_average_rgb(mask, rgb_img, avg_ratio=0.5).values())) # get self color
             mask_dila = dila(mask, iterations=2) # find neighbor
             nlabels = np.unique(merge_seg[mask_dila]) # self + neighbor's labels
@@ -197,18 +198,17 @@ def draw_label_on_image(seg: np.ndarray, rgb_img: np.ndarray,
     # -------------------------------------------------------------------------/
 
 
-def single_slic_labeling(dir:Path, img_path:Path,
+def single_slic_labeling(dst_dir:Path, img_path:Path,
                          n_segments:int, dark:int, merge:int,
                          debug_mode:bool=False):
     """
     """
-    img_name = dir.name
-    
-    """ read image """
-    img = cv2.imread(str(img_path))
-    
-    """ run SLIC """
-    seg0 = slic(cv2.cvtColor(img, cv2.COLOR_BGR2RGB),
+    img_name = dst_dir.name
+    # read image
+    img = ski.io.imread(img_path)
+
+    """ SLIC (seg0) """
+    seg0 = slic(img,
                 n_segments = n_segments,
                 channel_axis=-1,
                 convert2lab=True,
@@ -222,76 +222,59 @@ def single_slic_labeling(dir:Path, img_path:Path,
                 start_label=0)
         # parameters can refer to https://scikit-image.org/docs/stable/api/skimage.segmentation.html#skimage.segmentation.slic
 
-    """ save original `seg_result` ( without merge ) """
-    save_path = dir.joinpath(f"{img_name}.seg0.pkl")
+    """ Save 'SLIC' result (seg0, without any merge) """
+    # save segmentation as pkl file
+    save_path = dst_dir.joinpath(f"{img_name}.seg0.pkl")
     save_segment_result(save_path, seg0)
+    # Mark `seg0` on `img`
+    seg0_on_img = np.uint8(mark_boundaries(img, seg0, (0, 1, 1))*255)
+    save_path = dst_dir.joinpath(f"{img_name}.seg0.png")
+    ski.io.imsave(save_path, seg0_on_img)
 
-    """ overlapping original image with its `seg_result` """
-    save_path = dir.joinpath(f"{img_name}.seg0.png")
-    save_seg_on_img(save_path, img, seg0)
-
-    """ merging neighbors ('black background' and 'similar color') """
+    """ Merge background (seg1) """
+    seg1 = deepcopy(seg0)
     labels = np.unique(seg0)
-    max_label = np.max(labels)
-    lindex = max_label + 1 # new (re-index) labels on seg1 starts from `max_label` + 1
-    seg1 = deepcopy(seg0) # copy the slic segment to 're-index' and 'merge'
+    new_label = np.max(labels) + 1 # new (re-index) label start
     for label in labels:
-        bw = (seg1 == label)
-        
-        if debug_mode:
-            tmp_array = np.zeros_like(bw, dtype=np.uint8)
-            tmp_array[bw] = 255  # 将True值设置为255，以渲染为白色
-            plt.imshow(tmp_array, cmap='gray', vmax=255, vmin=0)
-            plt.title(f"label = {label}")
-            plt.show()
-        
-        if np.sum(bw) > 0: # SLIC 生成的 labels 會跳號，bw 可能會沒東西
-            color1 = bwRGB(bw, img)
-            color_dist = col_dis(color1, [0, 0, 0]) # compare with 'black background'
+        mask = (seg1 == label)
+        if np.sum(mask) > 0: # SLIC 生成的 labels 會跳號， mask 可能會沒東西
+            color = bwRGB(mask, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            color_dist = col_dis(color, (0, 0, 0)) # compare with 'background'
             if color_dist <= dark:
-                seg1[(seg1 == label)] = 0 # dark region on seg1 is labeled as 0
+                seg1[mask] = 0 # background on `seg1` is set to 0
             else:
-                seg1[(seg1 == label)] = lindex # re-index
-                lindex +=1
+                seg1[mask] = new_label # re-index
+                new_label +=1
         else:
-            print(f"'{label}' has been merged before dealing with")
+            print(f"'{label}' is missing")
 
-    """ save merged `seg_result` """
-    save_path = dir.joinpath(f"{img_name}.seg1.pkl")
+    """ Save 'Merge background' result (seg1) """
+    # save segmentation as pkl file
+    save_path = dst_dir.joinpath(f"{img_name}.seg1.pkl")
     save_segment_result(save_path, seg1)
+    # Generate average 'RGB' of `img` and mark `seg1` labels on it
+    avg_rgb = average_rgb_coloring(seg1, img)
+    seg1_on_img = draw_label_on_image(seg1, avg_rgb)
+    save_path = dst_dir.joinpath(f"{img_name}.seg1a.png")
+    ski.io.imsave(save_path, seg1_on_img)
 
-    """ overlapping original image with merged `seg_result` """
-    save_path = dir.joinpath(f"{img_name}.seg1.png")
-    save_seg_on_img(save_path, img, seg1)
-    
-    # >>> Merge similar color <<<
-    
-    seg2 = deepcopy(seg1)
-    labels = np.unique(seg2)
-    for label in labels:
-        if label != 0:
-            bw = (seg2 == label)
-            if np.sum(bw) > 0: # merge 後會跳號，bw 可能會沒東西
-                color1 = bwRGB(bw, img) # get self color
-                bwd = dila(bw) # touch neighbor
-                nlabels = np.unique(seg2[bwd]) # self + neighbor's labels
-                for nl in nlabels:
-                    if (nl > label) and (nl != 0):
-                        bw2 = (seg2 == nl)
-                        color2 = bwRGB(bw2, img) # neighbor's color
-                        if col_dis(color1, color2) <= merge:
-                            seg2[bw2] = label
-            else:
-                if debug_mode:
-                    print(f"'{label}' has been merged before dealing with")
-    
-    """ save merged `seg_result` """
-    save_path = dir.joinpath(f"{img_name}.seg2.pkl")
+    """ Merge similar RGB (seg2) """
+    seg2, relabeling = merge_similar_rgb(seg1, img,
+                                         merge=merge, debug_mode=debug_mode)
+
+    """ Save 'Merge similar RGB' result (seg2) """
+    # save segmentation as pkl file
+    save_path = dst_dir.joinpath(f"{img_name}.seg2.pkl")
     save_segment_result(save_path, seg2)
-
-    """ overlapping original image with merged `seg_result` """
-    save_path = dir.joinpath(f"{img_name}.seg2.png")
-    save_seg_on_img(save_path, img, seg2)
+    # Mark `seg2` labels and merged regions on `img` and `avg_rgb`
+    for k, v in {"o": img, "a": avg_rgb}.items():
+        seg2_on_img = deepcopy(v)/255.0
+        for label in relabeling.values():
+            mask = (seg2 == label)
+            seg2_on_img = mark_boundaries(seg2_on_img, mask, color=(0, 1, 1))
+        seg2_on_img = draw_label_on_image(seg1, np.uint8(seg2_on_img*255), relabeling=relabeling)
+        save_path = dst_dir.joinpath(f"{img_name}.seg2{k}.png")
+        ski.io.imsave(save_path, seg2_on_img)
     
     return seg1, seg2
     # -------------------------------------------------------------------------/
