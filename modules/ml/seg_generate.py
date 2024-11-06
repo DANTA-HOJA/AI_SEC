@@ -9,11 +9,14 @@ from pathlib import Path
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 from rich import print
 from rich.console import Console
 from rich.pretty import Pretty
 from rich.traceback import install
 from scipy.ndimage import binary_dilation as dila
+from skimage import measure
+from skimage.color import deltaE_ciede94, rgb2lab
 from skimage.segmentation import mark_boundaries, slic
 
 from ..shared.config import load_config
@@ -63,6 +66,134 @@ def save_seg_on_img(save_path:Path, img:np.ndarray, seg:np.ndarray):
     """
     seg_on_img = np.uint8(mark_boundaries(img, seg)*255)
     cv2.imwrite(str(save_path), seg_on_img)
+    # -------------------------------------------------------------------------/
+
+
+def get_average_rgb(mask: np.ndarray, rgb_img: np.ndarray,
+                    avg_ratio: float):
+    """
+    """
+    assert rgb_img.dtype == np.uint8, "rgb_img.dtype != np.uint8"
+    assert isinstance(avg_ratio, float)
+    
+    # vars
+    ch_order = {"R":0, "G":1, "B":2}
+    avg_rgb = {"R":np.uint8, "G":np.uint8, "B":np.uint8}
+    
+    for k, v in ch_order.items():
+        pixels = np.sort(rgb_img[mask, v])[::-1]
+        area = len(pixels)
+        # average with only half pixels
+        pixel_avg = int(np.average(pixels[:int(area*avg_ratio)]))
+        # update `avg_rgb`
+        avg_rgb[k] = pixel_avg
+    
+    return avg_rgb
+    # -------------------------------------------------------------------------/
+
+
+def average_rgb_coloring(seg: np.ndarray, rgb_img: np.ndarray):
+    """ channel order of `img` is `RGB`
+    """
+    assert rgb_img.dtype == np.uint8, "rgb_img.dtype != np.uint8"
+    
+    # vars
+    avgcolor_img = np.zeros((*seg.shape, 3), dtype=rgb_img.dtype)
+    
+    labels = np.unique(seg)
+    for label in labels:
+        if label == 0: continue # skip background
+        mask = (seg == label)
+        avg_rgb = get_average_rgb(mask, rgb_img, avg_ratio=0.5)
+        avgcolor_img[mask] = np.array(list(avg_rgb.values()))
+    
+    # check and return
+    assert id(avgcolor_img) != id(rgb_img)
+    return avgcolor_img
+    # -------------------------------------------------------------------------/
+
+
+def merge_similar_rgb(seg: np.ndarray, rgb_img: np.ndarray,
+                      merge: float, debug_mode: bool):
+    """
+    """
+    assert rgb_img.dtype == np.uint8, "rgb_img.dtype != np.uint8"
+    
+    # vars
+    merge_seg = deepcopy(seg)
+    relabeling: dict[int, int] = {}
+    delta_e_dict: dict[str, float] = {} # for debugger
+    
+    labels = np.unique(merge_seg)
+    for label in labels:
+        if label == 0: continue # skip background
+        mask = (merge_seg == label)
+        if np.sum(mask) > 0: # merge 後會出現跳號，bw 可能會沒東西
+            color = np.array(list(get_average_rgb(mask, rgb_img, avg_ratio=0.5).values())) # get self color
+            mask_dila = dila(mask, iterations=2) # find neighbor
+            nlabels = np.unique(merge_seg[mask_dila]) # self + neighbor's labels
+            for nlabel in nlabels:
+                if nlabel == 0: continue # skip background
+                elif nlabel > label: # avoid repeated merging
+                    nmask = (merge_seg == nlabel)
+                    ncolor = np.array(list(get_average_rgb(nmask, rgb_img, avg_ratio=0.5).values())) # neighbor's color
+                    delta_e = deltaE_ciede94(rgb2lab(color/255.0), rgb2lab(ncolor/255.0))
+                    delta_e_dict[f"{label}_cmp_{nlabel}"] = delta_e # for debugger
+                    if delta_e <= merge:
+                        merge_seg[nmask] = label
+                        relabeling[nlabel] = label
+        else:
+            if debug_mode:
+                print(f"'{label}' has been merged before dealing with")
+    
+    # check and return
+    assert id(merge_seg) != id(seg)
+    return merge_seg, relabeling
+    # -------------------------------------------------------------------------/
+
+
+def draw_label_on_image(seg: np.ndarray, rgb_img: np.ndarray,
+                        relabeling: dict[str, str] = {}):
+    """
+    """
+    assert rgb_img.dtype == np.uint8, "rgb_img.dtype != np.uint8"
+    
+    # 計算每個 label 區域的屬性
+    props = measure.regionprops(seg)
+    
+    # 使用 PIL 在影像上寫入文字
+    pil_img = Image.fromarray(rgb_img)
+    draw = ImageDraw.Draw(pil_img)
+    font = ImageFont.load_default()  # 使用預設字體，也可以指定自定義字體
+    
+    # 對每個區域的屬性進行迭代，並在重心位置標上 label 值
+    for prop in props:
+        
+        cY, cX = prop.centroid
+        
+        if prop.label in relabeling:
+            label_text = str(relabeling[prop.label])
+        else:
+            label_text = str(prop.label)
+        
+        # 計算文字的大小
+        text_size = draw.textsize(label_text, font=font)
+        text_width, text_height = text_size
+        
+        # 計算置中後的文字位置
+        text_position = (cX - text_width / 2, cY - text_height / 2)
+        
+        # 畫陰影
+        shadow_offset = 2 # pixels
+        shadow_position = (text_position[0] + shadow_offset, text_position[1] + shadow_offset)
+        draw.text(shadow_position, label_text, fill="#000000", font=font)
+        
+        # 畫主要文字
+        draw.text(text_position, label_text, fill="#FFFFFF", font=font)
+    
+    # check and return
+    assert id(pil_img) != id(rgb_img)
+    return np.array(pil_img)
     # -------------------------------------------------------------------------/
 
 
