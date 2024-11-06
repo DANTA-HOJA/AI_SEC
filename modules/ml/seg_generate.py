@@ -40,7 +40,7 @@ def bwRGB(bw,im):
     # -------------------------------------------------------------------------/
 
 
-def col_dis(color1,color2):
+def simple_col_dis(color1, color2):
     """
     """
     sum = 0
@@ -239,7 +239,7 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
         mask = (seg1 == label)
         if np.sum(mask) > 0: # SLIC 生成的 labels 會跳號， mask 可能會沒東西
             color = get_average_rgb(mask, img, avg_ratio=1.0)[1]
-            color_dist = col_dis(color, (0, 0, 0)) # compare with 'background'
+            color_dist = simple_col_dis(color, (0, 0, 0)) # compare with 'background'
             if color_dist <= dark:
                 seg1[mask] = 0 # background on `seg1` is set to 0
             else:
