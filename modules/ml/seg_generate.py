@@ -30,7 +30,7 @@ install()
 
 
 def bwRGB(bw,im):
-    """ channel order of `im` is `BGR` (default to `cv2.imread()`)
+    """ (deprecated) channel order of `im` is `BGR` (default to `cv2.imread()`)
     """
     A = np.sum(bw)
     B = np.sum(im[bw,0])/A
@@ -57,13 +57,13 @@ def col_dis(color1,color2):
 def save_segment_result(save_path:Path, seg:np.ndarray):
     """
     """
-    with open(save_path, mode="wb") as f:
-        pickle.dump(seg, f)
+    with open(save_path, mode="wb") as f_writer:
+        pickle.dump(seg, f_writer)
     # -------------------------------------------------------------------------/
 
 
 def save_seg_on_img(save_path:Path, img:np.ndarray, seg:np.ndarray):
-    """
+    """ (deprecated)
     """
     seg_on_img = np.uint8(mark_boundaries(img, seg)*255)
     cv2.imwrite(str(save_path), seg_on_img)
