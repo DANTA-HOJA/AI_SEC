@@ -26,7 +26,7 @@ install()
 
 
 def bwRGB(bw,im):
-    """
+    """ channel order of `im` is `BGR` (default to `cv2.imread()`)
     """
     A = np.sum(bw)
     B = np.sum(im[bw,0])/A
@@ -45,6 +45,8 @@ def col_dis(color1,color2):
         sum =sum+ds
     delta_e = np.sqrt(sum)
     return delta_e
+
+    # return np.sqrt(np.sum((np.array(color1) - np.array(color2))**2))
     # -------------------------------------------------------------------------/
 
 
@@ -69,9 +71,7 @@ def single_slic_labeling(dir:Path, img_path:Path,
                          debug_mode:bool=False):
     """
     """
-    result_name = img_path.stem.split(".")[0]
-    slic_param_name = f"S{n_segments}_D{dark}_M{merge}"
-    img_name = f"{result_name}.{slic_param_name}"
+    img_name = dir.name
     
     """ read image """
     img = cv2.imread(str(img_path))
