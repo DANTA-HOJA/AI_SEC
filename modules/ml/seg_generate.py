@@ -132,7 +132,8 @@ def average_rgb_coloring(seg: np.ndarray, rgb_img: np.ndarray):
     for label in labels:
         if label == 0: continue # skip background
         mask = (seg == label)
-        _, avg_rgb = get_average_rgb(mask, rgb_img, avg_ratio=0.5)
+        # _, avg_rgb = get_average_rgb(mask, rgb_img, avg_ratio=0.5)
+        _, avg_rgb = get_average_rgb_v2(mask, rgb_img, qL=0.5, qR=0.9)
         avgcolor_img[mask] = np.uint8(avg_rgb)
     
     # check and return
@@ -157,14 +158,16 @@ def merge_similar_rgb(seg: np.ndarray, rgb_img: np.ndarray,
         if label == 0: continue # skip background
         mask = (merge_seg == label)
         if np.sum(mask) > 0: # merge 後會跳號， mask 可能會沒東西
-            color = get_average_rgb(mask, rgb_img, avg_ratio=0.5)[1] # get self color
+            # color = get_average_rgb(mask, rgb_img, avg_ratio=0.5)[1] # get self color
+            color = get_average_rgb_v2(mask, rgb_img, qL=0.5, qR=0.9)[1] # get self color
             mask_dila = dila(mask, iterations=2) # find neighbor
             nlabels = np.unique(merge_seg[mask_dila]) # self + neighbor's labels
             for nlabel in nlabels:
                 if nlabel == 0: continue # skip background
                 elif nlabel > label: # avoid repeated merging
                     nmask = (merge_seg == nlabel)
-                    ncolor = get_average_rgb(nmask, rgb_img, avg_ratio=0.5)[1] # neighbor's color
+                    # ncolor = get_average_rgb(nmask, rgb_img, avg_ratio=0.5)[1] # neighbor's color
+                    ncolor = get_average_rgb_v2(nmask, rgb_img, qL=0.5, qR=0.9)[1] # neighbor's color
                     delta_e = deltaE_ciede94(rgb2lab(color/255.0), rgb2lab(ncolor/255.0))
                     delta_e_dict[f"{label}_cmp_{nlabel}"] = delta_e # for debugger
                     if delta_e <= merge:
