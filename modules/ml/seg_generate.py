@@ -85,7 +85,7 @@ def get_average_rgb(mask: np.ndarray, rgb_img: np.ndarray,
     for k, v in ch_order.items():
         pixels = np.sort(rgb_img[mask, v])[::-1]
         area = len(pixels)
-        # average with only half pixels
+        # average with partial pixels
         pixel_avg = np.average(pixels[:int(area*avg_ratio)])
         # update `avg_rgb`
         avg_rgb_dict[k] = pixel_avg
