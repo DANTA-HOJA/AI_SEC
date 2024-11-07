@@ -9,6 +9,7 @@ from pathlib import Path
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import skimage as ski
 from PIL import Image, ImageDraw, ImageFont
 from rich import print
@@ -86,6 +87,32 @@ def get_average_rgb(mask: np.ndarray, rgb_img: np.ndarray,
         area = len(pixels)
         # average with only half pixels
         pixel_avg = np.average(pixels[:int(area*avg_ratio)])
+        # update `avg_rgb`
+        avg_rgb_dict[k] = pixel_avg
+    
+    return avg_rgb_dict, np.array(list(avg_rgb_dict.values()))
+    # -------------------------------------------------------------------------/
+
+
+def get_average_rgb_v2(mask: np.ndarray, rgb_img: np.ndarray,
+                       qL: float, qR: float):
+    """
+    """
+    assert rgb_img.dtype == np.uint8, "rgb_img.dtype != np.uint8"
+    assert isinstance(qL, float)
+    assert isinstance(qR, float)
+    
+    # vars
+    ch_order = {"R":0, "G":1, "B":2}
+    avg_rgb_dict = {"R":float, "G":float, "B":float}
+    
+    for k, v in ch_order.items():
+        pixels = np.sort(rgb_img[mask, v])[::-1]
+        val_qL = np.quantile(pixels, qL)
+        val_qR = np.quantile(pixels, qR)
+        # average with custom quantile interval
+        pixels = pixels[(pixels >= val_qL) & (pixels <= val_qR)]
+        pixel_avg = np.average(pixels)
         # update `avg_rgb`
         avg_rgb_dict[k] = pixel_avg
     
