@@ -311,11 +311,12 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     # -------------------------------------------------------------------------/
 
 
-def single_cellpose_prediction():
+def single_cellpose_prediction(dst_dir: Path, debug_mode: bool=False):
     """ Function name TBD
     Place holder for running Cellpose prediction
     """
-    pass
+    # npy_file = dst_dir.joinpath("[xxx_seg.npy]")
+    # seg1 = np.load(npy_file, allow_pickle=True).item()['masks']
     # -------------------------------------------------------------------------/
 
 
