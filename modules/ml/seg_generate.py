@@ -190,7 +190,10 @@ def draw_label_on_image(seg: np.ndarray, rgb_img: np.ndarray,
         draw.text(shadow_position, label_text, fill="#000000", font=font)
         
         # 畫主要文字
-        draw.text(text_position, label_text, fill="#FFFFFF", font=font)
+        if prop.label in relabeling:
+            draw.text(text_position, label_text, fill="#FF0000", font=font)
+        else:
+            draw.text(text_position, label_text, fill="#FFFFFF", font=font)
     
     # check and return
     assert id(pil_img) != id(rgb_img)
@@ -227,7 +230,7 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     save_path = dst_dir.joinpath(f"{img_name}.seg0.pkl")
     save_segment_result(save_path, seg0)
     # Mark `seg0` on `img`
-    seg0_on_img = np.uint8(mark_boundaries(img, seg0)*255)
+    seg0_on_img = np.uint8(mark_boundaries(img, seg0, color=(0, 1, 1))*255)
     save_path = dst_dir.joinpath(f"{img_name}.seg0.png")
     ski.io.imsave(save_path, seg0_on_img)
 
@@ -254,7 +257,8 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     save_segment_result(save_path, seg1)
     # Generate average 'RGB' of `img` and mark `seg1` labels on it
     avg_rgb = average_rgb_coloring(seg1, img)
-    seg1_on_img = draw_label_on_image(seg1, avg_rgb)
+    seg1_on_img = np.uint8(mark_boundaries(avg_rgb, seg1, color=(0, 1, 1))*255)
+    seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
     save_path = dst_dir.joinpath(f"{img_name}.seg1a.png")
     ski.io.imsave(save_path, seg1_on_img)
 
@@ -268,11 +272,8 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     save_segment_result(save_path, seg2)
     # Mark `seg2` labels and merged regions on `img` and `avg_rgb`
     for k, v in {"o": img, "a": avg_rgb}.items():
-        seg2_on_img = deepcopy(v)/255.0
-        for label in relabeling.values():
-            mask = (seg2 == label)
-            seg2_on_img = mark_boundaries(seg2_on_img, mask)
-        seg2_on_img = draw_label_on_image(seg1, np.uint8(seg2_on_img*255), relabeling=relabeling)
+        seg2_on_img = np.uint8(mark_boundaries(v, seg2, color=(0, 1, 1))*255)
+        seg2_on_img = draw_label_on_image(seg1, seg2_on_img, relabeling=relabeling)
         save_path = dst_dir.joinpath(f"{img_name}.seg2{k}.png")
         ski.io.imsave(save_path, seg2_on_img)
     
