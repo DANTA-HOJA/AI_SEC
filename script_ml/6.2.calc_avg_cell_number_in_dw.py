@@ -142,6 +142,7 @@ if __name__ == '__main__':
     
     """ Plot figure """
     fig, ax = plt.subplots(1, 1, figsize=(16, 16), dpi=200)
+    plt.title(seg_dirname, fontdict={"fontsize": 16})
     
     # legend
     legend_labels = []
@@ -202,6 +203,8 @@ if __name__ == '__main__':
                                              cluster_desc, seg_dirname,
                                              Path(__file__).stem)
     create_new_dir(dst_dir)
+    cli_out.divide()
+    
     for suffix in [".png", ".svg"]:
         save_name = Path(__file__).with_suffix(suffix).name
         fig.savefig(dst_dir.joinpath(save_name))
