@@ -8,7 +8,7 @@ from skimage.segmentation import mark_boundaries
 # -----------------------------------------------------------------------------/
 
 
-def gen_singlecolor_palmskin(seg:np.ndarray,
+def gen_singlecolor_palmskin(seg: np.ndarray,
                              cytosol_color: tuple[float, float, float]=(0.5, 0.5, 0.5),
                              border_color: tuple[float, float, float]=(1.0, 1.0, 1.0),
                              bg_color: tuple[float, float, float]=None,
@@ -26,10 +26,10 @@ def gen_singlecolor_palmskin(seg:np.ndarray,
     # -------------------------------------------------------------------------/
 
 
-def gen_unique_random_color_pool(n_labels:list,
-                                 existing_color_pool:dict=None,
-                                 hsv_vthreshold:int=None) -> dict:
-    """_summary_
+def gen_unique_random_color_pool(n_labels: list,
+                                 existing_color_pool: dict=None,
+                                 lab_lthres: float=None) -> dict:
+    """Range of `lab_lthres`: [0.0, 100.0]
 
     Args:
         n_labels (list): How many colors should generate
@@ -39,6 +39,12 @@ def gen_unique_random_color_pool(n_labels:list,
     Returns:
         dict: {Hex rgb: float rgb}
     """
+    if lab_lthres is not None:
+        if not isinstance(lab_lthres, float):
+            raise ValueError(f"`lab_lthres` is not `float`, got {lab_lthres}")
+        if not ((lab_lthres >= 0.0) and ((lab_lthres <= 100.0))):
+            raise ValueError(f"Range of `lab_lthres`: [0.0, 100.0], got {lab_lthres}")
+    
     if existing_color_pool is None:
         color_pool = dict() # set 遇到重複的 value 不會 update
     else:
@@ -53,13 +59,11 @@ def gen_unique_random_color_pool(n_labels:list,
         hex_rgb = f"#{hex(color)[2:]:>06}" # `hex(color)` starts with `0x`
         float_rgb = mcolors.hex2color(hex_rgb) # range: [0.0, 1.0]
         
-        if hsv_vthreshold is None:
+        if lab_lthres is None:
             color_pool[f"{hex_rgb}"] = float_rgb # save color
         else:
-            hsv_color = colorsys.rgb_to_hsv(*float_rgb)
-            # 以 V channel (亮度) 進行判斷
-            v_threshold = hsv_vthreshold/255 # 255 is `V_MAX` in OpenCV HSV color model
-            if hsv_color[2] > v_threshold:
+            lab_color = rgb2lab(float_rgb) # range of L: [0.0, 100.0]
+            if lab_color[0] > lab_lthres:
                 color_pool[f"{hex_rgb}"] = float_rgb # save color
     
     color_pool.pop("#000000") # remove `black` (background)
