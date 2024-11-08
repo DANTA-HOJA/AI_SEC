@@ -59,11 +59,11 @@ float64_imgs["rand_rgb"] = deepcopy(img / 255.0)
 
 """ Replace background of segmentation with original pixels """
 # replace color
-img = deepcopy(uint8_imgs["rand_rgb"])
-img[seg1 == 0] = uint8_imgs["orig"][seg1 == 0]
+img = deepcopy(float64_imgs["rand_rgb"])
+img[seg1 == 0] = float64_imgs["orig"][seg1 == 0]
 # update dicts
-uint8_imgs["rand_rgb.rpbg"] = deepcopy(img)
-float64_imgs["rand_rgb.rpbg"] = deepcopy(img / 255.0)
+float64_imgs["rand_rgb.rpbg"] = deepcopy(img)
+uint8_imgs["rand_rgb.rpbg"] = deepcopy(np.uint8(img*255))
 
 
 """ Apply `Gamma Correction` to 'rand_rgb.rpbg' """
