@@ -11,7 +11,6 @@ from rich import print
 from rich.pretty import Pretty
 from rich.progress import Progress
 from rich.traceback import install
-from skimage.segmentation import mark_boundaries
 
 pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
@@ -20,6 +19,7 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
 from modules.data.dataset.dsname import get_dsname_sortinfo
 from modules.data.dname import get_dname_sortinfo
 from modules.data.processeddatainstance import ProcessedDataInstance
+from modules.dl.fakepalmskin.utils import gen_singlecolor_palmskin
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
@@ -27,24 +27,6 @@ from modules.shared.utils import create_new_dir, get_repo_root
 
 install()
 # -----------------------------------------------------------------------------/
-
-
-def gen_singlecolor_palmskin(seg:np.ndarray,
-                             cytosol_color: tuple[float, float, float]=(0.5, 0.5, 0.5),
-                             border_color: tuple[float, float, float]=(1.0, 1.0, 1.0),
-                             bg_color: tuple[float, float, float]=None,
-                             ) -> np.ndarray:
-    """
-    """
-    fake_palmskin = np.full((*seg.shape, 3), cytosol_color, dtype=np.float64)
-    
-    if bg_color is not None:
-        fake_palmskin[seg == 0] = bg_color
-    
-    fake_palmskin = mark_boundaries(fake_palmskin, seg, color=border_color)
-
-    return fake_palmskin
-    # -------------------------------------------------------------------------/
 
 
 if __name__ == '__main__':
