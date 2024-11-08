@@ -107,7 +107,9 @@ if __name__ == '__main__':
             # 創建與 seg1 相同大小的 RGB image
             colored_seg1 = np.zeros((*seg1.shape, 3), dtype=np.float64) # 3 表示 RGB 三個通道
             # 確認所有唯一的 label
-            unique_labels = np.unique(seg1)[1:] # 排除 `background` (0)
+            unique_labels = np.unique(seg1)
+            if 0 in unique_labels:
+                unique_labels = unique_labels[1:] # 排除 `background` (0)
             
             # 依照 `unique_labels` 數量生成不重複的顏色
             color_pool = gen_unique_random_color_pool(unique_labels)
@@ -132,7 +134,9 @@ if __name__ == '__main__':
             # 創建與 seg2 相同大小的 RGB image
             colored_seg2 = np.zeros((*seg2.shape, 3), dtype=np.float64) # 3 表示 RGB 三個通道
             # 確認所有唯一的 label
-            unique_labels = np.unique(seg2)[1:] # 排除 `background` (0), 應少於 seg1
+            unique_labels = np.unique(seg2) # 應少於 `seg1`
+            if 0 in unique_labels:
+                unique_labels = unique_labels[1:] # 排除 `background` (0)
             
             # 參照 seg1 的 "label 顏色映射" 進行上色
             for label in unique_labels:
