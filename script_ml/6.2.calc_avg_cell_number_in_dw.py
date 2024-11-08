@@ -22,7 +22,7 @@ from modules.ml.utils import get_seg_desc, get_slic_param_name
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
-from modules.shared.utils import get_repo_root
+from modules.shared.utils import create_new_dir, get_repo_root
 
 new_rc_params = {'text.usetex': False, "svg.fonttype": 'none'}
 mpl.rcParams.update(new_rc_params)
@@ -197,11 +197,15 @@ if __name__ == '__main__':
     # plt.show()
     
     # save figure
-    fig_dir = Path(__file__).parent.joinpath("data/generated")
+    dst_dir = Path(__file__).parent.joinpath("data/generated/ML",
+                                             processed_di.instance_name,
+                                             cluster_desc, seg_dirname,
+                                             Path(__file__).stem)
+    create_new_dir(dst_dir)
     for suffix in [".png", ".svg"]:
         save_name = Path(__file__).with_suffix(suffix).name
-        fig.savefig(fig_dir.joinpath(save_name))
-    print(f"Save 'Avg. cell number under different size' to : '{fig_dir}'")
+        fig.savefig(dst_dir.joinpath(save_name))
+    print(f"Save 'Avg. cell number under different size' to : '{dst_dir}'")
     
     cli_out.new_line()
     print("[green]Done! \n")
