@@ -108,7 +108,7 @@ for img in uint8_imgs.values(): assert img.dtype == np.uint8
 # save image
 for suffix, img in uint8_imgs.items():
     if suffix == "orig": continue
-    ski.io.imsave(npy_file.parent.joinpath(f"{img_name}.{suffix}.png"), img)
+    ski.io.imsave(npy_file.parent.joinpath(f"{img_name.stem}.{suffix}.png"), img)
 
 # display images
 imgset_r1 = ["orig", "rand_rgb", "rand_rgb.rpbg", "rand_rgb.rpbg.gamma_0d5"] # assign image order
@@ -119,6 +119,6 @@ fig, axes = plt.subplots(2, len(imgset_r1))
 axes = plt.gcf().get_axes()
 for suffix, ax in zip((imgset_r1+imgset_r2), axes):
     ax.imshow(float64_imgs[suffix], vmax=1.0, vmin=0.0)
-    ax.set_title(f"{img_name}.{suffix}.png")
+    ax.set_title(f"{img_name.stem}.{suffix}.png")
 plt.tight_layout()
 plt.show()
