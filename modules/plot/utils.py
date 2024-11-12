@@ -275,7 +275,7 @@ def calculate_opti_title_param(title:str, max_width:int,
 
 
 
-def plt_to_pillow(figure:figure.Figure, temp_file_dir:Path):
+def plt_to_pillow(figure:figure.Figure):
     """
     """
     # size_mb = 50
