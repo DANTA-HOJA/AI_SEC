@@ -135,6 +135,39 @@ def get_mono_font():
 
 
 
+def get_font(font_style: str=None, alt_default_family: str="sans-serif") -> Path:
+    """
+
+    Args:
+        font_style (str, optional): one of `font` (name) on your system. Defaults to None.
+        alt_default_family (str, optional): one of font family in `plt.rcParams`. Defaults to "sans-serif".
+        
+        NOTE: Without giving any argument, the font defaults to `DejaVu Sans` (matplotlib default).
+    Raises:
+        KeyError: if the given `alt_default_family` not exists.
+
+    Returns:
+        Path: a absolute font path on your system.
+    """
+    try:
+        plt.rcParams[f"font.{alt_default_family}"]
+        plt.rcParams["font.family"] = [alt_default_family]
+    except KeyError:
+        
+        # get `font.family`
+        mpl_font_family = []
+        for k, v in plt.rcParams.items():
+            if isinstance(v, list) and k.startswith("font."):
+                if k == "font.family": continue
+                mpl_font_family.extend([k.replace("font.", "")])
+
+        raise KeyError(f"Expect `alt_default_family` is one of {mpl_font_family}")
+    
+    return Path(font_manager.findfont(font_style))
+    # -------------------------------------------------------------------------/
+
+
+
 def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:int,
                       figtitle:str, subtitle_list:Optional[List[str]]=None,
                       font_style:Optional[str]=None,
