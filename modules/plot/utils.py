@@ -330,6 +330,43 @@ def plt_to_pillow(figure:figure.Figure):
 
 
 
+def add_detail_info(rgba_image: Image.Image, content: str,
+                    font_size:int, font_style: Optional[str]=None,
+                    font_color: Optional[Tuple[int, int, int, int]]=None,
+                    verbose:bool=False):
+    """
+    """
+    # set default values (tuple color order: RGB)
+    if not font_style: font_style = str(get_font(alt_default_family="monospace"))
+    if not font_color: font_color = (0, 0, 0, 255)
+    
+    # create font object
+    font = ImageFont.truetype(font_style, font_size)
+    
+    # get `width` and `height` of content
+    image = Image.new("RGB", (0, 0), "white") # empty image
+    draw = ImageDraw.Draw(image)
+    bbox = draw.textbbox((0, 0), content, font=font)
+    width = bbox[2] - bbox[0]
+    height = bbox[3] - bbox[1]
+    
+    # Create empty background in RGBA
+    w_spacing = 0.05
+    h_spacing = 0.05
+    new_size = (int(rgba_image.width*(1+w_spacing*2) + width), int(rgba_image.height))
+    new_canvas = Image.new('RGBA', new_size, color="#FFFFFF") # RGBA 可以建立透明背景
+    if verbose: print(f'new_canvas.size {type(new_canvas.size)}: {new_canvas.size}')
+    
+    draw = ImageDraw.Draw(new_canvas)
+    new_canvas.paste(rgba_image, (0, 0))
+    draw.text((rgba_image.width*(1+w_spacing), rgba_image.height*h_spacing),
+              content, font=font, fill=font_color)
+    
+    return new_canvas
+    # -------------------------------------------------------------------------/
+
+
+
 def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
                   font_style:Optional[str]=None, font_color: Optional[Tuple[int, int, int, int]]=None,
                   ylabel_width:int=0, verbose:bool=False):
