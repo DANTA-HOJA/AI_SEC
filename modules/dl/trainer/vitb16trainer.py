@@ -29,6 +29,18 @@ class VitB16Trainer(BaseTrainer):
         # ---------------------------------------------------------------------/
 
 
+    def _set_config_attrs(self):
+        """
+        """
+        super()._set_config_attrs()
+        
+        if not ("CRPS" in self.dataset_file_name):
+            raise ValueError(f"The expected `dataset.file_name` "
+                             f"for `{type(self).__name__}` is like "
+                             f"'DS_SURF3C_CRPS256_SF14_INT30_DRP65.csv'")
+        # ---------------------------------------------------------------------/
+
+
     def _set_train_set(self):
         """
         """
