@@ -143,7 +143,7 @@ if __name__ == '__main__':
             orig_img = (orig_img/255.0)
             cam_img = (cam_img/255.0)
             gamma_orig_img = np.power(orig_img, 0.5)
-            overlay_img = gamma_orig_img*cam_weight + cam_img*cam_weight
+            overlay_img = cam_img*cam_weight + gamma_orig_img*(1 - cam_weight)
             
             # get predict info ('{Logs}_PredByFish_predict_ans.log')
             gt_cls: str = pred_ans_dict[dsname]["gt"]
