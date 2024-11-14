@@ -11,19 +11,20 @@ from typing import Dict, List, Tuple, Union
 import cv2
 import numpy as np
 import pandas as pd
+import skimage as ski
 from colorama import Back, Fore, Style
 from PIL import Image
 from tomlkit.toml_document import TOMLDocument
 from tqdm.auto import tqdm
 
-from ....data.dataset import dsname
+from ....data.dataset.dsname import get_dsname_sortinfo
 from ....dl.tester.utils import get_history_dir
 from ....dl.utils import gen_class2num_dict
 from ....shared.baseobject import BaseObject
 from ....shared.config import load_config
 from ....shared.utils import create_new_dir
-from ...utils import (draw_predict_ans_on_image, draw_x_on_image,
-                      get_mono_font, plot_with_imglist_auto_row)
+from ...utils import (draw_predict_ans_on_image, draw_x_on_image, get_font,
+                      plot_with_imglist_auto_row)
 from .utils import get_gallery_column
 # -----------------------------------------------------------------------------/
 
@@ -151,7 +152,8 @@ class CamGalleryCreator(BaseObject):
         if not self.cam_weight: self.cam_weight = 0.5
         
         """ [draw.cam_image.text] """
-        if not self.text_font_style: self.text_font_style = get_mono_font()
+        if not self.text_font_style: self.text_font_style = \
+                            str(get_font(alt_default_family="monospace"))
         if not self.text_font_size: self.text_font_size = None
         
         """ [draw.cam_image.text.color] """
@@ -276,10 +278,10 @@ class CamGalleryCreator(BaseObject):
         """
         super().run(config)
         
-        self._create_rank_dirs()
+        # self._create_rank_dirs()
         
         fish_dsnames = sorted(Counter(self.test_df["parent (dsname)"]).keys(),
-                              key=dsname.get_dsname_sortinfo)
+                              key=get_dsname_sortinfo)
         # fish_dsnames = fish_dsnames[:5] # for debug
         
         self._cli_out.divide()
@@ -291,13 +293,13 @@ class CamGalleryCreator(BaseObject):
             self.gen_single_cam_gallery(fish_dsname)
         
         self._progressbar.close()
-        self._del_empty_rank_dirs()
+        # self._del_empty_rank_dirs()
         self._cli_out.new_line()
         # ---------------------------------------------------------------------/
 
 
-    def _create_rank_dirs(self):
-        """
+    def _create_rank_dirs(self): # deprecated
+        """ (deprecated)
         """
         for key in self.num2class_list:
             for _, value in self.rank_dict.items():
@@ -316,24 +318,22 @@ class CamGalleryCreator(BaseObject):
         
         self._read_images_as_dict(tested_paths, # --> self.tested_img_dict
                                   untest_paths,  # --> self.untest_img_dict
-                                  cam_result_paths)    # --> self.cam_result_img_dict
+                                  cam_result_paths)  # --> self.cam_result_img_dict
         
         # >>> draw on 'untest' images <<<
-        
-        for name, bgr_img in self.untest_img_dict.items():
-            self._draw_on_drop_image(name, bgr_img)
+        for untest_name, untest_img in self.untest_img_dict.items():
+            self._draw_on_drop_image(untest_name, untest_img)
         
         # >>> draw on `cam` images <<<
-        
-        self.correct_cnt: int = 0
-        for (cam_name, cam_img), (tested_name, tested_bgr_img) \
+        self.correct_cnt: int = 0 # reset value
+        for (cam_name, cam_img), (tested_name, tested_img) \
             in zip(self.cam_result_img_dict.items(), self.tested_img_dict.items()):
-            self._draw_on_cam_image(cam_name, cam_img,
-                                    tested_name, tested_bgr_img,
-                                    fish_cls)
+                self._draw_on_cam_image(cam_name, cam_img,
+                                        tested_name, tested_img,
+                                        fish_cls)
         
         # >>> check which `rank_dir` to store <<<
-        self._calculate_correct_rank()
+        # self._calculate_correct_rank()
         
         # >>> orig: `tested_img_dict` + `untest_img_dict` <<<
         self._gen_orig_gallery(fish_dsname, fish_cls)
@@ -373,18 +373,18 @@ class CamGalleryCreator(BaseObject):
         cam_result_paths: list[Path] = []
         if self.replace_cam_color:
             cam_result_paths = sorted(self.cam_result_root.glob(f"{fish_dsname}/grayscale_map/*.tiff"),
-                                          key=dsname.get_dsname_sortinfo)
+                                          key=get_dsname_sortinfo)
         else:
             cam_result_paths = sorted(self.cam_result_root.glob(f"{fish_dsname}/color_map/*.tiff"),
-                                          key=dsname.get_dsname_sortinfo)
+                                          key=get_dsname_sortinfo)
         cam_dict: dict[int, Path] = \
-            {dsname.get_dsname_sortinfo(path)[-1]: path for path in cam_result_paths}
+            {get_dsname_sortinfo(path)[-1]: path for path in cam_result_paths}
         
         # >>> test_df <<<
         
         df = self.test_df[(self.test_df["parent (dsname)"] == fish_dsname)]
         tmp_dict: dict[int, Path] = \
-            {dsname.get_dsname_sortinfo(path)[-1]: \
+            {get_dsname_sortinfo(path)[-1]: \
                 self.src_root.joinpath(path) for path in df["path"]}
         
         # >>> Seperate 'tested' / 'untest' (without CAM) <<<
@@ -407,89 +407,103 @@ class CamGalleryCreator(BaseObject):
                                    cam_result_paths:list):
         """
         """
+        # self.tested_img_dict: dict[str, np.ndarray] = \
+        #     { os.path.split(os.path.splitext(path)[0])[-1]: \
+        #         cv2.imread(str(path)) for path in tested_paths }
         self.tested_img_dict: dict[str, np.ndarray] = \
-            { os.path.split(os.path.splitext(path)[0])[-1]: \
-                cv2.imread(str(path)) for path in tested_paths }
+            { path.stem: ski.io.imread(path) for path in tested_paths }
         
+        # self.untest_img_dict: dict[str, np.ndarray] = \
+        #     { os.path.split(os.path.splitext(path)[0])[-1]: \
+        #         cv2.imread(str(path)) for path in untest_paths }
         self.untest_img_dict: dict[str, np.ndarray] = \
-            { os.path.split(os.path.splitext(path)[0])[-1]: \
-                cv2.imread(str(path)) for path in untest_paths }
+            { path.stem: ski.io.imread(path) for path in untest_paths }
         
+        # self.cam_result_img_dict: dict[str, np.ndarray] = \
+        #     { os.path.split(os.path.splitext(path)[0])[-1]: \
+        #         cv2.imread(str(path)) for path in cam_result_paths }
         self.cam_result_img_dict: dict[str, np.ndarray] = \
-            { os.path.split(os.path.splitext(path)[0])[-1]: \
-                cv2.imread(str(path)) for path in cam_result_paths }
+            { path.stem: ski.io.imread(path) for path in cam_result_paths }
         # ---------------------------------------------------------------------/
 
 
-    def _draw_on_drop_image(self, name:str, bgr_img:np.ndarray):
+    def _draw_on_drop_image(self, untest_name:str, untest_img:np.ndarray):
         """
         """
-        rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
-        rgb_img = np.uint8(rgb_img * 0.5) # suppress brightness
-        rgb_img = Image.fromarray(rgb_img) # convert to pillow image before drawing
+        assert untest_img.dtype == np.uint8, "untest_img.dtype != np.uint8"
+        
+        rgb_img = Image.fromarray(np.uint8(untest_img*0.5)) # convert to pillow image before drawing
         draw_x_on_image(rgb_img, self.line_color, self.line_width)
-        self.untest_img_dict[name] = cv2.cvtColor(np.array(rgb_img), cv2.COLOR_RGB2BGR)
+        
+        # >>> replace image <<<
+        assert id(untest_img) != id(rgb_img)
+        self.untest_img_dict[untest_name] = np.array(rgb_img)
         # ---------------------------------------------------------------------/
 
 
     def _draw_on_cam_image(self, cam_name:str, cam_img:np.ndarray,
-                                 tested_name:str, tested_bgr_img:np.ndarray,
+                                 tested_name:str, tested_img:np.ndarray,
                                  fish_cls:str):
         """
         """
-        # >>> preparing `cam_img` <<<
+        assert get_dsname_sortinfo(cam_name) == get_dsname_sortinfo(tested_name)
+        assert cam_img.dtype == np.uint8, "cam_img.dtype != np.uint8"
+        assert tested_img.dtype == np.uint8, "tested_img.dtype != np.uint8"
+        
+        # preparing `cam_rgb_img` (np.float64)
         if self.replace_cam_color:
             cam_bgr_img = cv2.applyColorMap(cam_img, self.replaced_colormap) # BGR
-        else: cam_bgr_img = cam_img
-        cam_rgb_img = cv2.cvtColor(cam_bgr_img, cv2.COLOR_BGR2RGB)
+            cam_rgb_img = cv2.cvtColor(cam_bgr_img, cv2.COLOR_BGR2RGB)/255.0
+        else:
+            cam_rgb_img = cam_img/255.0
         
-        # >>> preparing `tested_img` <<<
-        tested_rgb_img = cv2.cvtColor(tested_bgr_img, cv2.COLOR_BGR2RGB)
+        # preparing `tested_rgb_img` (np.float64)
+        tested_rgb_img = tested_img/255.0
         
-        # >>> overlay `cam_img` on `tested_img` <<<
+        # overlay `cam_img` on `tested_img`
+        cam_overlay = (cam_rgb_img*self.cam_weight + 
+                       tested_rgb_img*(1 - self.cam_weight))
         
-        cam_overlay = ((cam_rgb_img/255) * self.cam_weight + 
-                       (tested_rgb_img/255) * (1 - self.cam_weight))
-        cam_overlay = np.uint8(255 * cam_overlay)
-        
-        # >>> if the prediction is wrong, add answer on image <<<
-        
-        # get param for `draw_predict_ans_on_image`
+        # get 'sub-crop' predicted results for `draw_predict_ans_on_image`
         gt_cls = self.predict_ans_dict[tested_name]['gt']
         pred_cls = self.predict_ans_dict[tested_name]['pred']
         
-        if gt_cls != pred_cls:
+        if pred_cls != gt_cls:
             # create a red mask
-            mask = np.zeros_like(cam_overlay) # black mask
-            mask[:, :, 0] = 1 # modify to `red` mask
+            mask = np.zeros_like(cam_overlay, dtype=np.float64) # black mask
+            mask[:, :, 0] = 1.0 # modify to `red` mask
             # fusion with red mask
-            mask_overlay = np.uint8(255 *((cam_overlay/255) * 0.7 + mask * 0.3))
+            mask_overlay = cam_overlay*0.7 + mask*0.3
+            mask_overlay = np.uint8(mask_overlay*255)
             # draw text
-            mask_overlay = Image.fromarray(mask_overlay) # convert to pillow image before drawing
-            draw_predict_ans_on_image(mask_overlay, pred_cls, gt_cls,
+            rgb_img = Image.fromarray(mask_overlay) # convert to pillow image before drawing
+            draw_predict_ans_on_image(rgb_img, pred_cls, gt_cls,
                                       self.text_font_style, self.text_font_size,
                                       self.text_correct_color,
                                       self.text_incorrect_color,
                                       self.text_shadow_color)
-            cam_overlay = np.array(mask_overlay)
+            cam_overlay = np.array(rgb_img)
         else:
             self.correct_cnt += 1
-            if gt_cls != fish_cls:
-                cam_overlay = Image.fromarray(cam_overlay)
-                draw_predict_ans_on_image(cam_overlay, pred_cls, gt_cls,
+            cam_overlay = np.uint8(cam_overlay*255)
+            # for `add_bg_class` flag
+            if fish_cls != gt_cls:
+                rgb_img = Image.fromarray(cam_overlay) # convert to pillow image before drawing
+                draw_predict_ans_on_image(rgb_img, pred_cls, gt_cls,
                                           self.text_font_style, self.text_font_size,
                                           self.text_correct_color,
                                           self.text_incorrect_color,
                                           self.text_shadow_color)
-                cam_overlay = np.array(cam_overlay)
+                cam_overlay = np.array(rgb_img)
         
         # >>> replace image <<<
-        self.cam_result_img_dict[cam_name] = cv2.cvtColor(cam_overlay, cv2.COLOR_RGB2BGR)
+        assert id(cam_img) != id(cam_overlay)
+        self.cam_result_img_dict[cam_name] = cam_overlay
         # ---------------------------------------------------------------------/
 
 
-    def _calculate_correct_rank(self):
-        """
+    def _calculate_correct_rank(self): # deprecated
+        """ (deprecated)
         """
         self.matching_ratio_percent = int((self.correct_cnt / len(self.cam_result_img_dict))*100)
         for key, value in self.rank_dict.items():
@@ -500,24 +514,28 @@ class CamGalleryCreator(BaseObject):
     def _gen_orig_gallery(self, fish_dsname:str, fish_cls:str):
         """
         """
-        orig_img_dict: dict = deepcopy(self.tested_img_dict)
-        orig_img_dict.update(self.untest_img_dict)
-        sorted_orig_img_dict = OrderedDict(sorted(list(orig_img_dict.items()), key=lambda x: dsname.get_dsname_sortinfo(x[0])))
-        orig_img_list = [ img for _, img in sorted_orig_img_dict.items() ]
+        img_dict: dict = deepcopy(self.tested_img_dict)
+        img_dict.update(self.untest_img_dict)
+        sorted_img_dict = OrderedDict(sorted(list(img_dict.items()), key=lambda x: get_dsname_sortinfo(x[0])))
+        img_list = [ img for _, img in sorted_img_dict.items() ]
+        
+        # score
+        accuracy = self.correct_cnt / len(self.cam_result_img_dict)
         
         # >>> plot with 'Auto Row Calculation' <<<
-        
         figtitle = (f"( original ) [{fish_cls}] {fish_dsname} : "
                     f"{self.dataset_palmskin_result}, "
                     f"{os.path.splitext(self.dataset_file_name)[0]}")
-        save_path = self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, 
-                                                  f"{fish_dsname}_orig.png")
+        save_path = self.cam_gallery_dir.joinpath(f"{fish_cls}/{accuracy:0.5f}_{fish_dsname}_orig.png")
+        create_new_dir(save_path.parent)
+        
         kwargs_plot_with_imglist_auto_row = {
-            "img_list"   : orig_img_list,
+            "img_list"   : img_list,
             "column"     : self.column,
             "fig_dpi"    : 200,
             "figtitle"   : figtitle,
             "save_path"  : save_path,
+            "use_rgb"    : True,
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
@@ -527,33 +545,37 @@ class CamGalleryCreator(BaseObject):
     def _gen_overlay_gallery(self, fish_dsname:str, fish_cls:str):
         """
         """
-        cam_overlay_img_dict: dict = deepcopy(self.cam_result_img_dict)
-        cam_overlay_img_dict.update(self.untest_img_dict)
-        sorted_cam_overlay_img_dict = OrderedDict(sorted(list(cam_overlay_img_dict.items()), key=lambda x: dsname.get_dsname_sortinfo(x[0])))
-        cam_overlay_img_list = [ img for _, img in sorted_cam_overlay_img_dict.items() ]
+        img_dict: dict = deepcopy(self.cam_result_img_dict)
+        img_dict.update(self.untest_img_dict)
+        sorted_img_dict = OrderedDict(sorted(list(img_dict.items()), key=lambda x: get_dsname_sortinfo(x[0])))
+        img_list = [ img for _, img in sorted_img_dict.items() ]
+        
+        # score
+        accuracy = self.correct_cnt / len(self.cam_result_img_dict)
         
         # >>> plot with 'Auto Row Calculation' <<<
-        
         figtitle = (f"( cam overlay ) [{fish_cls}] {fish_dsname} : "
                     f"{self.dataset_palmskin_result}, "
                     f"{os.path.splitext(self.dataset_file_name)[0]}, "
-                    f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} ({self.matching_ratio_percent/100})")
-        save_path = self.cam_gallery_dir.joinpath(fish_cls, self.cls_matching_state, 
-                                                  f"{fish_dsname}_overlay.png")
+                    f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} ({accuracy:.2f})")
+        save_path = self.cam_gallery_dir.joinpath(f"{fish_cls}/{accuracy:0.5f}_{fish_dsname}_overlay.png")
+        create_new_dir(save_path.parent)
+        
         kwargs_plot_with_imglist_auto_row = {
-            "img_list"   : cam_overlay_img_list,
+            "img_list"   : img_list,
             "column"     : self.column,
             "fig_dpi"    : 200,
             "figtitle"   : figtitle,
             "save_path"  : save_path,
+            "use_rgb"    : True,
             "show_fig"   : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
         # ---------------------------------------------------------------------/
 
 
-    def _del_empty_rank_dirs(self):
-        """
+    def _del_empty_rank_dirs(self): # deprecated
+        """ (deprecated)
         """
         for key in self.num2class_list:
             for _, value in self.rank_dict.items():
