@@ -228,7 +228,7 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
     y_width, y_height = bbox.width, bbox.height
     
     # Store figure into `buffer`
-    rgba_image = plt_to_pillow(fig, os.path.dirname(save_path)) # matplotlib figure 預設為 RGBA (透明背景)
+    rgba_image = plt_to_pillow(fig) # matplotlib figure 預設為 RGBA (透明背景)
     
     # Draw `title` on `background`
     rgba_image = add_big_title(rgba_image, figtitle, ylabel_width=y_width, 
