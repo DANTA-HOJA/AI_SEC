@@ -524,7 +524,7 @@ def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:flo
     ## dark_ratio
     text_width, text_height = draw.textsize(darkratio_text, font=font)
     darkratio_w = (rgb_image.width - text_width)/2
-    darkratio_h = rgb_image.height  - text_height - rgb_image.height*0.06
+    darkratio_h = rgb_image.height - text_height - rgb_image.height*0.06
     darkratio_pos = [darkratio_w, darkratio_h]
     ## intensity
     text_width, text_height = draw.textsize(intensity_text, font=font)
