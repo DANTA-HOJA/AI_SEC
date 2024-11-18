@@ -117,8 +117,8 @@ if __name__ == '__main__':
         figsize = np.array((512, 1024))/dpi
         fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=dpi)
         # font size
-        mpl_font_size = 12
-        pil_font_size = int(mpl_font_size * dpi / 72) # 72 DPI 下 1 點等於 1 像素
+        mpl_font_size = 12 # unit: pt
+        pil_font_size = int(mpl_font_size * dpi / 72) # unit: pixel, 1 pt = 1 pixel under 72 DPI
         
         for dsname in dsnames:
             
@@ -177,7 +177,7 @@ if __name__ == '__main__':
             # plot
             ax.imshow(gamma_orig_img, vmin=0.0, vmax=1.0)
             ax.set_axis_off()
-            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=pil_font_size)
+            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=mpl_font_size)
             fig.tight_layout()
             rgba_image = plt_to_pillow(fig)
             rgba_image = add_detail_info(rgba_image, content, font_size=pil_font_size)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
             console.print(f"[{gt_cls}] ({gt_pred_prob:0.5f}) {dsname}_orig : '{fig_path}'")
             
             ax.imshow(overlay_img, vmin=0.0, vmax=1.0)
-            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=pil_font_size)
+            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=mpl_font_size)
             rgba_image = plt_to_pillow(fig)
             rgba_image = add_detail_info(rgba_image, content, font_size=pil_font_size)
             fig_path = cam_gallery_dir.joinpath(f"{gt_cls}/{gt_pred_prob:0.5f}_{dsname}_overlay.png")
