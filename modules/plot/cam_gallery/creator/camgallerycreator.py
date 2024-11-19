@@ -18,13 +18,14 @@ from tomlkit.toml_document import TOMLDocument
 from tqdm.auto import tqdm
 
 from ....data.dataset.dsname import get_dsname_sortinfo
+from ....data.dataset.utils import parse_dataset_file_name
 from ....dl.tester.utils import get_history_dir
 from ....dl.utils import gen_class2num_dict
 from ....shared.baseobject import BaseObject
 from ....shared.config import load_config
 from ....shared.utils import create_new_dir
-from ...utils import (draw_predict_ans_on_image, draw_x_on_image, get_font,
-                      plot_with_imglist_auto_row)
+from ...utils import (draw_drop_info_on_image, draw_predict_ans_on_image,
+                      draw_x_on_image, get_font, plot_with_imglist_auto_row)
 from .utils import get_gallery_column
 # -----------------------------------------------------------------------------/
 
@@ -55,6 +56,7 @@ class CamGalleryCreator(BaseObject):
         super()._set_attrs(config)
         self._set_history_dir()
         self._set_training_config_attrs()
+        self._set_dataset_param()
         self._set_config_attrs_default_value()
         
         self._set_src_root()
@@ -64,7 +66,7 @@ class CamGalleryCreator(BaseObject):
         self._set_cam_result_root()
         
         self._set_cam_gallery_dir()
-        self._set_rank_dict()
+        # self._set_rank_dict()
         # ---------------------------------------------------------------------/
 
 
@@ -133,6 +135,14 @@ class CamGalleryCreator(BaseObject):
         
         """ [train_opts.data] """
         self.add_bg_class: bool = self.training_config["train_opts"]["data"]["add_bg_class"]
+        # ---------------------------------------------------------------------/
+
+
+    def _set_dataset_param(self) -> None:
+        """
+        """
+        name: str = self.training_config["dataset"]["file_name"]
+        self.dataset_param = parse_dataset_file_name(name)
         # ---------------------------------------------------------------------/
 
 
@@ -258,8 +268,8 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _set_rank_dict(self):
-        """
+    def _set_rank_dict(self): # deprecated
+        """ (deprecated)
         """
         self.rank_dict: dict = {}
         
@@ -434,10 +444,23 @@ class CamGalleryCreator(BaseObject):
         
         rgb_img = Image.fromarray(np.uint8(untest_img*0.5)) # convert to pillow image before drawing
         draw_x_on_image(rgb_img, self.line_color, self.line_width)
+        self._add_dark_ratio_on_image(untest_name, rgb_img)
         
         # >>> replace image <<<
         assert id(untest_img) != id(rgb_img)
         self.untest_img_dict[untest_name] = np.array(rgb_img)
+        # ---------------------------------------------------------------------/
+
+
+    def _add_dark_ratio_on_image(self, img_name: str, rgb_image:Image.Image):
+        """
+        """
+        target_row = self.test_df[(self.test_df["image_name"] == img_name)]
+        assert len(target_row) == 1, f"Find {len(target_row)} '{img_name}'"
+        
+        dark_ratio = float(list(target_row["dark_ratio"])[0])
+        draw_drop_info_on_image(rgb_image, self.dataset_param["intensity"],
+                                dark_ratio, self.dataset_param["drop_ratio"])
         # ---------------------------------------------------------------------/
 
 
@@ -517,15 +540,24 @@ class CamGalleryCreator(BaseObject):
         img_dict: dict = deepcopy(self.tested_img_dict)
         img_dict.update(self.untest_img_dict)
         sorted_img_dict = OrderedDict(sorted(list(img_dict.items()), key=lambda x: get_dsname_sortinfo(x[0])))
-        img_list = [ img for _, img in sorted_img_dict.items() ]
         
+        # add `dark_ratio` on images
+        for crop_name, img in sorted_img_dict.items():
+            rgb_img = Image.fromarray(img)
+            self._add_dark_ratio_on_image(crop_name, rgb_img)
+            sorted_img_dict[crop_name] = np.array(rgb_img)
+
         # score
         accuracy = self.correct_cnt / len(self.cam_result_img_dict)
         
         # >>> plot with 'Auto Row Calculation' <<<
+        
+        img_list = [ img for _, img in sorted_img_dict.items() ]
+        
         figtitle = (f"( original ) [{fish_cls}] {fish_dsname} : "
                     f"{self.dataset_palmskin_result}, "
                     f"{os.path.splitext(self.dataset_file_name)[0]}")
+        
         save_path = self.cam_gallery_dir.joinpath(f"{fish_cls}/{accuracy:0.5f}_{fish_dsname}_orig.png")
         create_new_dir(save_path.parent)
         
@@ -548,16 +580,19 @@ class CamGalleryCreator(BaseObject):
         img_dict: dict = deepcopy(self.cam_result_img_dict)
         img_dict.update(self.untest_img_dict)
         sorted_img_dict = OrderedDict(sorted(list(img_dict.items()), key=lambda x: get_dsname_sortinfo(x[0])))
-        img_list = [ img for _, img in sorted_img_dict.items() ]
         
         # score
         accuracy = self.correct_cnt / len(self.cam_result_img_dict)
         
         # >>> plot with 'Auto Row Calculation' <<<
+        
+        img_list = [ img for _, img in sorted_img_dict.items() ]
+        
         figtitle = (f"( cam overlay ) [{fish_cls}] {fish_dsname} : "
                     f"{self.dataset_palmskin_result}, "
                     f"{os.path.splitext(self.dataset_file_name)[0]}, "
                     f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} ({accuracy:.2f})")
+        
         save_path = self.cam_gallery_dir.joinpath(f"{fish_cls}/{accuracy:0.5f}_{fish_dsname}_overlay.png")
         create_new_dir(save_path.parent)
         
