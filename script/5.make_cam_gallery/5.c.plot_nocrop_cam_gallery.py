@@ -21,7 +21,7 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
 
 from modules.data.dataset.dsname import get_dsname_sortinfo
 from modules.dl.tester.utils import get_history_dir
-from modules.plot.utils import add_detail_info, plt_to_pillow
+from modules.plot.utils import add_detail_info, plt_to_pillow, pt_to_px
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
@@ -114,11 +114,11 @@ if __name__ == '__main__':
         
         # create figure
         dpi = 100
-        figsize = np.array((512, 1024))/dpi
+        figsize = np.array((512, 1024))/plt.rcParams['figure.dpi']
         fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=dpi)
         # font size
-        mpl_font_size = 12 # unit: pt
-        pil_font_size = int(mpl_font_size * dpi / 72) # unit: pixel, 1 pt = 1 pixel under 72 DPI
+        font_pt = 12.0 # unit: pt
+        font_px = pt_to_px(font_pt, dpi=dpi) # unit: pixel
         
         for dsname in dsnames:
             
@@ -177,19 +177,19 @@ if __name__ == '__main__':
             # plot
             ax.imshow(gamma_orig_img, vmin=0.0, vmax=1.0)
             ax.set_axis_off()
-            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=mpl_font_size)
+            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=font_pt)
             fig.tight_layout()
             rgba_image = plt_to_pillow(fig)
-            rgba_image = add_detail_info(rgba_image, content, font_size=pil_font_size)
+            rgba_image = add_detail_info(rgba_image, content, font_size=font_px)
             fig_path = cam_gallery_dir.joinpath(f"{gt_cls}/{gt_pred_prob:0.5f}_{dsname}_orig.png")
             create_new_dir(fig_path.parent)
             rgba_image.save(fig_path)
             console.print(f"[{gt_cls}] ({gt_pred_prob:0.5f}) {dsname}_orig : '{fig_path}'")
             
             ax.imshow(overlay_img, vmin=0.0, vmax=1.0)
-            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=mpl_font_size)
+            ax.set_title(f"[{gt_cls}] {dsname}", fontsize=font_pt)
             rgba_image = plt_to_pillow(fig)
-            rgba_image = add_detail_info(rgba_image, content, font_size=pil_font_size)
+            rgba_image = add_detail_info(rgba_image, content, font_size=font_px)
             fig_path = cam_gallery_dir.joinpath(f"{gt_cls}/{gt_pred_prob:0.5f}_{dsname}_overlay.png")
             rgba_image.save(fig_path)
             console.print(f"[{gt_cls}] ({gt_pred_prob:0.5f}) {dsname}_overlay : '{fig_path}'")
