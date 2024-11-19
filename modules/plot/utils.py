@@ -168,71 +168,111 @@ def get_font(font_style: str=None, alt_default_family: str="sans-serif") -> Path
 
 
 
+def pt_to_px(pt: float, dpi: int=96) -> int:
+    """ 1 pt = 1/72 inch
+    """
+    assert isinstance(pt, float), "param `pt` should be `float`"
+    assert isinstance(dpi, int), "param `dpi` should be `int`"
+    
+    return round(pt * dpi / 72)
+    # -------------------------------------------------------------------------/
+
+
+
+def px_to_pt(px: int, dpi: int=96) -> float:
+    """ 1 pt = 1/72 inch
+    """
+    assert isinstance(px, int), "param `px` should be `int`"
+    assert isinstance(dpi, int), "param `dpi` should be `int`"
+    
+    return px * 72 / dpi
+    # -------------------------------------------------------------------------/
+
+
+
 def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:int,
-                      figtitle:str, subtitle_list:Optional[List[str]]=None,
+                      content:str, subtitle_list:Optional[List[str]]=None,
                       font_style:Optional[str]=None,
                       save_path:Optional[Path]=None, use_rgb:bool=False,
                       show_fig:bool=True, verbose:bool=False):
-    """ Show images in gallery way
+    """
+    Show images in a gallery.
 
     Args:
-        img_list (List[np.ndarray]): a list contain several images, channel_order = `BGR` (default of 'cv2.imread()')
-        row (int): number of rows of gallery.
-        column (int): number of columns of gallery.
-        fig_dpi (int): argumnet of matplotlib figure.
-        figtitle (str, optional): big title of gallery.
-        subtitle_list (Optional[List[str]], optional): title of each sub images. Defaults to None.
-        font_style (Optional[str], optional): if None will use matplotlib default font. Defaults to None.
-        save_path (Optional[Path], optional): Defaults to None.
-        use_rgb (bool, optional): specify images in `img_list` are `RGB` order images. Defaults to False.
-        show_fig (bool, optional): show gallery on GUI window. Defaults to True.
-        verbose (bool, optional): if True, will show debug info on CLI output. Defaults to False.
+        img_list (List[np.ndarray]): A list containing several images.
+        row (int): The number of rows in the gallery.
+        column (int): The number of columns in the gallery.
+        fig_dpi (int): DPI for the figure.
+        content (str): Information to display beside the gallery.
+        subtitle_list (Optional[List[str]], optional): Subtitles for each image. Defaults to None.
+        font_style (Optional[str], optional): The **'absolute path'** to a font file. \
+            If `None`, will use the first `sans-serif` font found by `matplotlib`. Defaults to None.
+        save_path (Optional[Path], optional): The **'absolute path'** to save the figure. Defaults to None.
+        use_rgb (bool, optional): Whether the images in `img_list` are in **'RGB'** order. Defaults to False.
+        show_fig (bool, optional): Whether to display the gallery in a GUI window. Defaults to True.
+        verbose (bool, optional): If True, will print debug information to the CLI. Defaults to False.
     """
     assert len(img_list) == (row*column), "len(img_list) != (row*column)"
     if subtitle_list is not None: assert len(subtitle_list) == len(img_list), "len(subtitle_list) != len(img_list)"
     
-    # Get the path of matplotlib default font: `DejaVu Sans`
-    if not font_style: font_style = get_matplotlib_default_font()
+    # set default values
+    if not font_style: font_style = str(get_font())
     
     # Get minimum image shape ( image may in different size )
-    min_img_shape = [np.inf, np.inf]
+    min_img_size = [np.inf, np.inf]
     for img in img_list:
-        if img.shape[0] < min_img_shape[0]: min_img_shape[0] = img.shape[0]
-        if img.shape[1] < min_img_shape[1]: min_img_shape[1] = img.shape[1]
-    
-    # Calculate auto `figsize`
-    fig_w = min_img_shape[1]*column/100 # `100` is defalut value of `dpi` in `plt.figure()`
-    fig_h = min_img_shape[0]*row/100 # `100` is defalut value of `dpi` in `plt.figure()`
-    if verbose: print(f"figure resolution : {fig_w*fig_dpi}, {fig_h*fig_dpi}")
+        if img.shape[0] < min_img_size[0]: min_img_size[0] = img.shape[0]
+        if img.shape[1] < min_img_size[1]: min_img_size[1] = img.shape[1]
+    if min_img_size[0] < 256: min_img_size[0] = 256
+    if min_img_size[1] < 256: min_img_size[1] = 256
     
     # Create figure
-    fig, axs = plt.subplots(row, column, figsize=(fig_w, fig_h), dpi=fig_dpi)
-    fig.tight_layout() # auto layout
+    # get `figsize`
+    fig_w = (min_img_size[1]*column)
+    fig_h = (min_img_size[0]*row)
+    # init figure
+    figsize = np.array((fig_w, fig_h))/plt.rcParams['figure.dpi']
+    fig, axs = plt.subplots(row, column, figsize=figsize, dpi=fig_dpi)
+    if verbose: print(f"Figure resolution : {figsize*fig_dpi}")
+    
+    # font size
+    font_pt = 12.0 # unit: pt
+    font_px = pt_to_px(font_pt, dpi=fig_dpi) # unit: pixel
     
     # Plot each image
     for i, ax in enumerate(axs.flatten()):
         if use_rgb: img_rgb = img_list[i]
         else: img_rgb = cv2.cvtColor(img_list[i], cv2.COLOR_BGR2RGB) # BGR -> RGB
         ax.imshow(img_rgb, vmin=0, vmax=255)
+        ax.set_axis_off()
     
     if subtitle_list is not None:
+        # calculate font size for 'sub-titles'
+        img_zoom_in = fig_dpi/plt.rcParams['figure.dpi']
+        max_width = min_img_size[1]*img_zoom_in*0.95
+        min_subtitle_px = int(min_img_size[0]*img_zoom_in*0.05) # iteration start
+        for i, subtitle in enumerate(subtitle_list):
+            if verbose: print(f"sub-titles: {i}, ", end="")
+            opti_font_info = calculate_opti_title_param(subtitle, max_width,
+                                                        min_subtitle_px,
+                                                        font_style, verbose)
+            # update `min_subtitle_px`
+            if opti_font_info[-1] < min_subtitle_px:
+                min_subtitle_px = opti_font_info[-1]
+        
+        min_subtitle_pt = px_to_pt(opti_font_info[-1], dpi=fig_dpi)
+        if verbose: print(f"minimum 'sub-title' font size : {min_subtitle_px} px "
+                          f"-> {min_subtitle_pt} pt")
+        # add 'sub-titles'
         for i, ax in enumerate(axs.flatten()):
-            font_size = int(min_img_shape[0]*0.05)
-            max_width = min_img_shape[1]*0.91*0.75
-            opti_font_info = calculate_opti_title_param(subtitle_list[i], max_width,
-                                                        font_size, font_style, verbose)
-            ax.set_title(subtitle_list[i], fontsize=opti_font_info[3]) # TODO:  find method to optimize `fontsize` of `subtitle`
+            ax.set_title(subtitle_list[i], fontsize=min_subtitle_pt)
     
-    # Calculate space occupied by yaxis and ylabel
-    bbox = ax.yaxis.get_tightbbox(fig.canvas.get_renderer())
-    y_width, y_height = bbox.width, bbox.height
+    # auto layout
+    fig.tight_layout()
     
-    # Store figure into `buffer`
+    # add informations beside the gallery
     rgba_image = plt_to_pillow(fig) # matplotlib figure 預設為 RGBA (透明背景)
-    
-    # Draw `title` on `background`
-    rgba_image = add_big_title(rgba_image, figtitle, ylabel_width=y_width, 
-                               font_style=font_style, verbose=verbose)
+    rgba_image = add_detail_info(rgba_image, content, font_size=font_px)
     
     if save_path is not None: rgba_image.save(save_path)
     if show_fig: rgba_image.show()
@@ -244,8 +284,8 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
 
 
 def plot_with_imglist_auto_row(img_list:List[np.ndarray], column:int, fig_dpi:int,
-                               figtitle:str, subtitle_list:Optional[List[str]]=None,
-                               font_style:Optional[str]=None, add_rc_in_title:bool=False,
+                               content:str, subtitle_list:Optional[List[str]]=None,
+                               font_style:Optional[str]=None,
                                save_path:Optional[Path]=None, use_rgb:bool=False,
                                show_fig:bool=True, verbose:bool=False):
     """
@@ -268,10 +308,7 @@ def plot_with_imglist_auto_row(img_list:List[np.ndarray], column:int, fig_dpi:in
     
     auto_row = int(len(img_list)/column)
     input_args["row"] = auto_row
-    
-    if add_rc_in_title is True:
-        input_args["figtitle"] += f" , ( row, column ) = ( {auto_row}, {column} )"
-    input_args.pop("add_rc_in_title")
+    if verbose is True: print(f"( row, column ) = ( {auto_row}, {column} )")
     
     # plot
     plot_with_imglist(**input_args)
@@ -295,14 +332,17 @@ def calculate_opti_title_param(title:str, max_width:int,
     title_width = title_bbox[2] - title_bbox[0]
     title_height = title_bbox[3] - title_bbox[1]
     
-    if verbose: 
-        print(f'fontsize: {font_size}, (title_width, title_height): ({title_width}, {title_height})')
+    if verbose:
+        print(f"fontsize: {font_size}, "
+              f"(title_width, title_height): ({title_width}, {title_height}), "
+              f"target `max_width` = {max_width}")
     
     if title_width > max_width:
         return calculate_opti_title_param(title, max_width,
                                           int(0.9*font_size), font_style, verbose)
     
     if verbose: print("="*100, "\n")
+    
     return title_width, title_height, font, font_size
     # -------------------------------------------------------------------------/
 
@@ -331,9 +371,9 @@ def plt_to_pillow(figure:figure.Figure):
 
 
 def add_detail_info(rgba_image: Image.Image, content: str,
-                    font_size:int, font_style: Optional[str]=None,
+                    font_size: int, font_style: Optional[str]=None,
                     font_color: Optional[Tuple[int, int, int, int]]=None,
-                    verbose:bool=False):
+                    verbose: bool=False):
     """
     """
     # set default values (tuple color order: RGB)
@@ -470,7 +510,7 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
         text_width = gt_text_width
     
     gt_w = rgb_image.width - text_width - rgb_image.width*0.05
-    gt_h = rgb_image.height  - text_height - rgb_image.height*0.05
+    gt_h = rgb_image.height - text_height - rgb_image.height*0.05
     gt_pos = [gt_w, gt_h]
     pred_pos = [gt_w, (gt_h - font_size*1.5)]
     
