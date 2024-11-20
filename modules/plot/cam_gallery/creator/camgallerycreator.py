@@ -359,10 +359,10 @@ class CamGalleryCreator(BaseObject):
         # self._calculate_correct_rank()
         
         # >>> orig: `tested_img_dict` + `untest_img_dict` <<<
-        self._gen_orig_gallery(fish_dsname, fish_cls)
+        self._gen_orig_gallery(fish_dsname)
         
         # >>> overlay: `cam_result_img_dict` + `untest_img_dict` <<<
-        self._gen_overlay_gallery(fish_dsname, fish_cls)
+        self._gen_overlay_gallery(fish_dsname)
         
         # >>> update pbar <<<
         self._progressbar.update(1)
