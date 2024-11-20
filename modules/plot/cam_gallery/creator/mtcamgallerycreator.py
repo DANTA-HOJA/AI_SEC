@@ -52,7 +52,6 @@ class MtCamGalleryCreator(CamGalleryCreator):
         """
         with self._lock: # initial 時會有很多東西動到 File I/O，所以要上鎖
             self._set_attrs(config)
-            self._create_rank_dirs()
             self._cli_out.write(f"{Fore.MAGENTA}{threading.current_thread().name} "
                                 f"{Fore.BLUE}{threading.current_thread().native_id} "
                                 f"{Fore.GREEN}initial{Style.RESET_ALL} completed")

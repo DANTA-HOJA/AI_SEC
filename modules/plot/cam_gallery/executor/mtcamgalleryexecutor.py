@@ -43,15 +43,14 @@ class MtCamGalleryExecutor(CamGalleryCreator):
         """
         super(CamGalleryCreator, self)._set_attrs(config)
         self._set_history_dir()
-        self._set_training_config_attrs()
         
+        self._set_training_config_attrs()
         self._set_src_root()
         self._set_test_df()
-        self._set_mapping_attrs()
-        self._set_cam_result_root()
         
+        self._set_cam_result_root()
         self._set_cam_gallery_dir()
-        self._set_rank_dict()
+        
         self.max_str_len_dict: Dict[str, int] = {"fish_dsname": 0,
                                                  "thread_name": 0}
         # ---------------------------------------------------------------------/
@@ -99,13 +98,11 @@ class MtCamGalleryExecutor(CamGalleryCreator):
             
             except Exception:
                 for progressbar in progressbars: progressbar.close()
-                self._del_empty_rank_dirs()
                 self._cli_out.new_line()
                 self._cli_out.write(f"{traceback.format_exc()}") # 輸出異常訊息
             
             else:
                 for progressbar in progressbars: progressbar.close()
-                self._del_empty_rank_dirs()
                 self._cli_out.new_line()
                 self._cli_out.write(f"Done: '{self.cam_gallery_dir}'")
                 self._cli_out.new_line()
