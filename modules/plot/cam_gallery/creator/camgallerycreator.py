@@ -343,6 +343,11 @@ class CamGalleryCreator(BaseObject):
         """
         self.com_gt: str = ""
         self.com_pred: str = ""
+        
+        self.tested_img_dict: dict[str, np.ndarray] = {}
+        self.untest_img_dict: dict[str, np.ndarray] = {}
+        self.cam_result_img_dict: dict[str, np.ndarray] = {}
+        
         self.correct_cnt: int = 0
         self.accuracy: float = 0.0
         self.content: str = ""
