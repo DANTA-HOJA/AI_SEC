@@ -696,12 +696,16 @@ class CamGalleryCreator(BaseObject):
         img_list = [ img for _, img in sorted_img_dict.items() ]
         
         subtitle_list = []
-        for crop_name in sorted_img_dict.keys():
-            if self.replace_cam_color: 
-                crop_name = crop_name.replace("graymap", "crop")
-            else: 
-                crop_name = crop_name.replace("colormap", "crop")
-            tmp_str = json.dumps(self.predict_ans_dict[crop_name]["pred_prob"])
+        for img_name in sorted_img_dict.keys():
+            tmp_str = ""
+            if "crop" in img_name:
+                tmp_str = "N/A" # untest img
+            else:
+                if self.replace_cam_color:
+                    img_name = img_name.replace("graymap", "crop")
+                else:
+                    img_name = img_name.replace("colormap", "crop")
+                tmp_str = json.dumps(self.predict_ans_dict[img_name]["pred_prob"])
             subtitle_list.append(tmp_str)
         
         rel_path = f"{self.com_gt}/{self.accuracy:0.5f}_{fish_dsname}_overlay.png"
