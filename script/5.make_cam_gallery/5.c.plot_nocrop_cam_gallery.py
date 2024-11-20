@@ -7,7 +7,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import rich.progress
 import skimage as ski
 from rich import print
 from rich.console import Console
@@ -99,8 +98,16 @@ if __name__ == '__main__':
     file_name = r"{Logs}_PredByFish_predict_ans.log"
     console.print(f"Read file : '{file_name}'")
     tmp_path = history_dir.joinpath(file_name)
-    with rich.progress.open(tmp_path, mode="r") as f_reader:
+    with open(tmp_path, mode="r") as f_reader:
         pred_ans_dict: dict[str, dict] = json.load(f_reader)
+    console.line()
+    
+    # read file: '{Report}_PredByFish.log'
+    file_name = r"{Report}_PredByFish.log"
+    console.print(f"Read file : '{file_name}'")
+    tmp_path = history_dir.joinpath(file_name)
+    with open(tmp_path, mode="r") as f_reader:
+        predbyfish_report = f_reader.read()
     console.line()
     
     # create nocrop cam gallery
@@ -167,11 +174,9 @@ if __name__ == '__main__':
             content.extend(["➣ ", "predicted probability : ", json.dumps(pred_prob), "\n"*2])
             # `training_config.toml`
             content.extend(["➣ ", "training_config.note :", "\n"*1])
-            # `{Report}_PredByFish.log`
             content.extend([training_config["note"], "\n"*2])
-            with rich.progress.open(history_dir.joinpath(r"{Report}_PredByFish.log"),
-                                    mode="r", transient=True) as f_reader:
-                content.extend([f_reader.read()])
+            # `{Report}_PredByFish.log`
+            content.extend([predbyfish_report])
             content = "".join(content)
             
             # plot
