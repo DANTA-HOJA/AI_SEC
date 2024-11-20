@@ -14,6 +14,7 @@ import pandas as pd
 import skimage as ski
 from colorama import Back, Fore, Style
 from PIL import Image
+from rich.traceback import install
 from tomlkit.toml_document import TOMLDocument
 from tqdm.auto import tqdm
 
@@ -27,6 +28,8 @@ from ....shared.utils import create_new_dir
 from ...utils import (draw_drop_info_on_image, draw_predict_ans_on_image,
                       draw_x_on_image, get_font, plot_with_imglist_auto_row)
 from .utils import get_gallery_column
+
+install()
 # -----------------------------------------------------------------------------/
 
 
@@ -317,10 +320,22 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
+    def reset_single_fish_attrs(self):
+        """
+        """
+        self.com_gt: str = ""
+        self.com_pred: str = ""
+        self.correct_cnt: int = 0
+        self.accuracy: float = 0.0
+        # ---------------------------------------------------------------------/
+
+
     def gen_single_cam_gallery(self, fish_dsname:str):
         """
         """
-        fish_cls = self._get_fish_cls(fish_dsname)
+        self.reset_single_fish_attrs()
+        self.com_gt = self._get_com_cls(fish_dsname, "gt")
+        self.com_pred = self._get_com_cls(fish_dsname, "pred")
         
         tested_paths, \
             untest_paths, \
@@ -335,12 +350,10 @@ class CamGalleryCreator(BaseObject):
             self._draw_on_drop_image(untest_name, untest_img)
         
         # >>> draw on `cam` images <<<
-        self.correct_cnt: int = 0 # reset value
         for (cam_name, cam_img), (tested_name, tested_img) \
             in zip(self.cam_result_img_dict.items(), self.tested_img_dict.items()):
                 self._draw_on_cam_image(cam_name, cam_img,
-                                        tested_name, tested_img,
-                                        fish_cls)
+                                        tested_name, tested_img)
         
         # >>> check which `rank_dir` to store <<<
         # self._calculate_correct_rank()
@@ -357,9 +370,19 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _get_fish_cls(self, fish_dsname:str) -> str:
+    def _get_com_cls(self, fish_dsname:str, key: str) -> str:
         """
+
+        Args:
+            fish_dsname (str): e.g. 'fish_1_A'
+            key (str): 'gt' or 'pred'
+
+        Returns:
+            str: common class for sub-crops
         """
+        if key not in ["gt", "pred"]:
+            raise ValueError(f"param 'key', accept 'gt' or 'pred' only\n")
+        
         df = self.test_df[(self.test_df["parent (dsname)"] == fish_dsname)]
         
         # get voted class
@@ -367,7 +390,7 @@ class CamGalleryCreator(BaseObject):
         for crop_name in df["image_name"]:
             try:
                 # if image is tested
-                class_cnt.update([self.predict_ans_dict[crop_name]["gt"]])
+                class_cnt.update([self.predict_ans_dict[crop_name][key]])
             except KeyError:
                 pass
         
@@ -465,8 +488,7 @@ class CamGalleryCreator(BaseObject):
 
 
     def _draw_on_cam_image(self, cam_name:str, cam_img:np.ndarray,
-                                 tested_name:str, tested_img:np.ndarray,
-                                 fish_cls:str):
+                                 tested_name:str, tested_img:np.ndarray):
         """
         """
         assert get_dsname_sortinfo(cam_name) == get_dsname_sortinfo(tested_name)
@@ -510,7 +532,7 @@ class CamGalleryCreator(BaseObject):
             self.correct_cnt += 1
             cam_overlay = np.uint8(cam_overlay*255)
             # for `add_bg_class` flag
-            if fish_cls != gt_cls:
+            if self.com_gt != gt_cls:
                 rgb_img = Image.fromarray(cam_overlay) # convert to pillow image before drawing
                 draw_predict_ans_on_image(rgb_img, pred_cls, gt_cls,
                                           self.text_font_style, self.text_font_size,
@@ -534,7 +556,7 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
-    def _gen_orig_gallery(self, fish_dsname:str, fish_cls:str):
+    def _gen_orig_gallery(self, fish_dsname:str):
         """
         """
         img_dict: dict = deepcopy(self.tested_img_dict)
@@ -548,33 +570,37 @@ class CamGalleryCreator(BaseObject):
             sorted_img_dict[crop_name] = np.array(rgb_img)
 
         # score
-        accuracy = self.correct_cnt / len(self.cam_result_img_dict)
+        self.accuracy = self.correct_cnt / len(self.cam_result_img_dict)
         
         # >>> plot with 'Auto Row Calculation' <<<
         
         img_list = [ img for _, img in sorted_img_dict.items() ]
         
-        figtitle = (f"( original ) [{fish_cls}] {fish_dsname} : "
+        figtitle = (f"( original ) [{self.com_gt}] {fish_dsname} : "
                     f"{self.dataset_palmskin_result}, "
-                    f"{os.path.splitext(self.dataset_file_name)[0]}")
+                    f"{Path(self.dataset_file_name).stem}")
         
-        save_path = self.cam_gallery_dir.joinpath(f"{fish_cls}/{accuracy:0.5f}_{fish_dsname}_orig.png")
+        subtitle_list = [ " " for _ in sorted_img_dict.keys() ]
+        
+        rel_path = f"{self.com_gt}/{self.accuracy:0.5f}_{fish_dsname}_orig.png"
+        save_path = self.cam_gallery_dir.joinpath(rel_path)
         create_new_dir(save_path.parent)
         
         kwargs_plot_with_imglist_auto_row = {
-            "img_list"   : img_list,
-            "column"     : self.column,
-            "fig_dpi"    : 200,
-            "figtitle"   : figtitle,
-            "save_path"  : save_path,
-            "use_rgb"    : True,
-            "show_fig"   : False
+            "img_list"      : img_list,
+            "column"        : self.column,
+            "fig_dpi"       : 200,
+            "content"       : figtitle,
+            "subtitle_list" : subtitle_list,
+            "save_path"     : save_path,
+            "use_rgb"       : True,
+            "show_fig"      : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
         # ---------------------------------------------------------------------/
 
 
-    def _gen_overlay_gallery(self, fish_dsname:str, fish_cls:str):
+    def _gen_overlay_gallery(self, fish_dsname:str):
         """
         """
         img_dict: dict = deepcopy(self.cam_result_img_dict)
@@ -582,28 +608,40 @@ class CamGalleryCreator(BaseObject):
         sorted_img_dict = OrderedDict(sorted(list(img_dict.items()), key=lambda x: get_dsname_sortinfo(x[0])))
         
         # score
-        accuracy = self.correct_cnt / len(self.cam_result_img_dict)
+        self.accuracy = self.correct_cnt / len(self.cam_result_img_dict)
         
         # >>> plot with 'Auto Row Calculation' <<<
         
         img_list = [ img for _, img in sorted_img_dict.items() ]
         
-        figtitle = (f"( cam overlay ) [{fish_cls}] {fish_dsname} : "
+        figtitle = (f"( cam overlay ) [{self.com_gt}] {fish_dsname} : "
                     f"{self.dataset_palmskin_result}, "
-                    f"{os.path.splitext(self.dataset_file_name)[0]}, "
-                    f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} ({accuracy:.2f})")
+                    f"{Path(self.dataset_file_name).stem}, "
+                    f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} "
+                    f"({self.accuracy:.2f})")
         
-        save_path = self.cam_gallery_dir.joinpath(f"{fish_cls}/{accuracy:0.5f}_{fish_dsname}_overlay.png")
+        subtitle_list = []
+        for crop_name in sorted_img_dict.keys():
+            if self.replace_cam_color: 
+                crop_name = crop_name.replace("graymap", "crop")
+            else: 
+                crop_name = crop_name.replace("colormap", "crop")
+            tmp_str = json.dumps(self.predict_ans_dict[crop_name]["pred_prob"])
+            subtitle_list.append(tmp_str)
+        
+        rel_path = f"{self.com_gt}/{self.accuracy:0.5f}_{fish_dsname}_overlay.png"
+        save_path = self.cam_gallery_dir.joinpath(rel_path)
         create_new_dir(save_path.parent)
         
         kwargs_plot_with_imglist_auto_row = {
-            "img_list"   : img_list,
-            "column"     : self.column,
-            "fig_dpi"    : 200,
-            "figtitle"   : figtitle,
-            "save_path"  : save_path,
-            "use_rgb"    : True,
-            "show_fig"   : False
+            "img_list"      : img_list,
+            "column"        : self.column,
+            "fig_dpi"       : 200,
+            "content"       : figtitle,
+            "subtitle_list" : subtitle_list,
+            "save_path"     : save_path,
+            "use_rgb"       : True,
+            "show_fig"      : False
         }
         plot_with_imglist_auto_row(**kwargs_plot_with_imglist_auto_row)
         # ---------------------------------------------------------------------/
