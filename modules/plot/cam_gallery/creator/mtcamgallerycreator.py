@@ -23,7 +23,10 @@ class MtCamGalleryCreator(CamGalleryCreator):
         # """ components """
         
         super(CamGalleryCreator, self).__init__(display_on_CLI)
-        self._cli_out._set_logger("Mt Cam Gallery Creator")
+        
+        logger_name = threading.current_thread().name
+        logger_name = logger_name.replace("ThreadPoolExecutor", "MtCamGalleryCreator")
+        self._cli_out._set_logger(logger_name)
         
         self._lock: Lock = lock
         self._progressbar: tqdm = progressbar
@@ -36,9 +39,9 @@ class MtCamGalleryCreator(CamGalleryCreator):
         # ---------------------------------------------------------------------
         # """ actions """
         
-        if len(threading.current_thread().name) > self.max_str_len_dict["thread_name"]:
+        if len(self._cli_out.logger_name) > self.max_str_len_dict["thread_name"]:
             self.max_str_len_dict["thread_name"] = \
-                                        len(threading.current_thread().name)
+                                        len(self._cli_out.logger_name)
         # ---------------------------------------------------------------------/
 
 
@@ -60,7 +63,7 @@ class MtCamGalleryCreator(CamGalleryCreator):
         
         for fish_dsname in sub_fish_dsnames:
             self._progressbar.desc = (f"Generate {Fore.YELLOW}'{fish_dsname:{self.max_str_len_dict['fish_dsname']}}'{Style.RESET_ALL} "
-                                      f"( {Fore.MAGENTA}{threading.current_thread().name:{self.max_str_len_dict['thread_name']}}{Style.RESET_ALL} ) ")
+                                      f"( {Fore.MAGENTA}{self._cli_out.logger_name:{self.max_str_len_dict['thread_name']}}{Style.RESET_ALL} ) ")
             self._progressbar.refresh()
             self.gen_single_cam_gallery(fish_dsname)
         # ---------------------------------------------------------------------/
