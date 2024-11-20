@@ -6,7 +6,7 @@ import sys
 from collections import Counter, OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Optional, Union
 
 import cv2
 import numpy as np
