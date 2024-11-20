@@ -203,7 +203,7 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
         row (int): The number of rows in the gallery.
         column (int): The number of columns in the gallery.
         fig_dpi (int): DPI for the figure.
-        content (str): Information to display beside the gallery.
+        content (str): Informations to display beside the gallery.
         subtitle_list (Optional[List[str]], optional): Subtitles for each image. Defaults to None.
         font_style (Optional[str], optional): The **'absolute path'** to a font file. \
             If `None`, will use the first `sans-serif` font found by `matplotlib`. Defaults to None.
@@ -235,10 +235,6 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
     fig, axs = plt.subplots(row, column, figsize=figsize, dpi=fig_dpi)
     if verbose: print(f"Figure resolution : {figsize*fig_dpi}")
     
-    # font size
-    font_pt = 12.0 # unit: pt
-    font_px = pt_to_px(font_pt, dpi=fig_dpi) # unit: pixel
-    
     # Plot each image
     for i, ax in enumerate(axs.flatten()):
         if use_rgb: img_rgb = img_list[i]
@@ -250,7 +246,7 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
         # calculate font size for 'sub-titles'
         img_zoom_in = fig_dpi/plt.rcParams['figure.dpi']
         max_width = min_img_size[1]*img_zoom_in*0.95
-        min_subtitle_px = int(min_img_size[0]*img_zoom_in*0.05) # iteration start
+        min_subtitle_px = round(min_img_size[0]*img_zoom_in*0.05) # iteration start
         for i, subtitle in enumerate(subtitle_list):
             if verbose: print(f"sub-titles: {i}, ", end="")
             opti_font_info = calculate_opti_title_param(subtitle, max_width,
@@ -272,7 +268,8 @@ def plot_with_imglist(img_list:List[np.ndarray], row:int, column:int, fig_dpi:in
     
     # add informations beside the gallery
     rgba_image = plt_to_pillow(fig) # matplotlib figure 預設為 RGBA (透明背景)
-    rgba_image = add_detail_info(rgba_image, content, font_size=font_px)
+    content_font_size = round(min_img_size[0]*img_zoom_in*0.1)
+    rgba_image = add_detail_info(rgba_image, content, font_size=content_font_size)
     
     if save_path is not None: rgba_image.save(save_path)
     if show_fig: rgba_image.show()

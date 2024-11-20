@@ -66,6 +66,7 @@ class CamGalleryCreator(BaseObject):
         self._set_test_df()
         self._set_mapping_attrs()
         self._set_predict_ans_dict()
+        self._read_predbyfish_report()
         self._set_cam_result_root()
         
         self._set_cam_gallery_dir()
@@ -234,15 +235,32 @@ class CamGalleryCreator(BaseObject):
     def _set_predict_ans_dict(self):
         """
         """
-        log_path = self.history_dir.joinpath(r"{Logs}_PredByFish_predict_ans.log")
+        file_name = r"{Logs}_PredByFish_predict_ans.log"
+        
+        log_path = self.history_dir.joinpath(file_name)
         if not log_path.exists():
-            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find file: "
-                                    r"'{Logs}_PredByFish_predict_ans.log' "
-                                    f"run `3.2.{{TestByFish}}_vit_b_16.py` to create it"
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find file: '{file_name}'"
+                                    f"run proper script under `4.test_by_fish` to create it"
                                     f"{Style.RESET_ALL}\n")
         
-        with open(log_path, 'r') as f_reader: 
+        with open(log_path, 'r') as f_reader:
             self.predict_ans_dict = json.load(f_reader)
+        # ---------------------------------------------------------------------/
+
+
+    def _read_predbyfish_report(self):
+        """
+        """
+        file_name = r"{Report}_PredByFish.log"
+        
+        log_path = self.history_dir.joinpath(file_name)
+        if not log_path.exists():
+            raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find file: '{file_name}'"
+                                    f"run proper script under `4.test_by_fish/` to create it"
+                                    f"{Style.RESET_ALL}\n")
+        
+        with open(log_path, 'r') as f_reader:
+            self.predbyfish_report = f_reader.read()
         # ---------------------------------------------------------------------/
 
 
@@ -253,7 +271,7 @@ class CamGalleryCreator(BaseObject):
         if not self.cam_result_root.exists():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} "
                                     f"Can't find directory: 'cam_result/' "
-                                    f"run `3.2.{{TestByFish}}_vit_b_16.py` and "
+                                    f"run proper script under `4.test_by_fish/` and "
                                     f"set (config) `cam.enable` = true. "
                                     f"{Style.RESET_ALL}\n")
         # ---------------------------------------------------------------------/
@@ -327,6 +345,7 @@ class CamGalleryCreator(BaseObject):
         self.com_pred: str = ""
         self.correct_cnt: int = 0
         self.accuracy: float = 0.0
+        self.content: str = ""
         # ---------------------------------------------------------------------/
 
 
@@ -355,8 +374,9 @@ class CamGalleryCreator(BaseObject):
                 self._draw_on_cam_image(cam_name, cam_img,
                                         tested_name, tested_img)
         
-        # >>> check which `rank_dir` to store <<<
-        # self._calculate_correct_rank()
+        # >>> preparing information which adds to the gallery <<<
+        self.accuracy = self.correct_cnt / len(self.cam_result_img_dict)
+        self.content = self._gen_detail_info_content(fish_dsname)
         
         # >>> orig: `tested_img_dict` + `untest_img_dict` <<<
         self._gen_orig_gallery(fish_dsname)
@@ -556,6 +576,72 @@ class CamGalleryCreator(BaseObject):
         # ---------------------------------------------------------------------/
 
 
+    def _gen_detail_info_content(self, fish_dsname:str):
+        """
+        """
+        content = []
+        
+        # fish_dsname
+        content.extend(["➣ ", f"image name   : {fish_dsname}", "\n"*2])
+        
+        # `{Logs}_PredByFish_predict_ans.log`
+        content.extend(["➣ ", f'ground truth : "{self.com_gt}"', "\n"*1])
+        if self.com_pred == self.com_gt:
+            content.extend(["➣ ", f'predict      : "correct"', "\n"*2])
+        else:
+            content.extend(["➣ ", f'predict      : "{self.com_pred}"', "\n"*2])
+        
+        # accuracy
+        content.extend(["➣ ", "accuracy     : "])
+        content.extend([f"{self.correct_cnt}/{len(self.cam_result_img_dict)} "])
+        content.extend([f"({self.accuracy:.5f})", "\n"*1])
+        
+        # avg. predicted probability
+        content.extend(["➣ ", "avg. predicted probability : "])
+        content.extend([json.dumps(self._cal_avg_pred_prob(fish_dsname)), "\n"*2])
+        
+        # `training_config.toml`
+        content.extend(["➣ ", "training_config.note :", "\n"*1])
+        content.extend([self.training_config["note"], "\n"*2])
+        
+        # `{Report}_PredByFish.log`
+        content.extend([self.predbyfish_report])
+        content = "".join(content)
+        
+        # adjust line height
+        content = content.replace("\n", "@")
+        content = content.replace("@", "\n"*2)
+        
+        return content
+        # ---------------------------------------------------------------------/
+
+
+    def _cal_avg_pred_prob(self, fish_dsname:str) -> dict[str, float]:
+        """
+
+        Args:
+            fish_dsname (str): e.g. 'fish_1_A'
+
+        Returns:
+            str: common class for sub-crops
+        """
+        df = self.test_df[(self.test_df["parent (dsname)"] == fish_dsname)]
+        
+        # get voted class
+        avg_pred_prob: dict[str, list] = {"L": [], "M": [], "S": []}
+        
+        for crop_name in df["image_name"]:
+            pred_prob: dict[str, float] = self.predict_ans_dict[crop_name]["pred_prob"]
+            for k, prob in pred_prob.items():
+                avg_pred_prob[k].append(prob)
+        
+        for k, probs in avg_pred_prob.items():
+            avg_pred_prob[k] = round(np.average(probs), 5)
+        
+        return avg_pred_prob
+        # ---------------------------------------------------------------------/
+
+
     def _gen_orig_gallery(self, fish_dsname:str):
         """
         """
@@ -569,16 +655,9 @@ class CamGalleryCreator(BaseObject):
             self._add_dark_ratio_on_image(crop_name, rgb_img)
             sorted_img_dict[crop_name] = np.array(rgb_img)
 
-        # score
-        self.accuracy = self.correct_cnt / len(self.cam_result_img_dict)
-        
         # >>> plot with 'Auto Row Calculation' <<<
         
         img_list = [ img for _, img in sorted_img_dict.items() ]
-        
-        figtitle = (f"( original ) [{self.com_gt}] {fish_dsname} : "
-                    f"{self.dataset_palmskin_result}, "
-                    f"{Path(self.dataset_file_name).stem}")
         
         subtitle_list = [ " " for _ in sorted_img_dict.keys() ]
         
@@ -590,7 +669,7 @@ class CamGalleryCreator(BaseObject):
             "img_list"      : img_list,
             "column"        : self.column,
             "fig_dpi"       : 200,
-            "content"       : figtitle,
+            "content"       : self.content,
             "subtitle_list" : subtitle_list,
             "save_path"     : save_path,
             "use_rgb"       : True,
@@ -607,18 +686,9 @@ class CamGalleryCreator(BaseObject):
         img_dict.update(self.untest_img_dict)
         sorted_img_dict = OrderedDict(sorted(list(img_dict.items()), key=lambda x: get_dsname_sortinfo(x[0])))
         
-        # score
-        self.accuracy = self.correct_cnt / len(self.cam_result_img_dict)
-        
         # >>> plot with 'Auto Row Calculation' <<<
         
         img_list = [ img for _, img in sorted_img_dict.items() ]
-        
-        figtitle = (f"( cam overlay ) [{self.com_gt}] {fish_dsname} : "
-                    f"{self.dataset_palmskin_result}, "
-                    f"{Path(self.dataset_file_name).stem}, "
-                    f"correct : {self.correct_cnt}/{len(self.cam_result_img_dict)} "
-                    f"({self.accuracy:.2f})")
         
         subtitle_list = []
         for crop_name in sorted_img_dict.keys():
@@ -637,7 +707,7 @@ class CamGalleryCreator(BaseObject):
             "img_list"      : img_list,
             "column"        : self.column,
             "fig_dpi"       : 200,
-            "content"       : figtitle,
+            "content"       : self.content,
             "subtitle_list" : subtitle_list,
             "save_path"     : save_path,
             "use_rgb"       : True,
