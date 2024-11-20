@@ -482,6 +482,10 @@ class CamGalleryCreator(BaseObject):
         #         cv2.imread(str(path)) for path in cam_result_paths }
         self.cam_result_img_dict: dict[str, np.ndarray] = \
             { path.stem: ski.io.imread(path) for path in cam_result_paths }
+        
+        
+        assert len(self.tested_img_dict) == len(self.cam_result_img_dict), \
+            "len(self.tested_img_dict) != len(self.cam_result_img_dict)"
         # ---------------------------------------------------------------------/
 
 
@@ -636,11 +640,17 @@ class CamGalleryCreator(BaseObject):
         avg_pred_prob: dict[str, list] = {"L": [], "M": [], "S": []}
         
         for crop_name in df["image_name"]:
-            pred_prob: dict[str, float] = self.predict_ans_dict[crop_name]["pred_prob"]
-            for k, prob in pred_prob.items():
-                avg_pred_prob[k].append(prob)
+            try:
+                # if image is tested
+                pred_prob: dict[str, float] = self.predict_ans_dict[crop_name]["pred_prob"]
+                for k, prob in pred_prob.items():
+                    avg_pred_prob[k].append(prob)
+            except KeyError:
+                pass
         
         for k, probs in avg_pred_prob.items():
+            assert len(probs) == len(self.cam_result_img_dict), \
+                "len(probs) != len(self.cam_result_img_dict)"
             avg_pred_prob[k] = round(np.average(probs), 5)
         
         return avg_pred_prob
