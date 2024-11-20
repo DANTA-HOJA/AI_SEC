@@ -240,7 +240,7 @@ class CamGalleryCreator(BaseObject):
         log_path = self.history_dir.joinpath(file_name)
         if not log_path.exists():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find file: '{file_name}'"
-                                    f"run proper script under `4.test_by_fish` to create it"
+                                    f"run one of script in '4.test_by_fish/*.py' to create it"
                                     f"{Style.RESET_ALL}\n")
         
         with open(log_path, 'r') as f_reader:
@@ -256,7 +256,7 @@ class CamGalleryCreator(BaseObject):
         log_path = self.history_dir.joinpath(file_name)
         if not log_path.exists():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} Can't find file: '{file_name}'"
-                                    f"run proper script under `4.test_by_fish/` to create it"
+                                    f"run one of script in '4.test_by_fish/*.py' to create it"
                                     f"{Style.RESET_ALL}\n")
         
         with open(log_path, 'r') as f_reader:
@@ -271,7 +271,7 @@ class CamGalleryCreator(BaseObject):
         if not self.cam_result_root.exists():
             raise FileNotFoundError(f"{Fore.RED}{Back.BLACK} "
                                     f"Can't find directory: 'cam_result/' "
-                                    f"run proper script under `4.test_by_fish/` and "
+                                    f"run one of script in '4.test_by_fish/*.py' and "
                                     f"set (config) `cam.enable` = true. "
                                     f"{Style.RESET_ALL}\n")
         # ---------------------------------------------------------------------/
