@@ -112,7 +112,7 @@ def plot_by_channel(img_path:str, fig_size:Tuple[float, float]):
 
 
 
-def get_matplotlib_default_font():
+def get_matplotlib_default_font(): # replaced by `get_font()`
     """ `matplotlib` default font: `DejaVu Sans`
     """
     return font_manager.findfont(plt.rcParams['font.sans-serif'][0])
@@ -120,7 +120,7 @@ def get_matplotlib_default_font():
 
 
 
-def get_mono_font():
+def get_mono_font(): # replaced by `get_font(alt_default_family="monospace")`
     """ Windows: "consola.ttf"
         Linux: "DejaVuSansMono.ttf"
     """
@@ -319,7 +319,7 @@ def calculate_opti_title_param(title:str, max_width:int,
     """
     """
     # set default values
-    if not font_style: font_style = get_mono_font()
+    if not font_style: font_style = str(get_font(alt_default_family="monospace"))
     
     # text
     font = ImageFont.truetype(font_style, font_size)
@@ -410,7 +410,7 @@ def add_big_title(rgba_image:Image.Image, title:str, title_line_height:int=2,
     """
     """
     # set default values (tuple color order: RGB)
-    if not font_style: font_style = get_matplotlib_default_font()
+    if not font_style: font_style = str(get_font())
     if not font_color: font_color = (0, 0, 0, 255)
     
     # Get title parameters
@@ -476,7 +476,7 @@ def draw_predict_ans_on_image(rgb_image:Image.Image, pred_cls:str, gt_cls:str,
     """
     """
     # set default values (tuple color order: RGB)
-    if not font_style: font_style = get_mono_font()
+    if not font_style: font_style = str(get_font(alt_default_family="monospace"))
     ## auto `fontsize` = image_height * 0.07
     if not font_size: font_size = round(np.array(rgb_image).shape[0]*0.07)
     if not correct_color: correct_color = (0, 255, 0)
@@ -538,7 +538,7 @@ def draw_drop_info_on_image(rgb_image:Image.Image, intensity:int, dark_ratio:flo
     """
     """
     # set default values (tuple color order: RGB)
-    if not font_style: font_style = get_mono_font()
+    if not font_style: font_style = str(get_font(alt_default_family="monospace"))
     ## auto `fontsize` = image_height * 0.05
     if not font_size: font_size = round(np.array(rgb_image).shape[0]*0.05)
     if not selected_color: selected_color = (255, 255, 255)
@@ -595,7 +595,7 @@ def postprocess_cam_image(image:np.ndarray, grayscale_cam:np.ndarray, use_rgb,
     """
     """
     # set default values
-    if not font_style: font_style = get_mono_font()
+    if not font_style: font_style = str(get_font(alt_default_family="monospace"))
     if not font_size: font_size = 16
     
     if use_rgb: rgb_img = image
