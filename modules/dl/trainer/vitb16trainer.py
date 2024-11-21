@@ -35,7 +35,7 @@ class VitB16Trainer(BaseTrainer):
         super()._set_config_attrs()
         
         if not ("CRPS" in self.dataset_file_name):
-            raise ValueError(f"The expected `dataset.file_name` "
+            raise ValueError(f"The expected (config) `dataset.file_name` "
                              f"for `{type(self).__name__}` is like "
                              f"'DS_SURF3C_CRPS256_SF14_INT30_DRP65.csv'")
         # ---------------------------------------------------------------------/
