@@ -29,6 +29,18 @@ class VitB16NoCropTrainer(VitB16Trainer):
         # ---------------------------------------------------------------------/
 
 
+    def _set_config_attrs(self):
+        """
+        """
+        super(VitB16Trainer, self)._set_config_attrs()
+        
+        if self.dataset_file_name != "DS_SURF3C_NOCROP.csv":
+            raise ValueError(f"The expected (config) `dataset.file_name` "
+                             f"for `{type(self).__name__}` is "
+                             f"'DS_SURF3C_NOCROP.csv'")
+        # ---------------------------------------------------------------------/
+
+
     def _set_train_set(self):
         """
         """
