@@ -30,6 +30,18 @@ class VitB16SurfDGTTrainer(BaseSurfDGTTrainer):
         # ---------------------------------------------------------------------/
 
 
+    def _set_config_attrs(self):
+        """
+        """
+        super()._set_config_attrs()
+        
+        if self.dataset_file_name != "DS_SURFDGT.csv":
+            raise ValueError(f"The expected (config) `dataset.file_name` "
+                             f"for `{type(self).__name__}` is "
+                             f"'DS_SURFDGT.csv'")
+        # ---------------------------------------------------------------------/
+
+
     def _set_train_set(self):
         """
         """
