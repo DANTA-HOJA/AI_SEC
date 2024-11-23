@@ -7,7 +7,7 @@ from .vitb16ponlytrainer import VitB16POnlyTrainer
 
 from .vitb16nocroptrainer import VitB16NoCropTrainer
 from .vitb16aonlynocroptrainer import VitB16AOnlyNoCropTrainer
-from vitb16ponlynocroptrainer import VitB16POnlyNoCropTrainer
+from .vitb16ponlynocroptrainer import VitB16POnlyNoCropTrainer
 
 from .vitb16surfdgttrainer import VitB16SurfDGTTrainer
 from .vitb16aonlysurfdgttrainer import VitB16AOnlySurfDGTTrainer
