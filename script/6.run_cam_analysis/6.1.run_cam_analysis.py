@@ -48,7 +48,7 @@ if __name__ == '__main__':
     cli_out.divide(title="Load config")
     
     # load `config`
-    config = load_config("run_cam_analysis.toml")
+    config = load_config("6.run_cam_analysis.toml")
     # [model_prediction]
     model_time_stamp: str = config["model_prediction"]["time_stamp"]
     model_state: str = config["model_prediction"]["state"]
