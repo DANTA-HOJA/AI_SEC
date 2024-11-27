@@ -32,7 +32,7 @@ class DBFileUpdater(BaseObject):
         # ---------------------------------------------------------------------
         # """ attributes """
         
-        self._config = load_config("6.update_db_file.toml")
+        self._config = load_config("7.update_db_file.toml")
         self._col_version = self._config["column_version"]
         self._state_mark: dict[str, str] = self._config["state_mark"]
         self._possible_item_dict: dict[str, str] = \
