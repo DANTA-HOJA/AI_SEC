@@ -149,7 +149,7 @@ pca_n_comps = pca.n_components_
 plt.plot(np.arange(pca_n_comps), prop_vars, 'ro-')
 plt.xlabel("PCA Components")
 plt.xticks(range(pca_n_comps), range(1, pca_n_comps+1))
-plt.title("Percentage of Explained Variance")
+plt.title("Explained Variance Ratio")
 plt.savefig(dst_dir.joinpath(f"{pca_n_comps}c_explained_variance.png"))
 
 accum_prop_var = 0
