@@ -4,6 +4,7 @@ import re
 import sys
 from pathlib import Path
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import rich.progress
@@ -23,6 +24,9 @@ from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
 from modules.shared.utils import get_repo_root
+
+new_rc_params = {'text.usetex': False, "svg.fonttype": 'none'}
+mpl.rcParams.update(new_rc_params)
 
 install()
 # -----------------------------------------------------------------------------/
@@ -130,7 +134,9 @@ if __name__ == '__main__':
     fig_path = cam_result_root.joinpath(f"violinplot_top_{cam_top_n_area}.png")
     plt.savefig(fig_path)
     print(f"violin plot : '{fig_path.resolve()}'")
-    
+    fig_path = cam_result_root.joinpath(f"violinplot_top_{cam_top_n_area}.svg")
+    plt.savefig(fig_path)
+    print(f"violin plot : '{fig_path.resolve()}'")
 
     print("(S, L) = ({},  {})".format(
         np.quantile(thres_area_dict['S'], 0.5),
