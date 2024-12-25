@@ -3,6 +3,7 @@
 """
 import os
 import pickle
+import sys
 from copy import deepcopy
 from pathlib import Path
 
@@ -22,6 +23,7 @@ from skimage.color import deltaE_ciede94, rgb2lab
 from skimage.segmentation import mark_boundaries, slic
 
 from ..shared.config import load_config
+from ..shared.pathnavigator import PathNavigator
 from ..shared.utils import create_new_dir
 from .calc_seg_feat import count_element, update_seg_analysis_dict
 from .utils import get_seg_desc, get_slic_param_name
@@ -208,8 +210,9 @@ def draw_label_on_image(seg: np.ndarray, rgb_img: np.ndarray,
             label_text = str(prop.label)
         
         # 計算文字的大小
-        text_size = draw.textsize(label_text, font=font)
-        text_width, text_height = text_size
+        bbox = draw.textbbox((0, 0), label_text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
         
         # 計算置中後的文字位置
         text_position = (cX - text_width / 2, cY - text_height / 2)
@@ -311,12 +314,48 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     # -------------------------------------------------------------------------/
 
 
-def single_cellpose_prediction(dst_dir: Path, debug_mode: bool=False):
+def single_cellpose_prediction(dst_dir: Path, img_path: Path,
+                               channels: int, cp_model, merge: int,
+                               debug_mode: bool=False):
     """ Function name TBD
     Place holder for running Cellpose prediction
     """
-    # npy_file = dst_dir.joinpath("[xxx_seg.npy]")
-    # seg1 = np.load(npy_file, allow_pickle=True).item()['masks']
+    from cellpose import io as cpio
+    
+    img_name = dst_dir.name
+    # read image
+    img = cpio.imread(img_path)
+    
+    # predict segments
+    seg1, flow, style = cp_model.eval(img, channels=channels)
+    
+    """ Save 'Merge background' result (seg1) """
+    # save segmentation as pkl file
+    save_path = dst_dir.joinpath(f"{img_name}.seg1.pkl")
+    save_segment_result(save_path, seg1)
+    # Generate average 'RGB' of `img` and mark `seg1` labels on it
+    avg_rgb = average_rgb_coloring(seg1, img)
+    seg1_on_img = np.uint8(mark_boundaries(avg_rgb, seg1, color=(0, 1, 1))*255)
+    seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
+    save_path = dst_dir.joinpath(f"{img_name}.seg1a.png")
+    ski.io.imsave(save_path, seg1_on_img)
+
+    """ Merge similar RGB (seg2) """
+    seg2, relabeling = merge_similar_rgb(seg1, img,
+                                         merge=merge, debug_mode=debug_mode)
+
+    """ Save 'Merge similar RGB' result (seg2) """
+    # save segmentation as pkl file
+    save_path = dst_dir.joinpath(f"{img_name}.seg2.pkl")
+    save_segment_result(save_path, seg2)
+    # Mark `seg2` labels and merged regions on `img` and `avg_rgb`
+    for k, v in {"o": img, "a": avg_rgb}.items():
+        seg2_on_img = np.uint8(mark_boundaries(v, seg2, color=(0, 1, 1))*255)
+        seg2_on_img = draw_label_on_image(seg1, seg2_on_img, relabeling=relabeling)
+        save_path = dst_dir.joinpath(f"{img_name}.seg2{k}.png")
+        ski.io.imsave(save_path, seg2_on_img)
+    
+    return seg1, seg2
     # -------------------------------------------------------------------------/
 
 
@@ -325,6 +364,7 @@ if __name__ == '__main__':
     """ Init components """
     console = Console()
     console.print(f"\nPy Module: '{Path(__file__)}'\n")
+    path_navigator = PathNavigator()
     
     # colloct image file names
     img_dir = Path(r"") # directory of input images, images extension: .tif / .tiff
@@ -337,26 +377,40 @@ if __name__ == '__main__':
     """ Load config """
     config_name: str = "ml_analysis.toml"
     config = load_config(config_name)
-    # [SLIC]
-    n_segments: int  = config["SLIC"]["n_segments"]
-    dark: int        = config["SLIC"]["dark"]
-    merge: int       = config["SLIC"]["merge"]
-    debug_mode: bool = config["SLIC"]["debug_mode"]
     # [seg_results]
     seg_desc = get_seg_desc(config)
     console.print(f"Config : '{config_name}'\n",
-                    Pretty(config, expand_all=True))
+                  Pretty(config, expand_all=True))
     console.rule()
+    # [SLIC]
+    n_segments: int  = config["SLIC"]["n_segments"]
+    dark: int        = config["SLIC"]["dark"]
+    # [Cellpose]
+    cp_model_name: str = config["Cellpose"]["cp_model_name"]
+    channels: list = config["Cellpose"]["channels"]
     
+    # get `seg_dirname`
+    merge: float     = config[f"{seg_desc}"]["merge"]
+    debug_mode: bool = config[f"{seg_desc}"]["debug_mode"]
+    if seg_desc == "SLIC":
+        seg_param_name = get_slic_param_name(config)
+    elif seg_desc == "Cellpose":
+        # get model
+        cp_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_cellpose")
+        cp_model_path = cp_model_dir.joinpath(cp_model_name)
+        if cp_model_path.is_file():
+            tmp_list = []
+            tmp_list.append(cp_model_path.stem)
+            tmp_list.append(f"CH{channels[0]}{channels[1]}")
+            tmp_list.append(f"M{merge}")
+            seg_param_name = "_".join(tmp_list)
+        else:
+            raise FileNotFoundError(f"'{cp_model_path}' is not a file or does not exist")
+    
+    """ Main Process """
     for img_path in img_paths:
         
-        # get `seg_dirname`
-        if seg_desc == "SLIC":
-            seg_param_name = get_slic_param_name(config)
-        elif seg_desc == "Cellpose":
-            seg_param_name = "model_id" # TBD
         seg_dirname = f"{img_path.stem}.{seg_param_name}"
-        
         seg_dir = img_path.parent.joinpath(f"{seg_desc}/{seg_dirname}")
         create_new_dir(seg_dir)
         
@@ -366,7 +420,17 @@ if __name__ == '__main__':
                                               n_segments, dark, merge,
                                               debug_mode)
         elif seg_desc == "Cellpose":
-            seg1, seg2 = single_cellpose_prediction()
+            if "cellpose" in sys.executable:
+                from cellpose import models as cpmodels
+                cp_model = cpmodels.CellposeModel(gpu=True, pretrained_model=str(cp_model_path))
+                seg1, seg2 = single_cellpose_prediction(seg_dir, img_path,
+                                                        channels, cp_model, merge,
+                                                        debug_mode)
+            else:
+                raise RuntimeError("Detect environment name not for Cellpose. "
+                                   "Please follow the setup instructions provided at "
+                                   "'https://github.com/MouseLand/cellpose' "
+                                   "to create an environment.")
         # Note : `seg1` is 1st merge (background), `seg2` is 2nd merge (color)
         
         # save cell segmentation feature
