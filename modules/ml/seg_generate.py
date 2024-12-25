@@ -390,7 +390,7 @@ if __name__ == '__main__':
     channels: list = config["Cellpose"]["channels"]
     
     # get `seg_dirname`
-    merge: float     = config[f"{seg_desc}"]["merge"]
+    merge: int       = config[f"{seg_desc}"]["merge"]
     debug_mode: bool = config[f"{seg_desc}"]["debug_mode"]
     if seg_desc == "SLIC":
         seg_param_name = get_slic_param_name(config)
