@@ -395,13 +395,22 @@ if __name__ == '__main__':
     if seg_desc == "SLIC":
         seg_param_name = get_slic_param_name(config)
     elif seg_desc == "Cellpose":
-        # get model
+        # check model
         cp_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_cellpose")
         cp_model_path = cp_model_dir.joinpath(cp_model_name)
         if cp_model_path.is_file():
             seg_param_name = get_cellpose_param_name(config)
         else:
             raise FileNotFoundError(f"'{cp_model_path}' is not a file or does not exist")
+        # load model
+        if "cellpose" in sys.executable: # check python environment
+                from cellpose import models as cpmodels
+                cp_model = cpmodels.CellposeModel(gpu=True, pretrained_model=str(cp_model_path))
+        else:
+            raise RuntimeError("Detect environment name not for Cellpose. "
+                                "Please follow the setup instructions provided at "
+                                "'https://github.com/MouseLand/cellpose' "
+                                "to create an environment.")
     
     """ Main Process """
     for img_path in img_paths:
@@ -416,17 +425,9 @@ if __name__ == '__main__':
                                               n_segments, dark, merge,
                                               debug_mode)
         elif seg_desc == "Cellpose":
-            if "cellpose" in sys.executable:
-                from cellpose import models as cpmodels
-                cp_model = cpmodels.CellposeModel(gpu=True, pretrained_model=str(cp_model_path))
-                seg1, seg2 = single_cellpose_prediction(seg_dir, img_path,
-                                                        channels, cp_model, merge,
-                                                        debug_mode)
-            else:
-                raise RuntimeError("Detect environment name not for Cellpose. "
-                                   "Please follow the setup instructions provided at "
-                                   "'https://github.com/MouseLand/cellpose' "
-                                   "to create an environment.")
+            seg1, seg2 = single_cellpose_prediction(seg_dir, img_path,
+                                                    channels, cp_model, merge,
+                                                    debug_mode)
         # Note : `seg1` is 1st merge (background), `seg2` is 2nd merge (color)
         
         # save cell segmentation feature
