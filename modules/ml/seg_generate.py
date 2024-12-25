@@ -26,7 +26,7 @@ from ..shared.config import load_config
 from ..shared.pathnavigator import PathNavigator
 from ..shared.utils import create_new_dir
 from .calc_seg_feat import count_element, update_seg_analysis_dict
-from .utils import get_seg_desc, get_slic_param_name
+from .utils import get_cellpose_param_name, get_seg_desc, get_slic_param_name
 
 install()
 # -----------------------------------------------------------------------------/
@@ -387,7 +387,7 @@ if __name__ == '__main__':
     dark: int        = config["SLIC"]["dark"]
     # [Cellpose]
     cp_model_name: str = config["Cellpose"]["cp_model_name"]
-    channels: list = config["Cellpose"]["channels"]
+    channels: list     = config["Cellpose"]["channels"]
     
     # get `seg_dirname`
     merge: int       = config[f"{seg_desc}"]["merge"]
@@ -399,11 +399,7 @@ if __name__ == '__main__':
         cp_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_cellpose")
         cp_model_path = cp_model_dir.joinpath(cp_model_name)
         if cp_model_path.is_file():
-            tmp_list = []
-            tmp_list.append(cp_model_path.stem)
-            tmp_list.append(f"CH{channels[0]}{channels[1]}")
-            tmp_list.append(f"M{merge}")
-            seg_param_name = "_".join(tmp_list)
+            seg_param_name = get_cellpose_param_name(config)
         else:
             raise FileNotFoundError(f"'{cp_model_path}' is not a file or does not exist")
     

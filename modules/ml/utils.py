@@ -52,6 +52,22 @@ def get_slic_param_name(config: dict) -> str:
     # -------------------------------------------------------------------------/
 
 
+def get_cellpose_param_name(config: dict) -> str:
+    """
+    """
+    cp_model_name: str = config["Cellpose"]["cp_model_name"]
+    channels: list     = config["Cellpose"]["channels"]
+    merge: int         = config["Cellpose"]["merge"]
+    
+    tmp_list = []
+    tmp_list.append(cp_model_name)
+    tmp_list.append(f"CH{channels[0]}{channels[1]}")
+    tmp_list.append(f"M{merge}")
+    
+    return "_".join(tmp_list)
+    # -------------------------------------------------------------------------/
+
+
 def get_class_weight_dict(dataset_df:pd.DataFrame,
                           labels: list, label2idx: dict[str, int]):
     """
