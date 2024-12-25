@@ -109,7 +109,7 @@ if __name__ == '__main__':
     save_path = result_ml_dir.joinpath("Generated",
                                        processed_di.instance_name, cluster_desc,
                                        seg_desc, seg_dirname,
-                                       f"ml_dataset.csv")
+                                       "ml_dataset.csv")
     create_new_dir(save_path.parent)
     dataset_df.to_csv(save_path, encoding='utf_8_sig', index=False)
     print(f"ML_table: '{save_path}'\n")
