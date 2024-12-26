@@ -8,5 +8,6 @@ dataset_cropped_v3  = "{Dataset}_Cropped_v3" # User specify size
 model_cellpose      = "{Model}_Cellpose"
 model_history       = "{Model}_History"
 model_prediction    = "{Model}_Prediction"
+result_ml           = "{Results}_ML"
 
 fiji_local = "" # absolute path of "Fiji (ImageJ)" on this computer
