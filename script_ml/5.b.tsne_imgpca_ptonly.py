@@ -227,8 +227,8 @@ fig.tight_layout()
 # %%
 import json
 
-fig.savefig(dst_dir.joinpath(f"{notebook_name}.ptonly.{img_mode}.png"))
-fig.savefig(dst_dir.joinpath(f"{notebook_name}.ptonly.{img_mode}.svg"))
+fig.savefig(dst_dir.joinpath(f"{notebook_name}.{img_mode}.png"))
+fig.savefig(dst_dir.joinpath(f"{notebook_name}.{img_mode}.svg"))
 
 data = [{"path": str(path.resolve()), "point": [float(x), float(y)]}
             for path, x, y in zip(img_paths, tx, ty)]
