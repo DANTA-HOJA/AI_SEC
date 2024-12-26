@@ -25,12 +25,17 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
 from modules.data.processeddatainstance import ProcessedDataInstance
-from modules.ml.utils import get_slic_param_name
 from modules.shared.config import load_config
+from modules.shared.pathnavigator import PathNavigator
 from modules.shared.utils import create_new_dir
 
 # -----------------------------------------------------------------------------/
 # %%
+""" Init components """
+path_navigator = PathNavigator()
+processed_di = ProcessedDataInstance()
+processed_di.parse_config("ml_analysis.toml")
+
 # notebook name
 notebook_name = Path(__file__).stem
 
@@ -38,27 +43,21 @@ notebook_name = Path(__file__).stem
 # %%
 # load config
 config = load_config("ml_analysis.toml")
+# [data_processed]
 palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
 cluster_desc: str = config["data_processed"]["cluster_desc"]
 print("", Pretty(config, expand_all=True))
 
 # -----------------------------------------------------------------------------/
 # %%
-processed_di = ProcessedDataInstance()
-processed_di.parse_config("ml_analysis.toml")
-
-# src
-slic_param_name = get_slic_param_name(config)
-slic_dirname = f"{palmskin_result_name.stem}.{slic_param_name}"
-ml_csv = Path(__file__).parent.joinpath("data/generated/ML",
-                                        processed_di.instance_name,
-                                        cluster_desc, slic_dirname,
-                                        "ml_dataset.csv")
+# csv file
+result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
+ml_csv = result_ml_dir.joinpath("Generated",
+                                processed_di.instance_name, cluster_desc,
+                                "ImagePCA", "ml_dataset.csv")
 
 # dst
-palmskin_result_name = Path(f"{palmskin_result_name.stem}.W512_H1024.tif")
-dst_dir = ml_csv.parents[1].joinpath(f"{palmskin_result_name.stem}.imgtsne")
-create_new_dir(dst_dir)
+dst_dir = ml_csv.parent
 
 # -----------------------------------------------------------------------------/
 # %%
@@ -75,12 +74,16 @@ df
 
 # -----------------------------------------------------------------------------/
 # %%
+n_pca = 5
+img_mode: str = config["ML"]["img_mode"]
+dst_dir = dst_dir.joinpath(f"{palmskin_result_name.stem}.First{n_pca}PCA/{notebook_name}.{img_mode}")
+create_new_dir(dst_dir)
+
+palmskin_result_name = Path(f"{palmskin_result_name.stem}.W512_H1024.tif")
 rel_path, _ = processed_di.get_sorted_results_dict("palmskin", str(palmskin_result_name))
 print(f"[yellow]{rel_path}")
 
-img_mode: str = config["ML"]["img_mode"]
 img_resize: tuple = tuple(config["ML"]["img_resize"])
-
 data = []
 for palmskin_dname in tqdm(df.index):
     img_path: Path = processed_di.palmskin_processed_dir.joinpath(palmskin_dname, rel_path)
@@ -104,8 +107,9 @@ img_paths: list[Path]
 # %%
 rand_seed = int(cluster_desc.split("_")[-1].replace("RND", ""))
 
-features = np.array(features) # shape = (n, 45*45*3)
-pca = PCA(n_components=5, random_state=rand_seed)
+# image pca
+features = np.array(features) # convert type, shape = (n, 45*45*3)
+pca = PCA(n_components=n_pca, random_state=rand_seed)
 pca.fit(features)
 pca_features = pca.transform(features)
 
@@ -190,7 +194,7 @@ for path, palmskin_dname, x, y in zip(img_paths, df.index, tx, ty):
     full_image.paste(tile, (int((width-max_dim)*x), int((height-max_dim)*y)), mask=tile.convert('RGBA'))
 
 fig, ax = plt.subplots(1, 1, figsize=(12, 9), dpi=300)
-ax.set_title(f"t-SNE ({img_mode} image, first 5 PCA components)")
+ax.set_title(f"t-SNE ({img_mode} image, first {n_pca} PCA components)")
 
 # set legend
 for k, v in cls2color.items():
@@ -212,12 +216,12 @@ fig.tight_layout()
 # %%
 import json
 
-fig.savefig(dst_dir.joinpath(f"tSNE.{img_mode}.png"))
+fig.savefig(dst_dir.joinpath(f"{notebook_name}.{img_mode}.png"))
 
 data = [{"path": str(path.resolve()), "point": [float(x), float(y)]}
             for path, x, y in zip(img_paths, tx, ty)]
 
-tsne_pt_path = dst_dir.joinpath(f"tSNE.{img_mode}.json")
+tsne_pt_path = dst_dir.joinpath(f"{notebook_name}.{img_mode}.json")
 with open(tsne_pt_path, 'w') as f_writer:
     json.dump(data, f_writer, indent=4)
 
