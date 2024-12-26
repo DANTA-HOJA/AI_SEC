@@ -45,26 +45,7 @@ config = load_config("ml_analysis.toml")
 # [data_processed]
 palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
 cluster_desc: str = config["data_processed"]["cluster_desc"]
-# [seg_results]
-seg_desc = get_seg_desc(config)
-# [Cellpose]
-cp_model_name: str = config["Cellpose"]["cp_model_name"]
 print("", Pretty(config, expand_all=True))
-
-# -----------------------------------------------------------------------------/
-# %%
-# get `seg_dirname`
-if seg_desc == "SLIC":
-    seg_param_name = get_slic_param_name(config)
-elif seg_desc == "Cellpose":
-    # check model
-    cp_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_cellpose")
-    cp_model_path = cp_model_dir.joinpath(cp_model_name)
-    if cp_model_path.is_file():
-        seg_param_name = get_cellpose_param_name(config)
-    else:
-        raise FileNotFoundError(f"'{cp_model_path}' is not a file or does not exist")
-seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
 
 # -----------------------------------------------------------------------------/
 # %%
@@ -72,13 +53,10 @@ seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
 result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
 ml_csv = result_ml_dir.joinpath("Generated",
                                 processed_di.instance_name, cluster_desc,
-                                seg_desc, seg_dirname,
-                                "ml_dataset.csv")
+                                "ImagePCA", "ml_dataset.csv")
 
 # dst
-palmskin_result_name = Path(f"{palmskin_result_name.stem}.W512_H1024.tif")
-dst_dir = ml_csv.parents[1].joinpath(f"{palmskin_result_name.stem}.imgpca")
-create_new_dir(dst_dir)
+dst_dir = ml_csv.parent
 
 # -----------------------------------------------------------------------------/
 # %%
@@ -106,12 +84,15 @@ training_df
 
 # -----------------------------------------------------------------------------/
 # %%
+img_mode: str = config["ML"]["img_mode"]
+dst_dir = dst_dir.joinpath(f"{palmskin_result_name.stem}/{notebook_name}.{img_mode}")
+create_new_dir(dst_dir)
+
+palmskin_result_name = Path(f"{palmskin_result_name.stem}.W512_H1024.tif")
 rel_path, _ = processed_di.get_sorted_results_dict("palmskin", str(palmskin_result_name))
 print(f"[yellow]{rel_path}")
 
-img_mode: str = config["ML"]["img_mode"]
 img_resize: tuple = tuple(config["ML"]["img_resize"])
-
 img_fullsize = None
 data = []
 for palmskin_dname in tqdm(training_df["palmskin_dname"]):
