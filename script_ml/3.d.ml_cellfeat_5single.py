@@ -18,12 +18,20 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.dl.tester.utils import confusion_matrix_with_class
-from modules.ml.utils import get_slic_param_name, save_confusion_matrix_display
+from modules.ml.utils import (get_cellpose_param_name, get_seg_desc,
+                              get_slic_param_name,
+                              save_confusion_matrix_display)
 from modules.shared.config import load_config
+from modules.shared.pathnavigator import PathNavigator
 from modules.shared.utils import create_new_dir
 
 # -----------------------------------------------------------------------------/
 # %%
+""" Init components """
+path_navigator = PathNavigator()
+processed_di = ProcessedDataInstance()
+processed_di.parse_config("ml_analysis.toml")
+
 # notebook name
 notebook_name = Path(__file__).stem
 
@@ -31,22 +39,38 @@ notebook_name = Path(__file__).stem
 # %%
 # load config
 config = load_config("ml_analysis.toml")
+# [data_processed]
 palmskin_result_name: Path = Path(config["data_processed"]["palmskin_result_name"])
 cluster_desc: str = config["data_processed"]["cluster_desc"]
+# [seg_results]
+seg_desc = get_seg_desc(config)
+# [Cellpose]
+cp_model_name: str = config["Cellpose"]["cp_model_name"]
 rich.print("", Pretty(config, expand_all=True))
 
 # -----------------------------------------------------------------------------/
 # %%
-processed_di = ProcessedDataInstance()
-processed_di.parse_config("ml_analysis.toml")
+# get `seg_dirname`
+if seg_desc == "SLIC":
+    seg_param_name = get_slic_param_name(config)
+elif seg_desc == "Cellpose":
+    # check model
+    cp_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_cellpose")
+    cp_model_path = cp_model_dir.joinpath(cp_model_name)
+    if cp_model_path.is_file():
+        seg_param_name = get_cellpose_param_name(config)
+    else:
+        raise FileNotFoundError(f"'{cp_model_path}' is not a file or does not exist")
+seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
 
-# src
-slic_param_name = get_slic_param_name(config)
-slic_dirname = f"{palmskin_result_name.stem}.{slic_param_name}"
-ml_csv = Path(__file__).parent.joinpath("data/generated/ML",
-                                        processed_di.instance_name,
-                                        cluster_desc, slic_dirname,
-                                        "ml_dataset.csv")
+# -----------------------------------------------------------------------------/
+# %%
+# csv file
+result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
+ml_csv = result_ml_dir.joinpath("Generated",
+                                processed_di.instance_name, cluster_desc,
+                                seg_desc, seg_dirname,
+                                "ml_dataset.csv")
 
 # dst dir
 dst_dir = ml_csv.parent
