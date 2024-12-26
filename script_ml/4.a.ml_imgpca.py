@@ -84,8 +84,9 @@ training_df
 
 # -----------------------------------------------------------------------------/
 # %%
+n_pca = 5
 img_mode: str = config["ML"]["img_mode"]
-dst_dir = dst_dir.joinpath(f"{palmskin_result_name.stem}/{notebook_name}.{img_mode}")
+dst_dir = dst_dir.joinpath(f"{palmskin_result_name.stem}.First{n_pca}PCA/{notebook_name}.{img_mode}")
 create_new_dir(dst_dir)
 
 palmskin_result_name = Path(f"{palmskin_result_name.stem}.W512_H1024.tif")
@@ -114,7 +115,7 @@ rand_seed = int(cluster_desc.split("_")[-1].replace("RND", ""))
 
 # image pca
 features = np.array(features) # convert type, shape = (n, 45*45*3)
-pca = PCA(n_components=5, random_state=rand_seed)
+pca = PCA(n_components=n_pca, random_state=rand_seed)
 pca.fit(features)
 input_training = pca.transform(features)
 
@@ -290,7 +291,7 @@ with open(dst_dir.joinpath(f"{notebook_name}.{img_mode}.test.log"), mode="w") as
 save_confusion_matrix_display(y_true=gt_test,
                               y_pred=pred_test,
                               save_path=dst_dir,
-                              feature_desc=f"{notebook_name}",
+                              feature_desc=f"{notebook_name}.{img_mode}",
                               dataset_desc="test")
 
 print(f"Results Save Dir: '{dst_dir}'")
