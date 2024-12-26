@@ -21,9 +21,7 @@ if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
 
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.dl.tester.utils import confusion_matrix_with_class
-from modules.ml.utils import (get_cellpose_param_name, get_seg_desc,
-                              get_slic_param_name,
-                              save_confusion_matrix_display)
+from modules.ml.utils import save_confusion_matrix_display
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
 from modules.shared.utils import create_new_dir
