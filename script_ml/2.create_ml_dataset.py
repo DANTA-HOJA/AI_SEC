@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # [Cellpose]
     cp_model_name: str = config["Cellpose"]["cp_model_name"]
     # [ML]
-    topn_patch = config["ML"]["topn_patch"]
+    max_topn_patch = config["ML"]["max_topn_patch"]
     print("", Pretty(config, expand_all=True))
     cli_out.divide()
     
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         
         for i, patch_size in enumerate(seg_analysis[f"patch_sizes"], start=1):
             temp_dict[f"top{i}_patch"] = patch_size
-            if i == topn_patch: break
+            if i == max_topn_patch: break
         # -------------------------------------------------------
         
         temp_df = pd.DataFrame(temp_dict, index=[0])

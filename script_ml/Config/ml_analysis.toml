@@ -39,7 +39,7 @@
 
 # -----------------------------------------------------------------------------\
 [ML]
-  topn_patch = 30
+  max_topn_patch = 30
   single_feature = "top1_patch"
   img_mode = "RGB" # RGB / GRAY
   img_resize = [224, 224] # [width, height]
