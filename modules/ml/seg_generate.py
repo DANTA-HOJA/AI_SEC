@@ -290,10 +290,11 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     save_segment_result(save_path, seg1)
     # Generate average 'RGB' of `img` and mark `seg1` labels on it
     avg_rgb = average_rgb_coloring(seg1, img)
-    seg1_on_img = np.uint8(mark_boundaries(avg_rgb, seg1, color=(0, 1, 1))*255)
-    seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
-    save_path = dst_dir.joinpath(f"{img_name}.seg1a.png")
-    ski.io.imsave(save_path, seg1_on_img)
+    for k, v in {"o": img, "a": avg_rgb}.items():
+        seg1_on_img = np.uint8(mark_boundaries(v, seg1, color=(0, 1, 1))*255)
+        seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
+        save_path = dst_dir.joinpath(f"{img_name}.seg1{k}.png")
+        ski.io.imsave(save_path, seg1_on_img)
 
     """ Merge similar RGB (seg2) """
     seg2, relabeling = merge_similar_rgb(seg1, img,
@@ -335,10 +336,11 @@ def single_cellpose_prediction(dst_dir: Path, img_path: Path,
     save_segment_result(save_path, seg1)
     # Generate average 'RGB' of `img` and mark `seg1` labels on it
     avg_rgb = average_rgb_coloring(seg1, img)
-    seg1_on_img = np.uint8(mark_boundaries(avg_rgb, seg1, color=(0, 1, 1))*255)
-    seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
-    save_path = dst_dir.joinpath(f"{img_name}.seg1a.png")
-    ski.io.imsave(save_path, seg1_on_img)
+    for k, v in {"o": img, "a": avg_rgb}.items():
+        seg1_on_img = np.uint8(mark_boundaries(v, seg1, color=(0, 1, 1))*255)
+        seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
+        save_path = dst_dir.joinpath(f"{img_name}.seg1{k}.png")
+        ski.io.imsave(save_path, seg1_on_img)
 
     """ Merge similar RGB (seg2) """
     seg2, relabeling = merge_similar_rgb(seg1, img,
