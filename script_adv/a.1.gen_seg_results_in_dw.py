@@ -24,7 +24,8 @@ from modules.ml.calc_seg_feat import (count_area, count_average_size,
                                       count_element, get_patch_sizes,
                                       update_ana_toml_file,
                                       update_seg_analysis_dict)
-from modules.ml.utils import get_seg_desc, get_slic_param_name, parse_base_size
+from modules.ml.utils import (get_cellpose_param_name, get_seg_desc,
+                              get_slic_param_name, parse_base_size)
 from modules.shared.clioutput import CLIOutput
 from modules.shared.config import load_config
 from modules.shared.pathnavigator import PathNavigator
@@ -53,6 +54,8 @@ if __name__ == '__main__':
     # [seg_results]
     seg_desc = get_seg_desc(config)
     dataset_base_size = config["seg_results"]["base_size"]
+    # [Cellpose]
+    cp_model_name: str = config["Cellpose"]["cp_model_name"]
     print("", Pretty(config, expand_all=True))
     cli_out.divide()
     
@@ -63,7 +66,13 @@ if __name__ == '__main__':
     if seg_desc == "SLIC":
         seg_param_name = get_slic_param_name(config)
     elif seg_desc == "Cellpose":
-        seg_param_name = "model_id" # TBD
+        # check model
+        cp_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_cellpose")
+        cp_model_path = cp_model_dir.joinpath(cp_model_name)
+        if cp_model_path.is_file():
+            seg_param_name = get_cellpose_param_name(config)
+        else:
+            raise FileNotFoundError(f"'{cp_model_path}' is not a file or does not exist")
     seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
     
     """ Processed Data Instance """
