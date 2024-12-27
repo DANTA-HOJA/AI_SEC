@@ -15,7 +15,7 @@ from rich.console import Console
 from rich.pretty import Pretty
 from rich.traceback import install
 
-pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
+pkg_dir = Path(__file__).parents[1] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
@@ -163,8 +163,11 @@ if __name__ == '__main__':
     ax.set_title(", ".join(desc))
     
     # save figure
-    desc[0] = desc[0].lower()
-    fig_path = src_root.joinpath(f"NoCropDarkRatio/{'_'.join(desc)}.png")
+    desc = desc[1:]
+    result_adv_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_adv")
+    dst_dir = result_adv_dir.joinpath(dataset_data, Path(__file__).stem,
+                                      dataset_base_size)
+    fig_path = dst_dir.joinpath(f"{Path(__file__).stem}.{'.'.join(desc)}.png")
     create_new_dir(fig_path.parent)
     fig = ax.get_figure()
     fig.savefig(fig_path)
