@@ -209,8 +209,8 @@ if __name__ == '__main__':
     # save figure
     result_adv_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_adv")
     dst_dir = result_adv_dir.joinpath(processed_di.instance_name,
-                                      seg_desc, seg_dirname,
-                                      Path(__file__).stem)
+                                      Path(__file__).stem,
+                                      seg_desc, seg_dirname)
     create_new_dir(dst_dir)
     cli_out.divide()
     
