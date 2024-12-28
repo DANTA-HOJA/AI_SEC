@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
             """Random color #2: load `cell_seg` (seg1, without clonal information)"""
             seg1_pkl = src_dir.joinpath(f"{seg_dirname}.seg1.pkl")
-            print(f"[ {seg1_pkl.parts[-1]} : '{seg1_pkl}' ]")
+            print(f"[ {dname_dir.parts[-1]} : '{seg1_pkl}' ]")
             with open(seg1_pkl, mode="rb") as f_reader:
                 seg1 = pkl.load(f_reader)
             # 創建與 seg1 相同大小的 RGB image
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             
             """Random color #1: load `clone_seg` (seg2, with clonal information)"""
             seg2_pkl = src_dir.joinpath(f"{seg_dirname}.seg2.pkl")
-            print(f"[ {seg2_pkl.parts[-1]} : '{seg2_pkl}' ]")
+            print(f"[ {dname_dir.parts[-1]} : '{seg2_pkl}' ]")
             with open(seg2_pkl, mode="rb") as f_reader:
                 seg2 = pkl.load(f_reader)
             # 創建與 seg2 相同大小的 RGB image
