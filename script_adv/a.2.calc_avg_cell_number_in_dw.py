@@ -102,8 +102,8 @@ if __name__ == '__main__':
     """ Read analysis file """
     cli_out.divide()
     with Progress(transient=True) as pbar:
-        
         task = pbar.add_task("[cyan]Size...", total=len(size_dirs))
+        
         for size_dir in size_dirs:
             # update pbar display
             refresh_desc = f"[cyan]Size: '{size_dir.stem}'..."
