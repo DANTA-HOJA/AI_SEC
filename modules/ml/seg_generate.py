@@ -292,8 +292,10 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     avg_rgb = average_rgb_coloring(seg1, img)
     for k, v in {"o": img, "a": avg_rgb}.items():
         seg1_on_img = np.uint8(mark_boundaries(v, seg1, color=(0, 1, 1))*255)
-        seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
         save_path = dst_dir.joinpath(f"{img_name}.seg1{k}.png")
+        ski.io.imsave(save_path, seg1_on_img)
+        seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
+        save_path = dst_dir.joinpath(f"{img_name}.seg1{k}l.png")
         ski.io.imsave(save_path, seg1_on_img)
 
     """ Merge similar RGB (seg2) """
@@ -307,8 +309,10 @@ def single_slic_labeling(dst_dir:Path, img_path:Path,
     # Mark `seg2` labels and merged regions on `img` and `avg_rgb`
     for k, v in {"o": img, "a": avg_rgb}.items():
         seg2_on_img = np.uint8(mark_boundaries(v, seg2, color=(0, 1, 1))*255)
-        seg2_on_img = draw_label_on_image(seg1, seg2_on_img, relabeling=relabeling)
         save_path = dst_dir.joinpath(f"{img_name}.seg2{k}.png")
+        ski.io.imsave(save_path, seg2_on_img)
+        seg2_on_img = draw_label_on_image(seg1, seg2_on_img, relabeling=relabeling)
+        save_path = dst_dir.joinpath(f"{img_name}.seg2{k}l.png")
         ski.io.imsave(save_path, seg2_on_img)
     
     return seg1, seg2
@@ -338,8 +342,10 @@ def single_cellpose_prediction(dst_dir: Path, img_path: Path,
     avg_rgb = average_rgb_coloring(seg1, img)
     for k, v in {"o": img, "a": avg_rgb}.items():
         seg1_on_img = np.uint8(mark_boundaries(v, seg1, color=(0, 1, 1))*255)
-        seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
         save_path = dst_dir.joinpath(f"{img_name}.seg1{k}.png")
+        ski.io.imsave(save_path, seg1_on_img)
+        seg1_on_img = draw_label_on_image(seg1, seg1_on_img)
+        save_path = dst_dir.joinpath(f"{img_name}.seg1{k}l.png")
         ski.io.imsave(save_path, seg1_on_img)
 
     """ Merge similar RGB (seg2) """
@@ -353,8 +359,10 @@ def single_cellpose_prediction(dst_dir: Path, img_path: Path,
     # Mark `seg2` labels and merged regions on `img` and `avg_rgb`
     for k, v in {"o": img, "a": avg_rgb}.items():
         seg2_on_img = np.uint8(mark_boundaries(v, seg2, color=(0, 1, 1))*255)
-        seg2_on_img = draw_label_on_image(seg1, seg2_on_img, relabeling=relabeling)
         save_path = dst_dir.joinpath(f"{img_name}.seg2{k}.png")
+        ski.io.imsave(save_path, seg2_on_img)
+        seg2_on_img = draw_label_on_image(seg1, seg2_on_img, relabeling=relabeling)
+        save_path = dst_dir.joinpath(f"{img_name}.seg2{k}l.png")
         ski.io.imsave(save_path, seg2_on_img)
     
     return seg1, seg2
