@@ -35,10 +35,23 @@ pip install umap-learn==0.5.6
 - GPU: RTX 4090
 - RAM: 64 GB DDR5
 
+## Cellpose Segmentation for Palmskin (20241225)
+
+1. Create an environment follow the setup instructions provided at [Cellpose](https://github.com/MouseLand/cellpose?tab=readme-ov-file#installation)
+
+2. Run the following commands in the "cellpose" environment.
+
+```shell
+pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn imagecodecs scikit-image scikit-learn
+mamba install imgaug=0.4.0
+mamba install numpy=1.23.0
+```
+
 ## Notification (20240603)
 
 - palmskin_raw_lif : ```[ Ch1, Ch2, Ch3, Ch4 ] -> [ B, G, R, (BF) ]```
 - create dataset on SSD to get a reasonable process time
+- 全專案使用 glob 搜尋檔案，若要再專案資料夾下儲存影像，請使用  .tif / .tiff 以外的檔案格式。
 
 ## Data Information ( *temporarily halt updates* )
 
@@ -110,6 +123,7 @@ pip install umap-learn==0.5.6
     6. 新增 *function* : analysis 後，若判斷 ```ROI != 1``` ( ```ROI == 1``` 代表順利的只抓到魚 ) 會在 *Log* 標記 *Error* , 以便後續手動測量
 
     7. 檔名優化
+
         | Function | File name |
         | :---- | :---- |
         | 從 lif 中分離的每條魚                                | 20220610_CE001_palmskin_8dpf - Series001 fish 1.tif |
