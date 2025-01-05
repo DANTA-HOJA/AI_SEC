@@ -5,7 +5,7 @@ pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
-from modules.dl.tester.imagetester.vitb16normbfimagetester import VitB16NormBFImageTester
+from modules.dl.tester.imagetester import VitB16NormBFImageTester
 from modules.shared.config import get_batch_config, get_batch_config_arg
 from modules.shared.utils import exclude_tmp_paths, get_repo_root
 # -----------------------------------------------------------------------------/

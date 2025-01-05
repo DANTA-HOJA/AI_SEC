@@ -1,5 +1,6 @@
 from .baseimagetester import BaseImageTester
 from .basesurfdgtimagetester import BaseSurfDGTImageTester
+from .basenormbfimagetester import BaseNormBFImageTester
 
 from .vitb16imagetester import VitB16ImageTester
 from .vitb16aonlyimagetester import VitB16AOnlyImageTester
@@ -12,6 +13,8 @@ from .vitb16ponlynocropimagetester import VitB16POnlyNoCropImageTester
 from .vitb16surfdgtimagetester import VitB16SurfDGTImageTester
 from .vitb16aonlysurfdgtimagetester import VitB16AOnlySurfDGTImageTester
 from .vitb16ponlysurfdgtimagetester import VitB16POnlySurfDGTImageTester
+
+from .vitb16normbfimagetester import VitB16NormBFImageTester
 
 from .resnet50imagetester import ResNet50ImageTester
 
