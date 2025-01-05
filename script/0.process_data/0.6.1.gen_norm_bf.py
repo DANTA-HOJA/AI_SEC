@@ -27,7 +27,7 @@ def gen_fitted_bf(fish_dname, masks, bfs):
     mask = cv2.imread(str(masks[fish_dname]), -1)
     bf = cv2.imread(str(bfs[fish_dname]), -1)
     x, y, w, h = cv2.boundingRect(mask.astype(np.uint8))
-    return bf[y:y+h, x:x+w]
+    return bf[y:y+h, x:x+w], mask[y:y+h, x:x+w]
     # -------------------------------------------------------------------------/
 
 
@@ -56,20 +56,28 @@ if __name__ == '__main__':
     
     # get BFs
     _, bfs = processed_di.get_sorted_results_dict("brightfield", "02_cropped_BF.tif")
-    target_fitted_bf = gen_fitted_bf(median_fish, masks, bfs)
+    target_fitted_bf, _ = gen_fitted_bf(median_fish, masks, bfs)
     
     for dname in track(df["Brightfield"], transient=True,
                        description=f"[cyan]Processing... ",
                        console=console):
         
-        fitted_bf = gen_fitted_bf(dname, masks, bfs)
+        fitted_bf, fitted_mask = gen_fitted_bf(dname, masks, bfs)
+        
+        # save normalized BF
         norm_bf = cv2.resize(fitted_bf, target_fitted_bf.shape[::-1],
                              interpolation=cv2.INTER_LANCZOS4)
-        
-        # save image
         save_path = bfs[dname].parent.joinpath("Norm_BF.tif")
         ski.io.imsave(save_path, norm_bf)
         console.print(f"{dname} : '{save_path}'")
+        
+        # save normalized Mask
+        norm_mask = cv2.resize(fitted_mask, target_fitted_bf.shape[::-1],
+                               interpolation=cv2.INTER_LANCZOS4)
+        save_path = masks[dname].parent.joinpath("Norm_Mask.tif")
+        ski.io.imsave(save_path, norm_mask)
+        console.print(f"{dname} : '{save_path}'")
+        console.line()
     
     console.line()
     console.print("[green]Done! \n")

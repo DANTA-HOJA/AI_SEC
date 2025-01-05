@@ -34,6 +34,14 @@ def dynamic_crop(size:int) -> iaa.Sequential:
 
 
 
+def aug_rotate(degree:tuple[int, int]):
+    """
+    """
+    return iaa.Sometimes(0.8, iaa.Affine(rotate=degree))
+    # -------------------------------------------------------------------------/
+
+
+
 def composite_aug() -> iaa.Sequential:
     """
     """
