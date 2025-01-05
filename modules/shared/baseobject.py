@@ -122,6 +122,12 @@ class BaseObject:
                                 f"for `{cls_name}` is "
                                 f"'DS_SURFDGT.csv', "
                                 f"but got '{self.dataset_file_name}'")
+        elif "NormBF" in cls_name:
+            if self.dataset_file_name != "DS_SURF3C_NORMBF.xxx":
+                raise ValueError(f"The expected (config) `dataset.file_name` "
+                                f"for `{cls_name}` is "
+                                f"'DS_SURF3C_NORMBF.xxx', "
+                                f"but got '{self.dataset_file_name}'")
         else:
             if not ("CRPS" in self.dataset_file_name):
                 raise ValueError(f"The expected (config) `dataset.file_name` "
