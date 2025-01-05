@@ -1,4 +1,5 @@
 from .basefishtester import BaseFishTester
+from .basenormbffishtester import BaseNormBFFishTester
 
 from .vitb16fishtester import VitB16FishTester
 from .vitb16aonlyfishtester import VitB16AOnlyFishTester
@@ -7,6 +8,8 @@ from .vitb16ponlyfishtester import VitB16POnlyFishTester
 from .vitb16nocropfishtester import VitB16NoCropFishTester
 from .vitb16aonlynocropfishtester import VitB16AonlyNoCropFishTester
 from .vitb16ponlynocropfishtester import VitB16PonlyNoCropFishTester
+
+from .vitb16normbffishtester import VitB16NormBFFishTester
 
 from .resnet50fishtester import ResNet50FishTester
 
