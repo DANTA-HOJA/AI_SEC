@@ -93,8 +93,8 @@ if __name__ == '__main__':
     cli_out.divide("Create NormBF CAM Gallery")
     
     # glob `dnames` in `cam_result` dir
-    dnames = sorted(cam_result_root.glob("*"), key=get_dname_sortinfo)
-    dnames = [dname.stem for dname in dnames]
+    dnames = [dname.stem for dname in cam_result_root.glob("*")]
+    dnames = sorted(dnames, key=get_dname_sortinfo)
     
     # get median image size
     file_name = "median_image_size.toml"
