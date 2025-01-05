@@ -657,12 +657,11 @@ class BaseNormBFTrainer(BaseObject):
                 with autocast():
                     preds = self.model(images)
                     preds2 = self.model(images2)
-                    preds_avg = (preds + preds2)/2 # average
                     
                     # hybrid loss
-                    loss_ce = self.ce_loss(preds_avg, labels)
+                    loss_ce = self.ce_loss(preds, labels)
                     loss_mse = self.mse_loss(preds, preds2)
-                    loss_value = loss_ce + 2*loss_mse
+                    loss_value = loss_ce + loss_mse
                     # loss_value = loss_ce
                     
                 self.scaler.scale(loss_value).backward() # 計算並縮放損失的梯度
@@ -672,12 +671,11 @@ class BaseNormBFTrainer(BaseObject):
             else:
                 preds = self.model(images)
                 preds2 = self.model(images2)
-                preds_avg = (preds + preds2)/2 # average
                 
                 # hybrid loss
-                loss_ce = self.ce_loss(preds_avg, labels)
+                loss_ce = self.ce_loss(preds, labels)
                 loss_mse = self.mse_loss(preds, preds2)
-                loss_value = loss_ce + 2*loss_mse
+                loss_value = loss_ce + loss_mse
                 # loss_value = loss_ce
                 
                 loss_value.backward() # update model_parameters by backpropagation
@@ -736,12 +734,11 @@ class BaseNormBFTrainer(BaseObject):
                 
                 preds = self.model(images)
                 preds2 = self.model(images2)
-                preds_avg = (preds + preds2)/2 # average
                 
                 # hybrid loss
-                loss_ce = self.ce_loss(preds_avg, labels)
+                loss_ce = self.ce_loss(preds, labels)
                 loss_mse = self.mse_loss(preds, preds2)
-                loss_value = loss_ce + 2*loss_mse
+                loss_value = loss_ce + loss_mse
                 # loss_value = loss_ce
                 
                 """ Accumulate current batch loss """
