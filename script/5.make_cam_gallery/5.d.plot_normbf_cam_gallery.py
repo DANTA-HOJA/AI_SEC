@@ -20,6 +20,7 @@ pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
+from modules.data.dname import get_dname_sortinfo
 from modules.data.processeddatainstance import ProcessedDataInstance
 from modules.dl.tester.utils import get_history_dir
 from modules.shared.clioutput import CLIOutput
@@ -73,26 +74,27 @@ if __name__ == '__main__':
     dataset_classif_strategy: str = training_config["dataset"]["classif_strategy"]
     dataset_file_name: str = training_config["dataset"]["file_name"]
     assert dataset_file_name == "DS_SURF3C_NORMBF.xxx", \
-        f"DatasetFile must be 'DS_SURF3C_NORMBF.xxx', current: {dataset_file_name}"
+        f"DatasetFile must be 'DS_SURF3C_NORMBF.xxx', current: '{dataset_file_name}'"
     # get `cluster_desc`
     tmp_list = [dataset_file_name.split("_")[1],
                 dataset_classif_strategy,
                 dataset_seed_dir]
     cluster_desc: str = f"{'_'.join(tmp_list)}" # e.g. 'SURF3C_KMeansORIG_RND2022'
     console.line()
-    console.print("[yellow]training_config.note: \n", Pretty(training_config["note"], expand_all=True))
-    console.print("[yellow]training_config.dataset: \n", Pretty(training_config["dataset"], expand_all=True))
+    console.print("[yellow]training_config.note: \n", Pretty(training_config["note"], expand_all=True), "\n")
+    console.print("[yellow]training_config.dataset: \n", Pretty(training_config["dataset"], expand_all=True), "\n")
     
     # set config to `processed_di` for finding original image
     instance_desc = re.split("{|}", dataset_data)[1]
     temp_dict = {"data_processed": {"instance_desc": instance_desc}}
     processed_di.parse_config(temp_dict)
     
-    """ Create nocrop cam gallery """
+    """ Create NormBF CAM gallery """
     cli_out.divide("Create NormBF CAM Gallery")
     
     # glob `dnames` in `cam_result` dir
-    dnames = [dname.stem for dname in cam_result_root.glob("*")]
+    dnames = sorted(cam_result_root.glob("*"), key=get_dname_sortinfo)
+    dnames = [dname.stem for dname in dnames]
     
     # get median image size
     file_name = "median_image_size.toml"
