@@ -7,6 +7,7 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import rich.progress
 import seaborn as sns
 from rich import print
@@ -41,10 +42,6 @@ if __name__ == '__main__':
     cli_out = CLIOutput()
     path_navigator = PathNavigator()
     
-    # maunal variables
-    # [empty]
-    
-    
     """ Load config """
     cli_out.divide(title="Load config")
     
@@ -54,13 +51,16 @@ if __name__ == '__main__':
     model_time_stamp: str = config["model_prediction"]["time_stamp"]
     model_state: str = config["model_prediction"]["state"]
     # [cam_analysis]
-    cam_top_n_area = config["cam_analysis"]["top_n_area"]
+    cam_top_n_area: int = config["cam_analysis"]["top_n_area"]
     # history_dir
     history_dir = get_history_dir(path_navigator,
                                   model_time_stamp, model_state,
                                   cli_out)
     cam_result_root = history_dir.joinpath("cam_result")
     
+    # maunal variables
+    if cam_top_n_area == 1:
+        tmp_dict = {"name": [], "class": [], "max_area": []}
     
     """ Collect `thresed_cam_area_on_cell` """
     cli_out.divide(title="Collect `thresed_cam_area_on_cell` for each subcrop image")
@@ -102,6 +102,11 @@ if __name__ == '__main__':
                     # method2 (top_n_area)
                     data_filtered = v["thresed_cam_area_on_cell"][:cam_top_n_area]
                     
+                    if (cam_top_n_area == 1) and (len(data_filtered) == 1): # only for "top_1_area"
+                        tmp_dict["name"].append(k)
+                        tmp_dict["class"].append(v["pred"])
+                        tmp_dict["max_area"].extend(data_filtered)
+                    
                 except IndexError:
                     pass
                 thres_area_dict[v["pred"]].extend(data_filtered)
@@ -131,13 +136,18 @@ if __name__ == '__main__':
     plt.ylim(q1 - 2 * (q3 - q1), q3 + 2 * (q3 - q1))
 
     # save fig
-    fig_path = cam_result_root.joinpath(f"violinplot_top_{cam_top_n_area}.png")
+    fig_path = cam_result_root.joinpath(f"violinplot_top_{cam_top_n_area}_area.png")
     plt.savefig(fig_path)
     print(f"violin plot : '{fig_path.resolve()}'")
-    fig_path = cam_result_root.joinpath(f"violinplot_top_{cam_top_n_area}.svg")
+    fig_path = cam_result_root.joinpath(f"violinplot_top_{cam_top_n_area}_area.svg")
     plt.savefig(fig_path)
     print(f"violin plot : '{fig_path.resolve()}'")
 
+    # save csv file
+    if cam_top_n_area == 1:
+        csv_path = cam_result_root.joinpath(f"top_1_area.csv")
+        pd.DataFrame(tmp_dict).to_csv(csv_path, encoding='utf_8_sig', index=False)
+    
     print("(S, L) = ({},  {})".format(
         np.quantile(thres_area_dict['S'], 0.5),
         # np.quantile(thres_area_dict['M'], 0.5),
