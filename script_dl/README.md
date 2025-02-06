@@ -29,7 +29,7 @@
 3. How to run CAM analysis
 ```
 
-## Tracking DL Results (scripts `7.`)
+## Tracking DL Results (script `7.`)
 
 ```text
 1. How to gernerate a DB-like file for tracking the parameters and model performance (score)
