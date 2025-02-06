@@ -27,18 +27,6 @@ pip install umap-learn==0.5.6
 - GPU: RTX-4090 with 24GB VRAM
 - RAM: 64 GB DDR5
 
-## Cellpose Segmentation for Palmskin (2024-12-25)
-
-1. Create an environment follow the setup instructions provided at [Cellpose](https://github.com/MouseLand/cellpose?tab=readme-ov-file#installation)
-
-2. Run the following commands in the "cellpose" environment.
-
-```shell
-pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn imagecodecs scikit-image scikit-learn
-mamba install imgaug=0.4.0
-mamba install numpy=1.23.0
-```
-
 ## Notifications
 
 - Do NOT modify the name of this repository. If you really need to rename the repository, remember to update the list of strings in [`utils.py`](modules/shared/utils.py#L58).

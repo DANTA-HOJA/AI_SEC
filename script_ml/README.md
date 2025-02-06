@@ -2,7 +2,23 @@
 
 ## SEC Instance segmentation (scripts starting with `1.`)
 
+### 1. Cellpose Setup (2024-12-25)
 
+1. Create an environment follow the setup instructions provided at [Cellpose](https://github.com/MouseLand/cellpose?tab=readme-ov-file#installation)
+
+2. Run the following commands in the "cellpose" environment.
+
+```shell
+pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn imagecodecs scikit-image scikit-learn
+mamba install imgaug=0.4.0
+mamba install numpy=1.23.0
+```
+
+### 2. How to run SEC instance segmentation
+
+```text
+description of this section
+```
 
 ## Create ML Dataset (scripts starting with `2.`)
 
