@@ -2,6 +2,8 @@
 
 ## Data Information (No updates after 2023-03-24)
 
+- palmskin_raw_lif : ```[ Ch1, Ch2, Ch3, Ch4 ] -> [ B, G, R, (BF) ]```
+
 - 目前最大編號 : ```207```
 - 作為統計依據的 Data 資料夾 : ```{20221209_UPDATE_82}_Academia_Sinica_i324```
 
