@@ -37,4 +37,4 @@ mamba install numpy=1.23.0
 
 - At least 150 GB of disk space is required.
 - Create the dataset on an SSD to ensure reasonable processing times.
-- The entire project uses glob for file searches. If you need to save images in the project folder, please use file formats other than `.tif` or `.tiff`.
+- The entire project uses [`glob`](https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob) for file searches. If you need to save images in the project folder, please use file formats other than `.tif` or `.tiff`.
