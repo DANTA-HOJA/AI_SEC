@@ -1,27 +1,36 @@
 # Instructions for Deep Learning (DL) Methods
 
-## Create DL Dataset (scripts in `1.make_dataset/`)
+## Create DL Dataset (scripts `1.x`)
 
 ```text
 1. How to create DL datasets
 2. where to save the DL datasets
 ```
 
-## DL Trianing (scripts in `2.training/`)
+```text
+1.make_dataset/
+    |
+    |--- 1.1.crop_images.py
+    |--- 1.2.create_dataset_file.py
+    |...
+    |...
+```
+
+## DL Trianing (scripts `2.x`)
 
 ```text
 1. How to train a DL model
 2. where to save the DL models
 ```
 
-## DL Testing (scripts in `3.test_by_img/` and `4.test_by_fish/`)
+## DL Testing (scripts `3.x` and `4.x`)
 
 ```text
 1. How to run test (prediction): test_by_img / test_by_fish
 2. where to save the DL results
 ```
 
-## Class Activation Map (Grad-CAM) (scripts in `5.make_cam_gallery/` and `6.run_cam_analysis/`)
+## Class Activation Map (Grad-CAM) (scripts `5.x` and `6.x`)
 
 ```text
 1. How to gernerate the CAMs
@@ -29,7 +38,7 @@
 3. How to run CAM analysis
 ```
 
-## Tracking DL Results (script `7.update_db_file/`)
+## Tracking DL Results (script `7.`)
 
 ```text
 1. How to gernerate a DB-like file for tracking the parameters and model performance (score)
