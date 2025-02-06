@@ -26,7 +26,6 @@ dev/ipynb_playground/tensorboardx/**
 !dev/ipynb_playground/tensorboardx/**/*.ipynb
 !dev/ipynb_playground/yaml/sample_config.yaml
 
-script_ml/data**
-
-!test.toml
 !script*/**/*.toml
+!db_path_plan.toml
+!test.toml
