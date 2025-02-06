@@ -44,7 +44,7 @@
 1. How to gernerate a DB-like file for tracking the parameters and model performance (score)
 ```
 
-## Configuration Settings Examples (.toml)
+## Configuration Settings Examples (*.toml)
 
 ```text
 A series of .ipynb notebooks to demonstrate the valid inputs for configurations.
