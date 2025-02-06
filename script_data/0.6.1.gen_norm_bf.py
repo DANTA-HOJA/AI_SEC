@@ -11,7 +11,7 @@ from rich.pretty import Pretty
 from rich.progress import track
 from rich.traceback import install
 
-pkg_dir = Path(__file__).parents[2] # `dir_depth` to `repo_root`
+pkg_dir = Path(__file__).parents[1] # `dir_depth` to `repo_root`
 if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
     sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
