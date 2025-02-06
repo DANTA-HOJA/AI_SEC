@@ -46,14 +46,6 @@ mamba install numpy=1.23.0
 - Create the dataset on an SSD or using an OS like Linux with aggressive caching to ensure reasonable processing times.
 - The entire project uses [`glob`](https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob) for file searches. If you need to save images in the project folder, please use file formats other than `.tif` or `.tiff`.
 
-## `db_path_plan.toml`
-
-A file that handles the linking of data and code, allowing them to be stored separately, i.e., enabling the data to be placed anywhere on your system.
-
-```text
-descriptions for the file
-```
-
 ## File Structure
 
 `Tools/` : The scripts are for debugging. **Please do not run them unless necessary; use at your own risk.**
@@ -71,6 +63,16 @@ descriptions for the file
 `script_dl/` : Everything related to deep learning, including CAM analysis.
 
 `script_adv/` : Advanced results, such as "critical SEC number" and "feature-subtracted images", etc.
+
+** For detailed instructions for each part, please click on the corresponding directory (folder).
+
+## `db_path_plan.toml`
+
+A file that handles the linking of data and code, allowing them to be stored separately, i.e., enabling the data to be placed anywhere on your system.
+
+```text
+descriptions for the file (每個 folder 對應甚麼要講清楚)
+```
 
 ** For detailed instructions for each part, please click on the corresponding directory (folder).
 
