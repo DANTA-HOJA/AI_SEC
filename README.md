@@ -29,9 +29,10 @@ pip install umap-learn==0.5.6
 
 ## Notifications
 
-- Do NOT modify the name of this repository. If you really need to rename the repository, remember to update the list of strings in [`utils.py`](modules/shared/utils.py#L58).
-- At least 150 GB of disk space is required.
-- Create the dataset on an SSD or using an OS like Linux with aggressive caching to ensure reasonable processing times.
+- Do **NOT** modify the name of this repository. If you really need to rename the repository, remember to update the list of strings in [`utils.py`](modules/shared/utils.py#L58).
+- At least **150 GB** of disk space is required.
+- Do **NOT** run a script with a larger number before ensuring that all scripts with smaller numbers have been executed, i.e., always execute scripts in **sequential order**.
+- Create the dataset on an **SSD** or using an OS like Linux with **aggressive caching** to ensure reasonable processing times.
 - The entire project uses [`glob`](https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob) for file searches. If you need to save images in the project folder, please use file formats other than `.tif` or `.tiff`.
 
 ## File Structure
