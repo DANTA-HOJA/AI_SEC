@@ -1,6 +1,6 @@
 # Instructions for (traditional) Machine Learning (ML) Methods
 
-## SEC Instance segmentation (scripts starting with `1.`)
+## SEC Instance segmentation (script `1.`)
 
 ### 1. Cellpose Setup (2024-12-25)
 
@@ -20,35 +20,35 @@ mamba install numpy=1.23.0
 description of this section
 ```
 
-## Create ML Dataset (scripts starting with `2.`)
+## Create ML Dataset (script `2.`)
 
 ```text
 1. How to create ML datasets
 2. where to save the ML datasets
 ```
 
-## ML Training with Cell Features and Their Results (scripts starting with `3.`)
+## ML Training with Cell Features and Their Results (scripts `3.x`)
 
 ```text
 1. How to train a ML model with cell features
 2. where to save the ML results
 ```
 
-## ML Training with PCA Features and Its Results (scripts starting with `4.`)
+## ML Training with PCA Features and Its Results (script `4.a`)
 
 ```text
 1. How to train a ML model with PCA features
 2. where to save the ML results
 ```
 
-## Create UMAP with PCA Features (scripts `5.c`)
+## Create UMAP with PCA Features (script `5.c`)
 
 ```text
 1. How to create UMAP with PCA features
 2. where to save the UMAP
 ```
 
-## Configuration Settings Examples (.toml)
+## Configuration Settings Examples (*.toml)
 
 ```text
 A series of .ipynb notebooks to demonstrate the valid inputs for configurations.
