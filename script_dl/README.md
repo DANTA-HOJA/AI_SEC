@@ -39,4 +39,11 @@
 
 ```text
 A series of .ipynb notebooks to demonstrate the valid inputs for configurations.
+
+for example:
+
+script_dl/2.training/2.a.vit_b_16.py <-> script_dl/Config/2.training.toml
+script_dl/4.test_by_fish/4.a.vit_b_16.py <-> script_dl/Config/4.test_by_fish.toml
+...
 ```
+
