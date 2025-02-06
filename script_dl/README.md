@@ -1,6 +1,6 @@
 # Instructions for Deep Learning (DL) Methods
 
-## 1. Create DL Dataset (scripts starting with `1.`)
+## Create DL Dataset (scripts starting with `1.`)
 
 ```text
 1. How to create DL datasets
