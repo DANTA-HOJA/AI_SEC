@@ -11,7 +11,7 @@
     |--- {`palmskin_param_note`}_PalmSkin_reCollection/
     |--- Clustered_File/
     |--- data.csv
-    |--- datasplit_[RND].csv
+    |--- datasplit_[`RND`].csv
     |--- split_count.log
 ```
 
@@ -23,6 +23,8 @@
 
 #### Converting 3D `LIF` to 2D `TIFF` (script `0.2.1`)
 
+- Script: [0.2.1.preprocess_palmskin.py](script_data/0.2.1.preprocess_palmskin.py)
+- Config: [Config/0.2.1.preprocess_palmskin.toml](script_data/Config/0.2.1.preprocess_palmskin.toml)
 ```text
 1. How to create
 2. where to save
