@@ -2,12 +2,14 @@ root = "" # absolute path of "ZebraFish_DB" on this computer
 
 data_nasdl          = "{Data}_NASDL"
 data_processed      = "{Data}_Processed"
-dataset_cropped     = "{Dataset}_Cropped" # AP with HHC (Horiz half cut)
-dataset_cropped_v2  = "{Dataset}_Cropped_v2" # AP with HHC (Horiz half cut)
-dataset_cropped_v3  = "{Dataset}_Cropped_v3" # User specify size
+dataset_cropped     = "{Dataset}_Cropped" # (previous ver.) AP with HHC (Horiz half cut)
+dataset_cropped_v2  = "{Dataset}_Cropped_v2" # (previous ver.) AP with HHC (Horiz half cut)
+dataset_cropped_v3  = "{Dataset}_DL"
+dataset_ml          = "{Dataset}_ML"
+model_bfseg         = "{Model}_BFSeg"
 model_cellpose      = "{Model}_Cellpose"
-model_history       = "{Model}_History"
-model_prediction    = "{Model}_Prediction"
+model_history       = "{Model}_DL"
+model_prediction    = "{Results}_DL"
 result_ml           = "{Results}_ML"
 result_adv          = "{Results}_Advanced"
 
