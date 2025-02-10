@@ -1,6 +1,16 @@
 # Instructions for Data Preprocessing
 
+## Notifications (Before running any commands in the following sections)
+
+1. Ensure that you are in the ***Python environment*** configured for this repository.
+2. Confirm that your ***current working directory*** is the root of this repository.
+
+     - In a terminal emulator, if no command has been entered, the directory shown before the cursor indicates the ***current working directory***.
+     - To change the ***current working directory***, use the `cd` command to navigate to the desired directory.
+
 ## Data Structure
+
+After completing all the following tutorials, a qualified **data instance** should look like this.
 
 ```text
 {`note`}_Academia_Sinica_i[Num]/
@@ -23,12 +33,22 @@
 
 #### Converting 3D `LIF` to 2D `TIFF` (script `0.2.1`)
 
-- Script: [0.2.1.preprocess_palmskin.py](script_data/0.2.1.preprocess_palmskin.py)
-- Config: [Config/0.2.1.preprocess_palmskin.toml](script_data/Config/0.2.1.preprocess_palmskin.toml)
-```text
-1. How to create
-2. where to save
-```
+- **Script: [`0.2.1.preprocess_palmskin.py`][SCRIPT-0.2.1]**
+- **Config: [`Config/0.2.1.preprocess_palmskin.toml`][TOML-0.2.1]**
+
+1. Open the [`0.2.1.preprocess_palmskin.toml`][TOML-0.2.1] file and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.2.1].
+2. Run the following command:
+
+    ```shell
+    cd script_data/
+    python 0.2.1.preprocess_palmskin.py
+    ```
+
+3. Check the result in [DST_DIR-0.2.1]
+
+[SCRIPT-0.2.1]: 0.2.1.preprocess_palmskin.py
+[TOML-0.2.1]: Config/0.2.1.preprocess_palmskin.toml
+[EXAMPLE_CONFIG-0.2.1]: docs/examples/dl_config
 
 ### Bright-field Image (Per Fish)
 
