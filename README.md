@@ -20,12 +20,13 @@ mamba install mkl==2024.0
 pip install umap-learn==0.5.6
 ```
 
-## Hardware Information
+## System Information
 
-- OS: Ubuntu 22.04
 - CPU: i9-13900KS
 - GPU: RTX-4090 with 24GB VRAM
 - RAM: 64 GB DDR5
+- OS: Ubuntu 22.04
+- Python Version: 3.10
 
 ## Notifications
 
