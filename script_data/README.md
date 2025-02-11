@@ -132,7 +132,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 ### 2. Res18-Unet Automated Segmentation
 
 - For details, please refer to [`script_bfseg/`](../script_bfseg/)
-- After the automated segmentation, two new images are added to each `fish_dname` directory.
+- After the automated segmentation, two new images are added to each `fish_dname` directory:
 
     ```text
     📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
@@ -149,10 +149,32 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 ### 3. Obtaining the standard length and trunk surface area
 
-```text
-1. How to create
-2. where to save
-```
+- **Script**: [`0.3.2.measure_unet_area.py`][SCRIPT-0.3.2]
+- **Config**: [`Config/0.3.1.analyze_brightfield.toml`][TOML-0.3.1]
+
+1. Open the [`0.3.1.analyze_brightfield.toml`][TOML-0.3.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.3.1].
+2. Run the following command:
+
+    ```shell
+    cd script_data/
+    python 0.3.2.measure_unet_area.py
+    ```
+
+3. A measurement file is added to each `fish_dname` directory:
+
+    ```text
+    📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
+    │ ( ⭡ referred to as `fish_dname`, abbr. of 'fish data name')
+    │
+    ├── 🖼️ 02_cropped_BF.tif
+    ├── 📄 UNetAnalysis.csv ( ⭠ Measurement file )
+    ├── 🖼️ UNet_predict_mask.tif
+    ├── 🖼️ UNet_cropped_BF--MIX.tif
+    ├── 📄 ...
+    ├── 🖼️ ...
+    └── 📂 MetaImage/
+        └── 🖼️ ...
+    ```
 
 ## File Collector (script `0.4.1`)
 
@@ -212,3 +234,5 @@ A series of .ipynb notebooks to demonstrate the valid inputs for configurations.
 [SCRIPT-0.3.1]: 0.3.1.analyze_brightfield.py
 [TOML-0.3.1]: Config/0.3.1.analyze_brightfield.toml
 [EXAMPLE_CONFIG-0.3.1]: docs/examples/dl_config
+
+[SCRIPT-0.3.2]: 0.3.2.measure_unet_area.py
