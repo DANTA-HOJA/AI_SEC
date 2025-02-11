@@ -6,19 +6,32 @@
 3. Link to deposited data.
 ```
 
-## Package Installation Test (2024-06-03)
+## Installation
 
-```shell
-mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
-pip install scikit-image==0.22.0 scikit-learn==1.4.0
-pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn imagecodecs
-mamba install pandas pyimagej openjdk=8 imgaug=0.4.0
-pip install albumentations==1.3.1
-pip install grad-cam==1.4.8
-mamba install numpy=1.23.0
-mamba install mkl==2024.0
-pip install umap-learn==0.5.6
-```
+1. Follow the instructions [here][miniforge] to install `Miniforge`.
+
+[miniforge]:https://github.com/conda-forge/miniforge
+
+1. Create a new environment and activate it:
+
+    ```shell
+    mamba create -n AI_SEC python=3.10
+    mamba activate AI_SEC
+    ```
+
+2. Install the required packages (Tested on 2024-06-03):
+
+    ```shell
+    mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
+    pip install scikit-image==0.22.0 scikit-learn==1.4.0
+    pip install -U colorama toml tomlkit matplotlib tqdm rich seaborn imagecodecs
+    mamba install pandas pyimagej openjdk=8 imgaug=0.4.0
+    pip install albumentations==1.3.1
+    pip install grad-cam==1.4.8
+    mamba install numpy=1.23.0
+    mamba install mkl==2024.0
+    pip install umap-learn==0.5.6
+    ```
 
 ## System Information
 
