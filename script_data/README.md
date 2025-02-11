@@ -15,25 +15,22 @@
 After completing all the following tutorials, a ***qualified data instance*** should look like this.
 
 ```text
-{`note`}_Academia_Sinica_i[Num]/
-    |
-    |--- {`bf_param_note`}_BrightField_analyze/
-    |--- {`bf_param_note`}_BrightField_reCollection/
-    |--- {`palmskin_param_note`}_PalmSkin_preprocess/
-    |--- {`palmskin_param_note`}_PalmSkin_reCollection/
-    |--- Clustered_File/
-    |--- data.csv
-    |--- datasplit_[`RND`].csv
-    |--- split_count.log
+📂 {`note`}_Academia_Sinica_i[Num]/ ( ⭠ referred to as `data instance` )
+├── 📂 {`bf_param_note`}_BrightField_analyze/
+├── 📂 {`bf_param_note`}_BrightField_reCollection/ ( ⭠ Optional )
+├── 📂 {`palmskin_param_note`}_PalmSkin_preprocess/
+├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/ ( ⭠ Optional )
+├── 📂 Clustered_File/
+├── 📄 data.csv
+├── 📄 datasplit_[`RND`].csv
+└── 📄 split_count.log
 ```
 
-## Image Processing
-
-### Palmskin Image (Per Image)
+## Palmskin Image (Per Image) (scripts `0.2.x`)
 
 - ***Included in the deposited data***
 
-#### 1. Converting 3D `LIF` to 2D `TIFF` (script `0.2.1`)
+### 1. Converting 3D `LIF` to 2D `TIFF`
 
 - **Script**: [`0.2.1.preprocess_palmskin.py`][SCRIPT-0.2.1]
 - **Config**: [`Config/0.2.1.preprocess_palmskin.toml`][TOML-0.2.1]
@@ -72,22 +69,22 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 [TOML-0.2.1]: Config/0.2.1.preprocess_palmskin.toml
 [EXAMPLE_CONFIG-0.2.1]: docs/examples/dl_config
 
-### Bright-field Image (Per Fish)
+## Bright-field Image (Per Fish)  (scripts `0.3.x`)
 
 - ***Included in the deposited data***
 
-#### 1. Cropping and Converting from 16-bit to 8-bit Image (script `0.3.1`)
+### 1. Cropping and Converting from 16-bit to 8-bit Image
 
 ```text
 1. How to create
 2. where to save
 ```
 
-#### 2. Res18-Unet Automated Segmentation
+### 2. Res18-Unet Automated Segmentation
 
 - Please refer to [`script_bfseg/`](../script_bfseg/)
 
-#### 3. Obtaining the standard length and trunk surface area (script `0.3.2`)
+### 3. Obtaining the standard length and trunk surface area
 
 ```text
 1. How to create
@@ -102,7 +99,7 @@ Rearrange the results together (for easier viewing)
 
 ## Clustered File (scripts `0.5.x`)
 
-### 1. create `data.csv`
+### 1. Create `data.csv`
 
 ```text
 columns:
@@ -115,14 +112,14 @@ Palmskin Posterior (SP8)
 "Standard Length, SL (um)"
 ```
 
-### 2. split train/valid/test
+### 2. Split train/valid/test
 
 ```text
 1. How to create
 2. where to save
 ```
 
-### 3. generate size label (clustering)
+### 3. Generate size label (clustering)
 
 ```text
 1. How to create
