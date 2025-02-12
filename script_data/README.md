@@ -127,7 +127,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
     │   │   └── 📂 ...
     ```
 
-    Note: You may see many variants of images in a single `fish_dname` directory, but we only focus on `02_cropped_BF.tif`, which serves as the image for manual segmentation and Res18-Unet automated segmentation. Only fish IDs 1 to 255 include manual segmentation, which is used to train the Res18-Unet model (described in the next section).
+    > Note: You may see many variants of images in a single `fish_dname` directory, but we only focus on `02_cropped_BF.tif`, which serves as the image for manual segmentation and Res18-Unet automated segmentation. Only fish IDs 1 to 255 include manual segmentation, which is used to train the Res18-Unet model (described in the next section).
 
 ### 2. Res18-Unet Automated Segmentation
 
