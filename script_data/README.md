@@ -181,11 +181,11 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 ## (Optional) File Collector (script `0.4.1`)
 
-The file structure is based on fish IDs, which makes it difficult to view a specific type of result at the same time. To address this issue, this script will automatically collect the specified results and rename them using the corresponding fish IDs.
-
 | **Script** | **Config** |
 |--------|--------|
 | [`0.4.1.collect_results.py`][SCRIPT-0.4.1] | [`Config/0.4.1.collect_results.toml`][TOML-0.4.1] |
+
+The file structure is based on fish IDs, which makes it difficult to view a specific type of result at the same time. To address this issue, this script will automatically collect the specified results and rename them using the corresponding fish IDs.
 
 1. Open the [`0.4.1.collect_results.toml`][TOML-0.4.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.4.1].
 2. Run the following command:
@@ -219,13 +219,13 @@ The file structure is based on fish IDs, which makes it difficult to view a spec
 
 ### 1. Create `data.csv`
 
-The script will automatically scan the measurement files and create a `CSV` file.
-
 | **Script** | **Config** |
 |--------|--------|
 | [`0.5.1.create_tabular_file.py`][SCRIPT-0.5.1] | [`Config/0.5.cluster_data.toml`][TOML-0.5] |
 
-1. Open the [0.5.cluster_data.toml`][TOML-0.5] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.5.1].
+The script will automatically scan the measurement files and create a `CSV` file.
+
+1. Open the [`0.5.cluster_data.toml`][TOML-0.5] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.5.1].
 2. Run the following command:
 
     ```shell
@@ -253,10 +253,65 @@ The script will automatically scan the measurement files and create a `CSV` file
 
 ### 2. Split train/valid/test
 
-```text
-1. How to create
-2. where to save
-```
+| **Script** | **Config** |
+|--------|--------|
+| [`0.5.2.split_data.py`][SCRIPT-0.5.2] | [`Config/0.5.cluster_data.toml`][TOML-0.5] |
+
+The script will split all 361 fish samples into three datasets based on the following ratio and save the result as a new file ```datasplit_[`RND`].csv```. The file's columns will be based on `data.csv`, with an additional column ***dataset***.
+
+<table>
+    <tr>
+        <td style="text-align: center;"></td>
+        <td style="text-align: center;"><b>Train</b></td>
+        <td style="text-align: center;"><b>Valid</b></td>
+        <td style="text-align: center;"><b>Test</b></td>
+    </tr>
+    <tr>
+        <th style="text-align: center;">Training / Test</th>
+        <th colspan="2" style="text-align: center;"> 0.8 </th>
+        <th style="text-align: center;">0.2</th>
+    </tr>
+    <tr>
+        <th style="text-align: center;">Train / Valid</th>
+        <th style="text-align: center;"> 0.9 </th>
+        <th style="text-align: center;"> 0.1 </th>
+        <th style="text-align: center;"> --- </th>
+    </tr>
+    <tr>
+        <th style="text-align: center;">Samples</th>
+        <th style="text-align: center;">260</th>
+        <th style="text-align: center;">29</th>
+        <th style="text-align: center;">72</th>
+    </tr>
+</table>
+
+1. Open the [`0.5.cluster_data.toml`][TOML-0.5] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.5.2].
+2. Run the following command:
+
+    ```shell
+    cd script_data/
+    python 0.5.2.split_data.py
+    ```
+
+3. The results are structured as follows:
+
+    ```text
+    📂 {Data}_Processed/
+    │
+    ├── 📂 {`note`}_Academia_Sinica_i[Num]/
+    │   │
+    │   ├── 📂 ...
+    │   ├── 📄 data.csv
+    │   ├── 📄 datasplit_[`RND`].csv (◀️ New CSV file )
+    │   └── 📄 split_count.log (◀️ Recording the sample count )
+    ```
+
+4. The columns in ```datasplit_[`RND`].csv```:
+
+| Brightfield | Analysis Mode | ... | Standard Length, SL (um) | dataset |
+|--------|--------|--------|--------|--------|
+| 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF | ManualAnalysis | ... | 4082.34 | train |
+| ... | ... | ... | ... | ... |
 
 ### 3. Generate size label (clustering)
 
