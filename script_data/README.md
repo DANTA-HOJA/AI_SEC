@@ -34,8 +34,9 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 ### 1. Converting 3D `LIF` to 2D `TIFF`
 
-> **Script**: [`0.2.1.preprocess_palmskin.py`][SCRIPT-0.2.1],
-> **Config**: [`Config/0.2.1.preprocess_palmskin.toml`][TOML-0.2.1]
+| Script | Config |
+|--------|--------|
+| [`0.2.1.preprocess_palmskin.py`][SCRIPT-0.2.1] | [`Config/0.2.1.preprocess_palmskin.toml`][TOML-0.2.1] |
 
 1. Open the [`0.2.1.preprocess_palmskin.toml`][TOML-0.2.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.2.1].
 2. Run the following command:
