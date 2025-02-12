@@ -12,7 +12,7 @@
 
 ## Data Structure
 
-After completing all the following tutorials, a ***qualified data instance*** should look like this.
+After completing all the following tutorials, a ***qualified data instance*** should look like this:
 
 ```text
 📂 {Data}_Processed/
@@ -28,14 +28,14 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 │   └── 📄 split_count.log
 ```
 
-## Palmskin Image (Per Image) (scripts `0.2.x`)
+## Palmskin Image (Per Image) (scripts `0.2.1`)
 
 - ***Included in the deposited data***
 
 ### 1. Converting 3D `LIF` to 2D `TIFF`
 
-- **Script**: [`0.2.1.preprocess_palmskin.py`][SCRIPT-0.2.1]
-- **Config**: [`Config/0.2.1.preprocess_palmskin.toml`][TOML-0.2.1]
+> **Script**: [`0.2.1.preprocess_palmskin.py`][SCRIPT-0.2.1],
+> **Config**: [`Config/0.2.1.preprocess_palmskin.toml`][TOML-0.2.1]
 
 1. Open the [`0.2.1.preprocess_palmskin.toml`][TOML-0.2.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.2.1].
 2. Run the following command:
@@ -180,10 +180,10 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 ## (Optional) File Collector (script `0.4.1`)
 
+The file structure is based on fish IDs, which makes it difficult to view a specific type of result at the same time. To address this issue, this script will automatically collect the specified results and rename them using the corresponding fish IDs.
+
 - **Script**: [`0.4.1.collect_results.py`][SCRIPT-0.4.1]
 - **Config**: [`Config/0.4.1.collect_results.toml`][TOML-0.4.1]
-
-> The file structure is based on fish IDs, which makes it difficult to view a specific type of result at the same time. To address this issue, this script will automatically collect the specified results and rename them using the corresponding fish IDs.
 
 1. Open the [`0.4.1.collect_results.toml`][TOML-0.4.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.4.1].
 2. Run the following command:
