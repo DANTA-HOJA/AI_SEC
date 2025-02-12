@@ -15,13 +15,13 @@
 After completing all the following tutorials, a ***qualified data instance*** should look like this:
 
 ```text
-📂 {Data}_Processed/ (⬅️ Specified in `db_path_plan.toml`)
+📂 {Data}_Processed/ (◀️ Specified in `db_path_plan.toml`)
 │
-├── 📂 {`note`}_Academia_Sinica_i[Num]/ (⬅️ Referred to as 'data instance')
+├── 📂 {`note`}_Academia_Sinica_i[Num]/ (◀️ Referred to as 'data instance')
 │   ├── 📂 {`bf_param_note`}_BrightField_analyze/
-│   ├── 📂 {`bf_param_note`}_BrightField_reCollection/ (⬅️ Optional)
+│   ├── 📂 {`bf_param_note`}_BrightField_reCollection/ (◀️ Optional)
 │   ├── 📂 {`palmskin_param_note`}_PalmSkin_preprocess/
-│   ├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/ (⬅️ Optional)
+│   ├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/ (◀️ Optional)
 │   ├── 📂 Clustered_File/
 │   ├── 📄 data.csv
 │   ├── 📄 datasplit_[`RND`].csv
