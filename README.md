@@ -6,6 +6,12 @@
 3. Link to deposited data.
 ```
 
+## Data
+
+The data is available from [here][data_repo]
+
+[data_repo]: https://data_repo
+
 ## Installation
 
 1. Follow the instructions [here][miniforge-repo] to install `Miniforge`.
@@ -36,7 +42,6 @@
 
 [miniforge-repo]: https://github.com/conda-forge/miniforge
 [fiji-dllink]: https://imagej.net/software/fiji/
-[data_repo]: https://data_repo
 
 ## System Information
 
@@ -84,16 +89,8 @@ descriptions for the file (每個 folder 對應甚麼要講清楚)
 
 ** For detailed instructions for each part, please click on the corresponding directory (folder).
 
-## (TBD) Need to choose a licence?
+## Thanks
 
-之前 `ccsyan/labeling-cells-using-slic` 有放，但我對這塊不太熟
-
-## (TBD) Need to put References?
-
-之前 `ccsyan/labeling-cells-using-slic` 有放，還是其實不用因為 paper 有了?
-
-## (TBD) Feedback?
-
-之前 `ccsyan/labeling-cells-using-slic` 有以下文字：
-
-**Made changes to the layout templates or some other part of the code? Fork this repository, make your changes, and send a pull request. Do these codes help on your research? Please cite as the follows. Skin cells undergo XXXXXXX. KY Chan, CCS Yan, HY Roan, SC Hsu, CD Hsiao, CP Hsu, CH Chen.**
+- <https://sites.google.com/site/qingzongtseng/find-focus>
+- <https://github.com/ccsyan/labeling-cells-using-slic>
+- <https://github.com/usuyama/pytorch-unet>
