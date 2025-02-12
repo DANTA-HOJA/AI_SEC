@@ -75,8 +75,8 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 ### 1. Cropping and Converting from 16-bit to 8-bit Image
 
-- **Script**: [`0.3.1.analyze_brightfield.py`][SCRIPT-0.3.1]
-- **Config**: [`Config/0.3.1.analyze_brightfield.toml`][TOML-0.3.1]
+> **Script**: [`0.3.1.analyze_brightfield.py`][SCRIPT-0.3.1],
+> **Config**: [`Config/0.3.1.analyze_brightfield.toml`][TOML-0.3.1]
 
 0. Install the `Fiji (ImageJ)` plugin [`Find Focused Slices`](https://sites.google.com/site/qingzongtseng/find-focus)
 
@@ -150,8 +150,8 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 ### 3. Obtaining the standard length and trunk surface area
 
-- **Script**: [`0.3.2.measure_unet_area.py`][SCRIPT-0.3.2]
-- **Config**: [`Config/0.3.1.analyze_brightfield.toml`][TOML-0.3.1]
+> **Script**: [`0.3.2.measure_unet_area.py`][SCRIPT-0.3.2],
+> **Config**: [`Config/0.3.1.analyze_brightfield.toml`][TOML-0.3.1]
 
 1. Open the [`0.3.1.analyze_brightfield.toml`][TOML-0.3.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.3.1].
 2. Run the following command:
@@ -180,8 +180,8 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
 The file structure is based on fish IDs, which makes it difficult to view a specific type of result at the same time. To address this issue, this script will automatically collect the specified results and rename them using the corresponding fish IDs.
 
-- **Script**: [`0.4.1.collect_results.py`][SCRIPT-0.4.1]
-- **Config**: [`Config/0.4.1.collect_results.toml`][TOML-0.4.1]
+> **Script**: [`0.4.1.collect_results.py`][SCRIPT-0.4.1],
+> **Config**: [`Config/0.4.1.collect_results.toml`][TOML-0.4.1]
 
 1. Open the [`0.4.1.collect_results.toml`][TOML-0.4.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.4.1].
 2. Run the following command:
@@ -214,6 +214,9 @@ The file structure is based on fish IDs, which makes it difficult to view a spec
 ## Clustered File (scripts `0.5.x`)
 
 ### 1. Create `data.csv`
+
+This script will automatically scan the measurement file and create a `CSV` file.
+
 
 ```text
 columns:
