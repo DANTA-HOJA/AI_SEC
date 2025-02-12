@@ -219,19 +219,37 @@ The file structure is based on fish IDs, which makes it difficult to view a spec
 
 ### 1. Create `data.csv`
 
-This script will automatically scan the measurement file and create a `CSV` file.
+The script will automatically scan the measurement files and create a `CSV` file.
 
+| **Script** | **Config** |
+|--------|--------|
+| [`0.5.1.create_tabular_file.py`][SCRIPT-0.5.1] | [`Config/0.5.cluster_data.toml`][TOML-0.5] |
 
-```text
-columns:
+1. Open the [0.5.cluster_data.toml`][TOML-0.5] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.5.1].
+2. Run the following command:
 
-Brightfield
-Analysis Mode
-Palmskin Anterior (SP8)
-Palmskin Posterior (SP8)
-"Trunk surface area, SA (um2)"
-"Standard Length, SL (um)"
-```
+    ```shell
+    cd script_data/
+    python 0.5.1.create_tabular_file.py
+    ```
+
+3. The results are structured as follows:
+
+    ```text
+    📂 {Data}_Processed/
+    │
+    ├── 📂 {`note`}_Academia_Sinica_i[Num]/
+    │   │
+    │   ├── 📂 ...
+    │   └── 📄 data.csv (◀️ The CSV file )
+    ```
+
+4. The columns in `data.csv`:
+
+| **Brightfield** | **Analysis Mode** | **Palmskin Anterior (SP8)** | **Palmskin Posterior (SP8)** | **Trunk surface area, SA (um2)** | **Standard Length, SL (um)** |
+|--------|--------|--------|--------|--------|--------|
+| 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF | ManualAnalysis | 20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB | 20220610_CE001_palmskin_8dpf - Series002_fish_1_P_RGB | 1328479.97 | 4082.34 |
+| ... | ... | ... | ... | ... | ... |
 
 ### 2. Split train/valid/test
 
@@ -277,3 +295,7 @@ A series of .ipynb notebooks to demonstrate the valid inputs for configurations.
 [SCRIPT-0.4.1]: 0.4.1.collect_results.py
 [TOML-0.4.1]: Config/0.4.1.collect_results.toml
 [EXAMPLE_CONFIG-0.4.1]: docs/examples/config_data
+
+[SCRIPT-0.5.1]: 0.5.1.create_tabular_file.py
+[TOML-0.5]: Config/0.5.cluster_data.toml
+[EXAMPLE_CONFIG-0.5.1]: docs/examples/config_data
