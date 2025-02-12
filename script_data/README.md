@@ -15,9 +15,8 @@
 After completing all the following tutorials, a ***qualified data instance*** should look like this:
 
 ```text
-📂 {Data}_Processed/
-│
-├── 📂 {`note`}_Academia_Sinica_i[Num]/ ( ⭠ referred to as `data instance` )
+📂 {Data}_Processed/ ( ⭠ Specified in `db_path_plan.toml` )
+├── 📂 {`note`}_Academia_Sinica_i[Num]/ ( ⭠ Referred to as 'data instance' )
 │   ├── 📂 {`bf_param_note`}_BrightField_analyze/
 │   ├── 📂 {`bf_param_note`}_BrightField_reCollection/ ( ⭠ Optional )
 │   ├── 📂 {`palmskin_param_note`}_PalmSkin_preprocess/
@@ -48,14 +47,14 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 3. The results are structured as follows:
 
     ```text
-    📂 {Data}_Processed/
+    📂 {Data}_Processed/ ( ⬅️ Specified in `db_path_plan.toml` )
     │
     ├── 📂 {`note`}_Academia_Sinica_i[Num]/
     │   │
     │   ├── 📂 {`palmskin_param_note`}_PalmSkin_preprocess/
     │   │   │
     │   │   ├── 📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB/
-    │   │   │   │ ( ⭡ referred to as `fish_dname`, abbr. of 'fish data name')
+    │   │   │   │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
     │   │   │   │
     │   │   │   ├── 🖼️ 03_RGB_direct_max_zproj.tif
     │   │   │   ├── 🖼️ ...
@@ -88,7 +87,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
         ├── 📂 ...
         ├── 📂 plugins/
         │   ├── 📄 ...
-        │   ├── 📄 Find_focused_slices.class ( ⭠ place the file here )
+        │   ├── 📄 Find_focused_slices.class ( ⭠ Place the file here )
         │   └── ...
         └── ...
         ```
@@ -104,14 +103,14 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 3. The results are structured as follows:
 
     ```text
-    📂 {Data}_Processed/
+    📂 {Data}_Processed/ ( ⭠ Specified in `db_path_plan.toml` )
     │
     ├── 📂 {`note`}_Academia_Sinica_i[Num]/
     │   │
     │   ├── 📂 {`bf_param_note`}_BrightField_analyze/
     │   │   │
     │   │   ├── 📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
-    │   │   │   │ ( ⭡ referred to as `fish_dname`, abbr. of 'fish data name')
+    │   │   │   │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
     │   │   │   │
     │   │   │   ├── 🖼️ 02_cropped_BF.tif
     │   │   │   ├── 📄 ManualAnalysis.csv ( ⭠ Only for fish IDs 1 to 255 )
@@ -136,7 +135,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
     ```text
     📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
-    │ ( ⭡ referred to as `fish_dname`, abbr. of 'fish data name')
+    │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
     │
     ├── 🖼️ 02_cropped_BF.tif
     ├── 🖼️ UNet_predict_mask.tif ( ⭠ New image )
@@ -166,7 +165,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
     ```text
     📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
-    │ ( ⭡ referred to as `fish_dname`, abbr. of 'fish data name')
+    │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
     │
     ├── 🖼️ 02_cropped_BF.tif
     ├── 📄 UNetAnalysis.csv ( ⭠ Measurement file )
@@ -196,7 +195,7 @@ The file structure is based on fish IDs, which makes it difficult to view a spec
 3. The results are structured as follows:
 
     ```text
-    📂 {Data}_Processed/
+    📂 {Data}_Processed/ ( ⭠ Specified in `db_path_plan.toml` )
     │
     ├── 📂 {`note`}_Academia_Sinica_i[Num]/
     │   │
