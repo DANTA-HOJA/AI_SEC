@@ -354,3 +354,6 @@ A series of .ipynb notebooks to demonstrate the valid inputs for configurations.
 [SCRIPT-0.5.1]: 0.5.1.create_tabular_file.py
 [TOML-0.5]: Config/0.5.cluster_data.toml
 [EXAMPLE_CONFIG-0.5.1]: docs/examples/config_data
+
+[SCRIPT-0.5.2]: 0.5.2.split_data.py
+[EXAMPLE_CONFIG-0.5.2]: docs/examples/config_data
