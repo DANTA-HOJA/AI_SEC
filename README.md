@@ -38,10 +38,27 @@ The data is available from [here][data_repo]
 
 4. Download the [`Fiji (ImageJ)`][fiji-dllink] and udpate the ***absolute path*** to `db_path_plan.toml`
 
-5. Download our [data][data_repo] and update the ***absolute path*** to `db_path_plan.toml`
+5. Install the `Fiji (ImageJ)` plugin [`Find Focused Slices`][find-focused-web]
+
+   1. Download the plugin file [`Find_focused_slices.class`][find-focused-dllink]
+   2. Place it into the `plugins` folder of your `Fiji (ImageJ)` installation directory:
+
+        ```text
+        📂 Fiji.app/
+        ├── 📂 ...
+        ├── 📂 plugins/
+        │   ├── 📂 ...
+        │   ├── 📄 Find_focused_slices.class (◀️ Place the file here )
+        │   └── 📄 ...
+        └── ...
+        ```
+
+6. Download our [data][data_repo] and update the ***absolute path*** to `db_path_plan.toml`
 
 [miniforge-repo]: https://github.com/conda-forge/miniforge
 [fiji-dllink]: https://imagej.net/software/fiji/
+[find-focused-web]: https://sites.google.com/site/qingzongtseng/find-focus
+[find-focused-dllink]: https://github.com/qztseng/imagej_plugins/raw/master/current/Find_focused_slices.class
 
 ## System Information
 
