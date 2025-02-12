@@ -8,18 +8,15 @@
 
 ## Installation
 
-1. Follow the instructions [here][miniforge] to install `Miniforge`.
-
-[miniforge]:https://github.com/conda-forge/miniforge
-
-1. Create a new environment and activate it:
+1. Follow the instructions [here][miniforge-repo] to install `Miniforge`.
+2. Create a new environment and activate it:
 
     ```shell
     mamba create -n AI_SEC python=3.10
     mamba activate AI_SEC
     ```
 
-2. Install the required packages (Tested on 2024-06-03):
+3. Install the required packages (Tested on 2024-06-03):
 
     ```shell
     mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
@@ -32,6 +29,14 @@
     mamba install mkl==2024.0
     pip install umap-learn==0.5.6
     ```
+
+4. Download the [`Fiji (ImageJ)`][fiji-dllink] and udpate the ***absolute path*** to `db_path_plan.toml`
+
+5. Download our [data][data_repo] and update the ***absolute path*** to `db_path_plan.toml`
+
+[miniforge-repo]: https://github.com/conda-forge/miniforge
+[fiji-dllink]: https://imagej.net/software/fiji/
+[data_repo]: https://data_repo
 
 ## System Information
 
