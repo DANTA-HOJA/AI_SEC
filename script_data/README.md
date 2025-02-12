@@ -15,12 +15,13 @@
 After completing all the following tutorials, a ***qualified data instance*** should look like this:
 
 ```text
-📂 {Data}_Processed/ ( ⭠ Specified in `db_path_plan.toml` )
-├── 📂 {`note`}_Academia_Sinica_i[Num]/ ( ⭠ Referred to as 'data instance' )
+📂 {Data}_Processed/ ( ⬅️ Specified in `db_path_plan.toml` )
+│
+├── 📂 {`note`}_Academia_Sinica_i[Num]/ ( ⬅️ Referred to as 'data instance' )
 │   ├── 📂 {`bf_param_note`}_BrightField_analyze/
-│   ├── 📂 {`bf_param_note`}_BrightField_reCollection/ ( ⭠ Optional )
+│   ├── 📂 {`bf_param_note`}_BrightField_reCollection/ ( ⬅️ Optional )
 │   ├── 📂 {`palmskin_param_note`}_PalmSkin_preprocess/
-│   ├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/ ( ⭠ Optional )
+│   ├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/ ( ⬅️ Optional )
 │   ├── 📂 Clustered_File/
 │   ├── 📄 data.csv
 │   ├── 📄 datasplit_[`RND`].csv
@@ -54,7 +55,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
     │   ├── 📂 {`palmskin_param_note`}_PalmSkin_preprocess/
     │   │   │
     │   │   ├── 📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB/
-    │   │   │   │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
+    │   │   │   │ ( ⬆️ Referred to as `fish_dname`, abbr. of 'fish data name')
     │   │   │   │
     │   │   │   ├── 🖼️ 03_RGB_direct_max_zproj.tif
     │   │   │   ├── 🖼️ ...
@@ -87,7 +88,7 @@ After completing all the following tutorials, a ***qualified data instance*** sh
         ├── 📂 ...
         ├── 📂 plugins/
         │   ├── 📄 ...
-        │   ├── 📄 Find_focused_slices.class ( ⭠ Place the file here )
+        │   ├── 📄 Find_focused_slices.class ( ⬅️ Place the file here )
         │   └── ...
         └── ...
         ```
@@ -103,19 +104,19 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 3. The results are structured as follows:
 
     ```text
-    📂 {Data}_Processed/ ( ⭠ Specified in `db_path_plan.toml` )
+    📂 {Data}_Processed/ ( ⬅️ Specified in `db_path_plan.toml` )
     │
     ├── 📂 {`note`}_Academia_Sinica_i[Num]/
     │   │
     │   ├── 📂 {`bf_param_note`}_BrightField_analyze/
     │   │   │
     │   │   ├── 📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
-    │   │   │   │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
+    │   │   │   │ ( ⬆️ Referred to as `fish_dname`, abbr. of 'fish data name')
     │   │   │   │
     │   │   │   ├── 🖼️ 02_cropped_BF.tif
-    │   │   │   ├── 📄 ManualAnalysis.csv ( ⭠ Only for fish IDs 1 to 255 )
-    │   │   │   ├── 🖼️ Manual_measured_mask.tif ( ⭠ Only for fish IDs 1 to 255 )
-    │   │   │   ├── 🖼️ Manual_cropped_BF--MIX.tif ( ⭠ Only for fish IDs 1 to 255 )
+    │   │   │   ├── 📄 ManualAnalysis.csv ( ⬅️ Only for fish IDs 1 to 255 )
+    │   │   │   ├── 🖼️ Manual_measured_mask.tif ( ⬅️ Only for fish IDs 1 to 255 )
+    │   │   │   ├── 🖼️ Manual_cropped_BF--MIX.tif ( ⬅️ Only for fish IDs 1 to 255 )
     │   │   │   ├── 📄 ...
     │   │   │   ├── 🖼️ ...
     │   │   │   └── 📂 MetaImage/
@@ -135,11 +136,11 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
     ```text
     📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
-    │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
+    │ ( ⬆️ Referred to as `fish_dname`, abbr. of 'fish data name')
     │
     ├── 🖼️ 02_cropped_BF.tif
-    ├── 🖼️ UNet_predict_mask.tif ( ⭠ New image )
-    ├── 🖼️ UNet_cropped_BF--MIX.tif ( ⭠ New image )
+    ├── 🖼️ UNet_predict_mask.tif ( ⬅️ New image )
+    ├── 🖼️ UNet_cropped_BF--MIX.tif ( ⬅️ New image )
     ├── 📄 ...
     ├── 🖼️ ...
     └── 📂 MetaImage/
@@ -165,10 +166,10 @@ After completing all the following tutorials, a ***qualified data instance*** sh
 
     ```text
     📂 20220610_CE001_palmskin_8dpf - Series001_fish_1_BF/
-    │ ( ⭡ Referred to as `fish_dname`, abbr. of 'fish data name')
+    │ ( ⬆️ Referred to as `fish_dname`, abbr. of 'fish data name')
     │
     ├── 🖼️ 02_cropped_BF.tif
-    ├── 📄 UNetAnalysis.csv ( ⭠ Measurement file )
+    ├── 📄 UNetAnalysis.csv ( ⬅️ Measurement file )
     ├── 🖼️ UNet_predict_mask.tif
     ├── 🖼️ UNet_cropped_BF--MIX.tif
     ├── 📄 ...
@@ -195,13 +196,13 @@ The file structure is based on fish IDs, which makes it difficult to view a spec
 3. The results are structured as follows:
 
     ```text
-    📂 {Data}_Processed/ ( ⭠ Specified in `db_path_plan.toml` )
+    📂 {Data}_Processed/ ( ⬅️ Specified in `db_path_plan.toml` )
     │
     ├── 📂 {`note`}_Academia_Sinica_i[Num]/
     │   │
     │   ├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/
     │   │   │
-    │   │   ├── 📂 03_RGB_direct_max_zproj/ ( ⭠ The specified result )
+    │   │   ├── 📂 03_RGB_direct_max_zproj/ ( ⬅️ The specified result )
     │   │   │   │
     │   │   │   ├── 🖼️ 20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB.tif
     │   │   │   ├── 🖼️ 20220610_CE001_palmskin_8dpf - Series002_fish_1_P_RGB.tif
