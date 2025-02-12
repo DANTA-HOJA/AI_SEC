@@ -147,6 +147,8 @@ After completing all the following tutorials, a ***qualified data instance*** sh
         └── 🖼️ ...
     ```
 
+    > Note: Segmentation results may ***NOT*** be consistent on different computers due to variations in hardware, such as differences in GPU or CPU architectures, floating-point precision, and computation libraries, as well as non-deterministic operations in deep learning frameworks.
+
 ### 3. Obtaining the standard length and trunk surface area
 
 - **Script**: [`0.3.2.measure_unet_area.py`][SCRIPT-0.3.2]
@@ -176,10 +178,40 @@ After completing all the following tutorials, a ***qualified data instance*** sh
         └── 🖼️ ...
     ```
 
-## File Collector (script `0.4.1`)
+## (Optional) File Collector (script `0.4.1`)
 
 - **Script**: [`0.4.1.collect_results.py`][SCRIPT-0.4.1]
 - **Config**: [`Config/0.4.1.collect_results.toml`][TOML-0.4.1]
+
+> The file structure is based on fish IDs, which makes it difficult to view a specific type of result at the same time. To address this issue, this script will automatically collect the specified results and rename them using the corresponding fish IDs.
+
+1. Open the [`0.4.1.collect_results.toml`][TOML-0.4.1] and set the desired parameters. For details, please refer to the [example file][EXAMPLE_CONFIG-0.4.1].
+2. Run the following command:
+
+    ```shell
+    cd script_data/
+    python 0.4.1.collect_results.py
+    ```
+
+3. The results are structured as follows:
+
+    ```text
+    📂 {Data}_Processed/
+    │
+    ├── 📂 {`note`}_Academia_Sinica_i[Num]/
+    │   │
+    │   ├── 📂 {`palmskin_param_note`}_PalmSkin_reCollection/
+    │   │   │
+    │   │   ├── 📂 03_RGB_direct_max_zproj/ ( ⭠ The specified result )
+    │   │   │   │
+    │   │   │   ├── 🖼️ 20220610_CE001_palmskin_8dpf - Series001_fish_1_A_RGB.tif
+    │   │   │   ├── 🖼️ 20220610_CE001_palmskin_8dpf - Series002_fish_1_P_RGB.tif
+    │   │   │   ├── 🖼️ 20220610_CE001_palmskin_8dpf - Series003_fish_2_A_RGB.tif
+    │   │   │   ├── 🖼️ ...
+    │   │   │   └── 📄 {Logs}_collect_palmskin_results.log
+    │   │   │
+    │   │   └── 📂 ...
+    ```
 
 ## Clustered File (scripts `0.5.x`)
 
