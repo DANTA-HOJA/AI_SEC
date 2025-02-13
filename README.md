@@ -56,7 +56,7 @@ The data is available from [here][data_repo]
 5. Install the `Fiji (ImageJ)` plugin [`Find Focused Slices`][find-focused-web]
 
    1. Download the plugin file [`Find_focused_slices.class`][find-focused-dllink]
-   2. Place it into the `plugins` folder of your `Fiji (ImageJ)` installation directory:
+   2. Place it into the `plugins` folder of your `Fiji (ImageJ)` directory:
 
         ```text
         📂 Fiji.app/
