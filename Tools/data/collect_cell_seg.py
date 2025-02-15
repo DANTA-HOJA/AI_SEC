@@ -48,14 +48,14 @@ seg_dirname_cnt
 
 # -----------------------------------------------------------------------------/
 # %%
-result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
-collect_root = result_ml_dir.joinpath("Collected",
-                                      processed_di.instance_name,
+result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_ml")
+collect_root = result_ml_dir.joinpath(processed_di.instance_name,
+                                      f"tool.{notebook_name}",
                                       seg_desc)
 
 for seg_dirname in seg_dirname_cnt.keys():
     
-    dst_dir = collect_root.joinpath(seg_dirname, f"tool.{notebook_name}")
+    dst_dir = collect_root.joinpath(seg_dirname)
     create_new_dir(dst_dir)
     
     paths = list(src_dir.glob(f"*/{seg_desc}/{seg_dirname}/*.seg2o.png"))
