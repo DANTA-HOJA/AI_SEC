@@ -1,4 +1,4 @@
-root = "" # absolute path of "ZebraFish_DB" on this computer
+root = "" # absolute path of data directory on this computer
 
 data_nasdl          = "{Data}_NASDL"
 data_processed      = "{Data}_Processed"
