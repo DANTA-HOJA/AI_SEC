@@ -32,7 +32,7 @@
 
 # -----------------------------------------------------------------------------\
 [Cellpose]
-  cp_model_name = "FishWithLyraData" # `model_file` under "{Model}_Cellpose/"
+  cp_model_name = "cp_231_palmskin" # `model_file` under "{Model}_Cellpose/"
   channels = [0, 0]
   merge = 10
   debug_mode = false
