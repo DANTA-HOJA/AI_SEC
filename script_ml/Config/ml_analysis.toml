@@ -40,6 +40,6 @@
 # -----------------------------------------------------------------------------\
 [ML]
   max_topn_patch = 30
-  single_feature = "top1_patch"
+  single_feature = "cell_coverage"
   img_mode = "RGB" # RGB / GRAY
   img_resize = [224, 224] # [width, height]

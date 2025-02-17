@@ -89,7 +89,11 @@ if __name__ == '__main__':
         temp_dict["dataset"] = clustered_df.loc[fish_id, "dataset"]
         # -------------------------------------------------------
         for k, v in seg_analysis.items():
-            if k == f"patch_sizes": continue
+            if k == "area":
+                temp_dict["cell_coverage"] = v
+                continue
+            if k == f"patch_sizes":
+                continue
             temp_dict[k] = v
         
         for i, patch_size in enumerate(seg_analysis[f"patch_sizes"], start=1):
