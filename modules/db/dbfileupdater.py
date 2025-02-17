@@ -68,12 +68,12 @@ class DBFileUpdater(BaseObject):
         print(f"Latest Version Test Dir: '{ver_test_dir}'")
         # ↑ always build column with latest (final) version test directory
         self._current_db: pd.DataFrame = \
-            self._single_pred_parser.parse(ver_test_dir).set_index("Prediction_ID")
+            self._single_pred_parser.parse(ver_test_dir).set_index("Model_ID")
         self._current_db.index.values[0] = 'std_col' # reset index for easily delete later
         
-        db_root: Path = Path(self._path_navigator.dbpp.dbpp_config["root"])
-        self._csv_path: Path = db_root.joinpath(r"{DB}_Predictions.csv")
-        self._excel_path: Path = db_root.joinpath(r"{DB}_Predictions.xlsx")
+        # db_root: Path = Path(self._path_navigator.dbpp.dbpp_config["root"])
+        self._csv_path: Path = self.model_prediction.joinpath(r"{Results}_DL.csv")
+        self._excel_path: Path = self.model_prediction.joinpath(r"{Results}_DL.xlsx")
         # ---------------------------------------------------------------------/
 
 
@@ -117,7 +117,7 @@ class DBFileUpdater(BaseObject):
             # >>> prediction dir <<<
             prediction_dir = file.parent
             
-            # >>> key: Prediction_ID <<<
+            # >>> key: Model_ID <<<
             name_split = re.split("{|}", prediction_dir.parts[-1])
             if "Test" in name_split[1]:
                 """
@@ -131,8 +131,8 @@ class DBFileUpdater(BaseObject):
                 
                 # check if duplicated
                 if pred_id in prediction_dirs_dict:
-                    raise ValueError(f"{Fore.RED}{Back.BLACK} Detect duplicated 'Prediction_ID': '{pred_id}', "
-                                     f"'Prediction_ID' should be unique in `{self.model_prediction.parts[-1]}`\n"
+                    raise ValueError(f"{Fore.RED}{Back.BLACK} Detect duplicated 'Model_ID': '{pred_id}', "
+                                     f"'Model_ID' should be unique in `{self.model_prediction.parts[-1]}`\n"
                                      f"Dir_1: '{prediction_dirs_dict[pred_id]}'\n"
                                      f"Dir_2: '{prediction_dir}'")
                 # check_ok, add to dict
@@ -154,7 +154,7 @@ class DBFileUpdater(BaseObject):
             """ parse
             """
             new_row = \
-                self._single_pred_parser.parse(v).set_index("Prediction_ID")
+                self._single_pred_parser.parse(v).set_index("Model_ID")
             
             if self._current_db is None:
                 """ init
@@ -177,7 +177,7 @@ class DBFileUpdater(BaseObject):
             
             self._previous_db: pd.DataFrame = \
                 pd.read_csv(self._csv_path, encoding='utf_8_sig',
-                            index_col="Prediction_ID")
+                            index_col="Model_ID")
         else:
             self._previous_db = None
         # ---------------------------------------------------------------------/

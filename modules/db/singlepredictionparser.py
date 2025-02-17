@@ -136,8 +136,8 @@ class SinglePredictionParser(BaseObject):
         final_epoch = name_split[3].split("_")[0] # e.g.: '69_epochs_AugOnFly'
         model_state = name_split[5] # e.g.: 'best'
         
-        # col: Prediction_ID
-        self._parsed_dict["Prediction_ID"] = \
+        # col: Model_ID
+        self._parsed_dict["Model_ID"] = \
                 (f"{time_stamp} | {model_state:5} | {final_epoch}_epoch")
         
         # col: Version
