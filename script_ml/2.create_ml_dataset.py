@@ -105,21 +105,22 @@ if __name__ == '__main__':
     dataset_df = dataset_df.dropna(axis=1)
     
     # save Dataframe as a CSV file (for segmentation)
-    result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
-    save_path = result_ml_dir.joinpath("Generated",
-                                       processed_di.instance_name, cluster_desc,
-                                       seg_desc, seg_dirname,
-                                       "ml_dataset.csv")
+    dataset_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_ml")
+    save_path = dataset_ml_dir.joinpath(processed_di.instance_name,
+                                        cluster_desc,
+                                        seg_desc, seg_dirname,
+                                        "ml_dataset.csv")
     create_new_dir(save_path.parent)
     dataset_df.to_csv(save_path, encoding='utf_8_sig', index=False)
     print(f"ML_table (for segmentation): '{save_path}'\n")
     
     # save Dataframe as a CSV file (for image PCA reduction)
     dataset_df = dataset_df.iloc[:, :3]
-    result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
-    save_path = result_ml_dir.joinpath("Generated",
-                                       processed_di.instance_name, cluster_desc,
-                                       "ImagePCA", "ml_dataset.csv")
+    dataset_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_ml")
+    save_path = dataset_ml_dir.joinpath(processed_di.instance_name,
+                                        cluster_desc,
+                                        "ImagePCA",
+                                        "ml_dataset.csv")
     create_new_dir(save_path.parent)
     dataset_df.to_csv(save_path, encoding='utf_8_sig', index=False)
     print(f"ML_table (for image PCA reduction): '{save_path}'\n")
