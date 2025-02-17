@@ -66,14 +66,17 @@ seg_dirname = f"{palmskin_result_name.stem}.{seg_param_name}"
 # -----------------------------------------------------------------------------/
 # %%
 # csv file
-result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
-ml_csv = result_ml_dir.joinpath("Generated",
-                                processed_di.instance_name, cluster_desc,
-                                seg_desc, seg_dirname,
-                                "ml_dataset.csv")
+dataset_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("dataset_ml")
+ml_csv = dataset_ml_dir.joinpath(processed_di.instance_name,
+                                 cluster_desc,
+                                 seg_desc, seg_dirname,
+                                 "ml_dataset.csv")
 
 # dst dir
-dst_dir = ml_csv.parent
+result_ml_dir = path_navigator.dbpp.get_one_of_dbpp_roots("result_ml")
+dst_dir = result_ml_dir.joinpath(processed_di.instance_name,
+                                 cluster_desc,
+                                 seg_desc, seg_dirname)
 
 # -----------------------------------------------------------------------------/
 # %%
