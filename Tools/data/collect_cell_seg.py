@@ -58,7 +58,7 @@ for seg_dirname in seg_dirname_cnt.keys():
     dst_dir = collect_root.joinpath(seg_dirname)
     create_new_dir(dst_dir)
     
-    paths = list(src_dir.glob(f"*/{seg_desc}/{seg_dirname}/*.seg2o.png"))
+    paths = list(src_dir.glob(f"*/{seg_desc}/{seg_dirname}/*.seg2ol.png"))
     for path in paths:
         
         dname = path.relative_to(src_dir).parts[0]
