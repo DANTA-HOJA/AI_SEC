@@ -68,7 +68,24 @@ The data is available from [here][data_repo]
         └── ...
         ```
 
-6. Download our [data][data_repo] and update the ***absolute path*** to `db_path_plan.toml`
+6. Download and unzip [our data][data_repo], then organize it into the following structure:
+
+    ```text
+    📂 AISEC.data/
+    ├── 📂 {Data}_Processed/
+    ├── 📂 {Dataset}_DL/
+    ├── 📂 {Dataset}_ML/
+    ├── 📂 {Model}_BFSeg/
+    ├── 📂 {Model}_Cellpose/
+    ├── 📂 {Model}_DL/
+    ├── 📂 {Results}_Advanced/ (◀️ add an empty folder manually )
+    ├── 📂 {Results}_DL/ (◀️ add an empty folder manually )
+    └── 📂 {Results}_ML/ (◀️ add an empty folder manually )
+    ```
+
+    > Note: To avoid encountering a `FileNotFoundError`, manually create `{Results}_Advanced/`, `{Results}_DL/` and `{Results}_ML/` after unzipping.
+
+7. Update the ***absolute path*** in `db_path_plan.toml` (see the `db_path_plan.toml` section below).
 
 [miniforge-repo]: https://github.com/conda-forge/miniforge
 [fiji-dllink]: https://imagej.net/software/fiji/
