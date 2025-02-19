@@ -1,34 +1,54 @@
 import os
+import sys
 from pathlib import Path
 
 import cv2
 import numpy as np
 import torch
 from rich import print
+from rich.console import Console
 from rich.progress import track
+from rich.traceback import install
 from torch.utils.data import DataLoader
+
+pkg_dir = Path(__file__).parents[1] # `dir_depth` to `repo_root`
+if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
+    sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
 import models
 from utils import BFSegTestSet, get_exist_bf_dirs, set_gpu, set_reproducibility
+
+from modules.data.processeddatainstance import ProcessedDataInstance
+from modules.shared.pathnavigator import PathNavigator
+from modules.shared.utils import get_repo_root
+
+console = Console(record=True)
+
+install()
 # -----------------------------------------------------------------------------/
 
 
 
 if __name__ == "__main__":
     
+    print(f"Repository: '{get_repo_root()}'")
+
+    """ Init components """
+    path_navigator = PathNavigator()
+    processed_di = ProcessedDataInstance()
+    processed_di.parse_config("bf_seg.toml")
+    
     batch_size: int = 8
     model_name: str = "res18unet"
-    device = set_gpu(0)
+    device = set_gpu(0, console)
     set_reproducibility(2022) # 可能要 remove
-    history_dir: str = r"" # `dir` under "model_wts/"
-    assert history_dir != ""
     
     # get paths
     # -> path example: ".../{Data}_Processed/{20230827_test}_Academia_Sinica_i505/{autothres_triangle}_BrightField_analyze"
-    path = Path(r"")
+    path = processed_di.brightfield_processed_dir
     found_list = get_exist_bf_dirs(path, "*/02_cropped_BF.tif")
     if found_list == []:
-        raise ValueError("Can't find any directories, make sure `path` is a correct path. (L28)")
+        raise ValueError("Can't find any directories. Make sure that `data_processed.instance_desc` exists.")
     print(f"Found {len(found_list)} directories")
     
     # dataset, dataloader
@@ -46,8 +66,23 @@ if __name__ == "__main__":
         raise NotImplementedError
     
     # load `model_state_dict`
-    history_dir_abs = Path(__file__).parent.joinpath(f"model_wts/{history_dir}/{model_name}_best.pth")
-    pth_file = torch.load(history_dir_abs, map_location=device) # unpack to device directly
+    time_stamp = processed_di.config["model_prediction"]["time_stamp"]
+    
+    bfseg_model_root: Path = \
+        path_navigator.dbpp.get_one_of_dbpp_roots("model_bfseg")
+    history_dirs = list(bfseg_model_root.glob(f"**/{time_stamp}*"))
+    if len(history_dirs) == 1:
+        history_dir = history_dirs[0]
+        print(f"BFSeg Model: '{history_dir}'")
+    elif len(history_dirs) == 0:
+        raise ValueError("No `BFSeg` model matches the provided config. "
+                         f"Got `time_stamp`: {time_stamp}.")
+    else:
+        raise ValueError("Duplicate `BFSeg` models match the provided config. "
+                         f"Got `time_stamp`: {time_stamp}.")
+    
+    pth_file = history_dir.joinpath(f"{model_name}_best.pth")
+    pth_file = torch.load(pth_file, map_location=device) # unpack to device directly
     model.load_state_dict(pth_file)
     
     
