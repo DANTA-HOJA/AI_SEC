@@ -69,8 +69,9 @@ def train_model(path_navigator: PathNavigator,
     """
     """
     time_stamp: str = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-    bfseg_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_bfseg")
-    history_dir = bfseg_model_dir.joinpath(f"{time_stamp}_{{{num_epochs}_epochs}}")
+    bfseg_model_root: Path = \
+        path_navigator.dbpp.get_one_of_dbpp_roots("model_bfseg")
+    history_dir = bfseg_model_root.joinpath(f"{time_stamp}_{{{num_epochs}_epochs}}")
     create_new_dir(history_dir)
     
     best_model_wts = copy.deepcopy(model.state_dict())
