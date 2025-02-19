@@ -12,16 +12,27 @@ import torch.optim as optim
 from rich import print
 from rich.console import Console
 from rich.progress import track
+from rich.traceback import install
 from sklearn.model_selection import train_test_split
 from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader
+
+pkg_dir = Path(__file__).parents[1] # `dir_depth` to `repo_root`
+if (pkg_dir.exists()) and (str(pkg_dir) not in sys.path):
+    sys.path.insert(0, str(pkg_dir)) # add path to scan customized package
 
 import models
 from loss import dice_loss
 from utils import (BFSegTrainingSet, create_new_dir, get_exist_bf_dirs,
                    save_cli_out, set_gpu, set_reproducibility)
 
+from modules.data.processeddatainstance import ProcessedDataInstance
+from modules.shared.pathnavigator import PathNavigator
+from modules.shared.utils import create_new_dir, get_repo_root
+
 console = Console(record=True)
+
+install()
 # -----------------------------------------------------------------------------/
 
 
@@ -51,13 +62,15 @@ def print_metrics(metrics, epoch_samples, phase):
     # -------------------------------------------------------------------------/
 
 
-def train_model(dataloaders:dict[str, DataLoader],
+def train_model(path_navigator: PathNavigator,
+                dataloaders:dict[str, DataLoader],
                 model_name:str, model, optimizer, scheduler,
                 num_epochs:int=25):
     """
     """
     time_stamp: str = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-    history_dir = Path(__file__).parent.joinpath(f"model_wts/{time_stamp}_{{{num_epochs}_epochs}}")
+    bfseg_model_dir = path_navigator.dbpp.get_one_of_dbpp_roots("model_bfseg")
+    history_dir = bfseg_model_dir.joinpath(f"{time_stamp}_{{{num_epochs}_epochs}}")
     create_new_dir(history_dir)
     
     best_model_wts = copy.deepcopy(model.state_dict())
@@ -129,6 +142,13 @@ def train_model(dataloaders:dict[str, DataLoader],
 
 if __name__ == "__main__":
 
+    print(f"Repository: '{get_repo_root()}'")
+
+    """ Init components """
+    path_navigator = PathNavigator()
+    processed_di = ProcessedDataInstance()
+    processed_di.parse_config("bf_seg.toml")
+    
     batch_size: int = 16
     model_name: str = "res18unet"
     device = set_gpu(0, console)
@@ -136,10 +156,10 @@ if __name__ == "__main__":
 
     # get paths, split into 3 list (train, val, test)
     # -> path example: ".../{Data}_Processed/{20230827_test}_Academia_Sinica_i505/{autothres_triangle}_BrightField_analyze"
-    path = Path(r"")
+    path = processed_di.brightfield_processed_dir
     found_list = get_exist_bf_dirs(path, "*/Manual_measured_mask.tif")
     if found_list == []:
-        raise ValueError("Can't find any directories, make sure `path` is a correct path. (L139)")
+        raise ValueError("Can't find any directories. Make sure that `data_processed.instance_desc` exists.")
     print(f"Found {len(found_list)} directories")
     
     # training_list, test_list = train_test_split(found_list, test_size=0.1, random_state=2022)
@@ -168,6 +188,6 @@ if __name__ == "__main__":
 
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
-    train_model(dataloaders, model_name, model,
+    train_model(path_navigator, dataloaders, model_name, model,
                 optimizer_ft, exp_lr_scheduler, num_epochs=50)
     # -------------------------------------------------------------------------/
