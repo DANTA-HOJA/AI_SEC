@@ -1,9 +1,8 @@
 # AI_SEC
 
-```text
-1. Need one sentence to briefly describe this research.
-2. Manual script DOI.
-```
+This study utilizes different machine learning and deep learning models to provide a proof of concept that organismic information at a macroscopic length scale may be de-encrypted from a snapshot of only a few dozen cells.
+
+- `Manual script DOI.`
 
 ## Notifications
 
@@ -110,7 +109,9 @@ The data is available from [here][data_repo]
 
 `script_adv/` : Advanced results, such as "critical SEC number" and "feature-subtracted images", etc.
 
-** For detailed instructions for each part, please click on the corresponding directory (folder).
+## Usage
+
+** For detailed instructions on each part, please click on the corresponding directory (folder) listed in the section above.
 
 ## `db_path_plan.toml`
 
@@ -119,8 +120,6 @@ A file that handles the linking of data and code, allowing them to be stored sep
 ```text
 descriptions for the file (每個 folder 對應甚麼要講清楚)
 ```
-
-** For detailed instructions for each part, please click on the corresponding directory (folder).
 
 ## Thanks
 
