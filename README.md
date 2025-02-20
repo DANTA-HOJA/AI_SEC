@@ -63,7 +63,7 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
         ├── 📂 ...
         ├── 📂 plugins/
         │   ├── 📂 ...
-        │   ├── 📄 Find_focused_slices.class (◀️ Place the file here )
+        │   ├── 📄 Find_focused_slices.class (◀️ Place the file here)
         │   └── 📄 ...
         └── ...
         ```
@@ -78,12 +78,12 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
     ├── 📂 {Model}_BFSeg/
     ├── 📂 {Model}_Cellpose/
     ├── 📂 {Model}_DL/
-    ├── 📂 {Results}_Advanced/ (◀️ add an empty folder manually )
-    ├── 📂 {Results}_DL/ (◀️ add an empty folder manually )
-    └── 📂 {Results}_ML/ (◀️ add an empty folder manually )
+    ├── 📂 {Results}_Advanced/ (◀️ manually create the empty folder)
+    ├── 📂 {Results}_DL/ (◀️ manually create the empty folder)
+    └── 📂 {Results}_ML/ (◀️ manually create the empty folder)
     ```
 
-    > Note: To avoid encountering a `FileNotFoundError`, manually create `{Results}_Advanced/`, `{Results}_DL/` and `{Results}_ML/` after unzipping.
+    > Note: To avoid encountering a `FileNotFoundError`, manually create the `{Results}_Advanced/`, `{Results}_DL/`, and `{Results}_ML/` directories after unzipping.
 
 7. Update the ***absolute path*** in `db_path_plan.toml` (see the `db_path_plan.toml` section below).
 
