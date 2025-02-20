@@ -22,9 +22,9 @@ This study utilizes different machine learning and deep learning models to provi
 
 ## Data
 
-The data is available from [here][data_repo]
+The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
 
-[data_repo]: https://data_repo
+[data_doi]: https://doi.org/10.6019/S-BIAD1654
 
 ## Installation
 
@@ -67,7 +67,7 @@ The data is available from [here][data_repo]
         └── ...
         ```
 
-6. Download and unzip [our data][data_repo], then organize it into the following structure:
+6. Download and unzip [our data][data_doi], then organize it into the following structure:
 
     ```text
     📂 AISEC.data/
