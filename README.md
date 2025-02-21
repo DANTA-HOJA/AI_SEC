@@ -51,7 +51,7 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
     pip install umap-learn==0.5.6
     ```
 
-4. Download the [`Fiji (ImageJ)`][fiji-dllink] and udpate the ***absolute path*** to `db_path_plan.toml`
+4. Download the [`Fiji (ImageJ)`][fiji-dllink] and udpate the ***absolute path*** to `db_path_plan.toml` (see the `db_path_plan.toml` section below).
 
 5. Install the `Fiji (ImageJ)` plugin [`Find Focused Slices`][find-focused-web]
 
@@ -68,7 +68,7 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
         └── ...
         ```
 
-6. Download and unzip [our data][data_doi], then organize it into the following structure:
+6. Download and unzip [`our data`][data_doi], then organize it into the following structure:
 
     ```text
     📂 AISEC.data/
@@ -116,11 +116,34 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
 
 ## `db_path_plan.toml`
 
-A file that handles the linking of data and code, allowing them to be stored separately, i.e., enabling the data to be placed anywhere on your system.
+The `TOML` file manages the linkage between data and code, allowing them to be stored separately. This setup enables you to place the [`our data`][data_doi] anywhere on your system.
+
+It is parsed as a directory within the program:
+
+- The left side (key) represents the variable used in the code.
+- The right side (value) represents the name of the corresponding `data` directory.
 
 ```text
-descriptions for the file (每個 folder 對應甚麼要講清楚)
+root = "" # absolute path of the data directory on this computer
+
+data_processed      = "{Data}_Processed"
+dataset_cropped_v3  = "{Dataset}_DL"
+dataset_ml          = "{Dataset}_ML"
+model_bfseg         = "{Model}_BFSeg"
+model_cellpose      = "{Model}_Cellpose"
+model_history       = "{Model}_DL"
+model_prediction    = "{Results}_DL"
+result_ml           = "{Results}_ML"
+result_adv          = "{Results}_Advanced"
+
+fiji_local = "" # absolute path of "Fiji (ImageJ)" on this computer
 ```
+
+- The `root` key should be assigned to the ***absolute path*** of the data directory on your system.
+- The `fiji_local` key should be assigned to the ***absolute path*** of `Fiji (ImageJ)` on your system.
+- The names of the `data` directories are adjustable. If you change them, remember to update the corresponding names in the `TOML` file.
+
+> Note: Key-value pairs that appear in the `TOML` file but are not mentioned here do not affect your experience with this project.
 
 ## Thanks
 
