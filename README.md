@@ -102,7 +102,7 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
 
 `script_data/` : Converts `.lif` files into commonly used image formats, splits into train/validation/test sets, applies K-Means, etc.
 
-`script_bfseg/` : ResNet18-UNet automated segmentation for obtaining the "trunk surface area". Inspired by [`usuyama/pytorch-unet`](https://github.com/usuyama/pytorch-unet). **(merging into this repo later)**
+`script_bfseg/` : ResNet18-UNet automated segmentation for obtaining the "trunk surface area". Inspired by [`usuyama/pytorch-unet`](https://github.com/usuyama/pytorch-unet).
 
 `script_ml/` : From Cellpose segmentation to simple features, machine learning results, and UMAP. Inspired by [`ccsyan/labeling-cells-using-slic`](https://github.com/ccsyan/labeling-cells-using-slic).
 
