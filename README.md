@@ -34,7 +34,7 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
 
     ```shell
     mamba create -n AI_SEC python=3.10
-    mamba activate AI_SEC
+    conda activate AI_SEC
     ```
 
 3. Install the required packages (Tested on 2024-06-03):
@@ -46,9 +46,9 @@ The data is available from [`DOI:10.6019/S-BIAD1654`][data_doi]
     mamba install pandas pyimagej openjdk=8 imgaug=0.4.0
     pip install albumentations==1.3.1
     pip install grad-cam==1.4.8
+    pip install umap-learn==0.5.6
     mamba install numpy=1.23.0
     mamba install mkl==2024.0
-    pip install umap-learn==0.5.6
     ```
 
 4. Download the [`Fiji (ImageJ)`][fiji-dllink] and udpate the ***absolute path*** to `db_path_plan.toml` (see the `db_path_plan.toml` section below).
