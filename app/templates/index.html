@@ -94,7 +94,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: 20px;
             width: 100%;
             max-width: 512px;
             min-width: 128px;
@@ -114,7 +114,7 @@
             display: flex;
             align-items: center;
             border: 1px solid #ccc;
-            margin-top: 10px;
+            margin-top: 20px;
             overflow-x: auto;
             background-color: #f0f0f0;
         }
@@ -127,8 +127,21 @@
             gap: 6px;
         }
 
+        .thumbnail-scroll img {
+            height: 100%;
+            box-sizing: border-box;
+            border: 4px solid transparent;  /* ⭐️ 所有人都有 5px border，不影響排版 */
+            border-radius: 2px; /* 可選：加點美感 */
+            transition: border-color 0.2s ease;  /* ✅ 平滑過渡，不會跳 */
+        }
+
         .thumbnail-scroll img.selected {
-            border: 5px solid #007bff;
+            border-color: #007bff;  /* ⭐️ 選到的改藍色 */
+        }
+
+        .thumbnail-scroll img:hover {
+            outline: 2px solid #999;
+            outline-offset: -2px;  /* 貼合圖片外框，可調整距離 */
         }
 
         .thumbnail-nav-btn {
