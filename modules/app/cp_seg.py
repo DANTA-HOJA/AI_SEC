@@ -15,7 +15,7 @@ from ..ml.seg_generate import single_cellpose_prediction
 from ..ml.utils import get_cellpose_param_name
 from ..shared.config import load_config
 from ..shared.pathnavigator import PathNavigator
-from ..shared.utils import get_repo_root
+from ..shared.utils import formatter_padr0, get_repo_root
 
 install()
 # -----------------------------------------------------------------------------/
@@ -59,12 +59,12 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
                             "to create an environment.")
 
     """ Apply SLIC on each image """
-    console.rule()
+    console.rule("Processing")
     with Progress(console=console) as pbar:
         task = pbar.add_task("[cyan]Processing...", total=len(img_paths))
 
         for enum, path in enumerate(img_paths, 1):
-            
+
             # update pbar
             if socketio is not None: # WebUI
                 socketio.emit('processing_progress', {
@@ -73,13 +73,16 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
                     'total': len(img_paths)
                 })
             pbar.advance(task)
-            
+            msg_1 = f"{enum:{formatter_padr0(len(img_paths))}}"
+            msg_2 = f"[{msg_1}] : '{path}'"
+
             # create dir for each image
             dst_dir = path.parent.joinpath(path.stem)
             if dst_dir.is_dir():
                 # 檢查 11 種檔案是否存在，有缺才 run
                 suffixes = set([path.suffixes[-2] for path in sorted(dst_dir.glob("*"))])
                 if suffixes == set(gen_suffixes):
+                    console.print(f"[#FFBF00]Skip!,", msg_2)
                     continue
             else:
                 dst_dir.mkdir()
@@ -97,7 +100,6 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
             analysis_dict = update_seg_analysis_dict(analysis_dict, *count_average_size(analysis_dict, "cell"))
             analysis_dict = update_seg_analysis_dict(analysis_dict, *count_average_size(analysis_dict, "patch"))
             analysis_dict = update_seg_analysis_dict(analysis_dict, *get_patch_sizes(patch_seg))
-            console.line()
 
             # update info to toml file
             ana_toml_file = dst_dir.joinpath(f"{path.stem}.ana.toml")
@@ -105,6 +107,8 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
 
             # move file
             # shutil.move(path, dst_dir)
+
+            console.print(f"[#9FE2BF] OK! ,", msg_2)
 
         pbar.remove_task(task)
     # -------------------------------------------------------------------------/
