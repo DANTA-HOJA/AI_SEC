@@ -83,6 +83,10 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
                 suffixes = set([path.suffixes[-2] for path in sorted(dst_dir.glob("*"))])
                 if suffixes == set(gen_suffixes):
                     console.print(f"[#FFBF00]Skip!,", msg_2)
+                    if socketio is not None: # WebUI
+                        socketio.emit('processing_done', {
+                            'filename': path.name,
+                        })
                     continue
             else:
                 dst_dir.mkdir()
@@ -109,6 +113,10 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
             # shutil.move(path, dst_dir)
 
             console.print(f"[#9FE2BF] OK! ,", msg_2)
+            if socketio is not None: # WebUI
+                socketio.emit('processing_done', {
+                    'filename': path.name,
+                })
 
         pbar.remove_task(task)
     # -------------------------------------------------------------------------/
