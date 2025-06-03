@@ -89,10 +89,17 @@ def start_flask():
     socketio.run(app, debug=False)
 
 def open_folder_dialog():
-    """ Qt Signal callback : 開啟 QFileDialog
+    """ Qt Signal callback : 開啟 QFileDialog, 顯示資料夾內檔案但只可選資料夾
     """
-    folder = QFileDialog.getExistingDirectory(None, "選擇資料夾")
-    communicator.folder_selected.emit(folder if folder else "")
+    dialog = QFileDialog()
+    dialog.setFileMode(QFileDialog.Directory) # 只能選資料夾
+    dialog.setOption(QFileDialog.ShowDirsOnly, False) # ✅ 顯示資料夾內的檔案
+    dialog.setWindowTitle("選擇資料夾")
+    if dialog.exec_():
+        folder = dialog.selectedFiles()[0]
+        communicator.folder_selected.emit(folder)
+    else:
+        communicator.folder_selected.emit("")
 
 def send_folder_to_client(path):
     """ Qt Signal callback : 收到選擇結果後傳給前端
