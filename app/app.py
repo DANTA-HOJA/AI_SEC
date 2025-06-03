@@ -54,22 +54,64 @@ def handle_disconnect_notice():
     print("[SocketIO] 前端頁面關閉，準備退出 Qt")
     QApplication.quit()
 
+@socketio.on('request_thumbs')
+def handle_request_thumbs(data):
+    """ 生成縮圖: 原圖 + 8 Cellpose result pngs
+    """
+    thumb_size = (64, 64)
+    img_names = []
+    img_thumbs = []
+
+    # Original image
+    ori_filename = Path(data['filename'])
+    ori_path = Path(selected_folder["path"]).joinpath(ori_filename)
+    with Image.open(ori_path) as img:
+        img.thumbnail(thumb_size)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        img_thumbs.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
+        img_names.append(ori_path.name)
+
+    # Cellpose result pngs (8 images)
+    gen_dir = Path(selected_folder["path"]).joinpath(ori_filename.stem)
+    if gen_dir.is_dir():
+        for proc_path in sorted(gen_dir.glob("*.png")):
+            with Image.open(proc_path) as img:
+                img.thumbnail(thumb_size)
+                buffer = BytesIO()
+                img.save(buffer, format="PNG")
+                img_thumbs.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
+                img_names.append(proc_path.name)
+
+    socketio.emit('thumb_images', {
+        'img_names': img_names,
+        'img_thumbs': img_thumbs,
+    })
+
 @socketio.on('request_preview')
 def handle_request_preview(data):
-    folder = selected_folder["path"]
-    filename = data.get("filename")
-    if folder and filename:
-        full_path = os.path.join(folder, filename)
-        if os.path.isfile(full_path):
-            try:
-                with Image.open(full_path) as img:
-                    img.thumbnail((512, 512))  # 可調整縮圖大小
-                    buffer = BytesIO()
-                    img.save(buffer, format="PNG")
-                    encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
-                    socketio.emit("preview_image", {"filename": filename, "image": encoded})
-            except Exception as e:
-                print(f"[Error] 預覽失敗：{e}")
+    """ 取得預覽圖
+    """
+    filename = Path(data['filename'])
+
+    # 判斷是 Original image 還是 Cellpose result
+    if filename.suffix == ".png":
+        gen_id = filename.suffixes[-2]
+        ori_filename = filename.stem.replace(gen_id, '')
+        path = Path(selected_folder["path"]).joinpath(ori_filename, filename)
+    else:
+        path = Path(selected_folder["path"]).joinpath(filename)
+
+    # 製作預覽圖
+    try:
+        with Image.open(path) as img:
+            img.thumbnail((512, 512))  # 可調整預覽圖大小
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            socketio.emit("preview_image", {"filename": str(filename), "image": encoded})
+    except Exception as e:
+        print(f"[Error] 預覽失敗：{e}")
 
 @socketio.on('start_processing')
 def handle_start_processing():

@@ -70,6 +70,77 @@
             border: 1px solid #ccc;
         }
 
+        .preview-box {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 512px;
+            max-height: 512px;
+            min-width: 128px;
+            min-height: 128px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .thumbnail-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 512px;
+            min-width: 128px;
+            height: 12.5%; /* 1/8 的高度相對於 preview-box */
+            max-height: 64px;
+            min-height: 16px;
+            position: relative;
+        }
+
+        /* 縮圖列：高度為預覽區的 1/8 */
+        .thumbnail-box {
+            width: 100%;
+            aspect-ratio: 8 / 1;
+            max-width: 512px;
+            max-height: 64px;
+            min-height: 16px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            overflow-x: auto;
+            background-color: #f0f0f0;
+        }
+
+        .thumbnail-scroll {
+            display: flex;
+            flex-grow: 1;
+            overflow-x: auto;
+            padding: 4px;
+            gap: 6px;
+        }
+
+        .thumbnail-scroll img.selected {
+            border: 5px solid #007bff;
+        }
+
+        .thumbnail-nav-btn {
+            height: 100%;
+            width: 32px;
+            min-width: 24px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            font-size: 20px;
+        }        
+
         .bottom-bar {
             margin-top: 30px;
             border-top: 1px solid #ccc;
@@ -119,8 +190,23 @@
         </div>
 
         <div class="preview-area">
-            <h3 id="previewTitle">Preview Image : </h3>
-            <img id="previewImage" src="" alt="Preview Image" />
+            <h3 id="previewTitle">Preview Image :</h3>
+
+            <!-- 大圖區 -->
+            <div style="display: flex; align-items: center;">
+                <div class="preview-box">
+                    <img id="previewImage" src="" alt="Preview Image" />
+                </div>
+            </div>
+
+            <!-- 縮圖區 -->
+            <div class="thumbnail-bar">
+                <button class="thumbnail-nav-btn" onclick="prevImage()">⟨</button>
+                <div class="thumbnail-scroll" id="thumbnailList">
+                    <!-- 縮圖 img 元素會插入這裡 -->
+                </div>
+                <button class="thumbnail-nav-btn" onclick="nextImage()">⟩</button>
+            </div>
         </div>
     </div>
 
@@ -135,6 +221,10 @@
     <script>
         const socket = io();
 
+        let currentThumbIndex = 0;
+        let thumbImages = [];  // base64 string 陣列
+        let thumbNames = [];   // 對應檔名
+
         function requestFolder() {
             socket.emit('request_folder');
         }
@@ -142,6 +232,68 @@
         socket.on('folder_selected', data => {
             document.getElementById('folderPath').textContent = "Folder : " + data.path;
         });
+
+        socket.on('thumb_images', (data) => {
+            thumbImages = data.img_thumbs;
+            thumbNames = data.img_names;
+
+            const container = document.getElementById('thumbnailList');
+            container.innerHTML = ''; // 清空縮圖列
+
+            data.img_thumbs.forEach((thumb, index) => {
+                const img = document.createElement('img');
+                img.src = `data:image/png;base64,${thumb}`;
+                img.style.height = '100%';
+                img.style.cursor = 'pointer';
+                img.title = data.img_names[index];
+                img.onclick = () => {
+                    currentThumbIndex = index;
+                    updatePreview();
+                    highlightSelectedThumbnail();
+                };
+                container.appendChild(img);
+            });
+
+            // 自動顯示第一張
+            if (thumbImages.length > 0) {
+                currentThumbIndex = 0;
+                updatePreview();
+                highlightSelectedThumbnail();
+            }
+        });
+
+        function highlightSelectedThumbnail() {
+            const thumbs = document.querySelectorAll('#thumbnailList img');
+            thumbs.forEach((img, idx) => {
+                img.classList.toggle('selected', idx === currentThumbIndex);
+                if (idx === currentThumbIndex) {
+                    img.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            });
+        }
+
+        // 更新預覽區
+        function updatePreview() {
+            const filename = thumbNames[currentThumbIndex];
+            socket.emit("request_preview", { filename });
+        }
+
+        // 左右切換功能
+        function prevImage() {
+            if (thumbImages.length === 0) return;
+            currentThumbIndex = (currentThumbIndex - 1 + thumbImages.length) % thumbImages.length;
+            console.log("Prev image:", currentThumbIndex);
+            updatePreview();
+            highlightSelectedThumbnail();
+        }
+
+        function nextImage() {
+            if (thumbImages.length === 0) return;
+            currentThumbIndex = (currentThumbIndex + 1) % thumbImages.length;
+            console.log("Next image:", currentThumbIndex);
+            updatePreview();
+            highlightSelectedThumbnail();
+        }
 
         socket.on('tiff_list', data => {
             const fileList = document.getElementById('fileList');
@@ -168,6 +320,7 @@
             // ✅ 清空預覽圖片
             document.getElementById('previewImage').src = '';
             document.getElementById('previewTitle').textContent = 'Preview Image :';
+            document.getElementById('thumbnailList').innerHTML = '';
 
             // 建立清單項目
             data.files.forEach(filename => {
@@ -178,7 +331,7 @@
                     // ✅ 清除其他高亮
                     document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
                     item.classList.add('selected');
-                    socket.emit("request_preview", { filename });
+                    socket.emit("request_thumbs", { filename });
                 };
                 fileList.appendChild(item);
             });
