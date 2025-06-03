@@ -1,0 +1,11 @@
+[Filesys]
+  src_dir = ""
+  gen_suffixes = ['.seg1', '.seg2', '.ana',
+                  '.seg1a', '.seg1al', '.seg1o', '.seg1ol',
+                  '.seg2a', '.seg2al', '.seg2o', '.seg2ol']
+
+[Cellpose]
+  cp_model_name = "cp_231_palmskin" # `model_file` under "{Model}_Cellpose/"
+  channels = [0, 0]
+  merge = 10
+  debug_mode = false

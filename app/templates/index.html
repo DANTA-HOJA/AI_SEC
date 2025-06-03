@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI SEC</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .top-bar {
+            display: flex;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 300px;
+            max-height: 600px;
+            border: 1px solid #ccc;
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0; /* ✅ 禁止 sidebar 被壓縮 */
+        }
+
+        .file-count-bar {
+            background-color: #f7f7f7;
+            padding: 8px;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .file-list-scroll {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .file-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .file-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .file-item.selected {
+            background-color: #cce5ff;
+            font-weight: bold;
+        }
+
+        .preview-area {
+            flex-grow: 1;
+        }
+
+        .preview-area img {
+            max-width: 100%;
+            max-height: 512px;
+            border: 1px solid #ccc;
+        }
+
+        .bottom-bar {
+            margin-top: 30px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+    
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+    
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #4caf50;
+            transition: width 0.3s ease;
+        }
+    
+        #progressText {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        button {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 上方控制區 -->
+    <div class="top-bar">
+        <button onclick="requestFolder()">Select Folder</button>
+        <span id="folderPath" style="margin-left: 10px; font-weight: bold;"></span>
+    </div>
+
+    <!-- 底下內容區：左右排版 -->
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="file-count-bar" id="fileCount">共 0 個檔案</div>
+            <div id="fileList" class="file-list-scroll">
+                <!-- 檔案清單會在這裡動態更新 -->
+            </div>
+        </div>
+
+        <div class="preview-area">
+            <h3 id="previewTitle">Preview Image : </h3>
+            <img id="previewImage" src="" alt="Preview Image" />
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <button id="processButton" onclick="startProcessing()" disabled>無檔案可處理</button>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p id="progressText">沒有處理中的檔案</p>
+    </div>
+
+    <script>
+        const socket = io();
+
+        function requestFolder() {
+            socket.emit('request_folder');
+        }
+
+        socket.on('folder_selected', data => {
+            document.getElementById('folderPath').textContent = "Folder : " + data.path;
+        });
+
+        socket.on('tiff_list', data => {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';  // 清空清單
+
+            // 顯示檔案總數
+            const fileCountLabel = document.getElementById('fileCount');
+            fileCountLabel.textContent = `共 ${data.files.length} 個檔案`;
+
+            // 根據檔案數量決定是否啟用按鈕
+            const processButton = document.getElementById('processButton');
+            if (data.files.length === 0) {
+                processButton.disabled = true;
+                processButton.textContent = '無檔案可處理';
+            } else {
+                processButton.disabled = false;
+                processButton.textContent = `開始處理 ${data.files.length} 個檔案`;
+            }
+
+            // ✅ Reset progress bar and text
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '沒有處理中的檔案';
+
+            // ✅ 清空預覽圖片
+            document.getElementById('previewImage').src = '';
+            document.getElementById('previewTitle').textContent = 'Preview Image :';
+
+            // 建立清單項目
+            data.files.forEach(filename => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.textContent = filename;
+                item.onclick = () => {
+                    // ✅ 清除其他高亮
+                    document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    socket.emit("request_preview", { filename });
+                };
+                fileList.appendChild(item);
+            });
+        });
+
+        socket.on('preview_image', data => {
+            document.getElementById("previewTitle").textContent = "Preview Image : " + data.filename;
+            document.getElementById("previewImage").src = "data:image/png;base64," + data.image;
+        });
+
+        function startProcessing() {
+            socket.emit('start_processing'); // 向後端請求開始
+            document.getElementById("progressText").textContent = "處理中...";
+            document.getElementById("progressBar").style.width = "0%";
+        }
+
+        socket.on('processing_progress', data => {
+            const { filename, now, total } = data;
+    
+            const percent = Math.round((now / total) * 100);
+            document.getElementById("progressBar").style.width = `${percent}%`;
+            document.getElementById("progressText").textContent = `處理中：${filename} (${now}/${total})`;
+        });
+
+        socket.on('processing_complete', () => {
+            document.getElementById("progressText").textContent = "處理完成！";
+            document.getElementById("progressBar").style.width = "100%";
+        });
+
+        window.addEventListener("beforeunload", function () {
+            socket.emit("disconnect_notice");
+        });
+    </script>
+
+</body>
+</html>
