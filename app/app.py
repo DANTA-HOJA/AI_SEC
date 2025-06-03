@@ -105,7 +105,6 @@ def handle_request_preview(data):
     # 製作預覽圖
     try:
         with Image.open(path) as img:
-            img.thumbnail((512, 512))  # 可調整預覽圖大小
             buffer = BytesIO()
             img.save(buffer, format="PNG")
             encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
