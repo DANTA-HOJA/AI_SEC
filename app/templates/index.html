@@ -85,13 +85,8 @@
             flex-grow: 1;
         }
 
-        .preview-area img {
-            max-width: 100%;
-            max-height: 512px;
-            border: 1px solid #ccc;
-        }
-
         .preview-box {
+            position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
             max-width: 512px;
@@ -103,12 +98,53 @@
             align-items: center;
             justify-content: center;
             background-color: #f9f9f9;
+            user-select: none;         /* 禁止選取文字 */
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none;     /* IE/Edge */
         }
 
-        .preview-box img {
+        .preview-box.clickable {
+            cursor: pointer;
+        }
+
+        .preview-box.clickable::after {
+            content: "Click to toggle";
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+        
+        .preview-box.clickable:hover::after {
+            opacity: 1;
+        }
+        
+        /* ✅ 預覽區裡面的圖片樣式 */
+        .preview-box img,
+        .preview-area img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            border: 1px solid #ccc;
+        }
+        
+        /* ✅ 疊圖用的 class（processed/original image） */
+        .preview-layer {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;  /* 點擊穿透到底層 */
         }
 
         .thumbnail-bar {
@@ -230,9 +266,7 @@
 
             <!-- 大圖區 -->
             <div style="display: flex; align-items: center;">
-                <div class="preview-box">
-                    <img id="previewImage" src="" alt="Preview Image" />
-                </div>
+                <div class="preview-box"></div>
             </div>
 
             <!-- 縮圖區 -->
@@ -260,6 +294,9 @@
         let currentThumbIndex = 0;
         let thumbImages = [];  // base64 string 陣列
         let thumbNames = [];   // 對應檔名
+        let currentOriginalImage = null;   // base64 string
+        let overlayOriginal = false;         // 是否正在疊加原圖
+        let orginalTiffName = null;
 
         function requestFolder() {
             socket.emit('request_folder');
@@ -354,7 +391,11 @@
             document.getElementById('progressText').textContent = '沒有處理中的檔案';
 
             // ✅ 清空預覽圖片
-            document.getElementById('previewImage').src = '';
+            const previewBox = document.querySelector('.preview-box');
+            if (previewBox) {
+                previewBox.innerHTML = '';
+                previewBox.classList.remove('clickable');
+            }
             document.getElementById('previewTitle').textContent = 'Preview Image :';
             document.getElementById('thumbnailList').innerHTML = '';
 
@@ -368,15 +409,70 @@
                     document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
                     item.classList.add('selected');
                     socket.emit("request_thumbs", { filename });
+                    socket.emit("request_preview", { filename });  // 要原圖一次（只會儲存）
                 };
                 fileList.appendChild(item);
             });
         });
 
         socket.on('preview_image', data => {
-            document.getElementById("previewTitle").textContent = "Preview Image : " + data.filename;
-            document.getElementById("previewImage").src = "data:image/png;base64," + data.image;
+            const filename = data.filename;
+            const base64Image = "data:image/png;base64," + data.image;
+
+            if (filename.endsWith(".tif") || filename.endsWith(".tiff")) {
+                // 儲存目前這張原圖
+                currentOriginalImage = base64Image;
+            }
+            overlayOriginal = false;  // 預設不疊加
+            displayPreview(base64Image, filename);
         });
+
+        document.querySelector('.preview-box').onclick = () => {
+            overlayOriginal = !overlayOriginal;
+        
+            const originalLayer = document.getElementById("originalImage");
+            if (originalLayer) {
+                originalLayer.style.display = overlayOriginal ? "block" : "none";
+            }
+        };
+
+        function displayPreview(processedImageBase64, filename) {
+            const previewBox = document.querySelector('.preview-box');
+            previewBox.innerHTML = '';  // 清空
+
+            // 移除舊狀態（以防沒有圖）
+            previewBox.classList.remove('clickable');
+
+            // 下層：processed image
+            const processedImg = document.createElement('img');
+            processedImg.id = 'previewImage';
+            processedImg.src = processedImageBase64;
+            processedImg.className = 'preview-layer';
+            processedImg.style.zIndex = 0;
+            processedImg.style.position = 'absolute';
+            processedImg.style.top = 0;
+            processedImg.style.left = 0;
+            previewBox.appendChild(processedImg);
+
+            // 上層：原始圖（可切換顯示）
+            if (currentOriginalImage !== null) {
+                const origImg = document.createElement('img');
+                origImg.id = 'originalImage';
+                origImg.src = currentOriginalImage;
+                origImg.className = 'preview-layer';
+                origImg.style.zIndex = 1;
+                origImg.style.position = 'absolute';
+                origImg.style.top = 0;
+                origImg.style.left = 0;
+                origImg.style.display = overlayOriginal ? "block" : "none";
+                previewBox.appendChild(origImg);
+            }
+
+            // ✅ 預覽圖準備好了，允許點擊
+            previewBox.classList.add('clickable');
+
+            document.getElementById("previewTitle").textContent = "Preview Image : " + filename;
+        }
 
         function startProcessing() {
             socket.emit('start_processing'); // 向後端請求開始
