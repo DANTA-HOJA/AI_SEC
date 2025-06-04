@@ -63,19 +63,19 @@ def handle_request_thumbs(data):
     img_thumbs = []
 
     # Original image
-    ori_filename = Path(data['filename'])
-    ori_path = Path(selected_folder["path"]).joinpath(ori_filename)
-    with Image.open(ori_path) as img:
+    orig_filename = Path(data['filename'])
+    orig_path = Path(selected_folder["path"]).joinpath(orig_filename)
+    with Image.open(orig_path) as img:
         img.thumbnail(thumb_size)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
         img_thumbs.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
-        img_names.append(ori_path.name)
+        img_names.append(orig_path.name)
 
     # Cellpose result pngs (8 images)
-    gen_dir = Path(selected_folder["path"]).joinpath(ori_filename.stem)
-    if gen_dir.is_dir():
-        for proc_path in sorted(gen_dir.glob("*.png")):
+    proc_dir = Path(selected_folder["path"]).joinpath(orig_filename.stem)
+    if proc_dir.is_dir():
+        for proc_path in sorted(proc_dir.glob("*.png")):
             with Image.open(proc_path) as img:
                 img.thumbnail(thumb_size)
                 buffer = BytesIO()
@@ -96,9 +96,9 @@ def handle_request_preview(data):
 
     # 判斷是 Original image 還是 Cellpose result
     if filename.suffix == ".png":
-        gen_id = filename.suffixes[-2]
-        ori_filename = filename.stem.replace(gen_id, '')
-        path = Path(selected_folder["path"]).joinpath(ori_filename, filename)
+        img_type = filename.suffixes[-2]
+        orig_filename = filename.stem.replace(img_type, '')
+        path = Path(selected_folder["path"]).joinpath(orig_filename, filename)
     else:
         path = Path(selected_folder["path"]).joinpath(filename)
 
