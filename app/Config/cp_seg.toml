@@ -1,8 +1,12 @@
 [Filesys]
   src_dir = ""
   ana_types = ['.seg1', '.seg2', '.ana']
-  img_types = ['.seg1a', '.seg1al', '.seg1o', '.seg1ol',
-                '.seg2a', '.seg2al', '.seg2o', '.seg2ol']
+  img_types = [
+    '.seg2ol', '.seg1ol', 
+    '.seg2al', '.seg1al', 
+    '.seg2o', '.seg1o', 
+    '.seg2a', '.seg1a', 
+  ]
 
 [Cellpose]
   cp_model_name = "cp_231_palmskin" # `model_file` under "{Model}_Cellpose/"
