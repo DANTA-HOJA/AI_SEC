@@ -42,9 +42,39 @@ communicator = Communicator()
 selected_folder = {"path": ""}
 scaned_files = {"files": []}
 
+def image_to_base64(img_path: Path,
+                    thumb_size: tuple = None):
+    """
+    """
+    with Image.open(img_path) as img:
+        # downsample
+        if thumb_size is not None:
+            img.thumbnail(thumb_size)
+        
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    
+    return img_base64
+    # -------------------------------------------------------------------------/
+
+
 @app.route('/')
 def index():
+    """
+    """
     return render_template('index.html')
+    # -------------------------------------------------------------------------/
+
+
+@socketio.on('disconnect_notice')
+def handle_disconnect_notice():
+    """
+    """
+    print("[SocketIO] 前端頁面關閉，準備退出 Qt")
+    QApplication.quit()
+    # -------------------------------------------------------------------------/
+
 
 @socketio.on('request_folder')
 def handle_request_folder():
@@ -52,64 +82,68 @@ def handle_request_folder():
     """
     print("[SocketIO] 前端請求選擇資料夾")
     communicator.folder_requested.emit()
+    # -------------------------------------------------------------------------/
 
-@socketio.on('disconnect_notice')
-def handle_disconnect_notice():
-    print("[SocketIO] 前端頁面關閉，準備退出 Qt")
-    QApplication.quit()
 
 @socketio.on('request_thumbs')
 def handle_request_thumbs(data):
-    """ 生成縮圖: 原圖 + 8 Cellpose result pngs
+    """ 生成 Cellpose results 縮圖 (8 pngs)
+    
+    socketio.emit : 'get_thumbs'
     """
     thumb_size = (64, 64)
-    img_types = ["orig"]
     img_thumbs = {}
     img_names = {}
 
-    # Load config
-    config = load_config("cp_seg.toml")
-    img_types.extend(config["Filesys"]["img_types"])
-    img_thumbs.update({k: "" for k in img_types})
-    img_names.update({k: "" for k in img_types})
-
-    # Original image
-    orig_filename = Path(data['filename'])
-    orig_path = Path(selected_folder["path"]).joinpath(orig_filename)
-    with Image.open(orig_path) as img:
-        img.thumbnail(thumb_size)
-        buffer = BytesIO()
-        img.save(buffer, format="PNG")
-        img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        key = "orig"
-        img_thumbs[key] = img_base64
-        img_names[key] = orig_path.name
-
     # Cellpose result pngs (8 images)
+    orig_filename = Path(data['filename'])
     proc_dir = Path(selected_folder["path"]).joinpath(orig_filename.stem)
     if proc_dir.is_dir():
-        for proc_path in proc_dir.glob("*seg*.png"):
-            try:
-                with Image.open(proc_path) as img:
-                    img.thumbnail(thumb_size)
-                    buffer = BytesIO()
-                    img.save(buffer, format="PNG")
-                    img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-                    key = f"{proc_path.suffixes[-2]}"
-                    img_thumbs[key] = img_base64
-                    img_names[key] = proc_path.name
-            except KeyError:
-                console.print(f"Warning: unknown image detected, file_name = '{proc_path.name}'")
+        # Load config
+        config = load_config("cp_seg.toml")
+        # make thumbnails
+        for img_type in config["Filesys"]["img_types"]:
+            proc_path = proc_dir.joinpath(orig_filename.stem, img_type, ".png")
+            img_thumbs[img_type] = image_to_base64(proc_path, thumb_size)
+            img_names[img_type] = proc_path.name
+    else:
+        # 沒有 Cellpose Result 就給原圖
+        orig_path = Path(selected_folder["path"]).joinpath(orig_filename)
+        img_thumbs["orig"] = image_to_base64(orig_path, thumb_size)
+        img_names["orig"] = proc_path.name
 
-    socketio.emit('thumb_images', {
+    # send to frontend
+    socketio.emit('get_thumbs', {
         'img_thumbs': list(img_thumbs.values()),
         'img_names': list(img_names.values()),
         'img_types': list(img_thumbs.keys()),
     })
+    # -------------------------------------------------------------------------/
+
+
+@socketio.on('request_original_tif')
+def handle_request_original_tif(data):
+    """ 取得原始 tif
+    
+    socketio.emit : 'get_original_tif'
+    """
+    orig_filename = Path(data['filename'])
+    orig_path = Path(selected_folder["path"]).joinpath(orig_filename)
+
+    # send to frontend
+    try:
+        socketio.emit("get_original_tif", {"filename": str(orig_filename), 
+                                            "image": image_to_base64(orig_path)})
+    except Exception as e:
+        print(f"[Error] 預覽 Original Tif 失敗：{e}")
+    # -------------------------------------------------------------------------/
+
 
 @socketio.on('request_preview')
 def handle_request_preview(data):
     """ 取得預覽圖
+    
+    socketio.emit : 'get_preview'
     """
     filename = Path(data['filename'])
 
@@ -121,19 +155,20 @@ def handle_request_preview(data):
     else:
         path = Path(selected_folder["path"]).joinpath(filename)
 
-    # 製作預覽圖
+    # send to frontend
     try:
-        with Image.open(path) as img:
-            buffer = BytesIO()
-            img.save(buffer, format="PNG")
-            encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
-            socketio.emit("preview_image", {"filename": str(filename), "image": encoded})
+        socketio.emit("get_preview", {"filename": str(filename),
+                                        "image": image_to_base64(path)})
     except Exception as e:
         print(f"[Error] 預覽失敗：{e}")
+    # -------------------------------------------------------------------------/
+
 
 @socketio.on('start_processing')
 def handle_start_processing():
     socketio.start_background_task(process_files)
+    # -------------------------------------------------------------------------/
+
 
 def process_files():
     """ main process
@@ -141,11 +176,15 @@ def process_files():
     cellpose_for_sec(scaned_files["files"], "cp_seg.toml",
                      console, socketio)
     socketio.emit('processing_complete')
+    # -------------------------------------------------------------------------/
+
 
 def start_flask():
     """ Flask 執行緒
     """
     socketio.run(app, debug=False)
+    # -------------------------------------------------------------------------/
+
 
 def open_folder_dialog():
     """ Qt Signal callback : 開啟 QFileDialog, 顯示資料夾內檔案但只可選資料夾
@@ -159,6 +198,8 @@ def open_folder_dialog():
         communicator.folder_selected.emit(folder)
     else:
         communicator.folder_selected.emit("")
+    # -------------------------------------------------------------------------/
+
 
 def send_folder_to_client(path):
     """ Qt Signal callback : 收到選擇結果後傳給前端
@@ -174,9 +215,13 @@ def send_folder_to_client(path):
         'folder': path,
         'files': [file.name for file in scaned_files["files"]]
     })
+    # -------------------------------------------------------------------------/
+
 
 def handle_quit():
     print("[Qt] QApplication 正準備退出！")
+    # -------------------------------------------------------------------------/
+
 
 # 主程式入口
 if __name__ == '__main__':
