@@ -1,7 +1,7 @@
 [Filesys]
   src_dir = ""
-  img_types = ['.seg1', '.seg2', '.ana',
-                '.seg1a', '.seg1al', '.seg1o', '.seg1ol',
+  ana_types = ['.seg1', '.seg2', '.ana']
+  img_types = ['.seg1a', '.seg1al', '.seg1o', '.seg1ol',
                 '.seg2a', '.seg2al', '.seg2o', '.seg2ol']
 
 [Cellpose]
