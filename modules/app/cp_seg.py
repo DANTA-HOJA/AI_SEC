@@ -32,7 +32,7 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
     config = load_config(config_name)
     # [FileSys]
     # src_dir: str       = config["Filesys"]["src_dir"]
-    gen_suffixes: list = config["Filesys"]["gen_suffixes"]
+    img_types: list = config["Filesys"]["img_types"]
     # [Cellpose]
     cp_model_name: str = config["Cellpose"]["cp_model_name"]
     channels: list     = config["Cellpose"]["channels"]
@@ -81,7 +81,7 @@ def cellpose_for_sec(img_paths: list[Path], config_name: str,
             if dst_dir.is_dir():
                 # 檢查 11 種檔案是否存在，有缺才 run
                 suffixes = set([path.suffixes[-2] for path in sorted(dst_dir.glob("*"))])
-                if suffixes == set(gen_suffixes):
+                if suffixes == set(img_types):
                     console.print(f"[#FFBF00]Skip!,", msg_2)
                     if socketio is not None: # WebUI
                         socketio.emit('processing_done', {
