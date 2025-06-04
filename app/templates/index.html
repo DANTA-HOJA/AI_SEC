@@ -148,6 +148,29 @@
             pointer-events: none;  /* 點擊穿透到底層 */
         }
 
+        .preview-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            z-index: 999;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .preview-loading.paused {
+            animation-play-state: paused;
+        }
+
         .thumbnail-bar {
             display: flex;
             align-items: center;
@@ -321,7 +344,9 @@
 
             <!-- 大圖區 -->
             <div style="display: flex; align-items: center;">
-                <div class="preview-box"></div>
+                <div class="preview-box" style="position: relative;">
+                    <div id="loadingSpinner" class="preview-loading paused" style="display:none;"></div>
+                </div>
             </div>
 
             <!-- 縮圖區 -->
@@ -453,7 +478,9 @@
             // ✅ 清空預覽圖片
             const previewBox = document.querySelector('.preview-box');
             if (previewBox) {
-                previewBox.innerHTML = '';
+                [...previewBox.children].forEach(child => {
+                    if (child.id !== 'loadingSpinner') child.remove();
+                });
                 previewBox.classList.remove('clickable');
             }
             document.getElementById('previewTitle').textContent = 'Preview Image :';
@@ -492,11 +519,24 @@
 
         function displayPreview(processedImageBase64, filename) {
             const previewBox = document.querySelector('.preview-box');
-            previewBox.innerHTML = '';  // 清空
-            overlayOriginal = false;  // 預設不疊加原圖
+            const loadingSpinner = document.getElementById('loadingSpinner');
 
-            // 移除舊狀態（以防沒有圖）
-            previewBox.classList.remove('clickable');
+            if (!loadingSpinner) {
+                console.error('loadingSpinner element not found!');
+                return;
+            }
+
+            // ✅ 顯示轉圈圈並恢復動畫
+            loadingSpinner.classList.remove('paused');
+            loadingSpinner.style.display = 'block';
+
+            // 清空 previewBox 但保留 loadingSpinner
+            [...previewBox.children].forEach(child => {
+                if (child.id !== 'loadingSpinner') child.remove();
+            });
+
+            overlayOriginal = false;  // 預設不疊加原圖
+            previewBox.classList.remove('clickable');  // 移除舊狀態（以防沒有圖）
 
             // 下層：processed image
             const processedImg = document.createElement('img');
@@ -508,6 +548,19 @@
             processedImg.style.top = 0;
             processedImg.style.left = 0;
             previewBox.appendChild(processedImg);
+
+            // 讓轉圈圈至少持續 200ms
+            const minLoadingTime = 200;
+            const loadingStartTime = performance.now();
+            processedImg.onload = () => {
+                const elapsed = performance.now() - loadingStartTime;
+                const remaining = Math.max(0, minLoadingTime - elapsed);
+                setTimeout(() => {
+                    loadingSpinner.style.display = 'none';
+                    loadingSpinner.classList.add('paused');
+                    previewBox.classList.add('clickable');
+                }, remaining);
+            };
 
             // 上層：原始圖（可切換顯示）
             if (currentOriginalImage !== null) {
@@ -525,7 +578,6 @@
 
             // ✅ 預覽圖準備好了，允許點擊
             previewBox.classList.add('clickable');
-
             document.getElementById("previewTitle").textContent = "Preview Image : " + filename;
         }
 
