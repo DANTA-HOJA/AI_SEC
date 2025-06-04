@@ -103,14 +103,14 @@ def handle_request_thumbs(data):
         config = load_config("cp_seg.toml")
         # make thumbnails
         for img_type in config["Filesys"]["img_types"]:
-            proc_path = proc_dir.joinpath(orig_filename.stem, img_type, ".png")
+            proc_path = proc_dir.joinpath(orig_filename.stem + img_type + ".png")
             img_thumbs[img_type] = image_to_base64(proc_path, thumb_size)
             img_names[img_type] = proc_path.name
     else:
         # 沒有 Cellpose Result 就給原圖
         orig_path = Path(selected_folder["path"]).joinpath(orig_filename)
         img_thumbs["orig"] = image_to_base64(orig_path, thumb_size)
-        img_names["orig"] = proc_path.name
+        img_names["orig"] = orig_path.name
 
     # send to frontend
     socketio.emit('get_thumbs', {
