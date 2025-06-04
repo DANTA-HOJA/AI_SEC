@@ -65,12 +65,13 @@ def handle_request_thumbs(data):
     thumb_size = (64, 64)
     img_types = ["orig"]
     img_thumbs = {}
-    img_names = []
+    img_names = {}
 
     # Load config
     config = load_config("cp_seg.toml")
     img_types.extend(config["Filesys"]["img_types"])
     img_thumbs.update({k: "" for k in img_types})
+    img_names.update({k: "" for k in img_types})
 
     # Original image
     orig_filename = Path(data['filename'])
@@ -80,27 +81,29 @@ def handle_request_thumbs(data):
         buffer = BytesIO()
         img.save(buffer, format="PNG")
         img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        img_thumbs["orig"] = img_base64
-        img_names.append(orig_path.name)
+        key = "orig"
+        img_thumbs[key] = img_base64
+        img_names[key] = orig_path.name
 
     # Cellpose result pngs (8 images)
     proc_dir = Path(selected_folder["path"]).joinpath(orig_filename.stem)
     if proc_dir.is_dir():
-        for proc_path in sorted(proc_dir.glob("*seg*.png")):
+        for proc_path in proc_dir.glob("*seg*.png"):
             try:
                 with Image.open(proc_path) as img:
                     img.thumbnail(thumb_size)
                     buffer = BytesIO()
                     img.save(buffer, format="PNG")
                     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-                    img_thumbs[f"{proc_path.suffixes[-2]}"] = img_base64
-                    img_names.append(proc_path.name)
+                    key = f"{proc_path.suffixes[-2]}"
+                    img_thumbs[key] = img_base64
+                    img_names[key] = proc_path.name
             except KeyError:
                 console.print(f"Warning: unknown image detected, file_name = '{proc_path.name}'")
 
     socketio.emit('thumb_images', {
         'img_thumbs': list(img_thumbs.values()),
-        'img_names': img_names,
+        'img_names': list(img_names.values()),
         'img_types': list(img_thumbs.keys()),
     })
 
