@@ -382,6 +382,9 @@
             socket.emit('start_processing'); // 向後端請求開始
             document.getElementById("progressText").textContent = "處理中...";
             document.getElementById("progressBar").style.width = "0%";
+
+            // 🔒 禁用按鈕
+            document.getElementById("processButton").disabled = true;
         }
 
         socket.on('processing_progress', data => {  // 觸發位置在 modules.app.cp_seg 裡面
@@ -420,6 +423,9 @@
         socket.on('processing_complete', () => {
             document.getElementById("progressText").textContent = "處理完成！";
             document.getElementById("progressBar").style.width = "100%";
+
+            // ✅ 啟用按鈕
+            document.getElementById("processButton").disabled = false;
         });
 
         window.addEventListener("beforeunload", function () {
