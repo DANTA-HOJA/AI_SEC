@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>AI SEC</title>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
     <style>
         html, body {
             height: 100%;
@@ -306,7 +307,7 @@
             document.getElementById('folderPath').textContent = "Folder : " + data.path;
         });
 
-        socket.on('thumb_images', (data) => {
+        socket.on('get_thumbs', (data) => {
             thumbImages = data.img_thumbs;
             thumbNames = data.img_names;
 
@@ -321,7 +322,7 @@
                 img.title = data.img_names[index];
                 img.onclick = () => {
                     currentThumbIndex = index;
-                    updatePreview();
+                    updatePreview(thumbNames[currentThumbIndex]);
                     highlightSelectedThumbnail();
                 };
                 container.appendChild(img);
@@ -330,7 +331,7 @@
             // 自動顯示第一張
             if (thumbImages.length > 0) {
                 currentThumbIndex = 0;
-                updatePreview();
+                updatePreview(thumbNames[currentThumbIndex]);
                 highlightSelectedThumbnail();
             }
         });
@@ -345,26 +346,22 @@
             });
         }
 
-        // 更新預覽區
-        function updatePreview() {
-            const filename = thumbNames[currentThumbIndex];
-            socket.emit("request_preview", { filename });
-        }
-
         // 左右切換功能
         function prevImage() {
             if (thumbImages.length === 0) return;
             currentThumbIndex = (currentThumbIndex - 1 + thumbImages.length) % thumbImages.length;
-            console.log("Prev image:", currentThumbIndex);
-            updatePreview();
+            console.log("Prev image:", currentThumbIndex,
+                            thumbNames[currentThumbIndex]);
+            updatePreview(thumbNames[currentThumbIndex]);
             highlightSelectedThumbnail();
         }
 
         function nextImage() {
             if (thumbImages.length === 0) return;
             currentThumbIndex = (currentThumbIndex + 1) % thumbImages.length;
-            console.log("Next image:", currentThumbIndex);
-            updatePreview();
+            console.log("Next image:", currentThumbIndex,
+                            thumbNames[currentThumbIndex]);
+            updatePreview(thumbNames[currentThumbIndex]);
             highlightSelectedThumbnail();
         }
 
@@ -408,37 +405,32 @@
                     // ✅ 清除其他高亮
                     document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
                     item.classList.add('selected');
+                    socket.emit("request_original_tif", { filename });
                     socket.emit("request_thumbs", { filename });
-                    socket.emit("request_preview", { filename });  // 要原圖一次（只會儲存）
                 };
                 fileList.appendChild(item);
             });
         });
 
-        socket.on('preview_image', data => {
-            const filename = data.filename;
-            const base64Image = "data:image/png;base64," + data.image;
-
-            if (filename.endsWith(".tif") || filename.endsWith(".tiff")) {
-                // 儲存目前這張原圖
-                currentOriginalImage = base64Image;
-            }
-            overlayOriginal = false;  // 預設不疊加
-            displayPreview(base64Image, filename);
+        socket.on('get_original_tif', data => {
+            currentOriginalImage = "data:image/png;base64," + data.image;
+            console.log("sha256(original_tif): ", sha256(currentOriginalImage));
         });
 
-        document.querySelector('.preview-box').onclick = () => {
-            overlayOriginal = !overlayOriginal;
-        
-            const originalLayer = document.getElementById("originalImage");
-            if (originalLayer) {
-                originalLayer.style.display = overlayOriginal ? "block" : "none";
-            }
-        };
+        // 更新預覽區
+        function updatePreview(filename) {
+            socket.emit("request_preview", { filename });
+        }
+
+        socket.on('get_preview', data => {
+            const base64Image = "data:image/png;base64," + data.image;
+            displayPreview(base64Image, data.filename);
+        });
 
         function displayPreview(processedImageBase64, filename) {
             const previewBox = document.querySelector('.preview-box');
             previewBox.innerHTML = '';  // 清空
+            overlayOriginal = false;  // 預設不疊加原圖
 
             // 移除舊狀態（以防沒有圖）
             previewBox.classList.remove('clickable');
@@ -473,6 +465,15 @@
 
             document.getElementById("previewTitle").textContent = "Preview Image : " + filename;
         }
+
+        document.querySelector('.preview-box').onclick = () => {
+            overlayOriginal = !overlayOriginal;
+            const originalLayer = document.getElementById("originalImage");
+
+            if (originalLayer) {
+                originalLayer.style.display = overlayOriginal ? "block" : "none";
+            }
+        };
 
         function startProcessing() {
             socket.emit('start_processing'); // 向後端請求開始
@@ -510,6 +511,7 @@
                     el.onclick = () => {
                         document.querySelectorAll('.file-item').forEach(el2 => el2.classList.remove('selected'));
                         el.classList.add('selected');
+                        socket.emit("request_original_tif", { filename });
                         socket.emit("request_thumbs", { filename });
                     };
                 }
