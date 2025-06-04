@@ -220,6 +220,54 @@
             justify-content: center;
         }
 
+        /* 每張縮圖的外框 */
+        .thumb-wrapper {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;  /* 🔥 關鍵：不要縮，不要撐 */
+            margin-right: 6px; /* 可選：保留 gap */
+        }
+
+        /* 圖片樣式 */
+        .thumb-wrapper img {
+            display: block;
+            height: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border: 4px solid transparent;
+            border-radius: 2px;
+            transition: border-color 0.2s ease;
+        }
+
+        /* 選中的縮圖有藍框 */
+        .thumb-wrapper img.selected {
+            border-color: #007bff;
+        }
+
+        /* 遮罩 label 預設隱藏，滑鼠移上去才顯示 */
+        .thumb-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3); /* 半透明遮罩 */
+            color: white;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px;
+            pointer-events: none;
+            border-radius: 2px;
+            /* 🔥 直接顯示，不用 opacity 控制 */
+            opacity: 1;
+        }
+
         .bottom-bar {
             margin-top: 30px;
             border-top: 1px solid #ccc;
@@ -316,22 +364,31 @@
         socket.on('get_thumbs', (data) => {
             thumbImages = data.img_thumbs;
             thumbNames = data.img_names;
+            thumbTypes = data.img_types
 
             const container = document.getElementById('thumbnailList');
             container.innerHTML = ''; // 清空縮圖列
 
             data.img_thumbs.forEach((thumb, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'thumb-wrapper';
+
                 const img = document.createElement('img');
                 img.src = `data:image/png;base64,${thumb}`;
-                img.style.height = '100%';
-                img.style.cursor = 'pointer';
                 img.title = data.img_names[index];
                 img.onclick = () => {
                     currentThumbIndex = index;
                     updatePreview(thumbNames[currentThumbIndex]);
                     highlightSelectedThumbnail();
                 };
-                container.appendChild(img);
+
+                const overlay = document.createElement('div');
+                overlay.className = 'thumb-overlay';
+                overlay.innerText = data.img_types[index];  // 顯示檔名
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(overlay);
+                container.appendChild(wrapper);
             });
 
             // 自動顯示第一張
