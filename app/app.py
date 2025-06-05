@@ -46,16 +46,28 @@ def image_to_base64(img_path: Path,
                     thumb_size: tuple = None):
     """
     """
-    with Image.open(img_path) as img:
-        # downsample
-        if thumb_size is not None:
-            img.thumbnail(thumb_size)
-        
-        buffer = BytesIO()
-        img.save(buffer, format="PNG")
-        img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    img_base64: str= ""
+    img_name: str = ""
     
-    return img_base64
+    try:
+        with Image.open(img_path) as img:
+            # downsample
+            if thumb_size is not None:
+                img.thumbnail(thumb_size)
+            
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            img_name = img_path.name
+    except:
+        console.print("[#FF0000] Can't convert image to base64, "
+                                f"file: '{img_path}'")
+        # broken image instead
+        path = Path(__file__).parent.joinpath("icon", "broken-image.png")
+        img_base64, _ = image_to_base64(path, thumb_size)
+        img_name = "broken-image.png"
+
+    return img_base64, img_name
     # -------------------------------------------------------------------------/
 
 
@@ -104,12 +116,14 @@ def handle_request_thumbs(data):
         # make thumbnails
         for img_type in config["Filesys"]["img_types"]:
             proc_path = proc_dir.joinpath(orig_filename.stem + img_type + ".png")
-            img_thumbs[img_type] = image_to_base64(proc_path, thumb_size)
+            img_base64, _ = image_to_base64(proc_path, thumb_size)
+            img_thumbs[img_type] = img_base64
             img_names[img_type] = proc_path.name
     else:
         # 沒有 Cellpose Result 就給原圖
         orig_path = Path(selected_folder["path"]).joinpath(orig_filename)
-        img_thumbs["orig"] = image_to_base64(orig_path, thumb_size)
+        img_base64, _ = image_to_base64(orig_path, thumb_size)
+        img_thumbs["orig"] = img_base64
         img_names["orig"] = orig_path.name
 
     # send to frontend
@@ -132,8 +146,9 @@ def handle_request_original_tif(data):
 
     # send to frontend
     try:
-        socketio.emit("get_original_tif", {"filename": str(orig_filename), 
-                                            "image": image_to_base64(orig_path)})
+        img_base64, _ = image_to_base64(orig_path)
+        socketio.emit("get_original_tif", {"image": img_base64,
+                                            "filename": orig_path.name})
     except Exception as e:
         print(f"[Error] 預覽 Original Tif 失敗：{e}")
     # -------------------------------------------------------------------------/
@@ -157,8 +172,9 @@ def handle_request_preview(data):
 
     # send to frontend
     try:
-        socketio.emit("get_preview", {"filename": str(filename),
-                                        "image": image_to_base64(path)})
+        img_base64, img_name = image_to_base64(path)
+        socketio.emit("get_preview", {"image": img_base64,
+                                        "filename": img_name})
     except Exception as e:
         print(f"[Error] 預覽失敗：{e}")
     # -------------------------------------------------------------------------/
