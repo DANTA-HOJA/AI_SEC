@@ -364,6 +364,9 @@
 
     <div class="bottom-bar">
         <button id="processButton" onclick="startProcessing()" disabled>無檔案可處理</button>
+        <button id="generateCsvButton" onclick="generateCSV()">生成 CSV</button>
+        <button id="openCsvButton" onclick="openCSV()">打開 CSV</button>
+        
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
@@ -596,6 +599,16 @@
                 originalLayer.style.display = overlayOriginal ? "block" : "none";
             }
         };
+
+        function generateCSV() {
+            // 這裡放產生 CSV 的邏輯
+            alert("生成 CSV 的功能尚未實作");
+        }
+
+        function openCSV() {
+            // 這裡放打開 CSV 的邏輯（可能是下載、預覽，或發請求給後端）
+            alert("打開 CSV 的功能尚未實作");
+        }
 
         function startProcessing() {
             socket.emit('start_processing'); // 向後端請求開始
