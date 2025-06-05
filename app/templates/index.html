@@ -20,6 +20,7 @@
 
         .top-bar {
             display: flex;
+            margin-bottom: 10px;
         }
 
         .main-content {
@@ -404,6 +405,8 @@
                 img.title = data.img_names[index];
                 img.onclick = () => {
                     currentThumbIndex = index;
+                    // ✅ 顯示轉圈圈並恢復動畫
+                    activateLoadingSpinner(true);
                     updatePreview(thumbNames[currentThumbIndex]);
                     highlightSelectedThumbnail();
                 };
@@ -441,6 +444,8 @@
             currentThumbIndex = (currentThumbIndex - 1 + thumbImages.length) % thumbImages.length;
             console.log("Prev image:", currentThumbIndex,
                             thumbNames[currentThumbIndex]);
+            // ✅ 顯示轉圈圈並恢復動畫
+            activateLoadingSpinner(true);
             updatePreview(thumbNames[currentThumbIndex]);
             highlightSelectedThumbnail();
         }
@@ -450,6 +455,8 @@
             currentThumbIndex = (currentThumbIndex + 1) % thumbImages.length;
             console.log("Next image:", currentThumbIndex,
                             thumbNames[currentThumbIndex]);
+            // ✅ 顯示轉圈圈並恢復動畫
+            activateLoadingSpinner(true);
             updatePreview(thumbNames[currentThumbIndex]);
             highlightSelectedThumbnail();
         }
@@ -477,13 +484,9 @@
             document.getElementById('progressText').textContent = '沒有處理中的檔案';
 
             // ✅ 清空預覽圖片
+            clearPreviewBox();
             const previewBox = document.querySelector('.preview-box');
-            if (previewBox) {
-                [...previewBox.children].forEach(child => {
-                    if (child.id !== 'loadingSpinner') child.remove();
-                });
-                previewBox.classList.remove('clickable');
-            }
+            previewBox.classList.remove('clickable');
             document.getElementById('previewTitle').textContent = 'Preview Image :';
             document.getElementById('thumbnailList').innerHTML = '';
 
@@ -496,6 +499,9 @@
                     // ✅ 清除其他高亮
                     document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
                     item.classList.add('selected');
+                    // ✅ 顯示轉圈圈並恢復動畫
+                    activateLoadingSpinner(true);
+                    clearPreviewBox();
                     socket.emit("request_original_tif", { filename });
                     socket.emit("request_thumbs", { filename });
                 };
@@ -513,30 +519,39 @@
             socket.emit("request_preview", { filename });
         }
 
+        // 控制 loadingSpinner
+        function activateLoadingSpinner(active) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (!spinner) return;
+
+            if (active) {
+                spinner.classList.remove('paused');
+                spinner.style.display = 'block';
+            } else {
+                spinner.classList.add('paused');
+                spinner.style.display = 'none';
+            }
+        }
+
+        function clearPreviewBox(excludeIds = ['loadingSpinner']) {
+            // 清空 preview-box，預設會保留 id = loadingSpinner
+            const previewBox = document.querySelector('.preview-box');
+            if (!previewBox) return;
+
+            [...previewBox.children].forEach(child => {
+                if (!excludeIds.includes(child.id)) child.remove();
+            });
+        }
+
         socket.on('get_preview', data => {
             const base64Image = "data:image/png;base64," + data.image;
             displayPreview(base64Image, data.filename);
         });
 
         function displayPreview(processedImageBase64, filename) {
+            clearPreviewBox();
+
             const previewBox = document.querySelector('.preview-box');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-
-            if (!loadingSpinner) {
-                console.error('loadingSpinner element not found!');
-                return;
-            }
-
-            // ✅ 顯示轉圈圈並恢復動畫
-            loadingSpinner.classList.remove('paused');
-            loadingSpinner.style.display = 'block';
-
-            // 清空 previewBox 但保留 loadingSpinner
-            [...previewBox.children].forEach(child => {
-                if (child.id !== 'loadingSpinner') child.remove();
-            });
-
-            overlayOriginal = false;  // 預設不疊加原圖
             previewBox.classList.remove('clickable');  // 移除舊狀態（以防沒有圖）
 
             // 下層：processed image
@@ -550,20 +565,14 @@
             processedImg.style.left = 0;
             previewBox.appendChild(processedImg);
 
-            // 讓轉圈圈至少持續 200ms
-            const minLoadingTime = 200;
-            const loadingStartTime = performance.now();
             processedImg.onload = () => {
-                const elapsed = performance.now() - loadingStartTime;
-                const remaining = Math.max(0, minLoadingTime - elapsed);
-                setTimeout(() => {
-                    loadingSpinner.style.display = 'none';
-                    loadingSpinner.classList.add('paused');
-                    previewBox.classList.add('clickable');
-                }, remaining);
+                // ⛔ 隱藏轉圈圈並暫停動畫
+                activateLoadingSpinner(false);
+                previewBox.classList.add('clickable');
             };
 
-            // 上層：原始圖（可切換顯示）
+            // 上層：原始圖（可切換顯示
+            overlayOriginal = false;  // 預設不疊加原圖
             if (currentOriginalImage !== null) {
                 const origImg = document.createElement('img');
                 origImg.id = 'originalImage';
@@ -627,6 +636,9 @@
                     el.onclick = () => {
                         document.querySelectorAll('.file-item').forEach(el2 => el2.classList.remove('selected'));
                         el.classList.add('selected');
+                        // ✅ 顯示轉圈圈並恢復動畫
+                        activateLoadingSpinner(true);
+                        clearPreviewBox();
                         socket.emit("request_original_tif", { filename });
                         socket.emit("request_thumbs", { filename });
                     };
