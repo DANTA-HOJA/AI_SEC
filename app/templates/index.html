@@ -384,7 +384,7 @@
             socket.emit('request_folder');
         }
 
-        socket.on('folder_selected', data => {
+        socket.on('get_folder_selected', data => {
             document.getElementById('folderPath').textContent = "Folder : " + data.path;
         });
 

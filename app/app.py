@@ -27,8 +27,8 @@ console = Console(record=True)
 
 # Qt → Flask 通訊橋樑
 class Communicator(QObject):
-    folder_requested = pyqtSignal()
-    folder_selected = pyqtSignal(str)
+    request_select_folder = pyqtSignal() # 請求 Qt 打開資料夾選擇器
+    send_folder_selected = pyqtSignal(str) # 回傳選擇的資料夾
 
 # Flask app 初始化
 app = Flask(__name__)
@@ -93,7 +93,7 @@ def handle_request_folder():
     """ 發出 Qt Signal，叫主執行緒打開 QFileDialog
     """
     print("[SocketIO] 前端請求選擇資料夾")
-    communicator.folder_requested.emit()
+    communicator.request_select_folder.emit()
     # -------------------------------------------------------------------------/
 
 
@@ -211,9 +211,9 @@ def open_folder_dialog():
     dialog.setWindowTitle("選擇資料夾")
     if dialog.exec_():
         folder = dialog.selectedFiles()[0]
-        communicator.folder_selected.emit(folder)
+        communicator.send_folder_selected.emit(folder)
     else:
-        communicator.folder_selected.emit("")
+        communicator.send_folder_selected.emit("")
     # -------------------------------------------------------------------------/
 
 
@@ -222,7 +222,7 @@ def send_folder_to_client(path):
     """
     print(f"[Qt] 已選擇資料夾：{path}")
     selected_folder["path"] = path
-    socketio.start_background_task(socketio.emit, 'folder_selected', {'path': path})
+    socketio.start_background_task(socketio.emit, 'get_folder_selected', {'path': path})
     
     # 掃描 .tif/.tiff 檔案
     scaned_files["files"] = [file for file in sorted(Path(path).glob("*.tif*"))]
@@ -249,8 +249,8 @@ if __name__ == '__main__':
     qt_app.setQuitOnLastWindowClosed(False)  # 這行保證沒視窗也不會退出
 
     # 設定 signal-slot
-    communicator.folder_requested.connect(open_folder_dialog)
-    communicator.folder_selected.connect(send_folder_to_client)
+    communicator.request_select_folder.connect(open_folder_dialog)
+    communicator.send_folder_selected.connect(send_folder_to_client)
     qt_app.aboutToQuit.connect(handle_quit)
 
     sys.exit(qt_app.exec_())  # 正常結束程式
