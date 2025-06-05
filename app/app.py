@@ -1,5 +1,8 @@
 import base64
 import os
+import platform
+import shutil
+import subprocess
 import sys
 import threading
 from io import BytesIO
@@ -29,6 +32,7 @@ console = Console(record=True)
 class Communicator(QObject):
     request_select_folder = pyqtSignal() # 請求 Qt 打開資料夾選擇器
     send_folder_selected = pyqtSignal(str) # 回傳選擇的資料夾
+    request_open_csv_loca = pyqtSignal(str) # 請求 Qt 打開 csv 所在的資料夾
 
 # Flask app 初始化
 app = Flask(__name__)
@@ -39,6 +43,7 @@ socketio = SocketIO(app, async_mode='threading')  # 非 async 模式用 threadin
 communicator = Communicator()
 
 # 當前選擇的資料夾
+csv_loca = {"path": ""}
 selected_folder = {"path": ""}
 scaned_files = {"files": []}
 
@@ -85,6 +90,15 @@ def handle_disconnect_notice():
     """
     print("[SocketIO] 前端頁面關閉，準備退出 Qt")
     QApplication.quit()
+    # -------------------------------------------------------------------------/
+
+
+@socketio.on('request_csv_loca')
+def handle_request_csv_loca():
+    """
+    """
+    print(f"[SocketIO] 前端請求開啟 csv 檔案位置, file: '{Path(csv_loca['path'])}'")
+    communicator.request_open_csv_loca.emit(csv_loca["path"])
     # -------------------------------------------------------------------------/
 
 
@@ -234,6 +248,31 @@ def send_folder_to_client(path):
     # -------------------------------------------------------------------------/
 
 
+def open_file_location(path):
+    """
+    """
+    # path = Path(path) if path else Path(__file__) # test
+
+    system = platform.system()
+    try:
+        if system == "Windows":
+            # Windows 用 explorer /select,
+            subprocess.run(['explorer', '/select,', str(path)])
+        elif system == "Darwin":
+            # macOS 用 open -R
+            subprocess.run(['open', '-R', str(path)])
+        elif system == "Linux":
+            # Linux 用 dolphin --select，沒裝提示
+            if shutil.which("dolphin"):
+                subprocess.run(["dolphin", "--select", str(path)])
+            else:
+                console.print("[#FFFF00] Linux 系統找不到 dolphin, 請安裝後再試 (例如 : sudo apt install dolphin)")
+    except Exception as e:
+        console.print("[#FF0000] Can't open file location, "
+                                f"path: '{path}' \n {e}")
+    # -------------------------------------------------------------------------/
+
+
 def handle_quit():
     print("[Qt] QApplication 正準備退出！")
     # -------------------------------------------------------------------------/
@@ -251,6 +290,7 @@ if __name__ == '__main__':
     # 設定 signal-slot
     communicator.request_select_folder.connect(open_folder_dialog)
     communicator.send_folder_selected.connect(send_folder_to_client)
+    communicator.request_open_csv_loca.connect(open_file_location)
     qt_app.aboutToQuit.connect(handle_quit)
 
     sys.exit(qt_app.exec_())  # 正常結束程式

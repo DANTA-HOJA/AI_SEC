@@ -607,7 +607,7 @@
 
         function openCSV() {
             // 這裡放打開 CSV 的邏輯（可能是下載、預覽，或發請求給後端）
-            alert("打開 CSV 的功能尚未實作");
+            socket.emit('request_csv_loca');
         }
 
         function startProcessing() {
