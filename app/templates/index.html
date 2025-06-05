@@ -462,8 +462,18 @@
         }
 
         socket.on('tiff_list', data => {
+            // 清空清單
             const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';  // 清空清單
+            fileList.innerHTML = '';
+
+            // ✅ 清空預覽圖片
+            clearPreviewBox();
+            document.getElementById('previewTitle').textContent = 'Preview Image :';
+            document.getElementById('thumbnailList').innerHTML = '';
+
+            // ✅ Reset progress bar and text
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '沒有處理中的檔案';
 
             // 顯示檔案總數
             const fileCountLabel = document.getElementById('fileCount');
@@ -478,17 +488,6 @@
                 processButton.disabled = false;
                 processButton.textContent = `開始處理 ${data.files.length} 個檔案`;
             }
-
-            // ✅ Reset progress bar and text
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('progressText').textContent = '沒有處理中的檔案';
-
-            // ✅ 清空預覽圖片
-            clearPreviewBox();
-            const previewBox = document.querySelector('.preview-box');
-            previewBox.classList.remove('clickable');
-            document.getElementById('previewTitle').textContent = 'Preview Image :';
-            document.getElementById('thumbnailList').innerHTML = '';
 
             // 建立清單項目
             data.files.forEach(filename => {
@@ -537,7 +536,8 @@
             // 清空 preview-box，預設會保留 id = loadingSpinner
             const previewBox = document.querySelector('.preview-box');
             if (!previewBox) return;
-
+            
+            previewBox.classList.remove('clickable');
             [...previewBox.children].forEach(child => {
                 if (!excludeIds.includes(child.id)) child.remove();
             });
@@ -550,9 +550,7 @@
 
         function displayPreview(processedImageBase64, filename) {
             clearPreviewBox();
-
             const previewBox = document.querySelector('.preview-box');
-            previewBox.classList.remove('clickable');  // 移除舊狀態（以防沒有圖）
 
             // 下層：processed image
             const processedImg = document.createElement('img');
@@ -568,12 +566,12 @@
             processedImg.onload = () => {
                 // ⛔ 隱藏轉圈圈並暫停動畫
                 activateLoadingSpinner(false);
-                previewBox.classList.add('clickable');
             };
 
             // 上層：原始圖（可切換顯示
             overlayOriginal = false;  // 預設不疊加原圖
-            if (currentOriginalImage !== null) {
+            if (currentOriginalImage !== null && 
+                    filename !== "broken-image.png") {
                 const origImg = document.createElement('img');
                 origImg.id = 'originalImage';
                 origImg.src = currentOriginalImage;
@@ -584,18 +582,17 @@
                 origImg.style.left = 0;
                 origImg.style.display = overlayOriginal ? "block" : "none";
                 previewBox.appendChild(origImg);
+                // ✅ 上層圖準備好了，允許 hover 時游標變為點擊圖示
+                previewBox.classList.add('clickable');
             }
 
-            // ✅ 預覽圖準備好了，允許點擊
-            previewBox.classList.add('clickable');
             document.getElementById("previewTitle").textContent = "Preview Image : " + filename;
         }
 
         document.querySelector('.preview-box').onclick = () => {
-            overlayOriginal = !overlayOriginal;
             const originalLayer = document.getElementById("originalImage");
-
             if (originalLayer) {
+                overlayOriginal = !overlayOriginal;
                 originalLayer.style.display = overlayOriginal ? "block" : "none";
             }
         };
