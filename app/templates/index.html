@@ -382,6 +382,7 @@
         let currentOriginalImage = null;   // base64 string
         let overlayOriginal = false;         // 是否正在疊加原圖
         let orginalTiffName = null;
+        let isPreviewBoxLoading = false;
 
         function requestFolder() {
             socket.emit('request_folder');
@@ -498,6 +499,8 @@
                 item.className = 'file-item';
                 item.textContent = filename;
                 item.onclick = () => {
+                    if (isPreviewBoxLoading) return;  // ⛔️ 如果 previewbox 還在就忽略點擊
+                    isPreviewBoxLoading = true;       // ✅ 鎖定，previewbox 載入中
                     // ✅ 清除其他高亮
                     document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
                     item.classList.add('selected');
@@ -569,6 +572,7 @@
             processedImg.onload = () => {
                 // ⛔ 隱藏轉圈圈並暫停動畫
                 activateLoadingSpinner(false);
+                isPreviewBoxLoading = false; // 解鎖，允許新點擊 tiff list
             };
 
             // 上層：原始圖（可切換顯示
@@ -644,6 +648,8 @@
                 if (el.textContent.trim() === filename) {
                     el.classList.remove('processing');
                     el.onclick = () => {
+                        if (isPreviewBoxLoading) return;  // ⛔️ 如果 previewbox 還在就忽略點擊
+                        isPreviewBoxLoading = true;       // ✅ 鎖定，previewbox 載入中
                         document.querySelectorAll('.file-item').forEach(el2 => el2.classList.remove('selected'));
                         el.classList.add('selected');
                         // ✅ 顯示轉圈圈並恢復動畫
