@@ -2,9 +2,10 @@
 
 This study utilizes different machine learning and deep learning models to provide a proof of concept that organismic information at a macroscopic length scale may be de-encrypted from a snapshot of only a few dozen cells.
 
-- `Manual script DOI.`
-- [![DOI](https://img.shields.io/badge/DOI-10.6019%2FS--BIAD1654-blue)][data_doi]
+- Paper: [[![DOI](https://img.shields.io/badge/DOI-10.26508%2Flsa.202503319-orange)]][paper_doi]
+- Data: [![DOI](https://img.shields.io/badge/DOI-10.6019%2FS-BIAD1654-blue)][data_doi]
 
+[paper_doi]: https://doi.org/10.26508/lsa.202503319
 [data_doi]: https://doi.org/10.6019/S-BIAD1654
 
 ## Notifications
